@@ -1,0 +1,16 @@
+# Everything the build stage rebuilds or never reads. Without this the context
+# alone is gigabytes of node_modules and build output, and every `docker build`
+# pays for uploading it.
+node_modules
+**/node_modules
+# `docs/` and `website/` stay IN the context: `pnpm run build` typechecks
+# `scripts/`, and `scripts/project-doc-site.ts` imports `website/docs.ts`.
+# Excluding them saved about a hundred kilobytes and broke the build.
+**/lib
+**/dist
+release
+.git
+.github
+examples
+python
+*.log

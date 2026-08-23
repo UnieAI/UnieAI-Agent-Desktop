@@ -100,10 +100,18 @@ async function open(): Promise<void> {
   })
 
   try {
-    harness = await startHarness({ home: join(app.getPath('userData'), 'harness') })
+    const home = join(app.getPath('userData'), 'harness')
+    console.log(`dsh-desktop: starting the harness with DSH_HOME=${home}`)
+    harness = await startHarness({ home })
+    console.log(`dsh-desktop: harness ready at ${harness.url}`)
     await window.loadURL(harness.url)
   } catch (error) {
     if (!(error instanceof HarnessStartError)) throw error
+    // Logged as well as shown. The window is where the person reads it, but a
+    // window is not somewhere a bug report can be copied from, and a headless
+    // run has no window at all — this text is the only account of why the
+    // harness did not start.
+    console.error(`dsh-desktop: ${error.message}\n${error.output}`)
     await showFailure(window, error)
   }
 }
@@ -118,6 +126,10 @@ function stopHarness(): void {
 // each launch would start its own harness against the same DSH_HOME, and two
 // harnesses writing one session store is a corruption, not a race.
 if (!app.requestSingleInstanceLock()) {
+  // Say so. A second launch quitting in silence is indistinguishable from one
+  // that crashed before drawing anything, and that ambiguity sent me looking
+  // for a harness that was never going to start.
+  console.log('dsh-desktop: another instance already owns this profile; focusing it')
   app.quit()
 } else {
   app.on('second-instance', () => {

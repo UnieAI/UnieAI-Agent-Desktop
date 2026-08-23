@@ -1,0 +1,27 @@
+# The patch layer the container image installs into its own profile.
+#
+# WHY THIS FILE EXISTS. Inside a network namespace there is no address to bind
+# but 0.0.0.0: a server on the container's 127.0.0.1 is reachable from nothing
+# outside it, so a published port would forward to silence. The `dsh web`
+# command refuses `--host 0.0.0.0` outright, and correctly — this server is
+# remote code execution, and the flag is the careless way to reach for it.
+#
+# The capability itself is not forbidden. `@deepseek-ai/dsh-host-webserver`
+# declares `host` as a closed union of exactly `127.0.0.1` and `0.0.0.0`, and
+# the bundle's row reads it from the command line only as a default
+# (`ctx.webStartup.host ?? '127.0.0.1'`). Stating it here is a deployment
+# writing down its own bind in the layer meant for deployment facts, which is
+# a different act from a person typing a flag they did not think about.
+#
+# WHAT ACTUALLY CONTAINS THE EXPOSURE IS THE PUBLISH, NOT THIS FILE. Run the
+# image with `-p 127.0.0.1:3080:3080` and the reachable surface is the host's
+# own loopback — the same surface `dsh web` has when run directly on that
+# machine. Publish it as `-p 3080:3080` instead and you have put an agent
+# holding bash and the filesystem tools on every interface of that host. The
+# image cannot make that choice for you, which is why it is stated in the
+# README, in the compose file, and here.
+- action: patch
+  id: webserver
+  config:
+    host: '0.0.0.0'
+    port: 3080
