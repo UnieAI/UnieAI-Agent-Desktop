@@ -150,7 +150,11 @@ function dictionariesIn(file: string): Dictionary[] {
       if (name === 'register' && node.arguments.length >= 3) {
         const [ns, tag, dict] = node.arguments
         if (ns === undefined || tag === undefined || !ts.isStringLiteral(tag)) return
-        if (tag.text !== 'zh' && tag.text !== 'en') return
+        // `zh-CN` is the zh half under its full locale tag; normalised here so
+        // the pair meets. `zh-TW` and `ja` are additional locales with no `en`
+        // counterpart by design and are not pair members.
+        const pairTag = tag.text === 'zh-CN' ? 'zh' : tag.text
+        if (pairTag !== 'zh' && pairTag !== 'en') return
         const raw = unwrap(dict)
         const literal = raw !== undefined && ts.isIdentifier(raw)
           ? (() => {
@@ -171,7 +175,7 @@ function dictionariesIn(file: string): Dictionary[] {
         // The namespace expression's source text identifies the pair, so the
         // zh and en calls for one namespace meet and calls for different
         // namespaces stay apart.
-        found.push({ file: rel, name: `${tag.text}@register:${ns.getText(source)}`, keys: keysOf(dictionary) })
+        found.push({ file: rel, name: `${pairTag}@register:${ns.getText(source)}`, keys: keysOf(dictionary) })
       }
     }
     if (ts.isArrayLiteralExpression(node) && node.elements.length === 2) {
@@ -225,6 +229,13 @@ function unwrap(node: ts.Expression | undefined): ts.Expression | undefined {
  * @returns locale plus pair key, or undefined when the name names no locale.
  */
 function localeOf(name: string): { locale: 'zh' | 'en'; pair: string } | undefined {
+  // A regional Chinese dictionary is an ADDITIONAL locale, not the zh half of
+  // a pair named after a region: `zhTW` has no `enTW` and never will, because
+  // the fallback this gate guards is zh -> en, and `zh-TW` falls back through
+  // `en` like every other locale. Read as a pair it produced two failures at
+  // once — every such dictionary reported as missing a counterpart, and two
+  // files in one directory colliding on the same invented pair key.
+  if (/^zh[A-Z]{2}$/u.test(name)) return undefined
   for (const locale of ['zh', 'en'] as const) {
     const other = locale === 'zh' ? 'Zh' : 'En'
     if (name === locale) return { locale, pair: '' }

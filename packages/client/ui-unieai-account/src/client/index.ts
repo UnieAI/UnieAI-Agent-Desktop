@@ -50,7 +50,7 @@ import type { InviteSectionInjected } from './InviteSection.tsx'
 import { SidebarAccountRow } from './SidebarAccountRow.tsx'
 import type { AccountLocaleState, SidebarAccountRowInjected } from './SidebarAccountRow.tsx'
 import { ACCOUNT_SECTION_ID, INVITE_SECTION_ID, USAGE_SECTION_ID } from './AccountMenu.tsx'
-import { en, partialJa, partialZhTW, zh } from './locales.ts'
+import { en, ja, zh, zhTW } from './locales.ts'
 
 export type {
   UnieAiAccount, UnieAiAccountGateway, UnieAiAccountIdentity, UnieAiAccountPlan,
@@ -100,20 +100,16 @@ export const inject = ['slots', 'locale']
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { 'zh-CN': zh, en }), 'ui-unieai-account: dictionaries')
-  // The account menu's and the profile form's own wording in the product's
-  // other two locales, as a partial dictionary: every other key keeps falling
-  // back to English.
-  // Per-locale registration, because these two dictionaries are partial: the
-  // namespace-wide overload requires a complete key set, and completeness
-  // here would mean inventing forty strings the product never published.
-  ctx.effect(() => {
-    const disposers = [
-      ctx.locale.register(NS, 'zh-TW', partialZhTW),
-      ctx.locale.register(NS, 'ja', partialJa),
-    ]
-    return () => { for (const dispose of disposers) dispose() }
-  }, 'ui-unieai-account: product-published copy')
+  // All four locales complete. The product's own published wording is still
+  // what the keys it publishes carry — `partialZhTW` and `partialJa` hold
+  // those lines and the full dictionaries are built over them — but the keys
+  // the product has no page for are this package's own words, and translating
+  // OUR copy is not inventing the product's. Leaving them out sent a
+  // Traditional Chinese or Japanese reader a page half in English.
+  ctx.effect(
+    () => ctx.locale.register(NS, { 'zh-CN': zh, 'zh-TW': zhTW, ja, en }),
+    'ui-unieai-account: dictionaries',
+  )
 
   // A composition that ships no gateway leaves the source `unavailable`, which
   // is exactly what the not-connected card reports.
