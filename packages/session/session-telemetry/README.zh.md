@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-session-telemetry
+# @unieai/uad-session-telemetry
 
 [English](README.md) | 中文
 

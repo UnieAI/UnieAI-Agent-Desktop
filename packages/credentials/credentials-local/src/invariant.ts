@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-credentials-local`.
- * @module @deepseek-ai/dsh-credentials-local/invariant
+ * Package-owned invariant companion for `@unieai/uad-credentials-local`.
+ * @module @unieai/uad-credentials-local/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@unieai/cordis'
+import type { InvariantInstaller } from '@unieai/uad-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-credentials-local'
+const PACKAGE_NAME = '@unieai/uad-credentials-local'
 
 /** Cordis companion plugin name. */
 export const name = 'credentials-local-invariant'

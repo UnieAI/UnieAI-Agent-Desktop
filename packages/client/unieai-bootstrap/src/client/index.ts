@@ -28,7 +28,7 @@
  *
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
 import type { UnieAiBootstrap } from '../bootstrap-contract.ts'
 import { BOOTSTRAP_SERVICE } from '../bootstrap-contract.ts'
 import { BootstrapReader } from './reader.ts'
@@ -38,7 +38,7 @@ export type {
 } from '../bootstrap-contract.ts'
 export { BOOTSTRAP_PARTS, BOOTSTRAP_SERVICE } from '../bootstrap-contract.ts'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@unieai/cordis' {
   interface Context {
     /** The startup answer, when a build composes a supplier of it. */
     unieaiBootstrap: UnieAiBootstrap

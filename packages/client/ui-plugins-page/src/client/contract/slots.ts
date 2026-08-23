@@ -17,16 +17,16 @@
  */
 import type {
   InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime,
-} from '@deepseek-ai/dsh-client-ui-slots'
+} from '@unieai/uad-client-ui-slots'
 // Type-only: pulls ui-layout's SlotMap merge (the 'shell.overlay' entry) into
 // every program that sees this contract, so PropsRuntime resolves.
-import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import type {} from '@unieai/uad-client-ui-layout/client'
 // Type-only: pulls ui-sidebar's SlotMap merge (the 'sidebar.nav.action' seat).
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@unieai/uad-client-ui-sidebar/client'
 import type { PluginsPageKey } from '../locales.ts'
 import type { PluginsPageState } from '../page-store.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@unieai/uad-client-ui-slots' {
   interface SlotMap {
     /**
      * One area stacked down the Plugins page, in `order`. Declared by this
@@ -64,7 +64,7 @@ export interface PluginsPageAreaOwnerProps {
 export interface PluginsPageInjected {
   hooks: {
     /** Whether the page is open. */
-    page: import('@deepseek-ai/dsh-client-ui-slots').HostObservable<PluginsPageState>
+    page: import('@unieai/uad-client-ui-slots').HostObservable<PluginsPageState>
   }
   /** Close the page and return to whatever the frame was showing. */
   close: () => void
@@ -75,7 +75,7 @@ export interface PluginsPageInjected {
 export interface PluginsNavRowInjected {
   hooks: {
     /** The same open state the page reads, so the row can mark itself current. */
-    page: import('@deepseek-ai/dsh-client-ui-slots').HostObservable<PluginsPageState>
+    page: import('@unieai/uad-client-ui-slots').HostObservable<PluginsPageState>
   }
   /** Open the page. */
   open: () => void

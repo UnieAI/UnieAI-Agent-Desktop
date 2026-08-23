@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-subagent
+# @unieai/uad-subagent
 
 English | [中文](README.zh.md)
 

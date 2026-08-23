@@ -5,7 +5,7 @@
  * reading that repeats the previous one must not hand out a new object.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { LocaleId } from '@deepseek-ai/dsh-client-locale/client'
+import type { LocaleId } from '@unieai/uad-client-locale/client'
 import { AccountGateway, type AccountGatewayEnvironment } from '../src/client/gateway.ts'
 import { COPY } from '../src/client/locales.ts'
 

@@ -18,7 +18,7 @@ import { useMemo } from 'react'
 import clsx from 'clsx'
 import type { UnieAiActivityDay } from '../account-contract.ts'
 import { groupDigits } from '../account-contract.ts'
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
+import type { Translate } from '@unieai/uad-client-ui-slots'
 import type { AccountKey } from './locales.ts'
 import css from './ActivityHeatmap.module.css'
 

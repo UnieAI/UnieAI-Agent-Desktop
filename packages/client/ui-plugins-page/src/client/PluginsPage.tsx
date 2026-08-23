@@ -35,7 +35,7 @@
  */
 import { useEffect, useId, useRef, useState } from 'react'
 import clsx from 'clsx'
-import { IconChevronLeftOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconChevronLeftOutline14 } from '@unieai/uad-client-ui-primitives'
 import type { PluginsPageComponentProps } from './contract/slots.ts'
 import type { PluginsPageKey } from './locales.ts'
 import css from './PluginsPage.module.css'

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-settings-notifications
+# @unieai/uad-client-ui-settings-notifications
 
 English | [中文](README.zh.md)
 

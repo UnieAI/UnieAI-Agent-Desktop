@@ -1,7 +1,7 @@
 /**
  * UnieAI startup initialization, node half. The startup answer is read by the
  * browser from the host gate's `/auth/bootstrap` route, which
- * `@deepseek-ai/dsh-unieai-web-gate` owns and gathers; this package therefore
+ * `@unieai/uad-unieai-web-gate` owns and gathers; this package therefore
  * contributes nothing on the host and the empty apply exists only to give the
  * Loader a row whose `dsh.client` declaration ships the browser half.
  */

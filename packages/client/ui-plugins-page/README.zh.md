@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-plugins-page
+# @unieai/uad-client-ui-plugins-page
 
 [English](README.md) | 中文
 
@@ -87,7 +87,7 @@
 
 ## Known Limitations and Deferred Work
 
-- **能列出不等于能连接，这个桌面版仍然连不上。** 回答刻意只带来源地址，不带接口地址与凭证；存储的请求头与 OAuth bearer 在服务端解密、从不投射给任何客户端。因此连接要么需要产品托管、桌面版能用自己的密钥拨接的中继——那正是 [`@deepseek-ai/dsh-mcp-client`](../../mcp/mcp-client/README.zh.md) 已经支持的形态，一个带 `authorization` 请求头的 `streamable-http` 服务器——要么需要决定把 MCP 凭证送到笔记本上，而那与这个桌面版处理其他每一份凭证的方式相违。两者都在本包之外。
+- **能列出不等于能连接，这个桌面版仍然连不上。** 回答刻意只带来源地址，不带接口地址与凭证；存储的请求头与 OAuth bearer 在服务端解密、从不投射给任何客户端。因此连接要么需要产品托管、桌面版能用自己的密钥拨接的中继——那正是 [`@unieai/uad-mcp-client`](../../mcp/mcp-client/README.zh.md) 已经支持的形态，一个带 `authorization` 请求头的 `streamable-http` 服务器——要么需要决定把 MCP 凭证送到笔记本上，而那与这个桌面版处理其他每一份凭证的方式相违。两者都在本包之外。
 - **本仓库没有任何东西去挂载列出来的服务器。** `mcp-client` 每个静态配置行挂载一个服务器，名称在编译期就唯一；要把活的列表变成活的连接，需要一个随列表变动挂载与释放插件的监督者，而本仓库没有这个组件。在它出现之前，这个区块是通往账号 Studio 的一扇窗，而不是某一轮对话的工具来源。
 - **比该路由更早的部署仍然显示 `unsupported`，也仍然每次打开页面留下一个 404。** 这个状态与它的文案正是为那种部署保留的。控制台那一行，是去问一个可能不存在的路由所付的可见代价；而正是「去问」让这个界面在路由上线那天自动亮起来，浏览器端不必再改。
 - **工具卡片没有描述，因为主机那两跳把它丢了。** 产品在 `lib/studio/mcp-tools.ts` 里为每个 Studio 工具都写了一句，而它在送到这里的路上被丢了两次：`lib/desktop/mcp.ts` 发布的是 `tools: STUDIO_MCP_TOOLS.map((tool) => tool.name)`，`web-gate` 的 `McpServerView.tools` 又被定为 `string[]` 并由 `readTools` 原样拷贝。要把卡片填满，需要把产品路由与网关的 grant/view 这一对都改成携带 `{name, description}`，而这两个文件都不属于本包。浏览器这一半已经写完并有测试：带描述的条目会渲染，裸名字仍然读得懂，而在此期间这里不会编造任何一句话。

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-unieai-providers
+# @unieai/uad-client-ui-unieai-providers
 
 [English](README.md) | 中文
 
@@ -22,7 +22,7 @@
 
 ## 如何抵达账号
 
-经由登录闸门的 `GET`/`POST /auth/providers` 与 `PATCH`/`DELETE /auth/providers/<id>`，由 [`@deepseek-ai/dsh-unieai-web-gate`](../../unieai/web-gate/README.zh.md) 提供。这层间接正是安全决策所在：认证产品 `/api/desktop/*` 的 API Key 存放在闸门位于宿主的会话表中，不得进入页面，所以由浏览器问宿主、宿主问产品。
+经由登录闸门的 `GET`/`POST /auth/providers` 与 `PATCH`/`DELETE /auth/providers/<id>`，由 [`@unieai/uad-unieai-web-gate`](../../unieai/web-gate/README.zh.md) 提供。这层间接正是安全决策所在：认证产品 `/api/desktop/*` 的 API Key 存放在闸门位于宿主的会话表中，不得进入页面，所以由浏览器问宿主、宿主问产品。
 
 未挂载闸门的组合在该路径上没有任何回答，本节会渲染「无法读取」并给出重试控件。它绝不会凭空造出 Provider，也绝不会用空列表顶替一次失败的读取——「账号没有 Provider」与「没能问到」是两个不同的事实。
 

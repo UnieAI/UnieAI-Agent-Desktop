@@ -26,10 +26,10 @@
  */
 import type {
   HostObservable, InjectFace, PropsLocale, PropsRuntime,
-} from '@deepseek-ai/dsh-client-ui-slots'
-import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
+} from '@unieai/uad-client-ui-slots'
+import { Button } from '@unieai/uad-client-ui-primitives'
 // Type-only: the settings slot declarations (the `settings.section` entry).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 import type {
   UnieAiAccount, UnieAiAccountState, UnieAiProfilePatch, UnieAiProfileSaveResult,
 } from '../account-contract.ts'

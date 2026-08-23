@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-client-ui-unieai-providers`.
- * @module @deepseek-ai/dsh-client-ui-unieai-providers/invariant
+ * Package-owned invariant companion for `@unieai/uad-client-ui-unieai-providers`.
+ * @module @unieai/uad-client-ui-unieai-providers/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@unieai/cordis'
+import type { InvariantInstaller } from '@unieai/uad-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-client-ui-unieai-providers'
+const PACKAGE_NAME = '@unieai/uad-client-ui-unieai-providers'
 
 /** Cordis companion plugin name. */
 export const name = 'client-ui-unieai-providers-invariant'
@@ -20,7 +20,7 @@ export const inject = ['invariants']
  * datum for a reporter to audit. The rule this surface must not break — that a
  * provider credential travels only towards the product, never back — is a
  * property of the host route's wire shape and is asserted where that shape is
- * built, in `@deepseek-ai/dsh-unieai-web-gate`.
+ * built, in `@unieai/uad-unieai-web-gate`.
  */
 const install: InvariantInstaller = () => {}
 

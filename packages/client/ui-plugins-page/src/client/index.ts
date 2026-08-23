@@ -24,15 +24,15 @@
  *
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
 // Type-only: pulls ui-layout's SlotMap merge (the 'shell.overlay' seat) and
 // ui-sidebar's (the 'sidebar.nav.action' seat). Cross-plugin collaboration
 // goes through slots and services, never a value import (client bundle purity
 // gate).
-import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@unieai/uad-client-ui-layout/client'
+import type {} from '@unieai/uad-client-ui-sidebar/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@unieai/uad-client-locale/client'
 import type { PluginsNavRowInjected, PluginsPageInjected } from './contract/slots.ts'
 import { PluginsPage } from './PluginsPage.tsx'
 import { PluginsNavRow } from './PluginsNavRow.tsx'

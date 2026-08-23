@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-host-plugin-inventory
+# @unieai/uad-host-plugin-inventory
 
 English | [中文](README.zh.md)
 

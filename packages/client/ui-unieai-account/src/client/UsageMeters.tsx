@@ -11,7 +11,7 @@
  * Nothing here invents a number: an account that reports no allowances says
  * so in one line.
  */
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
+import type { Translate } from '@unieai/uad-client-ui-slots'
 import type { UnieAiUsageQuota } from '../account-contract.ts'
 import { groupDigits, remainingPercent } from '../account-contract.ts'
 import type { AccountKey } from './locales.ts'

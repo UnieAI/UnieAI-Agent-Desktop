@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-settings
+# @unieai/uad-settings
 
 [English](README.md) | 中文
 

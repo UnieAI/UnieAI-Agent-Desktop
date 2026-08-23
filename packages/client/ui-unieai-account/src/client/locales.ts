@@ -111,7 +111,7 @@ export type AccountKey = keyof typeof zh
 // package imports `AccountKey` from this module, so the merge is guaranteed
 // to be in any program that types the `t` seat — including the component
 // specs, which never load the entry.
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@unieai/uad-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The Account settings section's copy. */
     'settings.account': AccountKey

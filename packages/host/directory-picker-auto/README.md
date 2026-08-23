@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-host-directory-picker-auto
+# @unieai/uad-host-directory-picker-auto
 
 English | [中文](README.zh.md)
 

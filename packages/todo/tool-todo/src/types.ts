@@ -5,14 +5,14 @@
  * for host consumers, `./client/types` (the browser half-entry's re-export)
  * for client aggregates — with zero content duplication.
  *
- * @module @deepseek-ai/dsh-tool-todo/types
+ * @module @unieai/uad-tool-todo/types
  */
 
-import type { TodoItem } from '@deepseek-ai/dsh-session/types'
+import type { TodoItem } from '@unieai/uad-session/types'
 
-export type { TodoItem } from '@deepseek-ai/dsh-session/types'
+export type { TodoItem } from '@unieai/uad-session/types'
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@unieai/uad-session-projection/types' {
   interface SessionProjectionStateMap {
     todos: TodoItem[] | null
   }

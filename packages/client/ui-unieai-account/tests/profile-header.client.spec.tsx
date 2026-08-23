@@ -14,8 +14,8 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
+import { makeTranslate } from '@unieai/uad-client-test-runtime'
+import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
 import type { UnieAiAccountIdentity, UnieAiProfilePatch } from '../src/account-contract.ts'
 import { ProfileHeader, type ProfileHeaderProps } from '../src/client/ProfileHeader.tsx'
 import { zh } from '../src/client/locales.ts'

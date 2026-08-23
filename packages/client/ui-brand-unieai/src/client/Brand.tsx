@@ -1,5 +1,5 @@
-import type { HeroBrandMarkOwnerProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type { SidebarBrandMarkOwnerProps } from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type { HeroBrandMarkOwnerProps } from '@unieai/uad-client-ui-conversation/client'
+import type { SidebarBrandMarkOwnerProps } from '@unieai/uad-client-ui-sidebar/client'
 import css from './Brand.module.css'
 
 /** Intrinsic proportions of the UnieAI mark artwork. */

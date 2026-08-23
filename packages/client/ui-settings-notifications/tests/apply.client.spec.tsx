@@ -7,11 +7,11 @@
  * device as a cue plus a notification, and teardown empties the slot and drops
  * the list subscription (HMR safety).
  */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@unieai/uad-api-remotes/client'
+import { LocaleRuntime } from '@unieai/uad-client-locale/client'
+import { SlotRegistry } from '@unieai/uad-client-runtime/client'
 import { apply, inject, NS } from '../src/client/index.ts'
 import { apply as nodeApply } from '../src/index.ts'
 import { NotificationsSection } from '../src/client/NotificationsSection.tsx'

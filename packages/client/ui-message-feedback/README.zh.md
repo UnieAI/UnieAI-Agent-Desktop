@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-message-feedback
+# @unieai/uad-client-ui-message-feedback
 
 [English](README.md) | 中文
 

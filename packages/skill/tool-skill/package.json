@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-tool-skill",
+  "name": "@unieai/uad-tool-skill",
   "description": "Model-facing skill loading tool for the DeepSeek Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/unieai/deepseek-harness.git",
     "directory": "packages/skill/tool-skill"
   },
   "type": "module",
@@ -32,25 +32,25 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-skill": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-agent": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-skill": "workspace:^",
+    "@unieai/uad-tools": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@unieai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-skill": "workspace:^",
-    "@deepseek-ai/dsh-skill-filesystem": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-agent": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-scope": "workspace:^",
+    "@unieai/uad-session": "workspace:^",
+    "@unieai/uad-skill": "workspace:^",
+    "@unieai/uad-skill-filesystem": "workspace:^",
+    "@unieai/uad-tools": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   }
 }

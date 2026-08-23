@@ -10,7 +10,7 @@
  * draws its not-connected card: this package invents no endpoint, no identity,
  * and no numbers.
  *
- * @module @deepseek-ai/dsh-client-ui-unieai-account
+ * @module @unieai/uad-client-ui-unieai-account
  */
 
 /** Who the account belongs to, as the desktop BFF reports it. */

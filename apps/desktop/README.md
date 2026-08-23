@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-desktop
+# @unieai/uad-desktop
 
 English | [中文](README.zh.md)
 
@@ -29,7 +29,7 @@ A harness that cannot start would otherwise leave a blank window and no way to f
 ## Running it
 
 ```sh
-pnpm --filter @deepseek-ai/dsh-desktop run start
+pnpm --filter @unieai/uad-desktop run start
 ```
 
 `pnpm run build` at the repository root must have run first: the shell packages and launches the harness's built `lib/`, not its sources.
@@ -37,10 +37,10 @@ pnpm --filter @deepseek-ai/dsh-desktop run start
 ## Packaging
 
 ```sh
-pnpm --filter @deepseek-ai/dsh-desktop run package:mac:arm64   # on an Apple Silicon Mac
-pnpm --filter @deepseek-ai/dsh-desktop run package:mac:x64     # on an Intel Mac
-pnpm --filter @deepseek-ai/dsh-desktop run package:win:x64     # on Windows x64
-pnpm --filter @deepseek-ai/dsh-desktop run package:win:arm64   # on Windows arm64
+pnpm --filter @unieai/uad-desktop run package:mac:arm64   # on an Apple Silicon Mac
+pnpm --filter @unieai/uad-desktop run package:mac:x64     # on an Intel Mac
+pnpm --filter @unieai/uad-desktop run package:win:x64     # on Windows x64
+pnpm --filter @unieai/uad-desktop run package:win:arm64   # on Windows arm64
 ```
 
 **Each target must be packaged on that platform**, and `scripts/verify-target.mjs` refuses anything else. This is a property of what is being packaged, not caution: the closure carries native binaries the package manager chooses per platform and architecture at install time — `koffi`, the Win32 sandbox's FFI, is the clearest case — so a macOS build produced on Linux would ship Linux binaries inside a `.dmg` and fail only when someone ran it. Four targets means four machines, or the four runners in [`desktop-release.yml`](../../.github/workflows/desktop-release.yml).

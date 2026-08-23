@@ -1,6 +1,6 @@
-import { BrandWordmark, FishLogo } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { HeroBrandMarkOwnerProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type { SidebarBrandMarkOwnerProps } from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import { BrandWordmark, FishLogo } from '@unieai/uad-client-ui-primitives'
+import type { HeroBrandMarkOwnerProps } from '@unieai/uad-client-ui-conversation/client'
+import type { SidebarBrandMarkOwnerProps } from '@unieai/uad-client-ui-sidebar/client'
 
 type OfficialBrandMarkProps = HeroBrandMarkOwnerProps & SidebarBrandMarkOwnerProps
 

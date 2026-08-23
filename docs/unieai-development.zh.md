@@ -73,7 +73,7 @@ gate 可以把這台主機釘給特定帳號。出貨的 bundle 釘了一個—�
 `apps/desktop` 是一個 Electron 視窗，罩在它自己啟動的 harness 上。它不加任何產品行為：它在一個由作業系統指派的 loopback 連接埠上啟動 `dsh web`，等那個伺服器印出網址那一行，然後載入它。
 
 ```sh
-pnpm --filter @deepseek-ai/dsh-desktop run start
+pnpm --filter @unieai/uad-desktop run start
 ```
 
 打包是分平台的，而且拒絕跨平台編譯，因為封閉集裡帶著在安裝時依平台與架構挑選的原生二進位檔。macOS 版要在 macOS 上建，Windows 版要在 Windows 上建。見 [`apps/desktop/README.zh.md`](../apps/desktop/README.zh.md)。

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-user-approval
+# @unieai/uad-user-approval
 
 [English](README.md) | 中文
 

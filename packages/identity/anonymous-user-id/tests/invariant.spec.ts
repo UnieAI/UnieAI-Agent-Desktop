@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
-import * as UserIdInvariant from '@deepseek-ai/dsh-anonymous-user-id/invariant'
+import { Context } from '@unieai/cordis'
+import InvariantRegistry from '@unieai/uad-invariants'
+import * as UserIdInvariant from '@unieai/uad-anonymous-user-id/invariant'
 
 describe('invariant companion', () => {
   it('registers the package ownership with an empty installer', async () => {

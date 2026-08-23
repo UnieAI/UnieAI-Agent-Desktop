@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
   FishLogo, IconComposeOutline16, IconPanelLeftOutline16, IconSearchOutline16, Tooltip,
-} from '@deepseek-ai/dsh-client-ui-primitives'
+} from '@unieai/uad-client-ui-primitives'
 import type { SidebarRootComponentProps } from './contract/slots.ts'
 import css from './SidebarRoot.module.css'
 

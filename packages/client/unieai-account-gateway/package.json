@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-unieai-account-gateway",
+  "name": "@unieai/uad-client-unieai-account-gateway",
   "description": "Browser half of the UnieAI account seam: provides the unieaiAccount gateway over the web gate's /auth/account route",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -43,27 +43,27 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-ui-unieai-account",
-        "@deepseek-ai/dsh-client-unieai-bootstrap"
+        "@unieai/uad-client-locale",
+        "@unieai/uad-client-ui-unieai-account",
+        "@unieai/uad-client-unieai-bootstrap"
       ],
       "platform": "web"
     }
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-unieai-account": "workspace:^",
-    "@deepseek-ai/dsh-client-unieai-bootstrap": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^"
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-unieai-account": "workspace:^",
+    "@unieai/uad-client-unieai-bootstrap": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-unieai-account": "workspace:^",
-    "@deepseek-ai/dsh-client-unieai-bootstrap": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^"
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-unieai-account": "workspace:^",
+    "@unieai/uad-client-unieai-bootstrap": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
   }
 }

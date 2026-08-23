@@ -17,8 +17,8 @@
 import type {
   UnieAiAccount, UnieAiAccountState, UnieAiActivity, UnieAiActivityStats, UnieAiInvites,
   UnieAiSentInvite, UnieAiUsageQuota,
-} from '@deepseek-ai/dsh-client-ui-unieai-account/client'
-import type { LocaleId } from '@deepseek-ai/dsh-client-locale/client'
+} from '@unieai/uad-client-ui-unieai-account/client'
+import type { LocaleId } from '@unieai/uad-client-locale/client'
 import type {
   HostAccountMeter, HostAccountResponse, HostAccountSnapshot, HostAccountStats, HostSentInvite,
 } from './host-account.ts'

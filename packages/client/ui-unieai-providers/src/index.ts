@@ -6,7 +6,7 @@
  *
  * The provider data belongs to the UnieAI Copilot web product and is reached
  * through the sign-in gate's `/auth/providers` route, which lives in
- * `@deepseek-ai/dsh-unieai-web-gate` — the host package that holds the API key
+ * `@unieai/uad-unieai-web-gate` — the host package that holds the API key
  * this desktop authenticates that product with.
  */
 

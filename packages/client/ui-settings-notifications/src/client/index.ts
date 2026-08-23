@@ -7,13 +7,13 @@
  * to the host, and nothing here needs to — a completion the client can already
  * see does not need to be pushed to it.
  */
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SessionId } from '@unieai/uad-api-remotes/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type {} from '@unieai/uad-client-locale/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
 // Type-only: the settings shell's SlotMap merge (the 'settings.section' entry).
 // Cross-plugin collaboration goes through services, never a value import.
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 import { NotificationsSection } from './NotificationsSection.tsx'
 import type { NotificationsSectionInjected } from './NotificationsSection.tsx'
 import { SessionCompletionWatcher, browserCompletionEnvironment } from './completion-watcher.ts'
@@ -37,7 +37,7 @@ export type {
 export type { NotifySound, NotifySoundPlayer, NotifySoundStorage } from './notify-sounds.ts'
 export type { NotificationsLocaleKey } from './locales.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@unieai/uad-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Notifications settings page copy. */
     'settings.notifications': NotificationsLocaleKey

@@ -25,8 +25,8 @@ import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
   Button, IconEditOutline16, IconUserOutline16, Input, Toast,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
+} from '@unieai/uad-client-ui-primitives'
+import type { Translate } from '@unieai/uad-client-ui-slots'
 import type {
   UnieAiAccountIdentity, UnieAiAvatarUpload, UnieAiProfilePatch, UnieAiProfileSaveReason,
   UnieAiProfileSaveResult,

@@ -81,9 +81,9 @@ export interface HarnessEnvironment {
  */
 export function resolveHarnessEntry(): string {
   const require = createRequire(import.meta.url)
-  // The bin, not a package export: `@deepseek-ai/dsh` publishes `lib/*.js` and
+  // The bin, not a package export: `@unieai/uad` publishes `lib/*.js` and
   // declares no `exports` map, so the bin path is the only stable entry.
-  return require.resolve('@deepseek-ai/dsh/lib/bin.js')
+  return require.resolve('@unieai/uad/lib/bin.js')
 }
 
 /**

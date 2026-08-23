@@ -16,21 +16,21 @@
  * package README.
  */
 
-import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
+import type { ConnectionHandle } from '@unieai/uad-client-connection/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@unieai/uad-client-locale/client'
 // Type-only: the settings shell's SlotMap merge (the 'settings.plugins.tab'
 // entry type) and the ctx.settingsScope Context merge. Cross-plugin
 // collaboration goes through the service, never a value import (client bundle
 // purity gate).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 // Type-only: the Plugins page's SlotMap merge (the 'plugins.page.area' seat
 // this section now occupies).
-import type {} from '@deepseek-ai/dsh-client-ui-plugins-page/client'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
+import type {} from '@unieai/uad-client-ui-plugins-page/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
+import { resolveSlotLabel } from '@unieai/uad-client-ui-slots'
 // Type-only: the ctx.remote Context merge and the forwarded-event key face.
-import type {} from '@deepseek-ai/dsh-api-remotes/client'
+import type {} from '@unieai/uad-api-remotes/client'
 import { AgentLoopCard } from './AgentLoopCard.tsx'
 import { BashCard } from './BashCard.tsx'
 import { ConfigurablePluginsTab } from './ConfigurablePluginsTab.tsx'

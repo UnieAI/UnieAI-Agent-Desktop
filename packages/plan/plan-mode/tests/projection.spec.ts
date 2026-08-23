@@ -11,17 +11,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SessionStore from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import { CommandId } from '@deepseek-ai/dsh-commands/brand'
-import PlanModeController from '@deepseek-ai/dsh-plan-mode'
+import { Context } from '@unieai/cordis'
+import AgentRegistry from '@unieai/uad-agent'
+import type { Agent } from '@unieai/uad-agent'
+import SessionStore from '@unieai/uad-session'
+import type { Session } from '@unieai/uad-session'
+import SystemPrompt from '@unieai/uad-system-prompt'
+import ToolRuntime from '@unieai/uad-tools'
+import SessionProjectionRegistry from '@unieai/uad-session-projection'
+import UserQuestionService from '@unieai/uad-user-questions'
+import { CommandId } from '@unieai/uad-commands/brand'
+import PlanModeController from '@unieai/uad-plan-mode'
 
 interface Bench {
   ctx: Context

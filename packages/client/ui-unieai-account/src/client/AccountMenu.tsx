@@ -12,13 +12,13 @@
  * the personal edition, so the condition is never true and the branch does
  * not exist. Nothing was removed.
  */
-import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { MenuEntry } from '@unieai/uad-client-ui-primitives'
 import {
   IconCheckOutline16, IconChevronRightOutline14, IconDataOutline16, IconGlobeOutline14,
   IconLightOutline16, IconLinkOutline16, IconPersonalizationOutline16,
   IconRightUpOutline16, IconUserOutline16,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
+} from '@unieai/uad-client-ui-primitives'
+import type { Translate } from '@unieai/uad-client-ui-slots'
 import type { UnieAiAccountState } from '../account-contract.ts'
 import type { AccountKey } from './locales.ts'
 import css from './AccountMenu.module.css'

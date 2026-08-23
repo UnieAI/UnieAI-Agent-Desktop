@@ -9,15 +9,15 @@
  * a startup answer that could not be had at all — plus what happens when the
  * account changes afterwards, which must still go to the host.
  */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
+import { LocaleRuntime } from '@unieai/uad-client-locale/client'
 import type {
   UnieAiBootstrap, UnieAiBootstrapSnapshot,
-} from '@deepseek-ai/dsh-client-unieai-bootstrap/client'
+} from '@unieai/uad-client-unieai-bootstrap/client'
 import {
   ACCOUNT_GATEWAY_SERVICE, type UnieAiAccountGateway,
-} from '@deepseek-ai/dsh-client-ui-unieai-account/client'
+} from '@unieai/uad-client-ui-unieai-account/client'
 import { apply, inject } from '../src/client/index.ts'
 import { AccountGateway } from '../src/client/gateway.ts'
 

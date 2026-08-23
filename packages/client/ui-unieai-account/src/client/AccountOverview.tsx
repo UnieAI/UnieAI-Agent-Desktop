@@ -18,8 +18,8 @@
  * as zero. With no gateway composed there is no account at all, so every cell
  * is unknown and the name says nobody is signed in.
  */
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
-import { IconUserOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { Translate } from '@unieai/uad-client-ui-slots'
+import { IconUserOutline16 } from '@unieai/uad-client-ui-primitives'
 import type {
   UnieAiAccount, UnieAiActivityStatId, UnieAiProfilePatch, UnieAiProfileSaveResult,
 } from '../account-contract.ts'

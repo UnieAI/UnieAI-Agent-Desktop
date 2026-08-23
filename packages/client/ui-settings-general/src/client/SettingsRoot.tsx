@@ -22,7 +22,7 @@ import {
   IconAgentPresetOutline16, IconApiOutline14, IconBlocksOutline16, IconCloseOutline16,
   IconDataOutline16, IconLinkOutline16, IconPersonalizationOutline16,
   IconSettingsOutline16, IconThinkOutline16, IconUserOutline16,
-} from '@deepseek-ai/dsh-client-ui-primitives'
+} from '@unieai/uad-client-ui-primitives'
 import type { SettingsRootComponentProps, SettingsSectionRow } from './shell-contract.ts'
 import type { SettingsKey } from './locales.ts'
 import css from './SettingsRoot.module.css'

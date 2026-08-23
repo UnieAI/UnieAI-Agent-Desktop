@@ -9,12 +9,12 @@
  * The lane has no jsdom `window`, so a fresh LocaleRuntime opens on the
  * English fallback; the bench stages `zh` explicitly where it asserts copy.
  */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
-import * as AccountInvariant from '@deepseek-ai/dsh-client-ui-unieai-account/invariant'
+import { SlotRegistry } from '@unieai/uad-client-runtime/client'
+import { LocaleRuntime } from '@unieai/uad-client-locale/client'
+import InvariantRegistry from '@unieai/uad-invariants'
+import * as AccountInvariant from '@unieai/uad-client-ui-unieai-account/invariant'
 import { apply as nodeApply } from '../src/index.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { ACCOUNT_GATEWAY_SERVICE, type UnieAiAccountGateway } from '../src/account-contract.ts'

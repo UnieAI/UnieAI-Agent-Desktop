@@ -5,7 +5,7 @@
  * marked attended so nothing announces it.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SessionId } from '@unieai/uad-api-remotes/client'
 import {
   MIN_RUN_MS, SessionCompletionWatcher, browserCompletionEnvironment,
   type SessionCompletion, type SessionCompletionList,

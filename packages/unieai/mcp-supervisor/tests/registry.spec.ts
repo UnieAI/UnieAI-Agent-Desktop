@@ -3,7 +3,7 @@
  * mounted instance still matches its grant, and when the next read is due.
  */
 import { describe, expect, it } from 'vitest'
-import type { McpServerGrant } from '@deepseek-ai/dsh-unieai-web-gate'
+import type { McpServerGrant } from '@unieai/uad-unieai-web-gate'
 import { matchesGrant, nextRefreshDelay } from '../src/index.ts'
 import type { MountedServer } from '../src/index.ts'
 

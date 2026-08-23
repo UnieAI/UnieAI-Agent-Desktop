@@ -9,9 +9,9 @@
  * is what makes the models runnable once that answer is `true`.
  */
 import { afterEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import LlmRuntime from '@deepseek-ai/dsh-llm'
-import type { EntitledModel, UnieaiGate, UnieaiGateSession } from '@deepseek-ai/dsh-unieai-web-gate'
+import { Context } from '@unieai/cordis'
+import LlmRuntime from '@unieai/uad-llm'
+import type { EntitledModel, UnieaiGate, UnieaiGateSession } from '@unieai/uad-unieai-web-gate'
 import * as LlmUnieaiCloud from '../src/index.ts'
 
 const PRODUCT = 'https://product.test'

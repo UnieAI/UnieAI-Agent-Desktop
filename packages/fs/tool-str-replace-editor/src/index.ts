@@ -1,18 +1,18 @@
 /**
  * Model-facing `str_replace_editor` over the Harness filesystem seam.
- * @module @deepseek-ai/dsh-tool-str-replace-editor
+ * @module @unieai/uad-tool-str-replace-editor
  */
 
 import { isAbsolute } from 'node:path'
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { FsError } from '@deepseek-ai/dsh-fs'
-import type { FsInfo, FsTarget, FsWriteIntent } from '@deepseek-ai/dsh-fs'
-import { sandboxDenialMarker } from '@deepseek-ai/dsh-sandbox'
-import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
-import type { SandboxPolicyService } from '@deepseek-ai/dsh-sandbox-policy'
-import { defineTool } from '@deepseek-ai/dsh-tools'
-import type { ToolCallView, ToolRunContext } from '@deepseek-ai/dsh-tools'
+import type { Context } from '@unieai/cordis'
+import z from '@unieai/schemastery'
+import { FsError } from '@unieai/uad-fs'
+import type { FsInfo, FsTarget, FsWriteIntent } from '@unieai/uad-fs'
+import { sandboxDenialMarker } from '@unieai/uad-sandbox'
+import type { SandboxExecutionPolicy } from '@unieai/uad-sandbox'
+import type { SandboxPolicyService } from '@unieai/uad-sandbox-policy'
+import { defineTool } from '@unieai/uad-tools'
+import type { ToolCallView, ToolRunContext } from '@unieai/uad-tools'
 
 const TRUNCATED_MESSAGE = '<response clipped><NOTE>To save on context only part of this file has been shown to you. You should retry this tool after you have searched inside the file with `grep -n` in order to find the line numbers of what you are looking for.</NOTE>'
 

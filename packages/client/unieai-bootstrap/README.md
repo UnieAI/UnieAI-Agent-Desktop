@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-unieai-bootstrap
+# @unieai/uad-client-unieai-bootstrap
 
 English | [中文](README.zh.md)
 
@@ -8,7 +8,7 @@ It exists because the question *"is this desktop signed in, and what does it hav
 
 ## The shape: the host gathers, the browser reads once
 
-The gathering happens on the host, in `@deepseek-ai/dsh-unieai-web-gate`, not here. Two facts decide that:
+The gathering happens on the host, in `@unieai/uad-unieai-web-gate`, not here. Two facts decide that:
 
 - **The host already holds the session and the desktop API key.** Every one of these reads is a product call authenticated by a credential that must never reach a page, so a browser asking for four things means the host making four or more product calls anyway — with a same-origin round trip in front of each.
 - **The host can start before the browser exists.** The gather begins the moment a device grant lands, which is while the browser is still navigating from the sign-in page to the application. By the time this package asks, the answer is usually already in memory.
@@ -44,7 +44,7 @@ A consumer of the startup answer names `unieaiBootstrap` in its `inject`. This i
 
 The consequence is that a composition keeping a consumer row while dropping this one leaves that consumer's fiber pending — which the boot page reports by name, rather than failing silently.
 
-`@deepseek-ai/dsh-client-unieai-account-gateway` is the first consumer and the model for the rest: it takes its first account from `parts.account`, and every refresh it performs afterwards — a profile save, an invite, a retry — still reads `/auth/account` directly. The startup answer describes the start of the document; it is not a cache of the product.
+`@unieai/uad-client-unieai-account-gateway` is the first consumer and the model for the rest: it takes its first account from `parts.account`, and every refresh it performs afterwards — a profile save, an invite, a retry — still reads `/auth/account` directly. The startup answer describes the start of the document; it is not a cache of the product.
 
 ## Model Experience
 

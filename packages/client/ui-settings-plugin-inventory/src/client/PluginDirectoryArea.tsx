@@ -27,7 +27,7 @@
  *     no memory of which layer inserted it. Nothing on the wire can be made
  *     to say it; see the README.
  *   - By host plane versus browser plane. Every browser row happens to be
- *     named `@deepseek-ai/dsh-client-*` — but `@deepseek-ai/dsh-api-remotes`
+ *     named `@unieai/uad-client-*` — but `@unieai/uad-api-remotes`
  *     is a browser row too, and `dsh-client-modules` is both. That is a
  *     naming convention with exceptions, not data, and segmentation dressed
  *     as taxonomy reads as fact.
@@ -45,12 +45,12 @@
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import clsx from 'clsx'
-import type { PluginInventorySnapshot } from '@deepseek-ai/dsh-api-remotes/client'
-import { Button, IconSearchOutline16, Input } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type { PluginInventorySnapshot } from '@unieai/uad-api-remotes/client'
+import { Button, IconSearchOutline16, Input } from '@unieai/uad-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 // Type-only: pulls the Plugins page's SlotMap merge (the 'plugins.page.area'
 // seat this directory occupies) so PropsRuntime resolves.
-import type {} from '@deepseek-ai/dsh-client-ui-plugins-page/client'
+import type {} from '@unieai/uad-client-ui-plugins-page/client'
 import type { PluginInventoryLocaleKey } from './locales.ts'
 import css from './PluginDirectoryArea.module.css'
 
@@ -96,7 +96,7 @@ function moduleShortName(moduleName: string): string {
   return unscoped
     .replace(/^cordis:/, '')
     .replace(/^cordis-plugin-/, '')
-    .replace(/^dsh-(?:host-|client-)?/, '')
+    .replace(/^uad-(?:host-|client-)?/u, '')
 }
 
 /** Whether an inventory row matches the local directory query. */

@@ -2,17 +2,17 @@
  * Cross-session snapshot preparation. Hosts adapt mentions into structured
  * references; this service owns exact reads, projection, budgets, and durable context.
  *
- * @module @deepseek-ai/dsh-session-reference
+ * @module @unieai/uad-session-reference
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
-import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
-import { createUserMessage, freezeMessage } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, UserMessage } from '@deepseek-ai/dsh-llm'
-import type { SessionId } from '@deepseek-ai/dsh-session'
-import type { SessionSurfaceSnapshot, SessionTitleObservationResult } from '@deepseek-ai/dsh-session-query'
+import { Context } from '@unieai/cordis'
+import z from '@unieai/schemastery'
+import type { Agent, PreStepDecision } from '@unieai/uad-agent'
+import { Remote, TypertRemoteService } from '@unieai/uad-typert-protocol'
+import { createUserMessage, freezeMessage } from '@unieai/uad-llm'
+import type { ContentBlock, UserMessage } from '@unieai/uad-llm'
+import type { SessionId } from '@unieai/uad-session'
+import type { SessionSurfaceSnapshot, SessionTitleObservationResult } from '@unieai/uad-session-query'
 import {
   DEFAULT_CANDIDATE_LIMIT,
   DEFAULT_MAX_REFERENCE_BYTES,
@@ -55,7 +55,7 @@ user explicitly repeats them.
 `
 const PROMPT_SUFFIX = '\n</referenced-sessions>'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@unieai/cordis' {
   interface Context {
     sessionReferenceResolver: SessionReferenceResolver
   }

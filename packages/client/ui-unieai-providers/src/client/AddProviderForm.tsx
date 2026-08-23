@@ -16,8 +16,8 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import clsx from 'clsx'
-import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
+import { Button } from '@unieai/uad-client-ui-primitives'
+import type { TranslateNS } from '@unieai/uad-client-ui-slots'
 import type { ProviderFailure, ProviderDraft } from './provider-source.ts'
 // Type-only: pulls this package's LocaleNamespaceMap merge ('settings.providers').
 import type {} from './locales.ts'

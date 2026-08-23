@@ -16,9 +16,9 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import { bindSnapshotSelector, makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
+import { createSnapshotStore } from '@unieai/uad-client-runtime/client'
+import { bindSnapshotSelector, makeTranslate } from '@unieai/uad-client-test-runtime'
+import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
 import type {
   UnieAiAccount, UnieAiAccountState, UnieAiInviteResult,
 } from '../src/account-contract.ts'

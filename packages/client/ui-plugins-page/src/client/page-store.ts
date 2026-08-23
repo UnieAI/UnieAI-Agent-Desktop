@@ -11,7 +11,7 @@
  * Nothing here persists. A page left open across a reload is a surprise
  * rather than a restored place, and the conversation is what this app is for.
  */
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore, type SnapshotStore } from '@unieai/uad-client-runtime/client'
 
 /** The page's whole state: it is open, or it is not. */
 export interface PluginsPageState {

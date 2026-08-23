@@ -11,7 +11,7 @@
  * rendered slot, and a namespace would put them behind a `t` seat that no
  * component in this package owns.
  */
-import type { LocaleId } from '@deepseek-ai/dsh-client-locale/client'
+import type { LocaleId } from '@unieai/uad-client-locale/client'
 
 /**
  * The product's meter keys, in the order the usage list presents them: the

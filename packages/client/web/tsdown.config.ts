@@ -1,6 +1,6 @@
 import { staticLinked } from '../tsdown.client.ts'
 
 export default staticLinked(
-  '@deepseek-ai/dsh-client-web',
+  '@unieai/uad-client-web',
   ['lib/types/index.js', 'lib/types/invariant.js'],
 )

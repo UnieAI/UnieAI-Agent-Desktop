@@ -20,7 +20,7 @@
  * `POST /api/desktop/v1/chat/completions`, which this desktop's API key
  * authenticates and which resolves the upstream, enforces the plan's quota,
  * and meters the turn on the product's side.
- * `@deepseek-ai/dsh-llm-unieai-cloud` registers this list as one `llm` route
+ * `@unieai/uad-llm-unieai-cloud` registers this list as one `llm` route
  * pointed at that relay.
  *
  * Read-only, and there is deliberately no write direction. Which models an

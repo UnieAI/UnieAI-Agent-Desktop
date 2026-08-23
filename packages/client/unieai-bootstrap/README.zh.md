@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-unieai-bootstrap
+# @unieai/uad-client-unieai-bootstrap
 
 [English](README.md) | 中文
 
@@ -8,7 +8,7 @@ UnieAI 桌面端的启动初始化。它在应用挂载之前发出一次请求�
 
 ## 形态：host 预取，浏览器只读一次
 
-预取发生在 host 上，位于 `@deepseek-ai/dsh-unieai-web-gate`，而不在本包。两个事实决定了这一点：
+预取发生在 host 上，位于 `@unieai/uad-unieai-web-gate`，而不在本包。两个事实决定了这一点：
 
 - **会话与桌面 API key 本来就在 host 手上。** 这些读取每一次都是由绝不可到达页面的凭据认证的产品调用，所以浏览器要四样东西，等于 host 照样要发四次以上的产品调用——而且每一次前面还多一次同源往返。
 - **host 可以在浏览器存在之前就开始。** 设备码授权落地的那一刻预取就开始了，而那时浏览器还在从登录页跳往应用的路上。等本包开口时，答案通常已经在内存里。
@@ -44,7 +44,7 @@ UnieAI 桌面端的启动初始化。它在应用挂载之前发出一次请求�
 
 其代价是：保留消费方行却删掉本行的组合，会让那个消费方的 fiber 停在 pending——而这一点启动页会指名报出，不会无声无息。
 
-`@deepseek-ai/dsh-client-unieai-account-gateway` 是第一个消费方，也是其余消费方的样板：它的首个账号取自 `parts.account`，而其后它执行的每一次刷新——保存资料、发出邀请、重试——依旧直接读 `/auth/account`。启动答复描述的是文档的起点，它不是产品的缓存。
+`@unieai/uad-client-unieai-account-gateway` 是第一个消费方，也是其余消费方的样板：它的首个账号取自 `parts.account`，而其后它执行的每一次刷新——保存资料、发出邀请、重试——依旧直接读 `/auth/account`。启动答复描述的是文档的起点，它不是产品的缓存。
 
 ## Model Experience
 

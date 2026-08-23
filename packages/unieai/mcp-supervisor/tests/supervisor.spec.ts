@@ -13,10 +13,10 @@
  *   contributed are gone from `ctx.tools`.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import ToolRuntime from '@deepseek-ai/dsh-tools'
-import type { McpServerGrant, UnieaiGate, UnieaiGateSession } from '@deepseek-ai/dsh-unieai-web-gate'
+import { Context } from '@unieai/cordis'
+import SystemPrompt from '@unieai/uad-system-prompt'
+import ToolRuntime from '@unieai/uad-tools'
+import type { McpServerGrant, UnieaiGate, UnieaiGateSession } from '@unieai/uad-unieai-web-gate'
 
 // The mock class and functions must exist when the hoisted vi.mock factories
 // run, which is before every import above.

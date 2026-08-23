@@ -21,7 +21,7 @@ files:
 # The harness runs as a real Node program: it opens files, spawns shells and
 # loads a platform-specific sandbox. None of that works from inside an asar.
 asarUnpack:
-  - node_modules/@deepseek-ai/**
+  - node_modules/@unieai/**
   - node_modules/koffi/**
 
 mac:

@@ -1,5 +1,5 @@
 /**
- * @deepseek-ai/dsh-unieai-mcp-supervisor — mounts the MCP servers the
+ * @unieai/uad-unieai-mcp-supervisor — mounts the MCP servers the
  * signed-in UnieAI account grants, and keeps them mounted.
  *
  * The web product hosts MCP servers on its users' behalf and hands a desktop a
@@ -12,7 +12,7 @@
  *
  * ```yaml
  * - id: unieai-mcp-supervisor
- *   name: '@deepseek-ai/dsh-unieai-mcp-supervisor'
+ *   name: '@unieai/uad-unieai-mcp-supervisor'
  * ```
  *
  * **The grants expire, and that is the hard part.** Each bearer is good for
@@ -27,17 +27,17 @@
  *
  * Signing out drops every instance, because the grants were the account's.
  *
- * @module @deepseek-ai/dsh-unieai-mcp-supervisor
+ * @module @unieai/uad-unieai-mcp-supervisor
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
-import * as McpClient from '@deepseek-ai/dsh-mcp-client'
+import { Context } from '@unieai/cordis'
+import z from '@unieai/schemastery'
+import { MAX_TIMER_DELAY_MS } from '@unieai/uad-timeout'
+import * as McpClient from '@unieai/uad-mcp-client'
 // Side-effect type import: pulls the `unieaiGate` service and the
 // `unieai-gate/session` event declaration onto Context.
-import type {} from '@deepseek-ai/dsh-unieai-web-gate'
-import type { McpServerGrant } from '@deepseek-ai/dsh-unieai-web-gate'
+import type {} from '@unieai/uad-unieai-web-gate'
+import type { McpServerGrant } from '@unieai/uad-unieai-web-gate'
 import { matchesGrant, nextRefreshDelay } from './registry.ts'
 import type { MountedServer } from './registry.ts'
 

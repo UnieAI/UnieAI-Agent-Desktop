@@ -8,17 +8,17 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import LocalJobRegistry from '@deepseek-ai/dsh-jobs-local'
-import type { JobOutcome } from '@deepseek-ai/dsh-jobs'
-import type { MuxFrame, RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api'
-import { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@deepseek-ai/dsh-host-apiproxy'
+import { Context } from '@unieai/cordis'
+import AgentRegistry, { Inbox } from '@unieai/uad-agent'
+import type { Agent } from '@unieai/uad-agent'
+import SessionStore, { SessionId } from '@unieai/uad-session'
+import type { Session } from '@unieai/uad-session'
+import UserQuestionService from '@unieai/uad-user-questions'
+import LocalJobRegistry from '@unieai/uad-jobs-local'
+import type { JobOutcome } from '@unieai/uad-jobs'
+import type { MuxFrame, RpcRequest } from '@unieai/uad-host-apiproxy/api'
+import { RpcId } from '@unieai/uad-host-apiproxy/api/rpc'
+import { createApiProxy } from '@unieai/uad-host-apiproxy'
 
 type JobFrame = Extract<MuxFrame, { type: 'session/jobs' }>
 

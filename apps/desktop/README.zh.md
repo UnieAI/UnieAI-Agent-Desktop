@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-desktop
+# @unieai/uad-desktop
 
 [English](README.md) | 中文
 
@@ -29,7 +29,7 @@ harness 跑在 Electron 的 utility process 裡——那是 Electron 本來就�
 ## 怎麼跑
 
 ```sh
-pnpm --filter @deepseek-ai/dsh-desktop run start
+pnpm --filter @unieai/uad-desktop run start
 ```
 
 必須先在 repo 根目錄跑過 `pnpm run build`：外殼打包和啟動的是 harness 建置後的 `lib/`，不是它的原始碼。
@@ -37,10 +37,10 @@ pnpm --filter @deepseek-ai/dsh-desktop run start
 ## 打包
 
 ```sh
-pnpm --filter @deepseek-ai/dsh-desktop run package:mac:arm64   # on an Apple Silicon Mac
-pnpm --filter @deepseek-ai/dsh-desktop run package:mac:x64     # on an Intel Mac
-pnpm --filter @deepseek-ai/dsh-desktop run package:win:x64     # on Windows x64
-pnpm --filter @deepseek-ai/dsh-desktop run package:win:arm64   # on Windows arm64
+pnpm --filter @unieai/uad-desktop run package:mac:arm64   # on an Apple Silicon Mac
+pnpm --filter @unieai/uad-desktop run package:mac:x64     # on an Intel Mac
+pnpm --filter @unieai/uad-desktop run package:win:x64     # on Windows x64
+pnpm --filter @unieai/uad-desktop run package:win:arm64   # on Windows arm64
 ```
 
 **每個目標都必須在該平台上打包**，`scripts/verify-target.mjs` 會拒絕其他情況。這是被打包物本身的性質，不是保守：封閉集裡帶著套件管理器在安裝時依平台與架構挑選的原生二進位檔——`koffi`，也就是 Win32 沙箱的 FFI，是最清楚的例子——所以在 Linux 上產出的 macOS 版，會把 Linux 的二進位檔包進 `.dmg`，而且只有在有人執行時才會失敗。四個目標就是四台機器，或是 [`desktop-release.yml`](../../.github/workflows/desktop-release.yml) 裡的四個 runner。

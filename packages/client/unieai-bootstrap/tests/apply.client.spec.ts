@@ -7,10 +7,10 @@
  * read, which is what holds the application's mount back until the desktop
  * knows what it has.
  */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
-import * as BootstrapInvariant from '@deepseek-ai/dsh-client-unieai-bootstrap/invariant'
+import InvariantRegistry from '@unieai/uad-invariants'
+import * as BootstrapInvariant from '@unieai/uad-client-unieai-bootstrap/invariant'
 import { apply as nodeApply } from '../src/index.ts'
 import { apply, inject, BOOTSTRAP_SERVICE } from '../src/client/index.ts'
 import type { UnieAiBootstrap } from '../src/client/index.ts'

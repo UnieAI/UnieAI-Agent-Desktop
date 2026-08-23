@@ -8,21 +8,21 @@
  * Feature-owned rows and sections stay with their features.
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-import type { ConnectionHandle } from '@deepseek-ai/dsh-api-remotes/client'
-import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
+import type { ConnectionHandle } from '@unieai/uad-api-remotes/client'
+import { resolveSlotLabel } from '@unieai/uad-client-ui-slots'
 // Type-only: the settings slot declarations plus the ctx.settingsScope Context
 // merge. Cross-plugin collaboration goes through the service, never a value
 // import (client bundle purity gate).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 // Type-only namespace: the service NAME is written as a literal below and
 // pinned to the base layer's constant, so a rename there fails this build
 // without putting a value import from ui-settings in this bundle.
-import type * as SettingsContract from '@deepseek-ai/dsh-client-ui-settings/client'
+import type * as SettingsContract from '@unieai/uad-client-ui-settings/client'
 // Type-only: pulls ui-sidebar's SlotMap merge (the nav-row and settings seats).
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@unieai/uad-client-ui-sidebar/client'
 // Type-only: pulls ctx.locale into this program.
-import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@unieai/uad-client-locale/client'
 import type {
   SettingsOnboardingStep, SettingsRootInjected, SettingsSectionRow,
 } from './shell-contract.ts'
@@ -50,7 +50,7 @@ export type { SettingsPanelState } from './settings-panel-store.ts'
 export { SettingsDocumentStore } from './settings-document-store.ts'
 export type { SettingsKey } from './locales.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@unieai/uad-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Shell chrome + shell-owned General section copy. */
     settings: SettingsKey

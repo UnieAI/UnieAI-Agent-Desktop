@@ -9,7 +9,7 @@
  * the same AST walk as docs/cordis-catalog, so this data and the rendered
  * docs cannot diverge.
  *
- * @module @deepseek-ai/dsh-cordis-client-runner/client/api-catalog
+ * @module @unieai/uad-cordis-client-runner/client/api-catalog
  */
 
 /* jscpd:ignore-start */
@@ -132,9 +132,9 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [{ name: 'id', description: 'a registered locale id; unknown ids throw.' }],
       },
       {
-        signature: 'register<N extends keyof LocaleNamespaceMap & string>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void',
+        signature: 'register<N extends keyof LocaleNamespaceMap & string>( ns: N, dicts: Partial<Record<LocaleId, LocaleDictOf<N>>>, ): () => void',
         description: 'Register a declared namespace\'s dictionaries, all locales in one call — the typed form: each dictionary is checked against the namespace\'s LocaleNamespaceMap key union (a missing or extra key is a compile error), and every shipped locale is required (bilingual balance enforced at registration). Duplicate (ns, locale) throws (single occupant; a namespace\'s texts have one owner). Registration bumps the revision so mounted outlets pick up late-arriving dictionaries.',
-        parameters: [{ name: 'ns', description: 'a namespace merged into LocaleNamespaceMap.' }, { name: 'dicts', description: 'complete dictionaries keyed by locale id.' }],
+        parameters: [{ name: 'ns', description: 'a namespace merged into LocaleNamespaceMap.' }, { name: 'dicts', description: 'dictionaries keyed by locale id. The record is deliberately partial: {@link get} already resolves a missing key through {@link FALLBACK_LOCALE}, so a locale that has not been translated yet reads as English rather than blocking the shipped languages behind it.' }],
         returns: 'disposer removing every locale registered by this call (idempotent).',
       },
       {

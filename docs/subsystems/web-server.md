@@ -54,6 +54,48 @@ A request whose handling throws (a malformed %-escape hitting `decodeURIComponen
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxunieaigate--unieaigate"></a>
+
+### `ctx.unieaiGate` — `UnieaiGate`
+
+The gate's host-side seam: who is signed in, and what the product will tell this host on their behalf.
+
+It exists because the gate's session table is the only place on this host that holds a product credential, and two host plugins need what that credential buys — the MCP supervisor mounts the servers it grants, and the cloud LLM route sends turns through the product's relay with it. Both read through here rather than being handed the table.
+
+The two read methods are the same proxied reads `/auth/mcp` and `/auth/models` serve, minus the browser projection: a host consumer needs the endpoint and the bearer that a page must never see.
+
+```ts cordis-catalog
+/**
+ * The account currently signed in, or undefined when none is.
+ *
+ * Sessions expire on idleness, and that expiry is evaluated when a session
+ * is read rather than on a timer, so a caller that stops asking stops
+ * observing the lapse. Callers that hold something on a session's behalf
+ * therefore re-read on their own schedule instead of waiting to be told.
+ * @returns the session, or undefined while signed out.
+ */
+session(): UnieaiGateSession | undefined
+
+/**
+ * The MCP servers the account may mount, each with its short-lived bearer.
+ * @param signal - cancels the request.
+ * @returns the grants, undefined when the product could not be read, or
+ * undefined when nobody is signed in — a host consumer distinguishes the two
+ * through {@link session}.
+ */
+mcpServers(signal?: AbortSignal): Promise<McpServerGrant[] | undefined>
+
+/**
+ * The models the account is entitled to run on the product — the same list
+ * `/auth/models` serves.
+ * @param signal - cancels the request.
+ * @returns the models, or undefined when the list could not be read.
+ */
+entitledModels(signal?: AbortSignal): Promise<EntitledModel[] | undefined>
+```
+
+Source: [`packages/unieai/web-gate/src/index.ts`](../../packages/unieai/web-gate/src/index.ts)
+
 <a id="ctxwebserver--webserver"></a>
 
 ### `ctx.webServer` — `WebServer`
@@ -140,6 +182,36 @@ renderIndex(html: string): string
 ```
 
 Source: [`packages/host/webserver/src/index.ts`](../../packages/host/webserver/src/index.ts)
+
+<a id="unieai-gate-events"></a>
+
+### `unieai-gate/*` events
+
+<a id="unieai-gatesession--emit"></a>
+
+#### `unieai-gate/session` — emit
+
+The signed-in account changed: a sign-in that produced a session, or the loss of the last one to a sign-out. Carries the new state, so a listener that mounts something per account does not have to ask again.
+
+NOT emitted when a session merely lapses on idleness — expiry is lazy, evaluated on read, so nothing observes the moment it happens. A listener holding a resource on the account's behalf must re-read on its own schedule rather than treat this event as the only signal.
+
+```ts cordis-catalog
+/**
+ * The signed-in account changed: a sign-in that produced a session, or the
+ * loss of the last one to a sign-out. Carries the new state, so a listener
+ * that mounts something per account does not have to ask again.
+ *
+ * NOT emitted when a session merely lapses on idleness — expiry is lazy,
+ * evaluated on read, so nothing observes the moment it happens. A listener
+ * holding a resource on the account's behalf must re-read on its own
+ * schedule rather than treat this event as the only signal.
+ * @param session - the account now signed in, or undefined for none.
+ * @mode emit
+ */
+'unieai-gate/session'(session: UnieaiGateSession | undefined): void
+```
+
+Source: [`packages/unieai/web-gate/src/index.ts`](../../packages/unieai/web-gate/src/index.ts)
 
 <a id="webserver-events"></a>
 

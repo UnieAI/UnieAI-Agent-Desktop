@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
+import { bindSnapshotSelector } from '@unieai/uad-client-test-runtime'
 import type { PluginsNavRowComponentProps } from '../src/client/shell-contract.ts'
 import { PluginsNavRow } from '../src/client/PluginsNavRow.tsx'
 import { SettingsPanelController } from '../src/client/settings-panel-store.ts'

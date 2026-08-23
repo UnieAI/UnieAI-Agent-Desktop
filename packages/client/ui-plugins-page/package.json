@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-plugins-page",
+  "name": "@unieai/uad-client-ui-plugins-page",
   "description": "The Plugins page: a standalone shell surface holding the account's Studio MCP servers and this deployment's cordis plugin registry",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -32,10 +32,10 @@
   "dsh": {
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
-        "@deepseek-ai/dsh-client-ui-layout",
-        "@deepseek-ai/dsh-client-ui-sidebar",
-        "@deepseek-ai/dsh-client-locale"
+        "@unieai/uad-client-runtime",
+        "@unieai/uad-client-ui-layout",
+        "@unieai/uad-client-ui-sidebar",
+        "@unieai/uad-client-locale"
       ],
       "platform": "web"
     }
@@ -49,23 +49,23 @@
     "clsx": "^2.0.0"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-layout": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-sidebar": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^"
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
+    "@unieai/uad-client-ui-sidebar": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-test-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-layout": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-sidebar": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-test-runtime": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
+    "@unieai/uad-client-ui-primitives": "workspace:^",
+    "@unieai/uad-client-ui-sidebar": "workspace:^",
+    "@unieai/uad-client-ui-slots": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
     "@types/react": "~18.3.1",
     "react": "^18.2.0"
   },

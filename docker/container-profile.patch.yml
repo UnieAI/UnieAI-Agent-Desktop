@@ -6,7 +6,7 @@
 # command refuses `--host 0.0.0.0` outright, and correctly — this server is
 # remote code execution, and the flag is the careless way to reach for it.
 #
-# The capability itself is not forbidden. `@deepseek-ai/dsh-host-webserver`
+# The capability itself is not forbidden. `@unieai/uad-host-webserver`
 # declares `host` as a closed union of exactly `127.0.0.1` and `0.0.0.0`, and
 # the bundle's row reads it from the command line only as a default
 # (`ctx.webStartup.host ?? '127.0.0.1'`). Stating it here is a deployment

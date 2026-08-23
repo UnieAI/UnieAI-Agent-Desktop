@@ -7,17 +7,17 @@
  * imports no provider.
  *
  * Namespace plugin (named exports, no default export).
- * @module @deepseek-ai/dsh-tool-lsp
+ * @module @unieai/uad-tool-lsp
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { defineTool } from '@deepseek-ai/dsh-tools'
-import { assertNever } from '@deepseek-ai/dsh-llm'
-import { LspError } from '@deepseek-ai/dsh-lsp'
-import type {} from '@deepseek-ai/dsh-lsp'
-import type {} from '@deepseek-ai/dsh-system-prompt'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import type { Context } from '@unieai/cordis'
+import z from '@unieai/schemastery'
+import { defineTool } from '@unieai/uad-tools'
+import { assertNever } from '@unieai/uad-llm'
+import { LspError } from '@unieai/uad-lsp'
+import type {} from '@unieai/uad-lsp'
+import type {} from '@unieai/uad-system-prompt'
+import { MAX_TIMER_DELAY_MS } from '@unieai/uad-timeout'
 import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-subagent-spawn-in-process
+# @unieai/uad-subagent-spawn-in-process
 
 [English](README.md) | 中文
 

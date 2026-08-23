@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-agent-presets",
+  "name": "@unieai/uad-agent-presets",
   "description": "Per-session agent composition from preset cordis.yml files for the DeepSeek Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/unieai/deepseek-harness.git",
     "directory": "packages/preset/agent-presets"
   },
   "type": "module",
@@ -37,37 +37,37 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/cordis-plugin-include": "workspace:^",
+    "@unieai/cordis-plugin-loader": "workspace:^",
+    "@unieai/uad-agent": "workspace:^",
+    "@unieai/uad-atomic-write": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-home-paths": "workspace:^",
+    "@unieai/uad-scope": "workspace:^",
+    "@unieai/uad-session": "workspace:^",
+    "@unieai/uad-settings": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@unieai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis-plugin-include": "workspace:^",
-    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-atomic-write": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-home-paths": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-settings-file": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/cordis-plugin-include": "workspace:^",
+    "@unieai/cordis-plugin-loader": "workspace:^",
+    "@unieai/uad-agent": "workspace:^",
+    "@unieai/uad-agent-loop": "workspace:^",
+    "@unieai/uad-atomic-write": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-home-paths": "workspace:^",
+    "@unieai/uad-scope": "workspace:^",
+    "@unieai/uad-session": "workspace:^",
+    "@unieai/uad-settings": "workspace:^",
+    "@unieai/uad-settings-file": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^",
+    "@unieai/uad-tools": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   }
 }

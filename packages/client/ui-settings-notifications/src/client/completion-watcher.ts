@@ -7,8 +7,8 @@
  * the running→idle edge of one row, and everything this section announces is
  * derived from that edge — no new wire traffic, no host-side subscription.
  */
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
-import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@unieai/uad-api-remotes/client'
+import type { ObservableSnapshot } from '@unieai/uad-client-runtime/client'
 
 /** The list-row facts a completion is derived from. */
 export interface SessionCompletionRow {

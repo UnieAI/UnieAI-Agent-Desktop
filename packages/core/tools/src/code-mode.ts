@@ -3,14 +3,14 @@
  * tools through nested executions scheduled under the native concurrency
  * contract; each sub-dispatch is logged for reconstruction, while only the
  * outer curated result enters model history.
- * @module @deepseek-ai/dsh-tools/src/code-mode
+ * @module @unieai/uad-tools/src/code-mode
  */
 
-import { CallId, createUserMessage, HarnessError } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock } from '@deepseek-ai/dsh-llm'
-import type { CodeBindingFunction, CodeRunResult, CodeRuntime } from '@deepseek-ai/dsh-code-runtime'
-import { snapshotJsonValue } from '@deepseek-ai/dsh-session'
-import type { JsonValue } from '@deepseek-ai/dsh-session'
+import { CallId, createUserMessage, HarnessError } from '@unieai/uad-llm'
+import type { ContentBlock } from '@unieai/uad-llm'
+import type { CodeBindingFunction, CodeRunResult, CodeRuntime } from '@unieai/uad-code-runtime'
+import { snapshotJsonValue } from '@unieai/uad-session'
+import type { JsonValue } from '@unieai/uad-session'
 import { defineTool, parameterSchemaSpecToJsonSchema } from './schema.ts'
 import { TOOL_RUNTIME_SCHEDULER } from './index.ts'
 import type { CodeDispatchLog, ToolDefinition, ToolExecutionResult, ToolRuntime, ToolRunContext } from './index.ts'

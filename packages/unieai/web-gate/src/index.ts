@@ -1,5 +1,5 @@
 /**
- * @deepseek-ai/dsh-unieai-web-gate — the browser sign-in gate.
+ * @unieai/uad-unieai-web-gate — the browser sign-in gate.
  *
  * Two things live here because they are one decision:
  *
@@ -23,10 +23,10 @@
 
 import { createHash, randomBytes } from 'node:crypto'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
+import { Context } from '@unieai/cordis'
+import z from '@unieai/schemastery'
 // Side-effect type import: pulls the `webServer` declaration merge onto Context.
-import type {} from '@deepseek-ai/dsh-host-webserver'
+import type {} from '@unieai/uad-host-webserver'
 import { fetchAccountSnapshot } from './account.ts'
 import { BootstrapWarmup } from './bootstrap.ts'
 import { pollDeviceLogin, startDeviceLogin, type DeviceSession } from './device.ts'
@@ -114,7 +114,7 @@ export interface UnieaiGate {
   entitledModels(signal?: AbortSignal): Promise<EntitledModel[] | undefined>
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@unieai/cordis' {
   interface Context {
     unieaiGate: UnieaiGate
   }
@@ -831,7 +831,7 @@ export function apply(ctx: Context, config: Config): void {
   //
   // Read-only, and a visibility surface rather than a model source. What makes
   // these entitlements runnable is the product's relay and the host route
-  // `@deepseek-ai/dsh-llm-unieai-cloud` builds over it; that plugin reads the
+  // `@unieai/uad-llm-unieai-cloud` builds over it; that plugin reads the
   // same list through `ctx.unieaiGate`, because a host plugin has no browser
   // cookie to present here.
   ctx.effect(() => ctx.webServer.register({

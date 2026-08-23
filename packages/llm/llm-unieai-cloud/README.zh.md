@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-llm-unieai-cloud
+# @unieai/uad-llm-unieai-cloud
 
 [English](README.md) | 中文
 
@@ -6,7 +6,7 @@
 
 ```yaml
 - id: llm-unieai-cloud
-  name: '@deepseek-ai/dsh-llm-unieai-cloud'
+  name: '@unieai/uad-llm-unieai-cloud'
 ```
 
 ## 为什么是中继，而不是供应商 key
@@ -15,7 +15,7 @@
 
 产品公布的是另一样东西：`POST {product}/api/desktop/v1/chat/completions`——OpenAI 兼容、由桌面 API key 认证、在服务端解析上游、执行方案配额、计量该回合并流式回传。本包就是这套安排的桌面半边：一条路由，指向该端点，其模型是账号的权限清单，其凭证是闸门会话的 API key。
 
-适配器本身是 `@deepseek-ai/dsh-llm-pi-ai` 的 `PiAiAdapter`，用该包的 `resolveProfiles`、`credentialStoreFrom` 与 `authContextFrom` 构建。只有设置文档通常会提供的那两样——目录与凭证——改由登录闸门回答，因为这两者都是关于「谁登录了」的事实，而不是关于部署的事实。
+适配器本身是 `@unieai/uad-llm-pi-ai` 的 `PiAiAdapter`，用该包的 `resolveProfiles`、`credentialStoreFrom` 与 `authContextFrom` 构建。只有设置文档通常会提供的那两样——目录与凭证——改由登录闸门回答，因为这两者都是关于「谁登录了」的事实，而不是关于部署的事实。
 
 ## 登出时，这条路由什么都不提供
 

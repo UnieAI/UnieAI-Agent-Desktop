@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-unieai-account-gateway
+# @unieai/uad-client-unieai-account-gateway
 
 [English](README.md) | 中文
 
@@ -8,7 +8,7 @@
 
 用于访问 UnieAI 产品 `/api/desktop/*` 接口的凭据存放在 host 上登录门的会话表中，而浏览器的会话 cookie 是 `HttpOnly` 的。本包读不到其中任何一个。它只发出一次同源的 `GET /auth/account`；由 host 解析会话、以该 API key 访问产品，并写回一份不含任何凭据的账号描述。写入走同一条路径、同一个方向：`saveProfile()` 提交 `/auth/profile`，持有 key 的始终是 host。
 
-**第一次读取根本不在这里发生。** `@deepseek-ai/dsh-client-unieai-bootstrap` 发布桌面端的启动答复——那是 host 在应用挂载之前取好的一份 `/auth/bootstrap` body——本包的首个账号取自该答复的 `account` 部分，而那一部分逐字等同于 `/auth/account` 会说的内容。只有在根本拿不到启动答复时（构建里没有登录门，或 host 未能及时作答），或 account 不在已取到的部分之列时，本包才自己去读那条路由。无论哪种情况，下面描述的都是此后发生的事。
+**第一次读取根本不在这里发生。** `@unieai/uad-client-unieai-bootstrap` 发布桌面端的启动答复——那是 host 在应用挂载之前取好的一份 `/auth/bootstrap` body——本包的首个账号取自该答复的 `account` 部分，而那一部分逐字等同于 `/auth/account` 会说的内容。只有在根本拿不到启动答复时（构建里没有登录门，或 host 未能及时作答），或 account 不在已取到的部分之列时，本包才自己去读那条路由。无论哪种情况，下面描述的都是此后发生的事。
 
 每个文档读取一次，另加每次写入之后一次。两个登录手势都以新文档收尾——`signIn()` 跳转到登录门在服务端渲染的设备码页面 `/auth/login`，`signOut()` 提交 `/auth/logout` 后重新加载——因此账号恰好在可能变化时被重新读取。登录无法在单页应用内完成：该页面在任何客户端产物存在之前就已由登录门渲染；这也正是本网关不发布「已登出与已登录之间」任何状态的原因。
 

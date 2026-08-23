@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-settings-plugin-inventory
+# @unieai/uad-client-ui-settings-plugin-inventory
 
 English | [中文](README.zh.md)
 
@@ -20,8 +20,8 @@ Search matches the module specifier and the Loader entry id, case-insensitively.
 
 Three groupings were considered and rejected:
 
-- **By bundle** — `@deepseek-ai/dsh-base`, `@deepseek-ai/dsh-web-app`, a bundle installed into the profile. This is the true equivalent of the reference directory's provenance filter and it is the one worth having, but it is not on the wire and cannot be derived from what is. `app-boot` resolves each `dsh.profile.bundles` entry to its `cordis.patch.yml` and applies the patch lists over an empty root **in memory**; the composed `EntryOptions` keeps no record of which layer inserted it, and the profile's own `cordis.yml` on disk is the empty root. See *Known Limitations* for what reporting it would take.
-- **By plane** — host versus browser. Every browser row in the shipped profile happens to be named `@deepseek-ai/dsh-client-*`, but `@deepseek-ai/dsh-api-remotes` is a browser row too and `dsh-client-modules` is both. That is a naming convention with exceptions, not data, and segmentation dressed as taxonomy reads to a user as fact.
+- **By bundle** — `@unieai/uad-base`, `@unieai/uad-web-app`, a bundle installed into the profile. This is the true equivalent of the reference directory's provenance filter and it is the one worth having, but it is not on the wire and cannot be derived from what is. `app-boot` resolves each `dsh.profile.bundles` entry to its `cordis.patch.yml` and applies the patch lists over an empty root **in memory**; the composed `EntryOptions` keeps no record of which layer inserted it, and the profile's own `cordis.yml` on disk is the empty root. See *Known Limitations* for what reporting it would take.
+- **By plane** — host versus browser. Every browser row in the shipped profile happens to be named `@unieai/uad-client-*`, but `@unieai/uad-api-remotes` is a browser row too and `dsh-client-modules` is both. That is a naming convention with exceptions, not data, and segmentation dressed as taxonomy reads to a user as fact.
 - **By Fiber phase** — five buckets, four of them normally empty, and every row already carries its phase as the dot.
 
 There is deliberately no editorial grouping. The reference's `Featured` and `Coding` headings come from a curated catalogue with an editorial layer behind it; this deployment has neither, and inventing one would be writing a taxonomy into a snapshot that does not carry it.

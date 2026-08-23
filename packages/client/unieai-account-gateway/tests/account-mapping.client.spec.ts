@@ -6,7 +6,7 @@
  * empty because the product reports neither.
  */
 import { describe, expect, it } from 'vitest'
-import type { LocaleId } from '@deepseek-ai/dsh-client-locale/client'
+import type { LocaleId } from '@unieai/uad-client-locale/client'
 import type { HostAccountSnapshot } from '../src/client/host-account.ts'
 import { formatResetTime, mapAccount, projectState } from '../src/client/account-mapping.ts'
 import { COPY, METER_KEYS } from '../src/client/locales.ts'

@@ -11,7 +11,7 @@
  * the settings shell had to change.
  */
 import clsx from 'clsx'
-import { IconBlocksOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconBlocksOutline16 } from '@unieai/uad-client-ui-primitives'
 import type { PluginsNavRowComponentProps } from './contract/slots.ts'
 import css from './PluginsNavRow.module.css'
 

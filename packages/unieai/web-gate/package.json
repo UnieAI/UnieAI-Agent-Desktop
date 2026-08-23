@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-unieai-web-gate",
+  "name": "@unieai/uad-unieai-web-gate",
   "description": "Browser sign-in gate: the /auth routes, the server-rendered sign-in page, and the WebServer request guard behind them",
   "version": "0.1.1-rc.2",
   "publishConfig": { "access": "public" },
@@ -20,15 +20,15 @@
   "files": ["lib/index.js", "lib/invariant.js", "lib/types/**/*.d.ts"],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-host-webserver": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-host-webserver": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/schemastery": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-host-webserver": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/schemastery": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-host-webserver": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/schemastery": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   }
 }

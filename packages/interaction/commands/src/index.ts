@@ -1,17 +1,17 @@
 /**
  * Plugin-owned human-command registry shared by interactive UI adapters.
- * @module @deepseek-ai/dsh-commands
+ * @module @unieai/uad-commands
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { AttachmentError, admitEncodedImages } from '@deepseek-ai/dsh-attachment'
-import type { EncodedImageAttachment } from '@deepseek-ai/dsh-attachment/types'
-import type { ImageBlock } from '@deepseek-ai/dsh-llm'
-import { NamedEntries, ScopedLayers } from '@deepseek-ai/dsh-scope'
-import type { ScopeKey, ScopeLayer } from '@deepseek-ai/dsh-scope'
-import type { Session, SessionEvent, SessionEventMap } from '@deepseek-ai/dsh-session'
-import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
+import { Context } from '@unieai/cordis'
+import type { Agent } from '@unieai/uad-agent'
+import { AttachmentError, admitEncodedImages } from '@unieai/uad-attachment'
+import type { EncodedImageAttachment } from '@unieai/uad-attachment/types'
+import type { ImageBlock } from '@unieai/uad-llm'
+import { NamedEntries, ScopedLayers } from '@unieai/uad-scope'
+import type { ScopeKey, ScopeLayer } from '@unieai/uad-scope'
+import type { Session, SessionEvent, SessionEventMap } from '@unieai/uad-session'
+import { TypertRemoteService, Remote } from '@unieai/uad-typert-protocol'
 import { CommandId } from './brand.ts'
 import type {
   CommandDescriptor,
@@ -101,7 +101,7 @@ class CommandLayer implements ScopeLayer {
   }
 }
 
-declare module '@deepseek-ai/cordis' {
+declare module '@unieai/cordis' {
   interface Context {
     commands: CommandRuntime
   }

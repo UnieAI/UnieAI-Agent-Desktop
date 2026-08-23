@@ -845,6 +845,19 @@ providerRetryPolicy(provider: string): ResolvedRetryPolicy
 async listModels(provider: string): Promise<LlmModelInfo[]>
 
 /**
+ * Ask whether one registered route could currently authenticate a request.
+ *
+ * Delegates to {@link LlmAdapter.credentialReady}; see it for what the three
+ * answers mean. An adapter that throws while answering is reported as
+ * `undefined` rather than as `false`, for the same reason its default is
+ * `undefined`: a broken readiness check must not make a working provider
+ * disappear from every surface that consults this.
+ * @param provider - registered provider route to inspect.
+ * @returns whether a request could authenticate, or `undefined` when unknown.
+ */
+async credentialReady(provider: string): Promise<boolean | undefined>
+
+/**
  * Resolve and validate all metadata from the adapter that owns one exact
  * route. The result is detached from adapter-owned objects; catalog
  * membership remains advisory and does not control request routing.

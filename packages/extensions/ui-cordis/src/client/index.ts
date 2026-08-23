@@ -1,11 +1,11 @@
 /** Cordis dynamic-plugin cards, inventory panel, business-view host, and `@pluginId` source. */
 
-import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
-import type {} from '@deepseek-ai/dsh-client-ui-tool/client'
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
-import type {} from '@deepseek-ai/dsh-api-remotes/client'
-import type { InputTriggerService, InputTriggerSource } from '@deepseek-ai/dsh-client-ui-input-trigger/client'
+import type { ClientContext, SessionId } from '@unieai/uad-client-runtime/client'
+import type {} from '@unieai/uad-client-ui-tool/client'
+import type {} from '@unieai/uad-client-locale/client'
+import type {} from '@unieai/uad-client-ui-sidebar/client'
+import type {} from '@unieai/uad-api-remotes/client'
+import type { InputTriggerService, InputTriggerSource } from '@unieai/uad-client-ui-input-trigger/client'
 import type {} from './events.ts'
 import { CordisActionRow } from './CordisActionRow.tsx'
 import { CordisDefineRow } from './CordisDefineRow.tsx'

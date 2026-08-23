@@ -9,8 +9,8 @@
  * blocked permission.
  */
 import clsx from 'clsx'
-import { IconCheckOutline16, IconPlayOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { HostObservable, InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import { IconCheckOutline16, IconPlayOutline16 } from '@unieai/uad-client-ui-primitives'
+import type { HostObservable, InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 import type { NotificationsSettingsState } from './notifications-controller.ts'
 import type { NotifySound } from './notify-sounds.ts'
 import css from './NotificationsSection.module.css'

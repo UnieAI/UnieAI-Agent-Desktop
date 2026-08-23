@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-goal
+# @unieai/uad-goal
 
 [English](README.md) | 中文
 
@@ -8,7 +8,7 @@
 
 ```yaml
 - id: goal
-  name: '@deepseek-ai/dsh-goal'
+  name: '@unieai/uad-goal'
   config:
     defaultMaxGoalRounds: 256
 ```

@@ -15,15 +15,15 @@
  *
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
 // Type-only: the account seam's own declarations, and the value pinned below.
 // Cross-plugin collaboration goes through services, never a value import
 // (client bundle purity gate).
-import type * as AccountContract from '@deepseek-ai/dsh-client-ui-unieai-account/client'
+import type * as AccountContract from '@unieai/uad-client-ui-unieai-account/client'
 // Type-only: pulls the locale plugin's Context and Events merges.
-import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@unieai/uad-client-locale/client'
 // Type-only: the startup answer's contract, plus its Context merge.
-import type * as BootstrapContract from '@deepseek-ai/dsh-client-unieai-bootstrap/client'
+import type * as BootstrapContract from '@unieai/uad-client-unieai-bootstrap/client'
 import { AccountGateway } from './gateway.ts'
 
 /**
@@ -45,7 +45,7 @@ const GATEWAY_SERVICE: typeof AccountContract.ACCOUNT_GATEWAY_SERVICE = 'unieaiA
  */
 const BOOTSTRAP_SERVICE: typeof BootstrapContract.BOOTSTRAP_SERVICE = 'unieaiBootstrap'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@unieai/cordis' {
   interface Context {
     /** The account seam's Provider, when a build composes one. */
     unieaiAccount: AccountContract.UnieAiAccountGateway

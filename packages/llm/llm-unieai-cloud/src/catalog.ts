@@ -19,9 +19,9 @@
  * @module dsh-llm-unieai-cloud/catalog
  */
 
-import { resolveProfiles } from '@deepseek-ai/dsh-llm-pi-ai'
-import type { PiAiModelProfile, PiAiProviderProfile, ResolvedPiAiProviderProfile } from '@deepseek-ai/dsh-llm-pi-ai'
-import type { EntitledModel } from '@deepseek-ai/dsh-unieai-web-gate'
+import { resolveProfiles } from '@unieai/uad-llm-pi-ai'
+import type { PiAiModelProfile, PiAiProviderProfile, ResolvedPiAiProviderProfile } from '@unieai/uad-llm-pi-ai'
+import type { EntitledModel } from '@unieai/uad-unieai-web-gate'
 
 /**
  * The wire protocol the relay speaks. Not configurable: the route exists to

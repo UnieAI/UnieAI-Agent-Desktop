@@ -9,9 +9,9 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import { bindSnapshotSelector, makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
-import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
+import { createSnapshotStore } from '@unieai/uad-client-runtime/client'
+import { bindSnapshotSelector, makeTranslate } from '@unieai/uad-client-test-runtime'
+import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
 import { PluginsPage } from '../src/client/PluginsPage.tsx'
 import type { PluginsPageComponentProps } from '../src/client/contract/slots.ts'
 import { PluginsNavRow } from '../src/client/PluginsNavRow.tsx'

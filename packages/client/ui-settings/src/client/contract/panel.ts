@@ -13,7 +13,7 @@
  * A composition without that shell has no `settingsPanel`, which is why every
  * caller reads it optionally and draws no control when it is absent.
  *
- * @module @deepseek-ai/dsh-client-ui-settings
+ * @module @unieai/uad-client-ui-settings
  */
 
 /** What the settings shell exposes to surfaces that want to open it. */
@@ -30,7 +30,7 @@ export interface SettingsPanelFace {
 /** The cordis service name the settings shell provides its panel face under. */
 export const SETTINGS_PANEL_SERVICE = 'settingsPanel'
 
-declare module '@deepseek-ai/cordis' {
+declare module '@unieai/cordis' {
   interface Context {
     settingsPanel: SettingsPanelFace
   }

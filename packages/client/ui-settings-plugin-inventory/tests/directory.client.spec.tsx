@@ -19,13 +19,13 @@ function props(list: PluginDirectoryAreaInjected['list']): PluginDirectoryAreaPr
 
 const SNAPSHOT = {
   entries: [
-    { entryId: '8a1b2c3d', moduleName: '@deepseek-ai/cordis-plugin-hmr', enabled: true, fiberPhase: 'active' },
+    { entryId: '8a1b2c3d', moduleName: '@unieai/cordis-plugin-hmr', enabled: true, fiberPhase: 'active' },
     { entryId: 'pending', moduleName: 'cordis:pending-name', enabled: true, fiberPhase: 'pending' },
     { entryId: 'loading', moduleName: '@fixture/loading-name', enabled: true, fiberPhase: 'loading' },
     { entryId: 'failed', moduleName: '@fixture/failed-name', enabled: true, fiberPhase: 'failed' },
     { entryId: 'unloading', moduleName: '@fixture/unloading-name', enabled: true, fiberPhase: 'unloading' },
     { entryId: 'unobserved', moduleName: 'unscoped-plugin', enabled: true, fiberPhase: null },
-    { entryId: 'disabled-entry', moduleName: '@deepseek-ai/dsh-host-directory-picker-native', enabled: false, fiberPhase: null },
+    { entryId: 'disabled-entry', moduleName: '@unieai/uad-host-directory-picker-native', enabled: false, fiberPhase: null },
   ],
 } as unknown as Snapshot
 
@@ -65,7 +65,7 @@ describe('PluginDirectoryArea', () => {
     // The title is the short module name; the line under it is the exact
     // specifier, and an unscoped specifier keeps its whole name.
     expect(screen.getByText('hmr')).toBeTruthy()
-    expect(screen.getByText('@deepseek-ai/cordis-plugin-hmr')).toBeTruthy()
+    expect(screen.getByText('@unieai/cordis-plugin-hmr')).toBeTruthy()
     expect(screen.getByText('pending-name')).toBeTruthy()
     expect(screen.getAllByText('unscoped-plugin')).toHaveLength(2)
     expect(screen.getByText('directory-picker-native')).toBeTruthy()

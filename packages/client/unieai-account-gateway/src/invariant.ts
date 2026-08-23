@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-client-unieai-account-gateway`.
- * @module @deepseek-ai/dsh-client-unieai-account-gateway/invariant
+ * Package-owned invariant companion for `@unieai/uad-client-unieai-account-gateway`.
+ * @module @unieai/uad-client-unieai-account-gateway/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@unieai/cordis'
+import type { InvariantInstaller } from '@unieai/uad-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-client-unieai-account-gateway'
+const PACKAGE_NAME = '@unieai/uad-client-unieai-account-gateway'
 
 /** Cordis companion plugin name. */
 export const name = 'client-unieai-account-gateway-invariant'

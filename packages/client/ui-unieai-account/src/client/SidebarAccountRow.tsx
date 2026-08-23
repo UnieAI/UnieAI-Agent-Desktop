@@ -16,10 +16,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import clsx from 'clsx'
-import { IconUserOutline16, Menu, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { HostObservable, InjectFace, PropsLocale, PropsRuntime, Translate } from '@deepseek-ai/dsh-client-ui-slots'
+import { IconUserOutline16, Menu, Tooltip } from '@unieai/uad-client-ui-primitives'
+import type { HostObservable, InjectFace, PropsLocale, PropsRuntime, Translate } from '@unieai/uad-client-ui-slots'
 // Type-only: the sidebar's slot declarations (the `sidebar.account` entry).
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@unieai/uad-client-ui-sidebar/client'
 import type { UnieAiAccountState } from '../account-contract.ts'
 import type { AccountSource } from './account-source.ts'
 import type { AccountKey } from './locales.ts'

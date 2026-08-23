@@ -1,5 +1,5 @@
 /**
- * @deepseek-ai/dsh-llm-unieai-cloud — the UnieAI account's models, made
+ * @unieai/uad-llm-unieai-cloud — the UnieAI account's models, made
  * runnable.
  *
  * The web product knows which models an account may run and refuses to send a
@@ -16,7 +16,7 @@
  *
  * ```yaml
  * - id: llm-unieai-cloud
- *   name: '@deepseek-ai/dsh-llm-unieai-cloud'
+ *   name: '@unieai/uad-llm-unieai-cloud'
  * ```
  *
  * **Signed out, the route offers nothing.** `credentialReady` answers `false`
@@ -30,19 +30,19 @@
  * document would normally supply — the catalog and the credential — are
  * answered from the sign-in gate instead.
  *
- * @module @deepseek-ai/dsh-llm-unieai-cloud
+ * @module @unieai/uad-llm-unieai-cloud
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { LlmError } from '@deepseek-ai/dsh-llm'
-import type { AdapterRegistrationHandle } from '@deepseek-ai/dsh-llm'
-import { authContextFrom, credentialStoreFrom, PiAiAdapter } from '@deepseek-ai/dsh-llm-pi-ai'
-import type { ResolvedPiAiProviderProfile } from '@deepseek-ai/dsh-llm-pi-ai'
-import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
+import { Context } from '@unieai/cordis'
+import z from '@unieai/schemastery'
+import { LlmError } from '@unieai/uad-llm'
+import type { AdapterRegistrationHandle } from '@unieai/uad-llm'
+import { authContextFrom, credentialStoreFrom, PiAiAdapter } from '@unieai/uad-llm-pi-ai'
+import type { ResolvedPiAiProviderProfile } from '@unieai/uad-llm-pi-ai'
+import { MAX_TIMER_DELAY_MS } from '@unieai/uad-timeout'
 // Side-effect type import: pulls the `unieaiGate` service and the
 // `unieai-gate/session` event declaration onto Context.
-import type {} from '@deepseek-ai/dsh-unieai-web-gate'
+import type {} from '@unieai/uad-unieai-web-gate'
 import { buildRouteProfiles } from './catalog.ts'
 
 export { buildRouteProfiles, relayBaseUrl } from './catalog.ts'

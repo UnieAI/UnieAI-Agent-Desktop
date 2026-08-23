@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-theme
+# @unieai/uad-client-ui-theme
 
 [English](README.md) | 中文
 

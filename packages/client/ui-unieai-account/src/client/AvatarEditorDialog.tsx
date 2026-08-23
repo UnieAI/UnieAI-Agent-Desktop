@@ -9,8 +9,8 @@
  * avatar will mask it. An animated GIF has no crop to show and is drawn whole.
  */
 import { useRef, useState, type ChangeEvent } from 'react'
-import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
+import { Button, Modal } from '@unieai/uad-client-ui-primitives'
+import type { Translate } from '@unieai/uad-client-ui-slots'
 import type { UnieAiAvatarUpload } from '../account-contract.ts'
 import {
   ACCEPTED_EXTENSIONS, FORMATS_HINT, centerCropSquare, describeUpload, extensionOf, isAcceptedImage,

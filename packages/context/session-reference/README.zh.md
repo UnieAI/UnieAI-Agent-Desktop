@@ -1,4 +1,4 @@
-# `@deepseek-ai/dsh-session-reference`
+# `@unieai/uad-session-reference`
 
 [English](README.md) | 中文
 

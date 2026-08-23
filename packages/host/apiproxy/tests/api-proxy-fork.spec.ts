@@ -1,19 +1,19 @@
 /** Session-fork boundaries, lineage, and inherited model routing. */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { agentEvents } from '@deepseek-ai/dsh-agent'
-import type { Agent, AgentHandle, CreateAgentOptions } from '@deepseek-ai/dsh-agent'
-import { createUserMessage, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
-import type { LlmCallConfig } from '@deepseek-ai/dsh-llm'
-import SessionStore from '@deepseek-ai/dsh-session'
-import type { Session, SessionEvent, SessionHeader, SessionId } from '@deepseek-ai/dsh-session'
-import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import type { Workspace } from '@deepseek-ai/dsh-workspace'
-import type { RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@deepseek-ai/dsh-host-apiproxy'
+import { Context } from '@unieai/cordis'
+import AgentRegistry, { agentEvents } from '@unieai/uad-agent'
+import type { Agent, AgentHandle, CreateAgentOptions } from '@unieai/uad-agent'
+import { createUserMessage, ReasoningEffortId } from '@unieai/uad-llm'
+import type { LlmCallConfig } from '@unieai/uad-llm'
+import SessionStore from '@unieai/uad-session'
+import type { Session, SessionEvent, SessionHeader, SessionId } from '@unieai/uad-session'
+import SystemPrompt from '@unieai/uad-system-prompt'
+import UserQuestionService from '@unieai/uad-user-questions'
+import type { Workspace } from '@unieai/uad-workspace'
+import type { RpcRequest } from '@unieai/uad-host-apiproxy/api/rpc'
+import { RpcId } from '@unieai/uad-host-apiproxy/api/rpc'
+import { createApiProxy } from '@unieai/uad-host-apiproxy'
 
 const sid = (id: string): SessionId => id as SessionId
 

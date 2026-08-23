@@ -5,7 +5,7 @@
  * itself waits for permission.
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SessionId } from '@unieai/uad-api-remotes/client'
 import { NotificationsSettingsController } from '../src/client/notifications-controller.ts'
 import type { NotificationAccess, NotificationRequest } from '../src/client/notification-port.ts'
 import type { NotifySoundStorage } from '../src/client/notify-sounds.ts'

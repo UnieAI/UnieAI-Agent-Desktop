@@ -22,22 +22,22 @@
  *
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
 // Type-only: the settings slot declarations plus the ctx.settingsScope merge.
 // Cross-plugin collaboration goes through slots and services, never a value
 // import (client bundle purity gate).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 // Type-only: the sidebar's `sidebar.account` declaration, same rule.
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@unieai/uad-client-ui-sidebar/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@unieai/uad-client-locale/client'
 // Type-only: pulls ctx.theme (appearance row) into this program.
-import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
+import type {} from '@unieai/uad-client-ui-theme/client'
 // Type-only namespace: the settings-panel service name is written as a
 // literal below and pinned to the settings base layer's constant, so a rename
 // there fails this build without a value import.
-import type * as SettingsContract from '@deepseek-ai/dsh-client-ui-settings/client'
-import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
+import type * as SettingsContract from '@unieai/uad-client-ui-settings/client'
+import type { HostObservable } from '@unieai/uad-client-ui-slots'
 import type { UnieAiAccountGateway } from '../account-contract.ts'
 import { ACCOUNT_GATEWAY_SERVICE } from '../account-contract.ts'
 import { AccountSource } from './account-source.ts'

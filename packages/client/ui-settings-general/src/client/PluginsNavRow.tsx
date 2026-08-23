@@ -9,7 +9,7 @@
  * row that opens the wrong page is worse than no row.
  */
 import clsx from 'clsx'
-import { IconBlocksOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconBlocksOutline16 } from '@unieai/uad-client-ui-primitives'
 import type { PluginsNavRowComponentProps } from './shell-contract.ts'
 import css from './PluginsNavRow.module.css'
 

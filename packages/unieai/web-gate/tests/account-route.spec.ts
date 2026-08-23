@@ -9,9 +9,9 @@
  */
 import { Readable } from 'node:stream'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
+import type { WebRoute } from '@unieai/uad-host-webserver'
 import { apply, Config } from '../src/index.ts'
 
 /** What a route table stores against one path. */

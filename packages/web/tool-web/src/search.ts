@@ -5,11 +5,11 @@
  * never provider selection or network access.
  */
 
-import type { Context } from '@deepseek-ai/cordis'
-import { defineTool } from '@deepseek-ai/dsh-tools'
-import type { GenericCallView, JsonValue, ToolResult, WebSearchResultView, WebSource } from '@deepseek-ai/dsh-tools'
-import type { WebSearchResult, WebSearchSource } from '@deepseek-ai/dsh-web'
-import type {} from '@deepseek-ai/dsh-system-prompt'
+import type { Context } from '@unieai/cordis'
+import { defineTool } from '@unieai/uad-tools'
+import type { GenericCallView, JsonValue, ToolResult, WebSearchResultView, WebSource } from '@unieai/uad-tools'
+import type { WebSearchResult, WebSearchSource } from '@unieai/uad-web'
+import type {} from '@unieai/uad-system-prompt'
 
 /**
  * Default upper bound on returned sources (the `searchMaxResults` config).
@@ -302,7 +302,7 @@ function mergeSearchResults(
  *   request's `maxResults`.
  * @param maxQueries - the deployment's query cap enforced before provider calls.
  * @param timeoutMs - the cooperative tool-call budget (ms) attached as the tool's
- *   `ToolDefinition.timeoutMs` for `@deepseek-ai/dsh-tool-call-timeout-policy` to enforce.
+ *   `ToolDefinition.timeoutMs` for `@unieai/uad-tool-call-timeout-policy` to enforce.
  * @param fetchEnabled - whether the same composition exposes `web_fetch`, which
  *   controls whether search guidance may recommend that follow-up tool.
  */

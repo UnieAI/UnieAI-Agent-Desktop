@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-lsp-stdio
+# @unieai/uad-lsp-stdio
 
 [English](README.md) | 中文
 

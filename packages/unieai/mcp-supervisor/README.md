@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-unieai-mcp-supervisor
+# @unieai/uad-unieai-mcp-supervisor
 
 English | [中文](README.zh.md)
 
@@ -8,12 +8,12 @@ The web product hosts MCP servers on its users' behalf and hands a desktop a sho
 
 ```yaml
 - id: unieai-mcp-supervisor
-  name: '@deepseek-ai/dsh-unieai-mcp-supervisor'
+  name: '@unieai/uad-unieai-mcp-supervisor'
 ```
 
 ## Where the servers come from
 
-`@deepseek-ai/dsh-unieai-web-gate` provides `ctx.unieaiGate`, whose `mcpServers()` proxies the product's `/api/desktop/mcp` with the gate session's API key. That is a HOST-side read: the grant it returns carries the endpoint and the bearer, neither of which the gate's own `/auth/mcp` route sends to a browser. A page gets an origin and a tool list; this package gets what it takes to dial the server.
+`@unieai/uad-unieai-web-gate` provides `ctx.unieaiGate`, whose `mcpServers()` proxies the product's `/api/desktop/mcp` with the gate session's API key. That is a HOST-side read: the grant it returns carries the endpoint and the bearer, neither of which the gate's own `/auth/mcp` route sends to a browser. A page gets an origin and a tool list; this package gets what it takes to dial the server.
 
 These are servers the product hosts and proxies. An account's own remote MCP entries are not among them and cannot be: the product publishes those as an origin only, because a remote MCP URL routinely carries a token in its path.
 

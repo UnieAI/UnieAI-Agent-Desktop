@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { PermissionSelect as PermissionSelectValue } from '@deepseek-ai/dsh-permission-presets/client'
-import { Menu, RiskConfirmation } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { PermissionSelect as PermissionSelectValue } from '@unieai/uad-permission-presets/client'
+import { Menu, RiskConfirmation } from '@unieai/uad-client-ui-primitives'
+import type { MenuEntry } from '@unieai/uad-client-ui-primitives'
 import type { ComposerBarProps } from '../contract/slots.ts'
 import css from './PermissionSelect.module.css'
 

@@ -24,10 +24,10 @@
  */
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
+import { Button } from '@unieai/uad-client-ui-primitives'
 // Type-only: the settings slot declarations (the `settings.section` entry).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 import { AddProviderForm } from './AddProviderForm.tsx'
 import { EditProviderForm } from './EditProviderForm.tsx'
 import type { EditResult } from './EditProviderForm.tsx'

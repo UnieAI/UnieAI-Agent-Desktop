@@ -151,7 +151,7 @@ export const zh = {
 /** The provider namespace key union. */
 export type ProvidersKey = keyof typeof zh
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@unieai/uad-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** The API Provider settings section's copy. */
     'settings.providers': ProvidersKey

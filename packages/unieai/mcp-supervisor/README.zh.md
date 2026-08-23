@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-unieai-mcp-supervisor
+# @unieai/uad-unieai-mcp-supervisor
 
 [English](README.md) | 中文
 
@@ -8,12 +8,12 @@
 
 ```yaml
 - id: unieai-mcp-supervisor
-  name: '@deepseek-ai/dsh-unieai-mcp-supervisor'
+  name: '@unieai/uad-unieai-mcp-supervisor'
 ```
 
 ## 服务器从哪里来
 
-`@deepseek-ai/dsh-unieai-web-gate` 提供 `ctx.unieaiGate`，其 `mcpServers()` 以闸门会话的 API key 代理产品的 `/api/desktop/mcp`。这是一次 HOST 侧读取：返回的授权带有端点与 bearer，而这两者都不会被闸门自己的 `/auth/mcp` 路由送往浏览器。页面拿到的是一个 origin 与一份工具清单；本包拿到的是拨通该服务器所需的东西。
+`@unieai/uad-unieai-web-gate` 提供 `ctx.unieaiGate`，其 `mcpServers()` 以闸门会话的 API key 代理产品的 `/api/desktop/mcp`。这是一次 HOST 侧读取：返回的授权带有端点与 bearer，而这两者都不会被闸门自己的 `/auth/mcp` 路由送往浏览器。页面拿到的是一个 origin 与一份工具清单；本包拿到的是拨通该服务器所需的东西。
 
 这些是产品自己托管并代理的服务器。账号自有的远端 MCP 条目不在其中，也不可能在其中：产品只把那些条目公布为 origin，因为远端 MCP URL 的路径里经常带着令牌。
 

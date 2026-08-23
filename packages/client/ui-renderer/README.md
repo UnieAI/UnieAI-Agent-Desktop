@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-renderer
+# @unieai/uad-client-ui-renderer
 
 English | [中文](README.zh.md)
 

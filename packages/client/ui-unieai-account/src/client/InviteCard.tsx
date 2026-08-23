@@ -16,10 +16,10 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
+import type { Translate } from '@unieai/uad-client-ui-slots'
 import {
   Button, IconCheckOutline16, IconCopyOutline16, Input, writeClipboard,
-} from '@deepseek-ai/dsh-client-ui-primitives'
+} from '@unieai/uad-client-ui-primitives'
 import type {
   UnieAiInviteRefusal, UnieAiInviteResult, UnieAiInvites, UnieAiSentInvite,
 } from '../account-contract.ts'

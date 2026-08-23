@@ -2,7 +2,7 @@
  * The `/auth/account` wire format, restated on the browser side of that
  * process boundary, plus the reader that narrows one JSON body onto it.
  *
- * The host owns the same names in `@deepseek-ai/dsh-unieai-web-gate`; they are
+ * The host owns the same names in `@unieai/uad-unieai-web-gate`; they are
  * declared again here rather than imported because this is a wire boundary,
  * not a same-process interface — a page may be served by a host that is one
  * deploy ahead or behind it, so every field is checked before it is believed.

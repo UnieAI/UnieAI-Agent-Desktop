@@ -73,7 +73,7 @@ Leave it `[]` in your own patch to let the first account that signs in claim the
 `apps/desktop` is an Electron window over a harness it starts itself. It adds no product behaviour: it starts `dsh web` on an OS-assigned loopback port, waits for the URL line that server prints, and loads it.
 
 ```sh
-pnpm --filter @deepseek-ai/dsh-desktop run start
+pnpm --filter @unieai/uad-desktop run start
 ```
 
 Packaging is per platform and refuses to cross-compile, because the closure carries native binaries chosen per platform and architecture at install time. macOS builds are made on macOS, Windows builds on Windows. See [`apps/desktop/README.md`](../apps/desktop/README.md).

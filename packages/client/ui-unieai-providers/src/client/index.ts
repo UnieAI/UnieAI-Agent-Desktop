@@ -17,13 +17,13 @@
  *
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
 // Type-only: the settings slot declarations (the `settings.section` entry).
 // Cross-plugin collaboration goes through slots and services, never a value
 // import (client bundle purity gate).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
-import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@unieai/uad-client-locale/client'
 import { ProvidersSection } from './ProvidersSection.tsx'
 import type { ProvidersSectionInjected } from './ProvidersSection.tsx'
 import { ProviderSource } from './provider-source.ts'

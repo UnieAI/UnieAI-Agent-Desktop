@@ -26,8 +26,8 @@ import {
   renderPageRegion,
   REGION_BEGIN,
   REGION_END,
-} from '@deepseek-ai/dsh-typert-generator'
-import type { CordisCatalogPolicy } from '@deepseek-ai/dsh-typert-generator'
+} from '@unieai/uad-typert-generator'
+import type { CordisCatalogPolicy } from '@unieai/uad-typert-generator'
 import { renderCordisCoreApiPages } from './cordis-core-api.ts'
 import { contextKeyMap, contextMergeFiles, eventNameList } from './cordis-walk.ts'
 import {
@@ -55,6 +55,9 @@ export { REGION_BEGIN, REGION_END }
  */
 export const SERVICE_PAGE: Record<string, string> = {
   agentLoop: 'core.md',
+  // The sign-in gate is a host service over this deployment's own HTTP surface,
+  // which is what web-server.md documents.
+  unieaiGate: 'web-server.md',
   agentDefaultModel: 'core.md',
   agentPresets: 'core.md',
   agents: 'core.md',
@@ -118,7 +121,7 @@ export const SERVICE_PAGE: Record<string, string> = {
 /**
  * Context keys declared in `interface Context` merges that the rendering
  * projection cannot see, each with the reason and its documentation owner.
- * The scan that enforces this list reads EVERY `declare module '@deepseek-ai/cordis'`
+ * The scan that enforces this list reads EVERY `declare module '@unieai/cordis'`
  * Context merge under `packages/x/x/src/**` — any depth, not only root
  * `index.ts` files with a same-named service class — so a new service can
  * never silently join this blind spot: it either enters {@link SERVICE_PAGE}
@@ -161,6 +164,9 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
   slots: 'client-side interface-typed browser service — packages/client/runtime/README.md owns the API',
   theme: 'client-side interface-typed browser service — packages/client/ui-theme/README.md owns the API',
   workspaces: 'client-side interface-typed browser service — packages/client/runtime/README.md owns the API',
+  settingsPanel: 'client-side interface-typed browser service — packages/client/ui-settings/README.md owns the API',
+  unieaiAccount: 'client-side interface-typed browser service — packages/client/unieai-account-gateway/README.md owns the API',
+  unieaiBootstrap: 'client-side interface-typed browser service — packages/client/unieai-bootstrap/README.md owns the API',
 }
 
 /**
@@ -172,6 +178,9 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
  */
 export const EVENT_SCOPE_PAGE: Record<string, string> = {
   'agent': 'core.md',
+  // Emitted by the sign-in gate when the account it acts for changes; same
+  // page as the service that emits it.
+  'unieai-gate': 'web-server.md',
   'agent-loop': 'core.md',
   'agent-preset': 'core.md',
   'approval': 'approval.md',
@@ -198,7 +207,7 @@ export const EVENT_SCOPE_PAGE: Record<string, string> = {
  * Event names declared in `interface Events` merges that the rendering
  * projection cannot see, each with the reason and its documentation owner.
  * The mirror of {@link SERVICE_WALK_EXEMPTIONS} for events: an independent
- * scan reads EVERY `declare module '@deepseek-ai/cordis'` Events merge under
+ * scan reads EVERY `declare module '@unieai/cordis'` Events merge under
  * `packages/x/x/src/**`, so a declared event either renders onto a subsystems
  * page (via {@link EVENT_SCOPE_PAGE}) or names itself here — never vanishes
  * silently. Keys are full event names rather than scopes, so a scope-level
@@ -553,6 +562,9 @@ export const FOUNDATION_TYPE_NAMES: ReadonlySet<string> = new Set([
 /** Project types deliberately documented outside the subsystems catalog. */
 export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   z: 'schemastery schema constructor is owned by vendor/schemastery (vendored upstream)',
+  UnieaiGateSession: 'the signed-in account as the gate reports it is owned by packages/unieai/web-gate/README.md; it carries a credential and is deliberately not a documented cross-package type',
+  McpServerGrant: 'a mountable MCP server WITH its bearer is owned by packages/unieai/web-gate/README.md; the browser-facing twin McpServerView is the documented one, and the grant is host-only precisely because it carries the token',
+  EntitledModel: 'the account\'s entitled model as the product publishes it is owned by packages/unieai/web-gate/README.md',
   BeginCommandRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',
   InsertReferenceRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',
   ConsumeTokenRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',

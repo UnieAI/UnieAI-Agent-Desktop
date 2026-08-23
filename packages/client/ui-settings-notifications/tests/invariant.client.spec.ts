@@ -2,9 +2,9 @@
  * The package's invariant companion registers its name and installs nothing:
  * this surface owns no durable data and emits no event stream.
  */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { describe, expect, it } from 'vitest'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
+import InvariantRegistry from '@unieai/uad-invariants'
 import * as NotificationsInvariant from '../src/invariant.ts'
 
 describe('ui-settings-notifications invariant companion', () => {

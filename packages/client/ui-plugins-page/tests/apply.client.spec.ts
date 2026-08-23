@@ -8,12 +8,12 @@
  * The lane has no jsdom `window`, so a fresh LocaleRuntime opens on the
  * English fallback; the bench switches locale explicitly where it asserts copy.
  */
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
-import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
-import InvariantRegistry from '@deepseek-ai/dsh-invariants'
-import * as PageInvariant from '@deepseek-ai/dsh-client-ui-plugins-page/invariant'
+import { SlotRegistry } from '@unieai/uad-client-runtime/client'
+import { LocaleRuntime } from '@unieai/uad-client-locale/client'
+import InvariantRegistry from '@unieai/uad-invariants'
+import * as PageInvariant from '@unieai/uad-client-ui-plugins-page/invariant'
 import { apply as nodeApply } from '../src/index.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { PluginsPage } from '../src/client/PluginsPage.tsx'

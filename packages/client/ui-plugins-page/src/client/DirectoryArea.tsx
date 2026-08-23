@@ -22,8 +22,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import {
   IconChevronDownOutline14, IconMinusOutline16, IconPlusOutline16, IconSearchOutline16,
-} from '@deepseek-ai/dsh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+} from '@unieai/uad-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 import clsx from 'clsx'
 // Type-only: pulls this package's SlotMap merge (the 'plugins.page.area' seat).
 import type {} from './contract/slots.ts'

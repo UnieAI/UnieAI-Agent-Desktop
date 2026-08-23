@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-llm-unieai-cloud
+# @unieai/uad-llm-unieai-cloud
 
 English | [中文](README.zh.md)
 
@@ -6,7 +6,7 @@ Registers the signed-in UnieAI account's entitled models as one runnable `llm` r
 
 ```yaml
 - id: llm-unieai-cloud
-  name: '@deepseek-ai/dsh-llm-unieai-cloud'
+  name: '@unieai/uad-llm-unieai-cloud'
 ```
 
 ## Why a relay, and not a provider key
@@ -15,7 +15,7 @@ The product knows which models an account may run and deliberately refuses to se
 
 What the product publishes instead is `POST {product}/api/desktop/v1/chat/completions` — OpenAI-compatible, authenticated by the desktop API key, resolving the upstream server-side, enforcing the plan's quota, metering the turn, and streaming back. This package is the desktop half of that arrangement: one route, pointed at that endpoint, whose models are the account's entitlement and whose credential is the gate session's API key.
 
-The adapter itself is `@deepseek-ai/dsh-llm-pi-ai`'s `PiAiAdapter`, built with `resolveProfiles`, `credentialStoreFrom`, and `authContextFrom` from that package. Only the two things a settings document would normally supply — the catalog and the credential — are answered from the sign-in gate instead, because both are facts about who is signed in rather than about the deployment.
+The adapter itself is `@unieai/uad-llm-pi-ai`'s `PiAiAdapter`, built with `resolveProfiles`, `credentialStoreFrom`, and `authContextFrom` from that package. Only the two things a settings document would normally supply — the catalog and the credential — are answered from the sign-in gate instead, because both are facts about who is signed in rather than about the deployment.
 
 ## Signed out, the route offers nothing
 

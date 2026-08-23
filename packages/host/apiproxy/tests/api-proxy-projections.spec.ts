@@ -8,22 +8,22 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context } from '@unieai/cordis'
 import { z } from 'zod'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import { AttachmentStore } from '@deepseek-ai/dsh-attachment'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
-import UserQuestionService from '@deepseek-ai/dsh-user-questions'
-import type { MuxFrame, RpcRequest } from '@deepseek-ai/dsh-host-apiproxy/api'
-import { RpcId } from '@deepseek-ai/dsh-host-apiproxy/api/rpc'
-import { createApiProxy } from '@deepseek-ai/dsh-host-apiproxy'
+import AgentRegistry, { Inbox } from '@unieai/uad-agent'
+import { AttachmentStore } from '@unieai/uad-attachment'
+import type { Agent } from '@unieai/uad-agent'
+import { createUserMessage } from '@unieai/uad-llm'
+import SessionStore, { SessionId } from '@unieai/uad-session'
+import type { Session } from '@unieai/uad-session'
+import SessionProjectionRegistry from '@unieai/uad-session-projection'
+import type { ProjectionDefinition } from '@unieai/uad-session-projection'
+import UserQuestionService from '@unieai/uad-user-questions'
+import type { MuxFrame, RpcRequest } from '@unieai/uad-host-apiproxy/api'
+import { RpcId } from '@unieai/uad-host-apiproxy/api/rpc'
+import { createApiProxy } from '@unieai/uad-host-apiproxy'
 
-declare module '@deepseek-ai/dsh-session-projection/types' {
+declare module '@unieai/uad-session-projection/types' {
   interface SessionProjectionStateMap {
     'test/last-user': LastUserState
     'test/internal-count': number

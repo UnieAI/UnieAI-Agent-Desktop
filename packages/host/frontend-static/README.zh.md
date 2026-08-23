@@ -1,4 +1,4 @@
-# `@deepseek-ai/dsh-host-frontend-static`
+# `@unieai/uad-host-frontend-static`
 
 [English](README.md) | 中文
 

@@ -1,21 +1,21 @@
 /**
  * Basic replay-aware compaction backend.
  *
- * @module @deepseek-ai/dsh-compaction-basic
+ * @module @unieai/uad-compaction-basic
  */
 
-import { Context } from '@deepseek-ai/cordis'
-import z from '@deepseek-ai/schemastery'
-import { CompactionEngine, ManualCompactionError } from '@deepseek-ai/dsh-compaction'
-import type { CompactionResult, CompactionTrigger } from '@deepseek-ai/dsh-compaction'
-import type { TokenMeter } from '@deepseek-ai/dsh-token-meter'
-import type { Session } from '@deepseek-ai/dsh-session'
-import { CONTEXT_WINDOW_EXCEEDED_CODE, assertNever } from '@deepseek-ai/dsh-llm'
-import type { LlmCallConfig } from '@deepseek-ai/dsh-llm'
-import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
-import type { CommandId } from '@deepseek-ai/dsh-commands/brand'
+import { Context } from '@unieai/cordis'
+import z from '@unieai/schemastery'
+import { CompactionEngine, ManualCompactionError } from '@unieai/uad-compaction'
+import type { CompactionResult, CompactionTrigger } from '@unieai/uad-compaction'
+import type { TokenMeter } from '@unieai/uad-token-meter'
+import type { Session } from '@unieai/uad-session'
+import { CONTEXT_WINDOW_EXCEEDED_CODE, assertNever } from '@unieai/uad-llm'
+import type { LlmCallConfig } from '@unieai/uad-llm'
+import type { Agent, PreStepDecision } from '@unieai/uad-agent'
+import type { CommandId } from '@unieai/uad-commands/brand'
 // Type-only: makes the optional sibling service available to `ctx.get()`.
-import type {} from '@deepseek-ai/dsh-compaction-tool-result-pruner'
+import type {} from '@unieai/uad-compaction-tool-result-pruner'
 import {
   resolveCompactSpec,
   resolveConfig,

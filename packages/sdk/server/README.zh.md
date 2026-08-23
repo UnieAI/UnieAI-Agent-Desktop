@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-sdk-jsonrpc-server
+# @unieai/uad-sdk-jsonrpc-server
 
 [English](README.md) | 中文
 

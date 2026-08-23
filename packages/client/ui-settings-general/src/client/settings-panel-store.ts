@@ -14,7 +14,7 @@
  * Nothing here persists: a settings panel left open across a reload is a
  * surprise, not a restored place.
  */
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore, type SnapshotStore } from '@unieai/uad-client-runtime/client'
 
 /** Whether the modal panel is open, and where it opened. */
 export interface SettingsPanelState {

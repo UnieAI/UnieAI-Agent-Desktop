@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-unieai-web-gate`.
- * @module @deepseek-ai/dsh-unieai-web-gate/invariant
+ * Package-owned invariant companion for `@unieai/uad-unieai-web-gate`.
+ * @module @unieai/uad-unieai-web-gate/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@unieai/cordis'
+import type { InvariantInstaller } from '@unieai/uad-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-unieai-web-gate'
+const PACKAGE_NAME = '@unieai/uad-unieai-web-gate'
 
 /** Cordis companion plugin name. */
 export const name = 'unieai-web-gate-invariant'

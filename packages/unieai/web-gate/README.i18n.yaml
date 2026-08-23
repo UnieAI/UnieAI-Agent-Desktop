@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/unieai/web-gate/README.md
-README.md: c4a7e3d9574873496b0453cd26deb6fa7a15c9e3
-README.zh.md: d241e13c05b2bcd2b8b74d2ce3b3201fabfa4232
+README.md: 0746d9d0c025592cdd72b558c7bce9df2802cdee
+README.zh.md: c1a49eca1d73431879ba97d62ad74394203dbf45

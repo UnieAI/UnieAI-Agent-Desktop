@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-unieai-web-gate
+# @unieai/uad-unieai-web-gate
 
 [English](README.md) | 中文
 
@@ -38,7 +38,7 @@
 
 `GET /auth/account` 是唯一一条并非为登录而存在的路由。账户设置区块需要用户的方案与剩余用量，而这些调用所需的凭据正是本闸门会话表中持有的 API key。该 key 不得进入页面，因此由浏览器询问本 host、本 host 询问产品：该路由解析会话，以该 key 作为 bearer 调用 `/api/desktop/me`、`/usage` 与 `/invite`，并回答 `{ status: 'signed-out' }`、`{ status: 'signed-in', snapshot }` 或 `{ status: 'failed', message }`。三者都不含该 key。
 
-失败时的 `message` 为英文。本 host 不知道读者的语言，因此它是给直接调用方看的诊断信息；消费本路由的浏览器半边 `@deepseek-ai/dsh-client-unieai-account-gateway` 会改用自己的本地化文案。
+失败时的 `message` 为英文。本 host 不知道读者的语言，因此它是给直接调用方看的诊断信息；消费本路由的浏览器半边 `@unieai/uad-client-unieai-account-gateway` 会改用自己的本地化文案。
 
 快照中的 `user.avatarUrl` 来自下面的资料路由，而非 `/api/desktop/me`——后者不回报照片。没有头像的账号收到的答复中根本没有该字段：空 `src` 会渲染成一张坏图，而缺失才会画出首字母标记。
 
@@ -73,7 +73,7 @@
 
 `GET /auth/models` 是同一道缝，取的是账号在网页产品上有权运行的模型：也就是产品自身选单所依据的那份并集——账号自有 Provider 中已选取的模型、其群组所授予的模型，以及全局模型。它代理 `/api/desktop/models`，回答 `{ status: 'signed-out' }`、`{ status: 'signed-in', models }` 或 `{ status: 'failed', message }`。与 `/auth/providers` 一样，会话的 API key 绝不出现在其中，任何条目也不携带 Provider 凭据——`EntitledModel` 既没有存放凭据的字段，也没有存放端点的字段。
 
-**这些模型可以运行，但不是从这里运行。** 任何条目都不携带 Provider 的 base URL 或凭据，将来也不会：那些留在产品侧。让这份列表不只是一个账号可见性界面的，是产品自己的中继 `POST /api/desktop/v1/chat/completions`——由桌面 API key 认证，并在产品侧解析上游、执行方案配额、计量该回合。`@deepseek-ai/dsh-llm-unieai-cloud` 通过 `ctx.unieaiGate` 读取同一份列表，并把它注册成一条指向该中继的 `llm` 路由，因此一个权限模型恰好在存在闸门会话可为其认证时变得可选。
+**这些模型可以运行，但不是从这里运行。** 任何条目都不携带 Provider 的 base URL 或凭据，将来也不会：那些留在产品侧。让这份列表不只是一个账号可见性界面的，是产品自己的中继 `POST /api/desktop/v1/chat/completions`——由桌面 API key 认证，并在产品侧解析上游、执行方案配额、计量该回合。`@unieai/uad-llm-unieai-cloud` 通过 `ctx.unieaiGate` 读取同一份列表，并把它注册成一条指向该中继的 `llm` 路由，因此一个权限模型恰好在存在闸门会话可为其认证时变得可选。
 
 刻意只读：完全没有写入方向。一个账号可运行哪些模型，是由它的 Provider、它的群组与平台决定的，而其中没有任何一项是桌面版靠指名一个模型就能改变的。
 
@@ -101,7 +101,7 @@
 
 ## Host 侧的闸门服务
 
-`ctx.unieaiGate` 是闸门的另一半：不是路由，而是让 host 插件代已登录账号行事的那道缝。它公开 `productUrl`、`session()`——账号及其 API key——以及两个代理读取 `mcpServers()` 与 `entitledModels()`，返回的是浏览器投影收窄之前、产品原样发来的内容。`@deepseek-ai/dsh-unieai-mcp-supervisor` 借第一个挂载账号的 MCP 服务器；`@deepseek-ai/dsh-llm-unieai-cloud` 借第二个构建账号可运行的模型路由。
+`ctx.unieaiGate` 是闸门的另一半：不是路由，而是让 host 插件代已登录账号行事的那道缝。它公开 `productUrl`、`session()`——账号及其 API key——以及两个代理读取 `mcpServers()` 与 `entitledModels()`，返回的是浏览器投影收窄之前、产品原样发来的内容。`@unieai/uad-unieai-mcp-supervisor` 借第一个挂载账号的 MCP 服务器；`@unieai/uad-llm-unieai-cloud` 借第二个构建账号可运行的模型路由。
 
 该服务之所以存在，是因为会话表是本 host 上唯一持有产品凭证的地方，而需要凭证的 host 插件不得伸手进那张表。`unieai-gate/session` 在一次登录产生会话时、以及最后一个会话因登出而消失时发出——闲置过期不会发出，因为那是在读取时判定的，因而没有任何东西在它发生的那一刻观察到它。代账号持有资源的消费方按自己的节奏重读。
 

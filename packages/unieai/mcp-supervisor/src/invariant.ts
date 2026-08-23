@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-unieai-mcp-supervisor`.
- * @module @deepseek-ai/dsh-unieai-mcp-supervisor/invariant
+ * Package-owned invariant companion for `@unieai/uad-unieai-mcp-supervisor`.
+ * @module @unieai/uad-unieai-mcp-supervisor/invariant
  */
 
 /* jscpd:ignore-start */
-import type { Context } from '@deepseek-ai/cordis'
-import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
+import type { Context } from '@unieai/cordis'
+import type { InvariantInstaller } from '@unieai/uad-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-unieai-mcp-supervisor'
+const PACKAGE_NAME = '@unieai/uad-unieai-mcp-supervisor'
 
 /** Cordis companion plugin name. */
 export const name = 'unieai-mcp-supervisor-invariant'

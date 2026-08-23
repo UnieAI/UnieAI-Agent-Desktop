@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-web
+# @unieai/uad-client-web
 
 English | [中文](README.zh.md)
 

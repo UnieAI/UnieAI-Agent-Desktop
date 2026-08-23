@@ -9,16 +9,16 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
-import type { Agent, AgentStatus } from '@deepseek-ai/dsh-agent'
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { UserMessage } from '@deepseek-ai/dsh-session'
-import SessionStore from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import GoalService, { applyGoalProjection, foldGoal } from '@deepseek-ai/dsh-goal'
-import type { GoalRef } from '@deepseek-ai/dsh-goal'
+import { Context } from '@unieai/cordis'
+import AgentRegistry, { Inbox } from '@unieai/uad-agent'
+import type { Agent, AgentStatus } from '@unieai/uad-agent'
+import { createUserMessage } from '@unieai/uad-llm'
+import type { UserMessage } from '@unieai/uad-session'
+import SessionStore from '@unieai/uad-session'
+import type { Session } from '@unieai/uad-session'
+import SessionProjectionRegistry from '@unieai/uad-session-projection'
+import GoalService, { applyGoalProjection, foldGoal } from '@unieai/uad-goal'
+import type { GoalRef } from '@unieai/uad-goal'
 
 interface Bench {
   ctx: Context

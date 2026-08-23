@@ -10,7 +10,7 @@
  * @module dsh-unieai-mcp-supervisor/registry
  */
 
-import type { McpServerGrant } from '@deepseek-ai/dsh-unieai-web-gate'
+import type { McpServerGrant } from '@unieai/uad-unieai-web-gate'
 
 /** One live mcp-client instance and the grant it was mounted with. */
 export interface MountedServer {

@@ -12,8 +12,8 @@
  * single-page app, and the app that comes back is either signed in or not.
  * Nothing can observe the middle, so nothing draws it.
  */
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
-import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { Translate } from '@unieai/uad-client-ui-slots'
+import { Button } from '@unieai/uad-client-ui-primitives'
 import type { UnieAiAccountState } from '../account-contract.ts'
 import type { AccountKey } from './locales.ts'
 import css from './AccountSection.module.css'

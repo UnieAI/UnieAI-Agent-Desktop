@@ -31,8 +31,8 @@
  * this one would be a guess.
  */
 import type { ReactNode } from 'react'
-import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import { Button } from '@unieai/uad-client-ui-primitives'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 // Type-only: pulls this package's SlotMap merge (the 'plugins.page.area' seat).
 import type {} from './contract/slots.ts'
 import type { StudioMcpRow, StudioMcpSource, StudioMcpTool } from './studio-mcp-source.ts'

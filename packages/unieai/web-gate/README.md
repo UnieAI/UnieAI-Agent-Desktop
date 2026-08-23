@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-unieai-web-gate
+# @unieai/uad-unieai-web-gate
 
 English | [中文](README.zh.md)
 
@@ -38,7 +38,7 @@ A browser with no session costs nothing at all: no product call, no waiting, `{ 
 
 `GET /auth/account` is the one route that exists for a reason other than signing in. The Account settings section needs the person's plan and remaining usage, and the credential those calls need is the API key held in this gate's session table. The key must not reach a page, so the browser asks this host and this host asks the product: the route resolves the session, calls `/api/desktop/me`, `/usage`, and `/invite` with the key as a bearer, and answers `{ status: 'signed-out' }`, `{ status: 'signed-in', snapshot }`, or `{ status: 'failed', message }`. The key appears in none of them.
 
-The failure `message` is English. This host does not know the reader's language, so it is a diagnostic for a direct caller; `@deepseek-ai/dsh-client-unieai-account-gateway`, the browser half that consumes this route, substitutes its own localized line.
+The failure `message` is English. This host does not know the reader's language, so it is a diagnostic for a direct caller; `@unieai/uad-client-unieai-account-gateway`, the browser half that consumes this route, substitutes its own localized line.
 
 The snapshot's `user.avatarUrl` comes from the profile route below, not from `/api/desktop/me`, which reports no photo. An account with none arrives without the field, because an empty `src` renders as a broken image while an absent one draws a monogram.
 
@@ -73,7 +73,7 @@ Two rules hold on these routes and are tested against the whole serialized answe
 
 `GET /auth/models` is the same seam for the models the account is entitled to run on the web product: the union its own picker is built from — the account's selected personal-provider models, the models its groups grant, and the global models. It proxies `/api/desktop/models` and answers `{ status: 'signed-out' }`, `{ status: 'signed-in', models }`, or `{ status: 'failed', message }`. As on `/auth/providers`, the session's API key appears in none of them, and no entry carries a provider credential — `EntitledModel` has no field for one, nor for an endpoint.
 
-**These models are runnable, but not from here.** No entry carries the provider's base URL or credential, and it never will: those live on the product. What makes the list more than an account-visibility surface is the product's own relay, `POST /api/desktop/v1/chat/completions`, which the desktop API key authenticates and which resolves the upstream, enforces the plan's quota, and meters the turn on the product's side. `@deepseek-ai/dsh-llm-unieai-cloud` reads the same list through `ctx.unieaiGate` and registers it as one `llm` route pointed at that relay, so an entitled model becomes selectable exactly when a gate session exists to authenticate it.
+**These models are runnable, but not from here.** No entry carries the provider's base URL or credential, and it never will: those live on the product. What makes the list more than an account-visibility surface is the product's own relay, `POST /api/desktop/v1/chat/completions`, which the desktop API key authenticates and which resolves the upstream, enforces the plan's quota, and meters the turn on the product's side. `@unieai/uad-llm-unieai-cloud` reads the same list through `ctx.unieaiGate` and registers it as one `llm` route pointed at that relay, so an entitled model becomes selectable exactly when a gate session exists to authenticate it.
 
 Read-only by design: there is no write direction at all. Which models an account may run is decided by its providers, its groups, and the platform, and none of those is something a desktop changes by naming a model.
 
@@ -101,7 +101,7 @@ The browser gets `McpServerView` — `id`, `label`, `origin`, `expiresAt`, `tool
 
 ## The host-side gate service
 
-`ctx.unieaiGate` is the gate's other half: not a route, but the seam by which host plugins act on the signed-in account's behalf. It exposes `productUrl`, `session()` — the account and its API key — and two proxied reads, `mcpServers()` and `entitledModels()`, which return what the product sent BEFORE the browser projection narrows it. `@deepseek-ai/dsh-unieai-mcp-supervisor` mounts the account's MCP servers through the first; `@deepseek-ai/dsh-llm-unieai-cloud` builds the account's runnable model route on the second.
+`ctx.unieaiGate` is the gate's other half: not a route, but the seam by which host plugins act on the signed-in account's behalf. It exposes `productUrl`, `session()` — the account and its API key — and two proxied reads, `mcpServers()` and `entitledModels()`, which return what the product sent BEFORE the browser projection narrows it. `@unieai/uad-unieai-mcp-supervisor` mounts the account's MCP servers through the first; `@unieai/uad-llm-unieai-cloud` builds the account's runnable model route on the second.
 
 The service exists because the session table is the only place on this host that holds a product credential, and a host plugin that needs one must not reach into that table. `unieai-gate/session` is emitted when a sign-in produces a session and when the last one is lost to a sign-out — not when a session lapses on idleness, which is evaluated on read and therefore observed by nobody at the moment it happens. A consumer holding something on the account's behalf re-reads on its own schedule.
 

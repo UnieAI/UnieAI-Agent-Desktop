@@ -23,19 +23,19 @@
  * and a read at boot would show a stale answer for the rest of the session.
  */
 
-import type {} from '@deepseek-ai/dsh-client-locale/client'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type {} from '@unieai/uad-client-locale/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
 // Type-only: pulls the Plugins page's SlotMap merge (the 'plugins.page.area'
 // seat). Cross-plugin collaboration goes through slots and services, never a
 // value import (client bundle purity gate).
-import type {} from '@deepseek-ai/dsh-client-ui-plugins-page/client'
+import type {} from '@unieai/uad-client-ui-plugins-page/client'
 import { PluginDirectoryArea, type PluginDirectoryAreaInjected } from './PluginDirectoryArea.tsx'
 import { en, ja, zh, zhTW, type PluginInventoryLocaleKey } from './locales.ts'
 
 export type { PluginDirectoryAreaInjected, PluginDirectoryAreaProps } from './PluginDirectoryArea.tsx'
 export type { PluginInventoryLocaleKey } from './locales.ts'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@unieai/uad-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Read-only Host plugin directory copy. */
     'settings.pluginInventory': PluginInventoryLocaleKey

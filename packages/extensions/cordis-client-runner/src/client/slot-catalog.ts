@@ -10,7 +10,7 @@
  * mounted for the seat to exist. Data only — this module is the one legitimate
  * meeting point of the two planes, so it carries strings, never client imports.
  *
- * @module @deepseek-ai/dsh-cordis-client-runner/client/slot-catalog
+ * @module @unieai/uad-cordis-client-runner/client/slot-catalog
  */
 
 /* jscpd:ignore-start */
@@ -1213,6 +1213,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'shell.overlay\' (client-ui-plugins-page), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-plugins-page DirectoryArea id \'unieai-directory\'',
       'client-ui-plugins-page StudioMcpArea id \'studio-mcp\'',
       'client-ui-settings-plugin-inventory PluginDirectoryArea id \'plugin-directory\'',
       'client-ui-settings-plugins PluginsSettingsSection id \'cordis-plugins\'',

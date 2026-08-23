@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-settings-plugin-inventory
+# @unieai/uad-client-ui-settings-plugin-inventory
 
 [English](README.md) | 中文
 
@@ -20,8 +20,8 @@
 
 三种分组被考虑过并否掉：
 
-- **按 bundle** —— `@deepseek-ai/dsh-base`、`@deepseek-ai/dsh-web-app`、装进 profile 的第三方 bundle。这才是参考目录里来源筛选的真正对应物，也是最值得有的那个，但线路上没有它，也无法从现有字段推导出来。`app-boot` 把每个 `dsh.profile.bundles` 条目解析到它的 `cordis.patch.yml`，再把这些 patch 列表**在内存里**叠加到一个空根之上；合成出来的 `EntryOptions` 不保留是哪一层插入了它，而 profile 磁盘上的 `cordis.yml` 就是那个空根。要报告它需要付出什么，见*已知限制*。
-- **按平面** —— host 与浏览器。出厂 profile 里每一条浏览器行恰好都叫 `@deepseek-ai/dsh-client-*`，但 `@deepseek-ai/dsh-api-remotes` 也是浏览器行，`dsh-client-modules` 两边都是。那是一条有例外的命名约定，不是数据；把切分打扮成分类法，读者会当成事实。
+- **按 bundle** —— `@unieai/uad-base`、`@unieai/uad-web-app`、装进 profile 的第三方 bundle。这才是参考目录里来源筛选的真正对应物，也是最值得有的那个，但线路上没有它，也无法从现有字段推导出来。`app-boot` 把每个 `dsh.profile.bundles` 条目解析到它的 `cordis.patch.yml`，再把这些 patch 列表**在内存里**叠加到一个空根之上；合成出来的 `EntryOptions` 不保留是哪一层插入了它，而 profile 磁盘上的 `cordis.yml` 就是那个空根。要报告它需要付出什么，见*已知限制*。
+- **按平面** —— host 与浏览器。出厂 profile 里每一条浏览器行恰好都叫 `@unieai/uad-client-*`，但 `@unieai/uad-api-remotes` 也是浏览器行，`dsh-client-modules` 两边都是。那是一条有例外的命名约定，不是数据；把切分打扮成分类法，读者会当成事实。
 - **按 Fiber 阶段** —— 五个桶，其中四个通常是空的，而每一行本来就用圆点带着自己的阶段。
 
 这里刻意没有任何编辑性分组。参考里的 `Featured` 与 `Coding` 来自一份有编辑层的策展目录；本部署两者都没有，凭空造一个就是把分类法写进一份并不携带它的快照。

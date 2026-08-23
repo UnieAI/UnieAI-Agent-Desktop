@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-plugins-page
+# @unieai/uad-client-ui-plugins-page
 
 English | [中文](README.zh.md)
 
@@ -87,7 +87,7 @@ None; this package assembles and sends nothing.
 
 ## Known Limitations and Deferred Work
 
-- **Listing is not connecting, and this desktop still cannot connect.** The answer carries the server's origin and no endpoint or credential, by explicit design; the stored headers and OAuth bearer are decrypted server-side and never projected to a client. Connecting therefore needs either a product-hosted relay the desktop can dial with its own key — which is what [`@deepseek-ai/dsh-mcp-client`](../../mcp/mcp-client/README.md) already supports, as a `streamable-http` server with an `authorization` header — or a decision to send MCP credentials to a laptop, which contradicts how this desktop handles every other credential. Both are outside this package.
+- **Listing is not connecting, and this desktop still cannot connect.** The answer carries the server's origin and no endpoint or credential, by explicit design; the stored headers and OAuth bearer are decrypted server-side and never projected to a client. Connecting therefore needs either a product-hosted relay the desktop can dial with its own key — which is what [`@unieai/uad-mcp-client`](../../mcp/mcp-client/README.md) already supports, as a `streamable-http` server with an `authorization` header — or a decision to send MCP credentials to a laptop, which contradicts how this desktop handles every other credential. Both are outside this package.
 - **Nothing in this repository mounts a listed server.** `mcp-client` mounts one server per static config row with a compile-time-unique name; turning a live list into live connections needs a supervisor that mounts and disposes plugins as the list moves, and no such component exists here. Until one does, this area is a window onto the account's Studio and not a source of tools for a turn.
 - **A deployment older than the route still shows `unsupported`, and still logs one 404 per page open.** The state and its copy are kept for exactly that deployment. The console line is the visible cost of asking a route that may not be there, and asking is what makes the area light up with no further change in the browser.
 - **Tool cards carry no description, because two host hops drop it.** The product writes one per Studio tool in `lib/studio/mcp-tools.ts`, and it is discarded twice on the way here: `lib/desktop/mcp.ts` publishes `tools: STUDIO_MCP_TOOLS.map((tool) => tool.name)`, and `web-gate`'s `McpServerView.tools` is typed `string[]` and copied through `readTools`. Filling the cards needs both changed to carry `{name, description}` — the product route and the gate's grant/view pair — and neither file is this package's. The browser half is already done and tested: a described entry renders, a bare name still reads, and nothing here fabricates a sentence in the meantime.

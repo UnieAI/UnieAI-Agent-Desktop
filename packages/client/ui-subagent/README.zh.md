@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-subagent
+# @unieai/uad-client-ui-subagent
 
 [English](README.md) | 中文
 

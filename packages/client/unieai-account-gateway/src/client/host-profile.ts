@@ -3,7 +3,7 @@
  * process boundary, plus the reader that narrows one JSON body onto it.
  *
  * Same rule as {@link ./host-account.ts}: the host owns these names in
- * `@deepseek-ai/dsh-unieai-web-gate` and they are declared again here rather
+ * `@unieai/uad-unieai-web-gate` and they are declared again here rather
  * than imported, because a page may be served by a host one deploy ahead of or
  * behind it.
  *

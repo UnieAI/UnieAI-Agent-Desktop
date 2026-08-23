@@ -17,11 +17,11 @@
 import type {
   UnieAiAccountGateway, UnieAiAccountState, UnieAiInviteRefusal, UnieAiInviteResult,
   UnieAiProfilePatch, UnieAiProfileSaveResult,
-} from '@deepseek-ai/dsh-client-ui-unieai-account/client'
-import type { LocaleId } from '@deepseek-ai/dsh-client-locale/client'
+} from '@unieai/uad-client-ui-unieai-account/client'
+import type { LocaleId } from '@unieai/uad-client-locale/client'
 // Type-only: the startup answer's contract. Cross-plugin collaboration goes
 // through services, never a value import (client bundle purity gate).
-import type { UnieAiBootstrap } from '@deepseek-ai/dsh-client-unieai-bootstrap/client'
+import type { UnieAiBootstrap } from '@unieai/uad-client-unieai-bootstrap/client'
 import { projectState, type AccountReading } from './account-mapping.ts'
 import { readAccountResponse } from './host-account.ts'
 import { readInviteResponse, type InviteSendBody } from './host-invite.ts'

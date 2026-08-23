@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-typert-protocol
+# @unieai/uad-typert-protocol
 
 [English](README.md) | 中文
 

@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-unieai-account-gateway
+# @unieai/uad-client-unieai-account-gateway
 
 English | [中文](README.zh.md)
 
@@ -8,7 +8,7 @@ The Provider role of the account seam. `ui-unieai-account` defines `UnieAiAccoun
 
 The credential that authenticates the UnieAI product's `/api/desktop/*` surface lives in the gate's session table on the host, and the browser session cookie is `HttpOnly`. Nothing in this package can read either. It issues one same-origin `GET /auth/account`; the host resolves the session, spends the API key against the product, and writes back an account description that carries no credential. The write takes the same path in the same direction: `saveProfile()` posts `/auth/profile`, and the host is what holds the key.
 
-The FIRST read does not happen here at all. `@deepseek-ai/dsh-client-unieai-bootstrap` publishes the desktop's startup answer — one `/auth/bootstrap` body the host gathered before the application mounted — and this package takes its first account from that answer's `account` part, which is verbatim what `/auth/account` would have said. It reads the route itself only when there was no startup answer to be had (a build with no gate, or a host that did not answer in time) or when the account part was not among the gathered ones. Either way the read below is what happens afterwards.
+The FIRST read does not happen here at all. `@unieai/uad-client-unieai-bootstrap` publishes the desktop's startup answer — one `/auth/bootstrap` body the host gathered before the application mounted — and this package takes its first account from that answer's `account` part, which is verbatim what `/auth/account` would have said. It reads the route itself only when there was no startup answer to be had (a build with no gate, or a host that did not answer in time) or when the account part was not among the gathered ones. Either way the read below is what happens afterwards.
 
 The read happens once per document, plus once after each write. Both sign-in gestures end in a new document — `signIn()` leaves for the gate's server-rendered device-code page at `/auth/login`, `signOut()` posts `/auth/logout` and reloads — so the account is read again exactly when it can have changed. Sign-in cannot happen inside the single-page app: the gate renders that page before any client bundle exists, which is also why this gateway publishes no state between signed-out and signed-in.
 

@@ -10,16 +10,16 @@
  */
 
 import { describe, expect, it, vi } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
-import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
-import type { Session } from '@deepseek-ai/dsh-session'
-import type { Agent } from '@deepseek-ai/dsh-agent'
-import { createScope } from '@deepseek-ai/dsh-scope'
-import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection'
-import CommandRuntime from '@deepseek-ai/dsh-commands'
-import PermissionPresetService from '@deepseek-ai/dsh-permission-presets'
-import type { Config } from '@deepseek-ai/dsh-permission-presets'
-import ApprovalService from '@deepseek-ai/dsh-user-approval'
+import { Context } from '@unieai/cordis'
+import SessionStore, { SessionId } from '@unieai/uad-session'
+import type { Session } from '@unieai/uad-session'
+import type { Agent } from '@unieai/uad-agent'
+import { createScope } from '@unieai/uad-scope'
+import SessionProjectionRegistry from '@unieai/uad-session-projection'
+import CommandRuntime from '@unieai/uad-commands'
+import PermissionPresetService from '@unieai/uad-permission-presets'
+import type { Config } from '@unieai/uad-permission-presets'
+import ApprovalService from '@unieai/uad-user-approval'
 
 async function harness(options: { withPermission?: boolean; config?: Config } = {}): Promise<{ ctx: Context; session: Session }> {
   const ctx = new Context()

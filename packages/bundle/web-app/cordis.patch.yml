@@ -46,72 +46,72 @@
 # window.__DSH_BOOT__; the modules row is simultaneously a host row.
 - insert:
     - id: code-runtime
-      name: '@deepseek-ai/dsh-code-runtime-worker-thread'
+      name: '@unieai/uad-code-runtime-worker-thread'
 
     - id: storage
-      name: '@deepseek-ai/dsh-storage'
+      name: '@unieai/uad-storage'
 
     - id: storage-json
-      name: '@deepseek-ai/dsh-storage-json'
+      name: '@unieai/uad-storage-json'
       config:
         root: !!js dshHomePath('storages')
 
     - id: storage-domain
-      name: '@deepseek-ai/dsh-storage-domain'
+      name: '@unieai/uad-storage-domain'
       config:
         backend: json
 
     - id: message-feedback
-      name: '@deepseek-ai/dsh-message-feedback'
+      name: '@unieai/uad-message-feedback'
       config:
         maxNoteBytes: 8192
 
     # Browser Session export: `/export` command plus the shared download dialog.
     - id: session-log-download
-      name: '@deepseek-ai/dsh-session-log-export'
+      name: '@unieai/uad-session-log-export'
 
     - id: workspace
-      name: '@deepseek-ai/dsh-workspace'
+      name: '@unieai/uad-workspace'
 
     - id: session-projection-cache
-      name: '@deepseek-ai/dsh-session-projection-cache'
+      name: '@unieai/uad-session-projection-cache'
       config:
         writeEveryEvents: 200
         writeIntervalMs: 5000
 
     - id: session-reference
-      name: '@deepseek-ai/dsh-session-reference'
+      name: '@unieai/uad-session-reference'
 
     - id: file-reference-local
-      name: '@deepseek-ai/dsh-file-reference-local'
+      name: '@unieai/uad-file-reference-local'
 
     # Whole-log turn/step counts for the chat stats strip (the sessionStats
     # projection key); the projection registry itself is a base-layer row.
     - id: session-stats
-      name: '@deepseek-ai/dsh-session-stats'
+      name: '@unieai/uad-session-stats'
 
     # Resolve bind host, SSH launch, and display once at boot, then mount the
     # matching dual-face directory picker. Mount -native or -browse directly in
     # an overlay to pin the interaction.
     - id: directory-picker
-      name: '@deepseek-ai/dsh-host-directory-picker-auto'
+      name: '@unieai/uad-host-directory-picker-auto'
 
     # Read-only projection of current Loader entries for trusted client RPCs.
     - id: plugin-inventory
-      name: '@deepseek-ai/dsh-host-plugin-inventory'
+      name: '@unieai/uad-host-plugin-inventory'
 
     # The API gateway: the transport-agnostic dispatch face every client shape
     # shares. The base layer's agent-default-model service owns the default model.
     - id: api-gateway
-      name: '@deepseek-ai/dsh-host-apiproxy'
+      name: '@unieai/uad-host-apiproxy'
 
     - id: cordis-host-runner
-      name: '@deepseek-ai/dsh-cordis-host-runner'
+      name: '@unieai/uad-cordis-host-runner'
 
     # Ordinary provider for the parsed Web flags. Its plugin-level injection
     # waits for cmdlineArgs; no launcher metadata or special row kind is needed.
     - id: web-startup
-      name: '@deepseek-ai/dsh-web-app/startup'
+      name: '@unieai/uad-web-app/startup'
 
     # ── layer 2: transport/service ──────────────────────────────────────────────
 
@@ -119,7 +119,7 @@
     # webStartup provider, with these deployment fallbacks. The dist is served by
     # the web-runtime row below through the fallback seat.
     - id: webserver
-      name: '@deepseek-ai/dsh-host-webserver'
+      name: '@unieai/uad-host-webserver'
       inject: [webStartup]
       config:
         host: !!js ctx.webStartup.host ?? '127.0.0.1'
@@ -135,7 +135,7 @@
     # suppresses the prompt section for that agent while retaining the host-owned
     # shell variable.
     - id: web-runtime
-      name: '@deepseek-ai/dsh-web-app'
+      name: '@unieai/uad-web-app'
       inject: [webStartup]
       config:
         openBrowser: !!js ctx.webStartup.openBrowser
@@ -148,7 +148,7 @@
     # is a row rather than a child of web-runtime because its node half is a
     # client-side package, which a host-side bundle cannot import.
     - id: client-hmr
-      name: '@deepseek-ai/dsh-client-hmr'
+      name: '@unieai/uad-client-hmr'
 
     # ── browser plugin roster (dsh.client rows; node halves are layer-2 hosts) ──
 
@@ -157,12 +157,12 @@
     # the shell kernel constructs before cordis exists (adopted as a plugin
     # entry by the kernel, never fetched).
     - id: modules
-      name: '@deepseek-ai/dsh-client-modules'
+      name: '@unieai/uad-client-modules'
 
     # Owns both ends of the web transport: node half binds the gateway to the
     # webserver under /api; browser half is the fetch/SSE client.
     - id: connection
-      name: '@deepseek-ai/dsh-client-connection'
+      name: '@unieai/uad-client-connection'
       inject: [webRuntime]
       config:
         # LAN literals derived from the active bind plus --trusted-host extras.
@@ -171,45 +171,45 @@
         trustedHosts: !!js ctx.webRuntime.trustedHosts
 
     - id: api-remotes
-      name: '@deepseek-ai/dsh-api-remotes'
+      name: '@unieai/uad-api-remotes'
 
     - id: client-runtime
-      name: '@deepseek-ai/dsh-client-runtime'
+      name: '@unieai/uad-client-runtime'
 
     - id: cordis-client-runner
-      name: '@deepseek-ai/dsh-cordis-client-runner'
+      name: '@unieai/uad-cordis-client-runner'
 
     - id: ui-theme
-      name: '@deepseek-ai/dsh-client-ui-theme'
+      name: '@unieai/uad-client-ui-theme'
 
     - id: locale
-      name: '@deepseek-ai/dsh-client-locale'
+      name: '@unieai/uad-client-locale'
 
     - id: ui-layout
-      name: '@deepseek-ai/dsh-client-ui-layout'
+      name: '@unieai/uad-client-ui-layout'
 
     - id: ui-renderer
-      name: '@deepseek-ai/dsh-client-ui-renderer'
+      name: '@unieai/uad-client-ui-renderer'
 
     - id: ui-sidebar
-      name: '@deepseek-ai/dsh-client-ui-sidebar'
+      name: '@unieai/uad-client-ui-sidebar'
 
     - id: ui-settings
-      name: '@deepseek-ai/dsh-client-ui-settings'
+      name: '@unieai/uad-client-ui-settings'
 
     - id: ui-settings-general
-      name: '@deepseek-ai/dsh-client-ui-settings-general'
+      name: '@unieai/uad-client-ui-settings-general'
 
     - id: ui-settings-models
-      name: '@deepseek-ai/dsh-client-ui-settings-models'
+      name: '@unieai/uad-client-ui-settings-models'
 
     - id: ui-settings-plugin-inventory
-      name: '@deepseek-ai/dsh-client-ui-settings-plugin-inventory'
+      name: '@unieai/uad-client-ui-settings-plugin-inventory'
 
     # Notifications: the desktop-notification permission for this device plus
     # the cue played when a turn finishes while nobody is watching it.
     - id: ui-settings-notifications
-      name: '@deepseek-ai/dsh-client-ui-settings-notifications'
+      name: '@unieai/uad-client-ui-settings-notifications'
 
     # Startup initialization: reads the sign-in gate's /auth/bootstrap answer
     # once — account, providers, models, MCP servers, all gathered host-side —
@@ -218,7 +218,7 @@
     # and the browser does not mount until this row's read has settled, which
     # is what keeps the interface from opening half-populated.
     - id: unieai-bootstrap
-      name: '@deepseek-ai/dsh-client-unieai-bootstrap'
+      name: '@unieai/uad-client-unieai-bootstrap'
 
     # The account seam's supplier: fills the `unieaiAccount` service from the
     # startup answer above, falling back to its own /auth/account read when no
@@ -226,22 +226,22 @@
     # row — that section reads the service once while its own body runs, so a
     # supplier activating later never reaches it.
     - id: unieai-account-gateway
-      name: '@deepseek-ai/dsh-client-unieai-account-gateway'
+      name: '@unieai/uad-client-unieai-account-gateway'
 
     # UnieAI account page: profile, plan, remaining usage, and the invite link.
     # Without an account gateway it renders its not-connected state.
     - id: ui-unieai-account
-      name: '@deepseek-ai/dsh-client-ui-unieai-account'
+      name: '@unieai/uad-client-ui-unieai-account'
 
     # The UnieAI account's API Providers, read from — and added back to — the
     # web product through the sign-in gate's /auth/providers route. It renders
     # its signed-out line without a gate, so the row is safe in a composition
     # that mounts no gate at all.
     - id: ui-unieai-providers
-      name: '@deepseek-ai/dsh-client-ui-unieai-providers'
+      name: '@unieai/uad-client-ui-unieai-providers'
 
     - id: ui-conversation
-      name: '@deepseek-ai/dsh-client-ui-conversation'
+      name: '@unieai/uad-client-ui-conversation'
 
     # UnieAI occupants for the generic sidebar and conversation brand slots.
     # The upstream official-brand row is deliberately absent: its occupants
@@ -251,7 +251,7 @@
     # before the fence is committed to; flipping it on is what actually closes
     # the machine. See the package README.
     - id: unieai-web-gate
-      name: '@deepseek-ai/dsh-unieai-web-gate'
+      name: '@unieai/uad-unieai-web-gate'
       config:
         productUrl: 'https://agent.unieai.com'
         enforce: true
@@ -269,83 +269,83 @@
     # lapsed fails every call with no other signal. Without a gate session it
     # mounts nothing, which is the signed-out posture.
     - id: unieai-mcp-supervisor
-      name: '@deepseek-ai/dsh-unieai-mcp-supervisor'
+      name: '@unieai/uad-unieai-mcp-supervisor'
 
     # The account's entitled models, as a runnable route through the product's
     # metered inference relay. The route hides itself whenever the gate holds no
     # session (`credentialReady: false`), so a signed-out desktop offers no
     # cloud models rather than names that fail when chosen.
     - id: llm-unieai-cloud
-      name: '@deepseek-ai/dsh-llm-unieai-cloud'
+      name: '@unieai/uad-llm-unieai-cloud'
 
     - id: ui-brand-unieai
-      name: '@deepseek-ai/dsh-client-ui-brand-unieai'
+      name: '@unieai/uad-client-ui-brand-unieai'
 
     - id: ui-attachment
-      name: '@deepseek-ai/dsh-client-ui-attachment'
+      name: '@unieai/uad-client-ui-attachment'
 
     # Tool call tree, generic fallback, and keyed business Tool views.
     - id: ui-tool
-      name: '@deepseek-ai/dsh-client-ui-tool'
+      name: '@unieai/uad-client-ui-tool'
 
     - id: ui-cordis
-      name: '@deepseek-ai/dsh-client-ui-cordis'
+      name: '@unieai/uad-client-ui-cordis'
 
     # Durable workflow lifecycle as an independent Chat node after the
     # existing generic workflow tool row.
     - id: ui-workflow-run
-      name: '@deepseek-ai/dsh-client-ui-workflow-run'
+      name: '@unieai/uad-client-ui-workflow-run'
 
     # Turn tail: the produced-files row under each closing assistant message.
     # Remove this entry to turn the surface off; the tail hole renders empty.
     - id: ui-deliverables
-      name: '@deepseek-ai/dsh-client-ui-deliverables'
+      name: '@unieai/uad-client-ui-deliverables'
 
 
     - id: ui-workspace
-      name: '@deepseek-ai/dsh-client-ui-workspace'
+      name: '@unieai/uad-client-ui-workspace'
 
     # Input triggers: the '/' | '@' pipeline (ui-input-trigger), the command surface over
     # it (ui-commands), and the reference sources (ui-skill / ui-reference).
     - id: ui-input-trigger
-      name: '@deepseek-ai/dsh-client-ui-input-trigger'
+      name: '@unieai/uad-client-ui-input-trigger'
 
     - id: ui-commands
-      name: '@deepseek-ai/dsh-client-ui-commands'
+      name: '@unieai/uad-client-ui-commands'
 
     - id: ui-skill
-      name: '@deepseek-ai/dsh-client-ui-skill'
+      name: '@unieai/uad-client-ui-skill'
 
     - id: ui-subagent
-      name: '@deepseek-ai/dsh-client-ui-subagent'
+      name: '@unieai/uad-client-ui-subagent'
 
     - id: ui-reference
-      name: '@deepseek-ai/dsh-client-ui-reference'
+      name: '@unieai/uad-client-ui-reference'
 
     # Background jobs: the session-header list over the jobsBySession mirror.
     - id: ui-jobs
-      name: '@deepseek-ai/dsh-client-ui-jobs'
+      name: '@unieai/uad-client-ui-jobs'
 
     # Goal surface: GoalBar in the input dock over the goal session projection.
     - id: ui-goal
-      name: '@deepseek-ai/dsh-client-ui-goal'
+      name: '@unieai/uad-client-ui-goal'
 
     # Per-message feedback: Like/Dislike plus an optional note in the
     # assistant-message action strip, over the messageFeedback Remote.
     - id: ui-message-feedback
-      name: '@deepseek-ai/dsh-client-ui-message-feedback'
+      name: '@unieai/uad-client-ui-message-feedback'
 
     # Model selection: the /model popupSelect + composer seat over session.models.
     - id: ui-model-selection
-      name: '@deepseek-ai/dsh-client-ui-model-selection'
+      name: '@unieai/uad-client-ui-model-selection'
 
     - id: ui-permission
-      name: '@deepseek-ai/dsh-client-ui-permission-presets'
+      name: '@unieai/uad-client-ui-permission-presets'
 
     # The agent-preset row in General settings: the default preset for
     # sessions created later. Absent a roster it renders nothing.
     - id: ui-agent-preset
-      name: '@deepseek-ai/dsh-client-ui-agent-preset'
+      name: '@unieai/uad-client-ui-agent-preset'
 
     # The Plugins page: the sidebar's Plugins row opens it, and it declares the
     # `plugins.page.area` hole the two rows below and beside it fill. Removing
@@ -353,23 +353,23 @@
     # nowhere left to render — the settings shell's own Plugins row then comes
     # back only if that area is registered as a settings section again.
     - id: ui-plugins-page
-      name: '@deepseek-ai/dsh-client-ui-plugins-page'
+      name: '@unieai/uad-client-ui-plugins-page'
 
     # Plugin configuration: the host-plane sections a user owns, as expandable
     # cards, as one area on the Plugins page. A namespace this deployment does
     # not expose renders nothing.
     - id: ui-settings-plugins
-      name: '@deepseek-ai/dsh-client-ui-settings-plugins'
+      name: '@unieai/uad-client-ui-settings-plugins'
 
     # Plan control: the composer plan seat over the plan projection + /plan channel.
     - id: ui-plan
-      name: '@deepseek-ai/dsh-client-ui-plan'
+      name: '@unieai/uad-client-ui-plan'
 
     - id: ui-user-questions
-      name: '@deepseek-ai/dsh-client-ui-user-questions'
+      name: '@unieai/uad-client-ui-user-questions'
 
     - id: ui-trajectory
-      name: '@deepseek-ai/dsh-client-ui-trajectory'
+      name: '@unieai/uad-client-ui-trajectory'
 
 # ── the agent plane moves behind agent presets ─────────────────────────────
 #
@@ -517,6 +517,6 @@
 # never reaches that patch still finds a person's presets.
 - insert:
     - id: agent-presets
-      name: '@deepseek-ai/dsh-agent-presets'
+      name: '@unieai/uad-agent-presets'
       config:
         default: standard

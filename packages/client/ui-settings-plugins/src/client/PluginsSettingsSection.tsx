@@ -3,11 +3,11 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type {
   HostObservable, InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime,
-} from '@deepseek-ai/dsh-client-ui-slots'
+} from '@unieai/uad-client-ui-slots'
 // Type-only: the Plugins page's SlotMap merge, so `PropsRuntime` resolves the
 // seat this area occupies. It used to be `settings.section`; the two owner
 // shares are the same shape, which is why the component below is unchanged.
-import type {} from '@deepseek-ai/dsh-client-ui-plugins-page/client'
+import type {} from '@unieai/uad-client-ui-plugins-page/client'
 import type { PluginsSettingsLocaleKey } from './locales.ts'
 import css from './PluginsSettingsSection.module.css'
 
@@ -119,7 +119,7 @@ export function PluginsSettingsSection({ t, renderSlot, useTabs }: PluginsSettin
   )
 }
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
+declare module '@unieai/uad-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Plugins section, configurable-tab, and card copy. */
     'settings.plugins': PluginsSettingsLocaleKey

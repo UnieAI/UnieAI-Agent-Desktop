@@ -6,8 +6,8 @@
  * plays. The same object receives completions from the watcher, so the
  * settings the user is looking at and the behavior they describe cannot drift.
  */
-import type { SessionId } from '@deepseek-ai/dsh-api-remotes/client'
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@unieai/uad-api-remotes/client'
+import { createSnapshotStore, type SnapshotStore } from '@unieai/uad-client-runtime/client'
 import type { SessionCompletion } from './completion-watcher.ts'
 import type { NotificationAccess, NotificationPort } from './notification-port.ts'
 import {

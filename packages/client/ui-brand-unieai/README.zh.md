@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-brand-unieai
+# @unieai/uad-client-ui-brand-unieai
 
 [English](README.md) | 中文
 

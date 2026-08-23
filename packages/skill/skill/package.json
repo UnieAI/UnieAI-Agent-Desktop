@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-skill",
+  "name": "@unieai/uad-skill",
   "description": "Agent skill provider registry for the DeepSeek Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/unieai/deepseek-harness.git",
     "directory": "packages/skill/skill"
   },
   "type": "module",
@@ -32,18 +32,18 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-scope": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^"
+    "@unieai/schemastery": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-scope": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-scope": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   }
 }

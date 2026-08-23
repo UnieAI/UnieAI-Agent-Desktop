@@ -1,11 +1,11 @@
 {
-  "name": "@deepseek-ai/dsh-experimental-agent-team",
+  "name": "@unieai/uad-experimental-agent-team",
   "description": "Implicit-root Agent Teams roster, durable peer mailbox, and shared task DAG",
   "version": "0.1.1-rc.2",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/unieai/deepseek-harness.git",
     "directory": "packages/experimental/agent-team"
   },
   "type": "module",
@@ -30,33 +30,33 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/schemastery": "workspace:^",
+    "@unieai/schemastery": "workspace:^",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-agent": "workspace:^",
+    "@unieai/uad-brand": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-session": "workspace:^",
+    "@unieai/uad-session-persistence": "workspace:^",
+    "@unieai/uad-subagent": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-agent": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop": "workspace:^",
-    "@deepseek-ai/dsh-agent-loop-testkit": "workspace:^",
-    "@deepseek-ai/dsh-brand": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:^",
-    "@deepseek-ai/dsh-session-persistence-sqlite": "workspace:^",
-    "@deepseek-ai/dsh-subagent": "workspace:^",
-    "@deepseek-ai/dsh-subagent-fork-in-process": "workspace:^",
-    "@deepseek-ai/dsh-subagent-spawn-in-process": "workspace:^",
-    "@deepseek-ai/cordis": "workspace:^"
+    "@unieai/uad-agent": "workspace:^",
+    "@unieai/uad-agent-loop": "workspace:^",
+    "@unieai/uad-agent-loop-testkit": "workspace:^",
+    "@unieai/uad-brand": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-session": "workspace:^",
+    "@unieai/uad-session-persistence": "workspace:^",
+    "@unieai/uad-session-persistence-jsonl": "workspace:^",
+    "@unieai/uad-session-persistence-sqlite": "workspace:^",
+    "@unieai/uad-subagent": "workspace:^",
+    "@unieai/uad-subagent-fork-in-process": "workspace:^",
+    "@unieai/uad-subagent-spawn-in-process": "workspace:^",
+    "@unieai/cordis": "workspace:^"
   }
 }

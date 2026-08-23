@@ -13,7 +13,7 @@
  */
 import { useState } from 'react'
 import clsx from 'clsx'
-import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
+import type { Translate } from '@unieai/uad-client-ui-slots'
 import type { UnieAiActivityDay } from '../account-contract.ts'
 import { ActivityHeatmap, HEATMAP_MODES, type HeatmapMode } from './ActivityHeatmap.tsx'
 import type { AccountKey } from './locales.ts'

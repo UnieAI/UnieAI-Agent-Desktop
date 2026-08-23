@@ -1,7 +1,7 @@
 /** Official DeepSeek Harness occupants for the generic browser-brand slots. */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type { ClientContext } from '@unieai/uad-client-runtime/client'
+import type {} from '@unieai/uad-client-ui-conversation/client'
+import type {} from '@unieai/uad-client-ui-sidebar/client'
 import { OfficialBrandMark, OfficialBrandName } from './Brand.tsx'
 
 /** Required service: the UI slot registry. */

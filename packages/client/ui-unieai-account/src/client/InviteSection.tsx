@@ -9,9 +9,9 @@
  * written out in {@link UsageSection}, and the two pages answer it the same
  * way on purpose.
  */
-import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 // Type-only: the settings slot declarations (the `settings.section` entry).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings/client'
 import type { UnieAiAccountState, UnieAiInviteResult } from '../account-contract.ts'
 import type { AccountSource } from './account-source.ts'
 // Type-only: pulls this package's LocaleNamespaceMap merge ('settings.account').

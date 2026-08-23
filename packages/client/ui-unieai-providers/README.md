@@ -1,4 +1,4 @@
-# @deepseek-ai/dsh-client-ui-unieai-providers
+# @unieai/uad-client-ui-unieai-providers
 
 English | [中文](README.zh.md)
 
@@ -22,7 +22,7 @@ The point of the section is that there is ONE list. Every row here is a row in t
 
 ## How it reaches the account
 
-Through the sign-in gate's `GET`/`POST /auth/providers` and `PATCH`/`DELETE /auth/providers/<id>`, served by [`@deepseek-ai/dsh-unieai-web-gate`](../../unieai/web-gate/README.md). The indirection is the security decision: the API key that authenticates the product's `/api/desktop/*` surface lives in that gate's session table on the host and must not reach a page, so the browser asks the host and the host asks the product.
+Through the sign-in gate's `GET`/`POST /auth/providers` and `PATCH`/`DELETE /auth/providers/<id>`, served by [`@unieai/uad-unieai-web-gate`](../../unieai/web-gate/README.md). The indirection is the security decision: the API key that authenticates the product's `/api/desktop/*` surface lives in that gate's session table on the host and must not reach a page, so the browser asks the host and the host asks the product.
 
 A composition with no gate mounted answers nothing at that path, and the section renders its "could not be read" line with a Retry control. It never invents a provider and never renders an empty list in place of a failed read — an account with no providers and an account it could not ask are different facts.
 
