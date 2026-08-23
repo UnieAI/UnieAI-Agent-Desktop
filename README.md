@@ -6,6 +6,10 @@ DeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek 
 
 It uses an architecture where **everything is a plugin**, and is powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
 
+## UnieAI Agent
+
+This fork is **UnieAI Agent**, the desktop personal edition of the UnieAI Copilot web product. To set it up on your own machine — including pointing it at a copilot-v2 that is not on that machine — read [Developing UnieAI Agent](docs/unieai-development.md).
+
 ## Developer preview
 
 DeepSeek Harness is currently in _developer preview_ and is iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**

@@ -1,0 +1,53 @@
+# Packaging for the desktop shell.
+#
+# `files` ships the shell's own compiled `lib/` and nothing else from this
+# workspace; `asarUnpack` keeps the harness and its native dependencies outside
+# the archive, because a native module cannot be loaded from inside an asar and
+# the harness spawns processes that need real paths on disk.
+appId: com.unieai.agent
+productName: UnieAI Agent
+copyright: UnieAI
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - lib/**/*
+  - package.json
+  - '!**/*.map'
+  - '!**/*.ts'
+
+# The harness runs as a real Node program: it opens files, spawns shells and
+# loads a platform-specific sandbox. None of that works from inside an asar.
+asarUnpack:
+  - node_modules/@deepseek-ai/**
+  - node_modules/koffi/**
+
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.developer-tools
+  # Unsigned for now. `identity: null` makes that explicit rather than letting
+  # electron-builder pick up whatever certificate happens to be in a keychain,
+  # which would produce a build signed by an identity nobody chose.
+  # See src/updates.ts for what changes when a Developer ID exists.
+  identity: null
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - arm64
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+
+publish:
+  provider: github
+  owner: UnieAI
+  repo: UnieAI-Agent-Desktop

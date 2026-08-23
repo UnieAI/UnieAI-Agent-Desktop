@@ -6,6 +6,10 @@ DeepSeek Harness（`dsh`）是由 [DeepSeek AI](https://deepseek.com) 开发的�
 
 它采用**一切皆插件**的架构，并由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
 
+## UnieAI Agent
+
+這個 fork 是 **UnieAI Agent**，UnieAI Copilot 網頁產品的桌面個人版。要在自己的機器上把它跑起來——包含指向一個不在那台機器上的 copilot-v2——請讀[開發 UnieAI Agent](docs/unieai-development.zh.md)。
+
 ## 开发者预览
 
 DeepSeek Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**

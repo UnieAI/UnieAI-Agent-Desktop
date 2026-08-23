@@ -1,0 +1,27 @@
+{
+  "name": "@deepseek-ai/dsh-desktop",
+  "description": "UnieAI Agent desktop shell: an Electron window over a harness this app starts and owns",
+  "version": "0.1.1-rc.2",
+  "private": true,
+  "type": "module",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "npm run build && electron .",
+    "package:dir": "npm run build && electron-builder --dir",
+    "package:mac:arm64": "node scripts/verify-target.mjs darwin arm64 && npm run build && electron-builder --mac --arm64 --publish never",
+    "package:mac:x64": "node scripts/verify-target.mjs darwin x64 && npm run build && electron-builder --mac --x64 --publish never",
+    "package:win:x64": "node scripts/verify-target.mjs win32 x64 && npm run build && electron-builder --win --x64 --publish never",
+    "package:win:arm64": "node scripts/verify-target.mjs win32 arm64 && npm run build && electron-builder --win --arm64 --publish never"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh": "workspace:^",
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.0.0",
+    "typescript": "^5.9.0"
+  }
+}

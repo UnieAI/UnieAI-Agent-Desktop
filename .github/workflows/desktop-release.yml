@@ -1,0 +1,67 @@
+# Build the desktop installers for every target and publish them as one release.
+#
+# The four targets are four RUNNERS, not four flags. The packaged closure
+# carries native binaries chosen per platform and architecture when the package
+# manager installs them — `koffi`, the Win32 sandbox's FFI, is the clearest
+# case — so a macOS build produced on Linux would ship Linux binaries inside a
+# .dmg and fail only when someone ran it. `apps/desktop/scripts/verify-target.mjs`
+# refuses that build rather than shipping it.
+#
+# WHAT MAKES AUTO-UPDATE WORK is not the tag. `electron-updater` reads a feed:
+# for the github provider that is the release's `latest.yml` (Windows) and
+# `latest-mac.yml` (macOS), which electron-builder writes only when it
+# publishes. That is why `--publish always` is used here and `--publish never`
+# in the local scripts. The macOS `zip` target is required for the same reason:
+# Squirrel.Mac updates from the zip, and a release carrying only the .dmg gives
+# people something to install by hand and nothing to update from.
+#
+# macOS builds here are UNSIGNED, so they can be installed but cannot update
+# themselves — see `apps/desktop/src/updates.ts` for what the app does instead,
+# and what changes when a Developer ID exists.
+
+name: desktop-release
+
+on:
+  push:
+    tags:
+      - 'desktop-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            target: package:mac:arm64
+          - runner: macos-13
+            target: package:mac:x64
+          - runner: windows-latest
+            target: package:win:x64
+          - runner: windows-11-arm
+            target: package:win:arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The repository's own engines range. Older Node fails in ways that
+          # do not name the version; see docs/unieai-development.md.
+          node-version: 22
+
+      - uses: pnpm/action-setup@v4
+
+      - run: pnpm install --frozen-lockfile
+
+      # The desktop shell packages the built harness, not its sources.
+      - run: pnpm run build
+
+      - name: Package
+        run: pnpm --filter @deepseek-ai/dsh-desktop run ${{ matrix.target }} -- --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
