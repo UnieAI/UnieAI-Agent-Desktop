@@ -208,3 +208,35 @@
   font-size: 12px;
   line-height: 18px;
 }
+
+/* The disclosure that keeps the Loader's tree folded away until it is asked
+   for. The marker is suppressed and the heading pair carries the affordance,
+   so the closed state reads as a section that can be opened rather than as a
+   heading with a triangle bolted on. */
+.disclosure {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+  cursor: pointer;
+  border-radius: var(--dsw-radius-control);
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 2px;
+}
+
+.summary:hover .title {
+  color: var(--dsw-alias-label-primary);
+}

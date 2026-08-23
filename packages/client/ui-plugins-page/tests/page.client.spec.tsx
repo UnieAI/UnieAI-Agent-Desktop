@@ -93,7 +93,7 @@ describe('the Plugins page', () => {
     // Both answer "what does THIS build run"; two tabs on one subject would
     // make a reader choose between them without a difference to choose on.
     const bench = renderPage(true)
-    fireEvent.click(screen.getByRole('tab', { name: zh['tab.deployment'] }))
+    fireEvent.click(screen.getByRole('tab', { name: zh['tab.build'] }))
     expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: 'plugin-directory' })
     expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: 'cordis-plugins' })
   })

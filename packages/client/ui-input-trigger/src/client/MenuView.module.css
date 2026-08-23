@@ -123,9 +123,13 @@
 
 /* Flips with the composer's overlay anchor. See PopupSelectView.module.css:
    once a conversation is live the strip moves to the card's top edge and this
-   menu grows upward from it, because downward is off the window floor. */
-:global([data-phase='active']) .card,
-:global([data-phase='settling']) .card {
+   menu grows upward from it, because downward is off the window floor.
+
+   `.menu` is this component's root — an earlier version of this rule named
+   `.card`, which is PopupSelectView's root and not a class this sheet declares,
+   so it selected nothing and the menu kept dropping. */
+:global([data-phase='active']) .menu,
+:global([data-phase='settling']) .menu {
   top: auto;
   bottom: calc(100% + 4px);
 }

@@ -1326,6 +1326,46 @@ export type Config = Readonly<Record<string, never>>
 
 来源：[`packages/llm/llm-retry/src/index.ts:24`](../packages/llm/llm-retry/src/index.ts)
 
+<a id="deepseek-aidsh-llm-unieai-cloud"></a>
+
+## `@deepseek-ai/dsh-llm-unieai-cloud`
+
+需要：`llm` · `unieaiGate`
+
+```ts config-catalog
+/** Deployment configuration. */
+export interface Config {
+  /**
+   * The `llm` route key this plugin owns. Configurable only because a route
+   * key is global across adapter families: a deployment that already runs a
+   * route called `unieai` needs somewhere to move this one.
+   */
+  provider: string
+  /** Name shown by model selectors for the whole route. */
+  displayName: string
+  /**
+   * Context capacity assumed for every entitled model. A guess by
+   * construction: the product reports no capacity, and the relay is a facade
+   * over whichever upstream the account is entitled to, so there is nothing to
+   * interrogate. A deployment whose plan serves smaller models corrects it.
+   */
+  defaultContextWindow: number
+  /** Output capability assumed for every entitled model; a guess on the same terms. */
+  defaultMaxTokens: number
+  /**
+   * How often the entitled-model list is re-read while signed in.
+   *
+   * Entitlement changes on the product — a provider added from this desktop's
+   * own API Providers section changes it — and the product sends no signal
+   * when it does, so the list is re-read on a clock. It is not a credential
+   * refresh: the session's API key lives as long as the session.
+   */
+  catalogRefreshMs: number
+}
+```
+
+来源：[`packages/llm/llm-unieai-cloud/src/index.ts:57`](../packages/llm/llm-unieai-cloud/src/index.ts)
+
 <a id="deepseek-aidsh-lsp-stdio"></a>
 
 ## `@deepseek-ai/dsh-lsp-stdio`
@@ -3009,6 +3049,47 @@ export interface Config {
 
 来源：[`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
 
+<a id="deepseek-aidsh-unieai-mcp-supervisor"></a>
+
+## `@deepseek-ai/dsh-unieai-mcp-supervisor`
+
+需要：`unieaiGate`
+
+```ts config-catalog
+/** Deployment configuration. */
+export interface Config {
+  /**
+   * How long before a grant expires the list is re-read. The margin has to
+   * cover the read, the disconnect, and the reconnect — everything that
+   * happens between noticing an expiry and having a working connection again.
+   */
+  refreshSkewMs: number
+  /**
+   * Floor on the wait between two reads. It also covers the cases with no
+   * usable deadline at all: a grant whose expiry this build cannot parse, and
+   * one that is already past.
+   */
+  minRefreshMs: number
+  /**
+   * Ceiling on the wait. It is what paces the read when nothing is mounted,
+   * which is how a server the account connects while signed in is noticed
+   * without a signal from the product.
+   */
+  maxRefreshMs: number
+  /**
+   * Wait before trying again after a read failed. Separate from
+   * {@link minRefreshMs} because a failed read says nothing about when the
+   * grants lapse: whatever is mounted keeps working until it does, and
+   * hammering a product that is down does not bring the next list any sooner.
+   */
+  retryDelayMs: number
+  /** Per-tool-call timeout handed to every mounted instance. */
+  toolCallTimeoutMs: number
+}
+```
+
+来源：[`packages/unieai/mcp-supervisor/src/index.ts:61`](../packages/unieai/mcp-supervisor/src/index.ts)
+
 <a id="deepseek-aidsh-unieai-web-gate"></a>
 
 ## `@deepseek-ai/dsh-unieai-web-gate`
@@ -3036,6 +3117,21 @@ export interface Config {
   claimFirstLogin: boolean
   /** Idle lifetime of a browser session, in milliseconds. */
   idleTimeoutMs: number
+  /**
+   * Admit requests that did not arrive through a reverse proxy.
+   *
+   * A proxy announces itself with `X-Forwarded-For`; a request without one
+   * reached the listen socket directly, which on a desktop deployment means
+   * the operator on this machine. Keeping that path open lets the fence be
+   * enforced on the public host without locking the operator out of the local
+   * port while sign-in is still being brought up.
+   *
+   * What it does NOT do: it is not a loopback check. Anything that can reach
+   * the socket without adding the header is admitted, which includes other
+   * containers when the port is published to a bridge. Turn it off for a
+   * deployment where that set is not trusted.
+   */
+  allowDirectRequests: boolean
 }
 ```
 
@@ -3282,11 +3378,13 @@ export interface Config {
 - `@deepseek-ai/dsh-client-ui-model-selection`（[`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-permission-presets`（[`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-plan`（[`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts)）
+- `@deepseek-ai/dsh-client-ui-plugins-page`（[`packages/client/ui-plugins-page/src/index.ts`](../packages/client/ui-plugins-page/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-reference`（[`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-renderer`（[`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings`（[`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings-general`（[`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings-models`（[`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts)）
+- `@deepseek-ai/dsh-client-ui-settings-notifications`（[`packages/client/ui-settings-notifications/src/index.ts`](../packages/client/ui-settings-notifications/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings-plugin-inventory`（[`packages/client/ui-settings-plugin-inventory/src/index.ts`](../packages/client/ui-settings-plugin-inventory/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings-plugins`（[`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-sidebar`（[`packages/client/ui-sidebar/src/index.ts`](../packages/client/ui-sidebar/src/index.ts)）
@@ -3296,9 +3394,12 @@ export interface Config {
 - `@deepseek-ai/dsh-client-ui-tool`（[`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-trajectory`（[`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-unieai-account`（[`packages/client/ui-unieai-account/src/index.ts`](../packages/client/ui-unieai-account/src/index.ts)）
+- `@deepseek-ai/dsh-client-ui-unieai-providers`（[`packages/client/ui-unieai-providers/src/index.ts`](../packages/client/ui-unieai-providers/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-user-questions`（[`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-workflow-run`（[`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-workspace`（[`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts)）
+- `@deepseek-ai/dsh-client-unieai-account-gateway`（[`packages/client/unieai-account-gateway/src/index.ts`](../packages/client/unieai-account-gateway/src/index.ts)）
+- `@deepseek-ai/dsh-client-unieai-bootstrap`（[`packages/client/unieai-bootstrap/src/index.ts`](../packages/client/unieai-bootstrap/src/index.ts)）
 - `@deepseek-ai/dsh-command-compact` — 需要 `commands` · `compact`（[`packages/compaction/command-compact/src/index.ts`](../packages/compaction/command-compact/src/index.ts)）
 - `@deepseek-ai/dsh-command-feedback` — 需要 `commands`（[`packages/feedback/command-feedback/src/index.ts`](../packages/feedback/command-feedback/src/index.ts)）
 - `@deepseek-ai/dsh-command-goal` — 需要 `commands` · `goals`（[`packages/goal/command-goal/src/index.ts`](../packages/goal/command-goal/src/index.ts)）

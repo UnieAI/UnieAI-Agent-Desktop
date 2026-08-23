@@ -42,7 +42,7 @@ import css from './PluginsPage.module.css'
 import tabCss from './PluginsTabs.module.css'
 
 /** Identifier of one tab on the page. */
-export type PluginsTabId = 'mcp' | 'directory' | 'deployment'
+export type PluginsTabId = 'mcp' | 'directory' | 'build'
 
 /**
  * The page's tabs, in the order they are read, and which registered areas each
@@ -58,7 +58,10 @@ export const TABS = [
   // Two entries under one tab: the Loader's inventory and the deployment's
   // plugin configuration are both about what THIS build runs, and splitting
   // them would put two tabs on one subject.
-  { id: 'deployment', label: 'tab.deployment', entries: ['plugin-directory', 'cordis-plugins'] },
+  // Not "plugins": this tab is what THIS build runs and how it is configured,
+  // and using that word beside a directory of installable plugins was the
+  // collision. The Loader's read-only tree is folded away inside it.
+  { id: 'build', label: 'tab.build', entries: ['plugin-directory', 'cordis-plugins'] },
 ] as const satisfies readonly {
   id: PluginsTabId
   label: PluginsPageKey
@@ -73,6 +76,7 @@ export const TABS = [
 export function PluginsPage({ t, renderSlot, usePage, close }: PluginsPageComponentProps) {
   const open = usePage(state => state.open)
   const [tab, setTab] = useState<PluginsTabId>(TABS[0].id)
+  const current = TABS.find(entry => entry.id === tab) ?? TABS[0]
   const headingId = useId()
   const surface = useRef<HTMLElement | null>(null)
 
@@ -141,8 +145,7 @@ export function PluginsPage({ t, renderSlot, usePage, close }: PluginsPageCompon
             ))}
           </div>
           <div className={css.column}>
-            {(TABS.find(entry => entry.id === tab) ?? TABS[0]).entries
-              .map(id => renderSlot('plugins.page.area', {}, { only: id }))}
+            {current.entries.map(id => renderSlot('plugins.page.area', {}, { only: id }))}
           </div>
         </div>
       </div>

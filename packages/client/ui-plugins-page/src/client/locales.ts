@@ -69,7 +69,7 @@ export const zh = {
   'directory.filterMore': '更多',
   'tab.mcp': 'Studio MCP',
   'tab.directory': '插件目录',
-  'tab.deployment': '本机插件',
+  'tab.build': '本机运行',
   'directory.searchPlaceholder': '搜索插件',
   'directory.groupOther': '其他',
   'directory.empty': '目录中还没有插件。',
@@ -129,7 +129,7 @@ export const zhTW = {
   'directory.remove': '移除',
   'directory.planNote': '目前方案不包含安裝外掛。',  'tab.mcp': 'Studio MCP',
   'tab.directory': '外掛目錄',
-  'tab.deployment': '本機外掛',
+  'tab.build': '本機執行',
 
 } satisfies Record<PluginsPageKey, string>
 
@@ -174,7 +174,7 @@ export const ja = {
   'directory.filterMore': 'その他',
   'tab.mcp': 'Studio MCP',
   'tab.directory': 'プラグインディレクトリ',
-  'tab.deployment': 'ローカルプラグイン',
+  'tab.build': 'このビルド',
   'directory.searchPlaceholder': 'プラグインを検索',
   'directory.groupOther': 'その他',
   'directory.empty': 'ディレクトリにプラグインがまだありません。',
@@ -225,7 +225,7 @@ export const en = {
   'directory.filterMore': 'More',
   'tab.mcp': 'Studio MCP',
   'tab.directory': 'Plugin directory',
-  'tab.deployment': 'Deployment plugins',
+  'tab.build': 'This build',
   'directory.searchPlaceholder': 'Search plugins',
   'directory.groupOther': 'Other',
   'directory.empty': 'The directory has no plugins yet.',

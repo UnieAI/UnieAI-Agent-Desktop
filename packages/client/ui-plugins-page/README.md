@@ -20,9 +20,11 @@ It declares one hole, `plugins.page.area`: a root-scoped list whose owner suppli
 
 The page owns ONE reading measure, centred at 720px, and every area inherits it. It is set here rather than in an area because an area that centred itself while its neighbour ran full width would put two column edges on one page. The frame itself stays full width — the page is a destination, not a dialog — and the way back sits in the frame's own top-left corner, outside the measure, because it belongs to the window rather than to the text.
 
-## Three tabs, not a stack of areas
+## Tabs, not a stack of areas
 
-Each of the three occupants is a place of its own — what the account can install, what it has connected, and what this build loads — and stacking them made the page a scroll in which the directory's 22 rows and the Loader's 128 sat end to end with nothing saying they were different kinds of thing.
+Each occupant is a place of its own — what the account can install, what it has connected, and what this build loads — and stacking them made the page a scroll in which the directory's 22 rows and the Loader's 128 sat end to end with nothing saying they were different kinds of thing.
+
+The loaded-modules tab is **off by default** (`showLoadedModules`, a `Config` field a deployment sets in its own patch layer). Nothing on it can be acted on: the host's inventory service is read-only and cannot enable, disable, add or remove anything. A reader who opens Plugins is looking for what they can install, and a list of engine parts they cannot touch — sitting beside that directory under a similar word — reads as a broken control rather than as a report. It is also why the tab says "Loaded modules" and not "Deployment plugins": the word "plugins" already means the installable kind on this page.
 
 The tab table lives in the page and names entry ids from other packages, which is the one place this page knows its occupants. That coupling is deliberate and gated: `plugins.page.area` carries no per-entry label, so a generic strip would have nothing to write on itself, and a test asserts the table covers every id actually registered — an area added without a tab fails there rather than disappearing from the page.
 

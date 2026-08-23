@@ -153,47 +153,59 @@ export function PluginDirectoryArea({ list, t }: PluginDirectoryAreaProps): Reac
       aria-busy={state.status === 'loading'}
       data-plugin-directory
     >
-      <h2 className={css.title}>{t('title')}</h2>
-      <p className={css.intro}>{t('intro')}</p>
-      {state.status === 'loading' ? <p className={css.status}>{t('loading')}</p> : null}
-      {state.status === 'error'
-        ? (
-          <>
-            <p className={css.failure} role="alert">{t('error')}</p>
-            <div className={css.actions}>
-              <Button variant="outline" size="sm" onClick={retry}>{t('retry')}</Button>
-            </div>
-          </>
-        )
-        : null}
-      {state.status === 'ready'
-        ? (
-          <>
-            <Input
-              className={clsx(css.search)}
-              icon={<IconSearchOutline16 />}
-              type="search"
-              value={query}
-              placeholder={t('search')}
-              aria-label={t('search')}
-              onChange={(event) => { setQuery(event.currentTarget.value) }}
-            />
-            {total === 0 ? <p className={css.status}>{t('empty')}</p> : null}
-            {total > 0 && filteredEntries.length === 0
-              ? <p className={css.status}>{t('emptySearch')}</p>
-              : null}
-            {filteredEntries.length > 0
-              ? (
-                <div className={css.groups}>
-                  <DirectoryGroup id="enabled" label={t('enabledTag')} rows={enabled} t={t} />
-                  <DirectoryGroup id="disabled" label={t('disabledTag')} rows={disabled} t={t} />
-                </div>
-              )
-              : null}
-            <p className={css.note}>{t('note')}</p>
-          </>
-        )
-        : null}
+      {/* Collapsed by default, and the heading IS the control that opens it.
+          This list reports the Loader's tree — 128 entries with names like
+          `typert-registry` — and nothing on it can be acted on: the inventory
+          service is read-only and cannot enable, disable, add or remove
+          anything. Left open it was a wall of identifiers a reader could only
+          scroll past, sitting under the same word as the plugins they CAN
+          install. Whoever wants it opens it; the reading it gives is a
+          deployment report, and reports are gone looking for. */}
+      <details className={css.disclosure}>
+        <summary className={css.summary}>
+          <h2 className={css.title}>{t('title')}</h2>
+          <p className={css.intro}>{t('intro')}</p>
+        </summary>
+        {state.status === 'loading' ? <p className={css.status}>{t('loading')}</p> : null}
+        {state.status === 'error'
+          ? (
+            <>
+              <p className={css.failure} role="alert">{t('error')}</p>
+              <div className={css.actions}>
+                <Button variant="outline" size="sm" onClick={retry}>{t('retry')}</Button>
+              </div>
+            </>
+          )
+          : null}
+        {state.status === 'ready'
+          ? (
+            <>
+              <Input
+                className={clsx(css.search)}
+                icon={<IconSearchOutline16 />}
+                type="search"
+                value={query}
+                placeholder={t('search')}
+                aria-label={t('search')}
+                onChange={(event) => { setQuery(event.currentTarget.value) }}
+              />
+              {total === 0 ? <p className={css.status}>{t('empty')}</p> : null}
+              {total > 0 && filteredEntries.length === 0
+                ? <p className={css.status}>{t('emptySearch')}</p>
+                : null}
+              {filteredEntries.length > 0
+                ? (
+                  <div className={css.groups}>
+                    <DirectoryGroup id="enabled" label={t('enabledTag')} rows={enabled} t={t} />
+                    <DirectoryGroup id="disabled" label={t('disabledTag')} rows={disabled} t={t} />
+                  </div>
+                )
+                : null}
+              <p className={css.note}>{t('note')}</p>
+            </>
+          )
+          : null}
+      </details>
     </section>
   )
 }

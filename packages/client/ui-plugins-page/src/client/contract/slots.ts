@@ -68,6 +68,7 @@ export interface PluginsPageInjected {
   }
   /** Close the page and return to whatever the frame was showing. */
   close: () => void
+
 }
 
 /** Registrant-private injected share of the sidebar's Plugins nav row. */
