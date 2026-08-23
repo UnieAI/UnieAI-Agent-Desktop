@@ -285,3 +285,22 @@
   top: auto;
   bottom: calc(100% + 8px);
 }
+
+/* The rule and caption that introduce the effort levels inside the model menu.
+   A caption rather than a heading: the menu is already named, and the levels
+   are a second choice within it rather than a second menu. */
+.sectionRule {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--dsw-alias-border-l2);
+}
+
+.sectionTitle {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dsw-alias-label-tertiary);
+}
