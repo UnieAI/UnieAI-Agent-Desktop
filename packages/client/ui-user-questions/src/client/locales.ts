@@ -40,3 +40,41 @@ export const en = {
   'plan.decline': 'Refuse',
   'plan.discuss': 'Chat about it',
 } satisfies Record<QuestionKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'error.incomplete': '請先完成這道問題。',
+  'error.unanswered': '請選擇一個選項或填寫自訂答案。',
+  'nav.prev': '上一題',
+  'nav.next': '下一題',
+  'nav.minimize': '收合問題卡片',
+  'nav.maximize': '展開問題卡片',
+  'nav.cancel': '放棄整組問題',
+  'option.recommended': '推薦',
+  'custom.placeholder': '輸入你的答案',
+  'action.skip': '略過本題',
+  'action.next': '下一題',
+  'plan.header': '計畫待審',
+  'plan.approve': '確認執行',
+  'plan.decline': '拒絕',
+  'plan.discuss': '到聊天裡討論',
+} satisfies Record<QuestionKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'error.incomplete': 'まずこの質問に答えてください。',
+  'error.unanswered': '選択肢を選ぶか、自由回答を入力してください。',
+  'nav.prev': '前の質問',
+  'nav.next': '次の質問',
+  'nav.minimize': '質問カードを折りたたむ',
+  'nav.maximize': '質問カードを展開',
+  'nav.cancel': 'すべての質問を破棄',
+  'option.recommended': 'おすすめ',
+  'custom.placeholder': '回答を入力',
+  'action.skip': 'この質問をスキップ',
+  'action.next': '次へ',
+  'plan.header': 'プランの確認',
+  'plan.approve': '承認して実行',
+  'plan.decline': '却下',
+  'plan.discuss': 'チャットで相談',
+} satisfies Record<QuestionKey, string>

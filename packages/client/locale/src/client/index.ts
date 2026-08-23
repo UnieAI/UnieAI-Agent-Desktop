@@ -21,9 +21,10 @@ import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import {
   LOCALE_PREFERENCE_FIELD, LOCALE_SETTINGS_NAMESPACE, type LocaleId, type LocaleSettings,
 } from '../locale-settings.ts'
-import { en, zh, type CommonKey } from '../locales/index.ts'
+import { en, ja, zh, zhTW, type CommonKey } from '../locales/index.ts'
 import {
-  en as settingsEn, zh as settingsZh, type SettingsLocaleKey,
+  en as settingsEn, ja as settingsJa, zh as settingsZh, zhTW as settingsZhTW,
+  type SettingsLocaleKey,
 } from '../locales/settings.ts'
 import type { LanguageRowInjected } from './LanguageRow.tsx'
 import { LanguageRow } from './LanguageRow.tsx'
@@ -105,8 +106,10 @@ export const SETTINGS_NS = 'settings.locale'
 
 /** The two shipped locales. */
 const LOCALES: readonly LocaleDefinition[] = Object.freeze([
-  { id: 'zh', label: '中文' },
   { id: 'en', label: 'English' },
+  { id: 'zh-TW', label: '繁體中文' },
+  { id: 'zh-CN', label: '简体中文' },
+  { id: 'ja', label: '日本語' },
 ])
 
 /**
@@ -117,7 +120,9 @@ const LOCALES: readonly LocaleDefinition[] = Object.freeze([
  * behavior. `zh` alone leaves the script ambiguous, so the shipped Chinese
  * copy names the variant it actually is.
  */
-const DOCUMENT_LANGUAGE: Record<LocaleId, string> = { zh: 'zh-CN', en: 'en' }
+const DOCUMENT_LANGUAGE: Record<LocaleId, string> = {
+  en: 'en', 'zh-TW': 'zh-TW', 'zh-CN': 'zh-CN', ja: 'ja',
+}
 
 /**
  * Point `<html lang>` at the active locale. Called on every locale change,
@@ -238,10 +243,16 @@ export class LocaleRuntime {
    * namespace's texts have one owner). Registration bumps the revision so
    * mounted outlets pick up late-arriving dictionaries.
    * @param ns - a namespace merged into LocaleNamespaceMap.
-   * @param dicts - complete dictionaries keyed by locale id.
+   * @param dicts - dictionaries keyed by locale id. The record is deliberately
+   * partial: {@link get} already resolves a missing key through
+   * {@link FALLBACK_LOCALE}, so a locale that has not been translated yet
+   * reads as English rather than blocking the shipped languages behind it.
    * @returns disposer removing every locale registered by this call (idempotent).
    */
-  register<N extends keyof LocaleNamespaceMap & string>(ns: N, dicts: Record<LocaleId, LocaleDictOf<N>>): () => void
+  register<N extends keyof LocaleNamespaceMap & string>(
+    ns: N,
+    dicts: Partial<Record<LocaleId, LocaleDictOf<N>>>,
+  ): () => void
   /**
    * Single-locale untyped form for namespaces outside the merge table
    * (dynamic composition, tests).
@@ -373,7 +384,14 @@ function detectBrowserLocale(): LocaleId | undefined {
    * WebViews ship a Navigator without it, and spreading undefined would
    * throw at boot. */
   for (const tag of [...(navigator.languages ?? []), navigator.language]) {
-    const primary = tag.toLowerCase().split('-')[0]
+    const lower = tag.toLowerCase()
+    const primary = lower.split('-')[0]
+    if (primary === 'zh') {
+      // Script wins when present; otherwise the region names the variant.
+      // Everything else falls to Simplified, which is `zh` unqualified.
+      if (/hant|tw|hk|mo/.test(lower)) return 'zh-TW'
+      return 'zh-CN'
+    }
     const match = LOCALES.find(locale => locale.id === primary)
     if (match) return match.id
   }
@@ -392,8 +410,10 @@ export const inject = ['slots', 'connection', 'remote', 'settingsScope']
 export function apply(ctx: ClientContext): void {
   const host = ctx.settingsScope.bind<LocaleSettings>({ namespace: LOCALE_SETTINGS_NAMESPACE })
   const locale = new LocaleRuntime(ctx, host)
-  locale.register(COMMON_NS, { zh, en })
-  locale.register(SETTINGS_NS, { zh: settingsZh, en: settingsEn })
+  locale.register(COMMON_NS, { 'zh-CN': zh, 'zh-TW': zhTW, ja, en })
+  locale.register(SETTINGS_NS, {
+    'zh-CN': settingsZh, 'zh-TW': settingsZhTW, ja: settingsJa, en: settingsEn,
+  })
   ctx.provide('locale', locale)
   // The service IS the LocaleFace (bind + getSnapshot/subscribe): install it
   // so the render machinery can synthesize the `t` standard seat.

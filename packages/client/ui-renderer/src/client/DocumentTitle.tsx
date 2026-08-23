@@ -1,6 +1,11 @@
 import { useEffect } from 'react'
 
-const DEFAULT_CLIENT_TITLE = 'DSH Local Build'
+/**
+ * Title when the build injected none. A development build defines no
+ * `DSH_CLIENT_*` value, so this is what a developer's browser tab actually
+ * says — it must be the product's name, not the harness's.
+ */
+const DEFAULT_CLIENT_TITLE = 'UnieAI Agent'
 
 /** Props for the browser title projection. */
 export interface DocumentTitleProps {

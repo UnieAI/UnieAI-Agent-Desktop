@@ -412,8 +412,13 @@ describe('PiAiAdapter provider routing', () => {
 
 describe('provider profile lifecycle', () => {
   it('keeps adapter helpers off the package root', () => {
+    // `resolveProfiles` deliberately left this list: it is a supported entry
+    // point for `dsh-llm-unieai-cloud`, whose route is defined by a sign-in
+    // rather than by a settings document and which therefore has to resolve
+    // its own profiles before building a `PiAiAdapter`. The conversion
+    // helpers below stay internal — nothing outside this package has a reason
+    // to reach pi-ai's own message vocabulary.
     for (const helper of [
-      'resolveProfiles',
       'toPiContext',
       'toPiReplayState',
       'toPiAssistant',

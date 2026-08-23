@@ -80,6 +80,8 @@ harness LLM（大语言模型）seam 的 DeepSeek chat-completions 适配器：�
 - **`ctx.credentials`**——API 密钥按每次 stream 调用解析，取自与端点*同一*份解析后的快照。配置只携带 `apiKeyEnv`，从不携带字面密钥：该引用经凭据 seam 解析，未挂载 seam 时则经受信环境层解析。由于凭据事实与连接事实同行，被 resolver 拒绝的 settings 快照既不贡献自己的端点，也不贡献自己的密钥：整个先前世代继续服务。每个解析出的密钥在使用前都会被校验格式，因此 HTTP 标头无法承载的值会以 `LlmError('INVALID_CREDENTIAL')` 被拒绝，点名失败的入口，但绝不透露密钥的任何部分，而不是以语义不明的 `fetch` `TypeError` 形式浮现。任何地方都没有密钥的请求以 `MISSING_CREDENTIAL` 失败，并点名每个配置入口，同时路由保持注册、catalog 保持可浏览——首次运行的上手流程就是「浏览模型、存入密钥、再次发起提示」，中间无需任何重启。
 - **`ctx.attachments`**——图片请求会在请求时解析该服务，因此 Cordis 加载顺序不会冻结可选图片能力。服务缺失时，图片输入以 `UNSUPPORTED_CONTENT` 失败；纯文本调用不依赖该服务。
 
+catalog 与凭据是两个问题，本插件两个都回答。`ctx.llm.listModels('deepseek-official')` 无论是否曾存下密钥，都会报出随产品交付的那三个模型——它是一个常量，不是一次探测——因此适配器另外实现了 `credentialReady`，用以回答一次请求*此刻*能否完成认证，且经由 `credentials.describe` 作答，不取值：这道就绪探测从不触碰它旁边的那份密钥。未挂载凭据 seam 时，启动环境就是全部凭据平面，改为检查它，排序与 `resolveApiKey` 完全一致。这正是让构建选单的消费方只列出请求真能抵达的模型的依据，同时首次运行的上手流程照常：路由保持注册，`listModels` 照常作答，而密钥一存下，就绪答案就随之翻转，无需重启，也无需重新注册。
+
 唯一在注册期捕获的事实是重试策略：其解析值变化时，插件原地重新注册该路由（同一适配器实例、一个同步区段），因此 `ctx.llm.providerRetryPolicy('deepseek-official')` 始终报告当前策略。
 
 该插件还会在可配置提供方目录（`ctx.llm.listConfigurableProviders()`）中声明自己的路由：提供方为 `deepseek-official`，settings namespace 为 `llm-deepseek`，settings path 为空——整个分节就是 profile。配置界面借助该条目，把本适配器与休眠的 pi-ai 提供方一并呈现。

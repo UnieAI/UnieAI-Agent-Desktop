@@ -70,7 +70,14 @@ import { registerPiAiFlows } from './login.ts'
 
 export { PiAiAdapter } from './adapter.ts'
 export type { PiAiAdapterOptions } from './adapter.ts'
-export { Config } from './config.ts'
+export { Config, resolveProfiles } from './config.ts'
+// The two harness/pi-ai auth adapters and the profile resolver are exported
+// for one reason: an adapter family whose route is not configured from a
+// settings document — `dsh-llm-unieai-cloud`, whose catalog and credential
+// both come from a sign-in — still has to build the same `PiAiAdapter` this
+// plugin builds. Reimplementing either half there would give this repository
+// two answers to "what does a pi-ai route resolve its credential through".
+export { authContextFrom, credentialStoreFrom } from './auth.ts'
 export type {
   PiAiCompatProfile,
   PiAiModality,
@@ -188,6 +195,33 @@ export function apply(ctx: Context, config: Config): void {
     )
   }
 
+  /**
+   * Whether a request against one profile could authenticate right now,
+   * answered WITHOUT reading the credential.
+   *
+   * The ranking mirrors {@link resolveApiKey}, including its first and most
+   * important branch: a profile naming no reference at all defers to pi-ai's
+   * provider-native discovery — the Bedrock credential chain, Vertex ADC, a
+   * stored login — and is therefore READY, not unconfigured. Reporting it
+   * `false` would hide exactly the routes a deployment configured to
+   * authenticate without a key.
+   *
+   * A named reference is judged by `credentials.describe`, which reports
+   * what `resolve` would find without disclosing it. Only that case can
+   * answer `false`.
+   */
+  const credentialReady = async (
+    profile: ResolvedPiAiProviderProfile,
+  ): Promise<boolean | undefined> => {
+    const ref = profile.apiKeyEnv
+    if (ref === undefined) return true
+    const credentials = ctx.get('credentials')
+    if (credentials !== undefined) return (await credentials.describe(ref)).configured
+    // Without the seam the environment is the whole credential plane.
+    const ambient = launchEnvironmentOf(ctx).get(ref)
+    return ambient !== undefined && ambient.value.length > 0
+  }
+
   // One store and one ambient context for the whole plugin instance: both read
   // through `ctx` per call, so they stay correct across the collection rebuilds
   // a configuration change causes, and a sign-in survives one.
@@ -195,6 +229,7 @@ export function apply(ctx: Context, config: Config): void {
   const adapter = new PiAiAdapter({
     profiles,
     resolveApiKey,
+    credentialReady,
     auth,
     resolveAttachments: () => ctx.get('attachments'),
     onReplayDegrade: ({ provider, model, reason }) => {

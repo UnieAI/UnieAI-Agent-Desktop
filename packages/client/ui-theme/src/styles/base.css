@@ -12,4 +12,20 @@
   --ds-transition-duration: 0.2s;
   --ds-transition-duration-fast: 0.1s;
   --ds-transition-duration-slow: 0.3s;
+
+  /* Corner scale. The inherited system had none — every component wrote its own
+     literal — so these name the four radii the conversation language actually
+     uses. Existing literals are left alone: sweeping all 241 of them would
+     conflict on every upstream rebase for no visible gain. New and restyled
+     surfaces consume these. */
+  --dsw-radius-control: 8px;    /* sidebar rows, menu items, small controls */
+  --dsw-radius-card: 16px;      /* attachment and result cards */
+  --dsw-radius-bubble: 24px;    /* the user message bubble */
+  --dsw-radius-pill: 9999px;    /* header chrome, chips, icon buttons, composer */
+
+  /* Conversation body type. 16px/24px reads dense at the 48rem measure the
+     transcript uses; 15px on a 1.625 leading is the reference proportion. */
+  --dsw-chat-body-size: 15px;
+  --dsw-chat-body-leading: 1.625;
+  --dsw-chat-measure: 48rem;
 }

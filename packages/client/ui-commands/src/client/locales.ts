@@ -26,3 +26,27 @@ export const en = {
   'listbox.aria': '/{command} matches',
   'notice.imagesUnsupported': '/{command} does not accept image attachments; remove them first',
 } satisfies Record<CommandKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'search.placeholder': '搜尋…',
+  'search.aria': '篩選選項',
+  'status.loading': '正在載入選項…',
+  'status.applying': '套用中…',
+  'status.empty': '沒有選項',
+  'overlay.aria': '/{command} 選項',
+  'listbox.aria': '/{command} 相符項目',
+  'notice.imagesUnsupported': '/{command} 不接受圖片附件，請先移除圖片',
+} satisfies Record<CommandKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'search.placeholder': '検索…',
+  'search.aria': '選択肢を絞り込む',
+  'status.loading': '選択肢を読み込み中…',
+  'status.applying': '適用中…',
+  'status.empty': '選択肢がありません',
+  'overlay.aria': '/{command} の選択肢',
+  'listbox.aria': '/{command} の候補',
+  'notice.imagesUnsupported': '/{command} は画像の添付に対応していません。先に画像を削除してください',
+} satisfies Record<CommandKey, string>

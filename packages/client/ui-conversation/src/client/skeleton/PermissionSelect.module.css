@@ -4,22 +4,26 @@
   gap: 4px;
   min-width: 0;
   max-width: 220px;
+  /* Matched to the agent-preset chip beside it: the two sit in the same group
+     and select the same kind of thing, so they are one control shape — a
+     borderless 28px pill, not a hairline box next to a pill. */
   height: 28px;
-  padding: 0 4px 0 8px;
+  padding: 0 8px;
   border: none;
-  /* Rounded chip chrome, matching the sibling model trigger. */
-  border-radius: 24px;
+  border-radius: 16px;
   outline: none;
   background: transparent;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--dsw-alias-label-primary);
   font-size: 13px;
   line-height: 20px;
   font-weight: 500;
   cursor: pointer;
+  transition: background-color 150ms var(--ds-ease-in-out), border-color 150ms var(--ds-ease-in-out), color 150ms var(--ds-ease-in-out);
 }
 
 .trigger:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
+  background: var(--dsw-specific-bubble);
+  color: var(--dsw-alias-label-primary);
 }
 
 .trigger:focus-visible {
@@ -27,7 +31,7 @@
 }
 
 .trigger:disabled {
-  color: var(--dsw-alias-label-dimmed);
+  opacity: 0.5;
   cursor: default;
 }
 
@@ -36,8 +40,8 @@
   flex: 0 0 auto;
 }
 
-/* The shared 16px glyphs render one step smaller on the exposed trigger;
-   the dropdown rows keep the full 16px. */
+/* The shared 16px glyphs render one step smaller on the exposed trigger
+   (reference h-3.5); the dropdown rows keep the full 16px. */
 .triggerIcon svg {
   width: 14px;
   height: 14px;
@@ -55,8 +59,13 @@
      the svg and floats the glyph off-center in the 28px trigger. */
   display: inline-flex;
   flex: 0 0 auto;
-  color: var(--dsw-alias-label-caption);
-  transition: transform 120ms ease;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* Reference chevron is h-3 (12px) — one step under the mode glyph beside it. */
+.chevron svg {
+  width: 12px;
+  height: 12px;
 }
 
 /* Narrow composer: the trigger collapses to icon + chevron so the row keeps
@@ -69,8 +78,4 @@
   .trigger:has(.triggerIcon) .triggerLabel {
     display: none;
   }
-}
-
-.chevronOpen {
-  transform: rotate(180deg);
 }

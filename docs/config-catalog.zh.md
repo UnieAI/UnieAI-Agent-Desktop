@@ -3009,6 +3009,38 @@ export interface Config {
 
 来源：[`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
 
+<a id="deepseek-aidsh-unieai-web-gate"></a>
+
+## `@deepseek-ai/dsh-unieai-web-gate`
+
+依赖：`webServer`
+
+```ts config-catalog
+/** Deployment configuration. */
+export interface Config {
+  /** Origin of the UnieAI Copilot web product this desktop signs in against. */
+  productUrl: string
+  /**
+   * Whether the guard actually refuses traffic. Off by default so a
+   * composition can mount the gate, exercise the sign-in flow at
+   * `/auth/login`, and only then commit to it — turning a half-verified fence
+   * on by default would lock an operator out of a working machine.
+   */
+  enforce: boolean
+  /**
+   * Accounts allowed in. Empty plus `claimFirstLogin` means the first account
+   * to complete a sign-in becomes the owner and the only one admitted.
+   */
+  allowedUserIds: string[]
+  /** Whether an empty allowlist is claimed by the first successful sign-in. */
+  claimFirstLogin: boolean
+  /** Idle lifetime of a browser session, in milliseconds. */
+  idleTimeoutMs: number
+}
+```
+
+来源：[`packages/unieai/web-gate/src/index.ts:41`](../packages/unieai/web-gate/src/index.ts)
+
 <a id="deepseek-aidsh-user-approval"></a>
 
 ## `@deepseek-ai/dsh-user-approval`
@@ -3231,9 +3263,11 @@ export interface Config {
 - `@deepseek-ai/dsh-client-locale`（[`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts)）
 - `@deepseek-ai/dsh-client-modules` — 需要 `webServer` · `loader`（[`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts)）
 - `@deepseek-ai/dsh-client-runtime`（[`packages/client/runtime/src/index.ts`](../packages/client/runtime/src/index.ts)）
+
 - `@deepseek-ai/dsh-client-ui-agent-preset`（[`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-attachment`（[`packages/client/ui-attachment/src/index.ts`](../packages/client/ui-attachment/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-brand-official`（[`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts)）
+- `@deepseek-ai/dsh-client-ui-brand-unieai`（[`packages/client/ui-brand-unieai/src/index.ts`](../packages/client/ui-brand-unieai/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-commands`（[`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-conversation`（[`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-cordis`（[`packages/extensions/ui-cordis/src/index.ts`](../packages/extensions/ui-cordis/src/index.ts)）
@@ -3261,6 +3295,7 @@ export interface Config {
 - `@deepseek-ai/dsh-client-ui-theme`（[`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-tool`（[`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-trajectory`（[`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts)）
+- `@deepseek-ai/dsh-client-ui-unieai-account`（[`packages/client/ui-unieai-account/src/index.ts`](../packages/client/ui-unieai-account/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-user-questions`（[`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-workflow-run`（[`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-workspace`（[`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts)）

@@ -1,10 +1,15 @@
-/* Plugins section: compact tabs plus the configurable plugin card list. */
+/* Plugins section: compact tabs over the configurable plugin list.
+ *
+ * The list is rows, not cards — see PluginCard.module.css. The only edges on
+ * this sheet are the rule under the tab strip and the rule that starts the
+ * list; the active tab's 2px underline carries no radius, because the shared
+ * scale has no value that small and a 2px bar does not need one. */
 
 .section {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 760px;
+  max-width: 720px;
   color: var(--dsw-alias-label-primary);
 }
 
@@ -52,7 +57,6 @@
   bottom: -1px;
   left: 0;
   height: 2px;
-  border-radius: 2px 2px 0 0;
   background: var(--dsw-alias-label-primary);
   content: '';
 }
@@ -60,7 +64,6 @@
 .tab:focus-visible {
   outline: 2px solid var(--dsw-alias-state-business-primary);
   outline-offset: 2px;
-  border-radius: 2px;
   color: var(--dsw-alias-label-primary);
 }
 
@@ -69,13 +72,16 @@
   padding-top: 2px;
 }
 
+/* The plugin list. Its rule is the one above the first row; each row draws the
+   one beneath it. No gap: a divided list is continuous, and 10px of air
+   between rules would read as a stack of boxes with the boxes rubbed out. */
 .cards {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  border-top: 1px solid var(--dsw-alias-border-l2);
 }
 
 .empty {

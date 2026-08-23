@@ -22,7 +22,7 @@ async function bench(isLoopback = true, settings?: object, services: object = {}
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
-  locale.setLocale('zh')
+  locale.setLocale('zh-CN')
   ctx.provide('locale', locale)
   // The plugins inject `remote`; forwarded events reach them through the
   // same `$dispatch` handoff the connection sink makes.
@@ -106,7 +106,7 @@ describe('ui-settings-models apply', () => {
     expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('Models')
     const injected = b.slots.entries('settings.section')[0]!.inject as unknown as () => import('../src/client/ModelsSection.tsx').ModelsSectionInjected
     expect(injected().t('deleteTitle')).toBe('Delete {provider}?')
-    b.locale.setLocale('zh')
+    b.locale.setLocale('zh-CN')
     expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('模型')
     expect(injected().t('deleteTitle')).toBe('删除 {provider}？')
   })
@@ -116,7 +116,7 @@ describe('ui-settings-models apply', () => {
     await b.ctx.plugin({ inject: [...inject], apply }).await()
     b.locale.setLocale('en')
     expect(b.slots.entries('settings.section')).toHaveLength(0)
-    b.locale.setLocale('zh')
+    b.locale.setLocale('zh-CN')
   })
 
   it('re-registers after an HMR collapse re-declares the slot (stale disposer must not block)', async () => {
@@ -136,7 +136,7 @@ describe('ui-settings-models apply', () => {
     // The locale path also recovers through the same ledger re-check.
     b.locale.setLocale('en')
     expect(resolveSlotLabel(b.slots.entries('settings.section')[0]!.options.label)).toBe('Models')
-    b.locale.setLocale('zh')
+    b.locale.setLocale('zh-CN')
   })
 
   it('registers the zh/en nav dictionaries and disposes everything with the fiber', async () => {

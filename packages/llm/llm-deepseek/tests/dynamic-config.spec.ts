@@ -23,6 +23,8 @@ import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
 
 const NS = settingsNamespace('llm-deepseek')
 const KEY_REF = credentialRef('DEEPSEEK_API_KEY')
+/** The single provider route llm-deepseek owns. */
+const PROVIDER = 'deepseek-official'
 const IMAGE_REF: ImageAttachmentRef = {
   attachmentId: AttachmentId(`sha256:${'a'.repeat(64)}`),
   mediaType: 'image/png',
@@ -151,6 +153,36 @@ describe('request-level dynamic configuration', () => {
     await prompt(ctx)
     expect(server.headers[0]?.authorization).toBe('Bearer sk-arrived')
     await expect(access(join(dir, '.anonymous-user-id'))).resolves.toBeUndefined()
+  })
+
+  it('reports the route unusable until a key exists, so nothing advertises models no request could reach', async () => {
+    vi.stubEnv('DEEPSEEK_API_KEY', '')
+    const dir = await home()
+    const { ctx } = await boot(dir, { baseURL: 'http://127.0.0.1:1' })
+
+    // The shipped catalog is a constant: it names its models whether or not a
+    // credential was ever stored. That is exactly why readiness is a separate
+    // question, and why a consumer building a menu has to ask it.
+    expect(await ctx.llm.listModels(PROVIDER)).not.toHaveLength(0)
+    expect(await ctx.llm.credentialReady(PROVIDER)).toBe(false)
+
+    await ctx.credentials.set(KEY_REF, 'sk-arrived')
+    // Live, like every other fact this plugin resolves per operation: no
+    // restart and no re-registration between the two answers.
+    expect(await ctx.llm.credentialReady(PROVIDER)).toBe(true)
+  })
+
+  it('reads readiness without disclosing the credential', async () => {
+    vi.stubEnv('DEEPSEEK_API_KEY', '')
+    const dir = await home()
+    const { ctx } = await boot(dir, { baseURL: 'http://127.0.0.1:1' })
+    await ctx.credentials.set(KEY_REF, 'sk-never-echoed')
+
+    const answer = await ctx.llm.credentialReady(PROVIDER)
+    // A boolean by type, so there is no field a later edit could fill with the
+    // secret this probe stands next to.
+    expect(typeof answer).toBe('boolean')
+    expect(JSON.stringify(answer)).not.toContain('sk-never-echoed')
   })
 
   it('rejects a stored credential no header can carry, never echoing it in the failure', async () => {

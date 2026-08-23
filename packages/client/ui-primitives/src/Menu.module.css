@@ -3,8 +3,11 @@
   display: inline-flex;
 }
 
-/* Dropdown card (figma MenuDropdown 122:9481 / 419:16920): menu surface,
- * r12, inverted hairline border, shadow-lv3, 4px inset padding. */
+/* Dropdown card: menu surface, r6, inverted hairline border, shadow-lv3, 4px
+ * inset padding. The metrics are the UnieAI Copilot dropdown's — its content
+ * card is `rounded-md p-1` on a `--radius: 0.5rem` scale, so 8 - 2 = 6 —
+ * adopted here as the house menu shape rather than kept as a second look for
+ * one caller (see the Menu metrics note in Menu.tsx). */
 .list,
 .submenu {
   /* min-widths below are the design's outer card widths — include the pad. */
@@ -14,7 +17,7 @@
   flex-direction: column;
   gap: 0;
   border: 1px solid var(--dsw-alias-border-inverted);
-  border-radius: 12px;
+  border-radius: 6px;
   background: var(--dsw-specific-menu);
   box-shadow: var(--dsw-shadow-lv3);
   /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens. The
@@ -26,13 +29,15 @@
   --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
-/* Primary card is 218 wide in the design across both hosts. */
+/* Primary card is 240 wide: the reference dropdown's `w-[240px]`, taken as a
+ * floor here because these menus size to their content rather than to a fixed
+ * width. */
 .list {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   z-index: 100;
-  min-width: 218px;
+  min-width: 240px;
   max-width: 360px;
 }
 
@@ -92,21 +97,24 @@
   position: relative;
 }
 
-/* Menu cell (figma .Menu_cell): min-h 40, r10, pad 10/8, 14/22 primary,
- * gap 8 between leading icon / label / trailing check. */
+/* Menu cell: min-h 36, r4, pad 12/8, 14/20 primary, gap 8 between leading
+ * icon / label / trailing check. The reference row is `gap-2 px-3 py-2
+ * text-sm` on shadcn's `rounded-sm` (8 - 4 = 4), which is 8 + 20 + 8 = 36
+ * tall; the min-height only holds that floor for a row whose label wraps to
+ * nothing taller. */
 .item {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: 40px;
-  padding: 8px 10px;
+  min-height: 36px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: 4px;
   background: transparent;
   cursor: pointer;
   font-size: 14px;
-  line-height: 22px;
+  line-height: 20px;
   color: var(--dsw-alias-label-primary);
   text-align: left;
 }
@@ -202,18 +210,26 @@
   background: var(--dsw-alias-interactive-bg-hover-danger);
 }
 
-/* Heading row: non-interactive small grey text, padding aligned with items. */
+/* Heading row: non-interactive small grey text, on the items' own 12px inset
+ * so a heading and the rows under it share one left edge. 12/20 is the
+ * reference label — `px-3 py-2` around `text-sm` leading with the text itself
+ * dropped to `text-[12px]`. */
 .label {
-  padding: 8px 10px;
+  padding: 8px 12px;
   font-size: 12px;
-  line-height: 16px;
+  line-height: 20px;
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* Separator cell (figma 122:9481): py 4 / px 2 around the hairline. */
+/* Separator cell: 4px above and below, spanning the row column's full width.
+ * The reference rule is `-mx-1 my-1`, which also cancels the card's own 4px
+ * inset; that bleed is not reproduced because `.viewport` is the scroll box
+ * for `.scrollable` menus, and content 4px past its right edge is scrollable
+ * overflow — every separator-bearing menu would grow a horizontal scrollbar
+ * for a 4px hairline extension. */
 .separator {
   height: 1px;
-  margin: 4px 2px;
+  margin: 4px 0;
   background: var(--dsw-alias-border-l1);
 }
 
@@ -222,14 +238,16 @@
  * .list's 4px pad, so bottom: -4px matches the list's outer bottom edge.
  * Horizontal: list pad (4px) + 6px card gap = 10px past itemWrap — plain
  * `100% + 6px` collapses to ~2px between outer card edges.
- * ::before bridges the full gap so the pointer can cross without mouseLeave. */
+ * ::before bridges the full gap so the pointer can cross without mouseLeave.
+ * The nested card hugs its rows from a 128px floor (`min-w-[8rem]`, the
+ * reference sub-content's own minimum) rather than the primary card's 240. */
 .submenu {
   position: absolute;
   top: auto;
   bottom: -4px;
   left: calc(100% + 10px);
   z-index: 101;
-  min-width: 163px;
+  min-width: 128px;
 }
 
 .submenu::before {

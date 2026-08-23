@@ -265,6 +265,20 @@ function ok<T>(request: RpcRequest<unknown>, value: T): RpcResponse<T> {
  * provider dispatch, but is not injected back into the selector after its
  * owning catalog stops advertising it. Per-provider failures ride `failures`
  * without failing the sound groups; groups that advertise nothing are dropped.
+ *
+ * A route that cannot authenticate is dropped whole, before its models are
+ * even listed. A model catalog is an offer, and an adapter registers its
+ * routes when its plugin mounts — long before anyone stores a key — so a
+ * shipped catalog advertises models that no request could reach. Offering one
+ * promises a run that can only end in `MISSING_CREDENTIAL`, which is a worse
+ * answer than an empty menu: the empty menu sends the reader to the Models
+ * page, and the broken entry sends them to a provider error.
+ *
+ * It is a drop, not a `failure`: a failure is a catalog this host could not
+ * read and is worth reporting, whereas an unconfigured provider is a
+ * deployment state the Models page already narrates. Only a DEFINITE `false`
+ * drops — `undefined` means the adapter cannot tell, and hiding a working
+ * provider on an unanswered question is the failure that costs more.
  */
 async function buildModelCatalog(ctx: Context): Promise<{
   groups: ModelProviderGroup[]
@@ -272,6 +286,7 @@ async function buildModelCatalog(ctx: Context): Promise<{
 }> {
   const catalog = await Promise.all(ctx.llm.listProviders().map(async (provider) => {
     try {
+      if (await ctx.llm.credentialReady(provider.id) === false) return { kind: 'unusable' as const }
       const models = await ctx.llm.listModels(provider.id)
       const entries = await Promise.all(models.map(async (model) => {
         const resolved = await ctx.llm.resolveModelInfo(provider.id, model.id)

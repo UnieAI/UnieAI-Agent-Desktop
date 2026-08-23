@@ -3,9 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="A polished AI workspace for research, documents, code, and agent-driven tasks." />
+    <!-- Matches the web product: the shell paints before the app boots, so the
+         browser chrome must already be the right colour in both schemes. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>DSH Local Build</title>
+    <!-- One icon declaration, the same one the web product makes: its .ico
+         carries the 32 and 48px UnieAI marks. No SVG icon — an svg+xml link
+         wins over the .ico in Chrome, and the only SVG this app ever had was
+         the upstream harness's whale. -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <!-- iOS ignores the manifest icons and composites transparency poorly, so
+         it gets the opaque 180x180 square instead. -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <title>UnieAI Agent</title>
   </head>
   <body>
     <div id="root"></div>

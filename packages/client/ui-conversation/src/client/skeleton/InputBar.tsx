@@ -10,7 +10,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import clsx from 'clsx'
 import {
-  IconPlusOutline16, IconWarningOutline16, Toast, Tooltip,
+  IconWarningOutline16, Toast, Tooltip,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 // Type-only: the `plan` projection key merge (the TodoDock posture — the
 // composer reads a host-computed value; the domain owns the key).
@@ -30,6 +30,7 @@ import { ReferenceIcon } from '../reference/ReferenceIcon.tsx'
 import { ContextMeter } from './ContextMeter.tsx'
 import { PermissionSelect } from './PermissionSelect.tsx'
 import { isSafariBrowser, repairSafariTextareaLayout } from './safari.ts'
+import { useVoiceInput } from './useVoiceInput.ts'
 import css from './InputBar.module.css'
 
 /** Decoration product of the no-session state (no machine, empty draft). */
@@ -502,6 +503,26 @@ export function InputBar({
     keyboard.track(keyboard.snapshot.draft, caret)
   }
 
+  // Dictation inserts through the SAME paste transaction a keyboard paste
+  // opens, so a spoken phrase and a pasted one are one kind of event to the
+  // machine: both get token upgrading, both are one undo step. Only finalized
+  // phrases arrive here — interim text would rewrite the draft as the engine
+  // changed its mind mid-phrase.
+  const acceptDictation = useCallback((phrase: string): void => {
+    const el = inputRef.current
+    if (keyboard === undefined || el === null || machineBusy || locked) return
+    const sel = selectionOf(el)
+    // A phrase lands as a word, not glued to the preceding one.
+    const separator = sel.start > 0 && !/\s$/.test(el.value.slice(0, sel.start)) ? ' ' : ''
+    const text = `${separator}${phrase}`
+    keyboard.pasteBegin(text, sel)
+    const caret = sel.start + text.length
+    restoreCaret(el, caret)
+    keyboard.track(keyboard.snapshot.draft, caret)
+  }, [keyboard, machineBusy, locked])
+
+  const voice = useVoiceInput(acceptDictation)
+
   // Intake pre-check (DeepSeek Chat semantics): an addition that would break
   // a projected limit is refused as a whole batch, announced immediately, and
   // never enters the rail — no more submit-time failure rolling the rail
@@ -678,7 +699,13 @@ export function InputBar({
   }
 
   return (
-    <div className={clsx(css.root, variant === 'hero' && css.hero)}>
+    // `data-composer` marks this subtree for `Menu`'s side resolution: a popup
+    // owned by the composer opens upward once a conversation is live, while a
+    // popup owned by a message in the transcript above keeps its own geometry.
+    // A DOM marker rather than a prop because the composer's controls arrive
+    // from several packages through slots, and threading the phase to each of
+    // them would put this one layout fact in every one of their contracts.
+    <div className={clsx(css.root, variant === 'hero' && css.hero)} data-composer="">
       {toast !== null && (
         <Toast
           key={toast.seq}
@@ -780,7 +807,13 @@ export function InputBar({
                 onMouseDown={keepFocus}
                 onClick={onToggleCommandMenu}
               >
-                <IconPlusOutline16 size={14} />
+                {/* The reference `+`: a 16px 2-weight stroke cross, not a
+                    filled glyph — it has to read as chrome beside the hairline
+                    box it sits in, not as a painted mark. */}
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12h14" />
+                  <path d="M12 5v14" />
+                </svg>
               </button>
             </Tooltip>
             <div className={css.modes}>
@@ -797,14 +830,36 @@ export function InputBar({
               <Tooltip label={t('input.stop')} side="top" delayMs={500}>
                 <button
                   type="button"
-                  className={css.primary}
+                  className={css.stop}
                   aria-label={t('input.stop')}
                   disabled={stop === undefined}
                   onMouseDown={keepFocus}
                   onClick={stop}
                 >
-                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
-                    <rect x="3" y="3" width="10" height="10" rx="3" fill="currentColor" />
+                  <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden>
+                    <rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor" />
+                  </svg>
+                </button>
+              </Tooltip>
+            )}
+            {/* No mic where speech recognition does not exist (Firefox, and
+                any non-secure origin): a control that cannot work is worse
+                than an absent one. */}
+            {voice.supported && (
+              <Tooltip label={voice.listening ? t('input.voiceStop') : t('input.voice')} side="top" delayMs={500}>
+                <button
+                  type="button"
+                  className={clsx(css.voice, voice.listening && css.voiceLive)}
+                  aria-label={voice.listening ? t('input.voiceStop') : t('input.voice')}
+                  aria-pressed={voice.listening}
+                  disabled={locked || machineBusy}
+                  onMouseDown={keepFocus}
+                  onClick={() => { if (voice.listening) voice.stop(); else voice.start() }}
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="9" y="2" width="6" height="12" rx="3" />
+                    <path d="M19 10v1a7 7 0 0 1-14 0v-1" />
+                    <path d="M12 18v4" />
                   </svg>
                 </button>
               </Tooltip>
@@ -819,12 +874,14 @@ export function InputBar({
                 onClick={onPrimary}
               >
                 {primaryStops ? (
-                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
-                    <rect x="3" y="3" width="10" height="10" rx="3" fill="currentColor" />
+                  <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden>
+                    <rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor" />
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
-                    <path d="M8.3125 0.980183C8.66767 1.0531 8.97902 1.20418 9.2627 1.43233C9.48724 1.61297 9.73029 1.85793 9.97949 2.10714L14.707 6.83468L13.293 8.24874L9 3.95577V15.0417H7V3.95577L2.70703 8.24874L1.29297 6.83468L6.02051 2.10714C6.26971 1.85793 6.51277 1.61297 6.7373 1.43233C6.97662 1.23986 7.28445 1.04402 7.6875 0.980183C7.8973 0.947006 8.1031 0.95516 8.3125 0.980183Z" fill="currentColor" />
+                  /* The reference send glyph: a 16px arrow-up at stroke 2.5. */
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M12 19V5" />
+                    <path d="m5 12 7-7 7 7" />
                   </svg>
                 )}
               </button>

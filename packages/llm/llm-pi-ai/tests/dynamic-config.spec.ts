@@ -75,6 +75,47 @@ describe('login flows in a real composition', () => {
   })
 })
 
+describe('credential readiness', () => {
+  it('calls a profile that names no reference ready, because it authenticates natively', async () => {
+    const dir = await home()
+    const ctx = await boot(dir, {
+      providers: {
+        'acme-native': {
+          displayName: 'Acme Native',
+          api: 'openai-completions',
+          baseURL: 'http://127.0.0.1:1/v1',
+          models: [{ id: 'acme-large' }],
+        },
+      },
+    })
+
+    // A blank key field is how the Models page records "authenticate the
+    // provider's own way" — the Bedrock chain, Vertex ADC, a stored login.
+    // Reporting it unconfigured would hide precisely those deployments.
+    expect(await ctx.llm.credentialReady('acme-native')).toBe(true)
+  })
+
+  it('calls a profile whose named reference is unset unusable, and ready once it is stored', async () => {
+    vi.stubEnv('ACME_KEYED_API_KEY', '')
+    const dir = await home()
+    const ctx = await boot(dir, {
+      providers: {
+        'acme-keyed': {
+          displayName: 'Acme Keyed',
+          api: 'openai-completions',
+          baseURL: 'http://127.0.0.1:1/v1',
+          apiKeyEnv: 'ACME_KEYED_API_KEY',
+          models: [{ id: 'acme-large' }],
+        },
+      },
+    })
+
+    expect(await ctx.llm.credentialReady('acme-keyed')).toBe(false)
+    await ctx.credentials.set(credentialRef('ACME_KEYED_API_KEY'), 'sk-stored')
+    expect(await ctx.llm.credentialReady('acme-keyed')).toBe(true)
+  })
+})
+
 describe('request-level dynamic profiles', () => {
   it('mounts bare and dormant, then registers routes the moment settings supply providers', async () => {
     vi.stubEnv('PI_DYNAMIC_KEY', '')

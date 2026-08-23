@@ -1,8 +1,19 @@
-/** Locale bundles for the plugin configuration section and its plugin cards. */
+/**
+ * Locale bundles for the cordis plugin area and its plugin cards.
+ *
+ * `title` names the deployment, not the product. This area sits on the
+ * Plugins page under that page's own "Plugins" heading, and two headings
+ * reading "Plugins" one above the other would say that the page is this
+ * registry — which is the confusion the page was built to end.
+ *
+ * Vendor names in card copy name the SUPPLIER of a capability, never this
+ * product. The web-search card is served by DeepSeek's search API and says
+ * so; it is not "the DeepSeek search" of a rebranded desktop.
+ */
 
 /** Locale keys these surfaces render. */
 export type PluginsSettingsLocaleKey =
-  | 'nav' | 'title' | 'intro' | 'tabs' | 'configurableTab' | 'empty'
+  | 'title' | 'intro' | 'tabs' | 'configurableTab' | 'empty'
   | 'overridden' | 'reset' | 'readOnly' | 'expand' | 'collapse'
   | 'save' | 'saving' | 'discard' | 'unsaved' | 'saveFailed' | 'invalidNumber'
   | 'bashTitle' | 'bashDescription' | 'bashTimeoutMs' | 'bashTimeoutMsHint'
@@ -14,8 +25,7 @@ export type PluginsSettingsLocaleKey =
 
 /** English copy. */
 export const en: Record<PluginsSettingsLocaleKey, string> = {
-  nav: 'Plugins',
-  title: 'Plugins',
+  title: 'Deployment plugins',
   intro: 'Configure and inspect the plugins installed in this deployment.',
   tabs: 'Plugin views',
   configurableTab: 'Plugin configuration',
@@ -42,7 +52,7 @@ export const en: Record<PluginsSettingsLocaleKey, string> = {
   agentLoopMaxParallel: 'Parallel tool calls',
   agentLoopMaxParallelHint: 'Upper bound on parallel-safe calls running at once within one step.',
   webSearchTitle: 'Web search',
-  webSearchDescription: 'The DeepSeek search provider.',
+  webSearchDescription: 'Web search for the agent, served by the DeepSeek search API.',
   webSearchApiKey: 'API key',
   webSearchApiKeyHint: 'Stored outside the settings file. Leave blank to keep the current key.',
   webSearchApiKeySet: 'A key is configured.',
@@ -55,8 +65,7 @@ export const en: Record<PluginsSettingsLocaleKey, string> = {
 
 /** Simplified Chinese copy. */
 export const zh: Record<PluginsSettingsLocaleKey, string> = {
-  nav: '插件',
-  title: '插件',
+  title: '部署插件',
   intro: '配置和查看本部署已安装的插件。',
   tabs: '插件视图',
   configurableTab: '插件配置',
@@ -83,7 +92,7 @@ export const zh: Record<PluginsSettingsLocaleKey, string> = {
   agentLoopMaxParallel: '并行工具调用数',
   agentLoopMaxParallelHint: '同一步内最多同时运行多少个可并行的调用。',
   webSearchTitle: '网页搜索',
-  webSearchDescription: 'DeepSeek 搜索提供方。',
+  webSearchDescription: '为 Agent 提供的网页搜索，由 DeepSeek 搜索 API 提供服务。',
   webSearchApiKey: 'API Key',
   webSearchApiKeyHint: '不写入设置文件。留空表示保持当前密钥。',
   webSearchApiKeySet: '已配置密钥。',

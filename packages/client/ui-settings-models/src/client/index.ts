@@ -65,7 +65,7 @@ export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-settings-models: copy dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { 'zh-CN': zh, en }), 'ui-settings-models: copy dictionaries')
 
   const connection = ctx.get('connection') as ConnectionHandle
   const schema = createSettingsSchemaOperations(ctx.settingsSchema)

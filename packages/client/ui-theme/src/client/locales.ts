@@ -18,3 +18,19 @@ export const en = {
   'appearance.dark': 'Dark',
   'appearance.system': 'System',
 } satisfies Record<ThemeKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'appearance.title': '外觀',
+  'appearance.light': '明亮模式',
+  'appearance.dark': '陰暗模式',
+  'appearance.system': '跟隨系統',
+} satisfies Record<ThemeKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'appearance.title': '外観',
+  'appearance.light': 'ライト',
+  'appearance.dark': 'ダーク',
+  'appearance.system': 'システムに合わせる',
+} satisfies Record<ThemeKey, string>

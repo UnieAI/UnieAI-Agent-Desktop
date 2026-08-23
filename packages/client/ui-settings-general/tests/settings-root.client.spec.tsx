@@ -2,8 +2,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useEffect, useState } from 'react'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
 import type { SettingsRootComponentProps } from '../src/client/shell-contract.ts'
 import { SettingsRoot } from '../src/client/SettingsRoot.tsx'
+import { SettingsPanelController } from '../src/client/settings-panel-store.ts'
+import { en } from '../src/client/locales.ts'
 
 afterEach(cleanup)
 
@@ -49,7 +52,13 @@ function mount({
       byId: { 'active-session': { blank: false } },
     })) as never
   const unusedHook = (() => { throw new Error('unused by SettingsRoot') }) as never
+  const panel = new SettingsPanelController()
   const props: SettingsRootComponentProps = {
+    usePanel: bindSnapshotSelector(panel.store),
+    openPanel: (sectionId, anchorId) => { panel.open(sectionId, anchorId) },
+    selectSection: (sectionId) => { panel.select(sectionId) },
+    closePanel: () => { panel.close() },
+    t: key => (en as Record<string, string>)[key] ?? key,
     useSessions,
     useWorkspaces: unusedHook,
     wide,
@@ -72,7 +81,7 @@ function mount({
       for (const fn of [...listeners]) fn()
     })
   }
-  return { view, renderSlot, bump, listeners }
+  return { view, renderSlot, bump, listeners, panel }
 }
 
 function openPanel() {
@@ -173,23 +182,36 @@ describe('SettingsPanel navigation', () => {
   it('gives every section a nav glyph, distinct for the ids the shell knows', () => {
     mount({
       rows: [
-        { id: 'general', order: 0, label: 'General' },
+        { id: 'unieai-account', order: 0, label: 'Account' },
+        { id: 'unieai-usage', order: 1, label: 'Usage' },
+        { id: 'unieai-invite', order: 2, label: 'Invite friends' },
+        { id: 'general', order: 3, label: 'General' },
+        { id: 'unieai-providers', order: 5, label: 'API Providers' },
         { id: 'models', order: 10, label: 'Models' },
         { id: 'agent-presets', order: 20, label: 'Agent presets' },
         { id: 'plugins', order: 30, label: 'Plugins' },
         { id: 'contributed', order: 40, label: 'Contributed' },
+        { id: 'also-contributed', order: 50, label: 'Also contributed' },
       ],
     })
     openPanel()
     // Glyphs carry no id of their own, so the drawn paths are what tells them apart.
-    const glyphs = ['General', 'Models', 'Agent presets', 'Plugins', 'Contributed']
+    // Every id `navIcon` names is listed, so two rows drifting onto one mark —
+    // which Usage and Models did — fails here rather than in someone's eyes.
+    const named = [
+      'Account', 'Usage', 'Invite friends', 'General',
+      'API Providers', 'Models', 'Agent presets', 'Plugins',
+    ].map(name => screen.getByRole('button', { name }).querySelector('svg')?.innerHTML)
+    const unnamed = ['Contributed', 'Also contributed']
       .map(name => screen.getByRole('button', { name }).querySelector('svg')?.innerHTML)
 
-    expect(glyphs.every(glyph => glyph !== undefined && glyph !== '')).toBe(true)
-    // The three ids the shell names get their own glyph; every other section —
-    // including one this package never heard of — shares the gear.
-    expect(new Set(glyphs.slice(0, 4)).size).toBe(4)
-    expect(glyphs[4]).toBe(glyphs[0])
+    expect([...named, ...unnamed].every(glyph => glyph !== undefined && glyph !== '')).toBe(true)
+    // Every id the shell names gets its own glyph; every section it does not —
+    // one contributed by a package this one never heard of — shares the gear,
+    // which is what the two unnamed rows agreeing proves.
+    expect(new Set(named).size).toBe(named.length)
+    expect(unnamed[1]).toBe(unnamed[0])
+    expect(named).not.toContain(unnamed[0])
   })
 
   it('switches the rendered section on nav click', () => {

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import clsx from 'clsx'
 import type { PermissionSelect as PermissionSelectValue } from '@deepseek-ai/dsh-permission-presets/client'
-import { IconChevronDownOutline14, Menu, RiskConfirmation } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Menu, RiskConfirmation } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ComposerBarProps } from '../contract/slots.ts'
 import css from './PermissionSelect.module.css'
@@ -133,7 +132,7 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
         selectedId={currentValue}
         onSelect={choose}
         onClose={() => { setOpen(false) }}
-        side="top"
+        side="bottom"
         anchor={
           <button
             type="button"
@@ -147,9 +146,12 @@ export function PermissionSelect({ value, locked, command, t }: PermissionSelect
               <span className={css.triggerIcon} aria-hidden>{permissionGlyph(currentValue)}</span>
             )}
             <span className={css.triggerLabel}>{current === undefined ? displayName(currentValue) : optionLabel(current)}</span>
-            {/* Same glyph + open rotation as the sibling ModelSelect trigger. */}
-            <span className={clsx(css.chevron, open && css.chevronOpen)} aria-hidden>
-              <IconChevronDownOutline14 />
+            {/* The reference trigger's chevron: a 2-weight stroke, 12px, and
+                deliberately NOT rotated on open — the menu itself is the state. */}
+            <span className={css.chevron} aria-hidden>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
             </span>
           </button>
         }

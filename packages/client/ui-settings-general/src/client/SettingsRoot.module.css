@@ -1,49 +1,87 @@
-/* Settings shell (figma 501:29904 mask context / 501:29947 panel): sidebar
-   foot trigger row + centered 1080x700 modal panel. The trigger uses the
-   sidebar foot's 42px row / 36px rail circle rhythm; the
-   panel is a two-column layout — 188px nav rail + content column with a
-   54px header and the 24px-padded options area. */
+/* Settings shell: sidebar foot trigger + the centered modal panel. The
+   trigger is the glyph in the sidebar foot's identity row expanded, and the
+   rail's 36px circle collapsed.
 
-/* Trigger row: the 42px foot-row box shared with the Cordis footer action. */
+   The panel is the UnieAI Copilot settings dialog, resolved from its Tailwind
+   source (components/settings/settings-dialog.tsx for the shell,
+   components/settings/settings-client.tsx for the layout inside it):
+
+     dialog   `md:w-[70vw] sm:h-[90vh] sm:max-h-[900px]` at `rounded-lg`
+              (shadcn's `--radius: 0.5rem`, so `lg` is 8), and below the 640
+              breakpoint `w-screen h-[100dvh] rounded-none` — full screen.
+     band     `border-b px-4 pt-safe-4 pb-4 md:px-8`, inner `max-w-4xl mx-auto`
+     body     `px-4 py-6 md:px-8 md:py-8`, inner `max-w-5xl mx-auto pb-12`
+     columns  `flex flex-col md:flex-row gap-4 md:gap-8`
+     nav      `w-44` (176) `md:sticky md:top-4 md:self-start`, `gap-1`
+     content  `flex-1 min-w-0`
+
+   One height for every section, taken from the viewport rather than the
+   content: sections differ by hundreds of pixels (a settings list against the
+   composition editor), and a content-sized panel would resize under the
+   pointer on every nav click. Whatever does not fit scrolls in `.body`. */
+
+/* Settings trigger. Expanded it is the glyph at the right end of the sidebar
+   foot's identity row — the reference column's own 15px chrome gear in the
+   tertiary ink — and nothing more: the row box, its padding, and its radius
+   belong to the seat, which this control shares with the account occupant. A
+   15px hit target is too small to aim at, so the pointer target and the hover
+   fill are a pseudo-element inset outside the glyph box; the glyph itself
+   never moves. */
 .trigger {
+  position: relative;
   flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: calc(100% + 4px);
-  height: 42px;
-  margin: 4px -2px;
-  padding: 0 10px 0 8px;
-  box-sizing: border-box;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  padding: 0;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--dsw-radius-control);
   background: transparent;
+  color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
-  overflow: hidden;
-  color: var(--dsw-alias-label-primary);
   font-family: inherit;
-  font-size: 14px;
-  line-height: 22px;
+  transition: color 150ms var(--ds-ease-in-out);
+}
+
+.trigger::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -5px;
+  border-radius: var(--dsw-radius-control);
+  transition: background-color 150ms var(--ds-ease-in-out);
 }
 
 .trigger:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+.trigger:hover::before {
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
-/* Rail trigger: the same 36x36 circle box as the other rail controls. */
+.trigger:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 4px;
+}
+
+/* Rail trigger: the same 36x36 circle box as the other rail controls, in the
+   rail's primary ink, with the hover fill back on that circle. The seat owns
+   the rhythm above it. */
 .trigger.rail {
   width: 36px;
   height: 36px;
-  margin: 8px 0 10px;
   justify-content: center;
-  gap: 0;
   padding: 0;
-  border-radius: 50%;
+  border-radius: var(--dsw-radius-pill);
+  color: var(--dsw-alias-label-primary);
 }
 
-.triggerLabel {
-  overflow: hidden;
-  white-space: nowrap;
+.trigger.rail::before {
+  inset: 0;
+  border-radius: var(--dsw-radius-pill);
 }
 
 /* Full-viewport layer (figma Mask 501:29946 #000@24%): mask tokens match the
@@ -64,25 +102,25 @@
   backdrop-filter: var(--dsw-mask-blur);
 }
 
-/* Panel (figma Settings 501:29947): r24, white, lv3 shadow (figma effects
-   match --dsw-shadow-lv3 exactly); figma's 1080x700 is shrunk to 800 wide.
-   One height for every section, taken from the viewport rather than the
-   content: sections differ by hundreds of pixels (a settings list against the
-   composition editor), and a content-sized panel would resize under the
-   pointer on every nav click. Whatever does not fit scrolls in `.options`. */
+/* Panel: the phone case is the base rule — full screen, square corners — and
+   the two breakpoints widen it back into a dialog. `100dvh` rather than
+   `100vh` so a mobile browser's retracting toolbar does not leave the close
+   button under the chrome. */
 .panel {
   position: relative;
   z-index: 1;
   display: flex;
-  width: 800px;
-  height: min(800px, calc(100vh - 48px));
-  max-width: calc(100vw - 48px);
-  border-radius: 24px;
+  flex-direction: column;
+  width: 100vw;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
   overflow: hidden;
   background: var(--dsw-alias-bg-layer-2);
   box-shadow: var(--dsw-shadow-lv3);
   /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens.
-     Declared on the panel rather than the scrolling `.options` child so the
+     Declared on the panel rather than the scrolling `.body` child so the
      elevation choice sits with the surface; the custom properties inherit
      down to whichever descendant scrolls (see ui-theme
      styles/scrollbar.css for the rebinding contract). */
@@ -90,61 +128,243 @@
   --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
-/* Nav rail (figma .Setting-nav 501:29958): 188 wide, pad (12,22,12,0),
-   gap 18, no own fill — the panel white shows through. */
-.nav {
+@media (min-width: 640px) {
+  .panel {
+    width: 92vw;
+    max-width: 92vw;
+    height: 90vh;
+    max-height: 900px;
+    border-radius: 8px;
+  }
+}
+
+@media (min-width: 768px) {
+  .panel {
+    width: 70vw;
+    max-width: 70vw;
+  }
+}
+
+/* Header band: spans both columns, hairline underneath, and holds its own
+   content to the 896px reading measure centred in the panel. */
+.band {
   flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  width: 188px;
-  padding: 22px 12px 0;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 16px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
   box-sizing: border-box;
 }
 
-/* Title row (figma 501:29959): 16/500 lh24, 12px side padding. */
-.navTitle {
-  padding: 0 12px;
-  font-size: 16px;
-  line-height: 24px;
+@media (min-width: 768px) {
+  .band {
+    padding-inline: 32px;
+  }
+}
+
+.bandInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 896px;
+  margin: 0 auto;
+}
+
+.bandText {
+  min-width: 0;
+}
+
+/* Heading: 20/28 on a phone, 24/32 from the tablet width up — the reference's
+   `text-xl md:text-2xl font-medium tracking-tight`. */
+.title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
   font-weight: 500;
+  letter-spacing: -0.025em;
   color: var(--dsw-alias-label-primary);
 }
 
-/* Cell stack (figma 501:29961): gap 4. */
-.navList {
+@media (min-width: 768px) {
+  .title {
+    font-size: 24px;
+    line-height: 32px;
+  }
+}
+
+/* Summary line under the heading: what this panel is for, in the quiet ink
+   the reference gives it (`text-zinc-500 dark:text-zinc-400`). */
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Scroll region under the band: the whole column pair scrolls together, so a
+   long section does not scroll inside a shorter box than the panel. */
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 24px 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .body {
+    padding: 32px;
+  }
+}
+
+/* The columns are centred as one block at the 1024px measure; the 48px tail
+   keeps the last row clear of the panel's bottom edge. */
+.bodyInner {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
+
+.columns {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .columns {
+    flex-direction: row;
+    gap: 32px;
+  }
+}
+
+/* Nav column: a horizontal strip above the section on a phone, and from the
+   tablet width up a 176px column that sticks 16px below the top of the scroll
+   while the section beside it moves. No fill of its own — the panel shows
+   through. */
+.nav {
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  padding-bottom: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    position: sticky;
+    top: 16px;
+    align-self: flex-start;
+    flex-direction: column;
+    width: 176px;
+    padding-bottom: 0;
+    overflow-x: visible;
+  }
+}
+
+/* Group heading: the small uppercase rule the UnieAI web product's settings
+   page divides its nav with (PERSONAL / CHAT). It is a label, not a row —
+   no hit box, no fill — so it takes the caption ink and sits on the same
+   12px inset as the cells under it. The heading is a column-only mark: on a
+   phone the nav is one scrolling strip of rows with nothing to head. */
+.navGroup {
+  flex: none;
+  display: flex;
+  align-items: center;
   gap: 4px;
 }
 
-/* Nav cell (figma .Setting-nav-cell 501:29962): 164x40, r12, pad
-   (12,9,16,9), gap 8; label 14/400 lh22; selected fill #EBEEF2. */
+@media (min-width: 768px) {
+  .navGroup {
+    display: block;
+    margin-bottom: 8px;
+  }
+}
+
+.navGroupLabel {
+  display: none;
+  padding: 12px 12px 4px;
+  font-size: 10px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dsw-alias-label-caption);
+}
+
+@media (min-width: 768px) {
+  .navGroupLabel {
+    display: block;
+  }
+}
+
+.navGroupRows {
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+}
+
+@media (min-width: 768px) {
+  .navGroupRows {
+    flex-direction: column;
+  }
+}
+
+/* Nav cell, in the reference settings page's own box: 36px tall at `8px 12px`
+   around a 14/20 line, radius 6. Ink carries the selection — the selected row
+   takes the full-strength label at 500 over a fill, an unselected one the
+   secondary ink at 400. That is the reference's own choice, and its reason
+   holds here: the active state was a `bg-primary/10` + `text-primary` pill,
+   which is a COLOURED chip, and selection is a state rather than the screen's
+   one wanted action, so it reads as a quiet neutral fill plus full-strength
+   text (`NavTab` in components/settings/settings-client.tsx). */
 .navCell {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 40px;
-  padding: 9px 16px 9px 12px;
+  height: 36px;
+  padding: 8px 12px;
   box-sizing: border-box;
   border: none;
-  border-radius: 12px;
+  border-radius: 6px;
   background: transparent;
   cursor: pointer;
   font-family: inherit;
   font-size: 14px;
-  line-height: 22px;
+  line-height: 20px;
   font-weight: 400;
-  color: var(--dsw-alias-label-primary);
+  color: var(--dsw-alias-label-secondary);
   text-align: left;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
 }
 
 .navCell:hover {
   background: var(--dsw-specific-sidebar-nav-item-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
 .navCell.active {
   background: var(--dsw-specific-sidebar-nav-item-active);
+  color: var(--dsw-alias-label-primary);
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navCell {
+    transition: none;
+  }
 }
 
 .navIcon {
@@ -159,37 +379,32 @@
   text-overflow: ellipsis;
 }
 
-/* Content column (figma Content 501:29980): header + options. */
+/* Section column: the page beside the nav. It carries no padding or scroll of
+   its own — `.body` owns both for the pair. */
 .content {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-/* Header (figma .Header 501:29981): h54, pad (10,20,14,8), close right. */
-.header {
-  flex: none;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  height: 54px;
-  padding: 20px 14px 8px 10px;
-  box-sizing: border-box;
-}
-
+/* Registrant-owned header actions, at the right end of the band's measure and
+   clear of the close button's corner. */
 .actions {
-  min-width: 0;
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  margin-left: auto;
 }
 
-/* Close button (figma .Icon_container 501:29982): 28x28, r28, 14px glyph. */
+/* Close button: 28x28 with a 14px glyph, so its centre lands on the
+   reference's `absolute right-4 top-4` 16px icon. Pinned to the panel rather
+   than laid out in the band — the band's content is centred on the reading
+   measure, and the close belongs to the dialog's corner. */
 .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -207,20 +422,16 @@
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
-/* Options area (figma Options 501:29983): pad (24,0,24,24), scrolls. */
-.options {
-  flex: 1;
-  min-height: 0;
-  padding: 0 24px 24px;
-  overflow-y: auto;
-}
-
-/* Visually-hidden text seat (close button accessible name from slot content). */
+/* Visually-hidden text seat (close button accessible name from slot content).
+   Both clips on purpose: `clip` is deprecated, and an engine that drops it
+   would paint the word over the panel header. `clip-path` is the one that
+   survives. */
 .hiddenLabel {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }

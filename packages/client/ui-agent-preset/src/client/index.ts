@@ -63,7 +63,7 @@ export function apply(ctx: ClientContext): void {
     for (const read of rosterReaders) read()
   })
 
-  ctx.effect(() => ctx.locale.register('settings.agentPreset', { zh, en }), 'ui-agent-preset: settings row dictionaries')
+  ctx.effect(() => ctx.locale.register('settings.agentPreset', { 'zh-CN': zh, en }), 'ui-agent-preset: settings row dictionaries')
 
   const injected = (): AgentPresetRowInjected => ({
     hooks: { agentPreset: controller.store },

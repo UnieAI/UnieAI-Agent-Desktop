@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-22-unieai-chrome-metrics.md
+2026-08-22-unieai-chrome-metrics.md: 76c26bd7a5ca0c61b343d1d4426aa1c52d551afa
+2026-08-22-unieai-chrome-metrics.zh.md: 3910d19ad6620f32b9a59730c91de3d43fb136d4

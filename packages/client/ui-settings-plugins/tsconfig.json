@@ -27,6 +27,9 @@
       "path": "../ui-settings"
     },
     {
+      "path": "../ui-plugins-page"
+    },
+    {
       "path": "../../api/remotes/tsconfig.client.json"
     },
     {

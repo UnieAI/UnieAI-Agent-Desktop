@@ -83,6 +83,13 @@ export interface PiAiAdapterOptions {
    */
   resolveApiKey: (provider: string, profile: ResolvedPiAiProviderProfile) => Promise<string | undefined>
   /**
+   * Answer whether one already-resolved profile could authenticate a request
+   * right now, WITHOUT reading the credential. Absent when the composition
+   * supplies no way to tell, which reports the route as unknown rather than
+   * as unusable — see {@link LlmAdapter.credentialReady}.
+   */
+  credentialReady?: (profile: ResolvedPiAiProviderProfile) => Promise<boolean | undefined>
+  /**
    * How every collection this adapter builds resolves auth the request-level
    * `apiKey` override does not cover. Required rather than optional: a
    * collection built without them gets pi-ai's in-memory default store, which
@@ -242,6 +249,23 @@ export class PiAiAdapter extends LlmAdapter {
       throw new LlmError(`pi-ai adapter does not own provider "${provider}"`, 'NO_ADAPTER')
     }
     return profile
+  }
+
+  /**
+   * Whether one owned route could authenticate right now.
+   *
+   * A route this adapter does not own answers `undefined`: "not mine" is not
+   * "unusable", and turning it into a negative would let one adapter hide
+   * another's models.
+   * @param provider - a route this adapter may own.
+   * @returns whether a request could authenticate, or `undefined` when unknown.
+   */
+  override credentialReady(provider: string): Promise<boolean | undefined> {
+    const answer = this.config.credentialReady
+    if (answer === undefined) return Promise.resolve(undefined)
+    const profile = this.config.profiles().get(provider)
+    if (profile === undefined) return Promise.resolve(undefined)
+    return answer(profile)
   }
 
   /** The configured descriptor for one exact route/model pair within one snapshot. */

@@ -49,3 +49,47 @@ export const en: Record<WorkflowRunKey, string> = {
 
 /** Union of this namespace's dictionary keys. */
 export type WorkflowRunKey = keyof typeof zh
+
+/** Traditional Chinese dictionary (same key set). */
+export const zhTW: Record<WorkflowRunKey, string> = {
+  'run.title': '{name}',
+  'run.members.one': '{count} 個成員',
+  'run.members.other': '{count} 個成員',
+  'run.empty': '沒有啟動成員',
+  'phase.unassigned': '未分階段',
+  'phase.empty': '空的階段名稱',
+  'statusCount.running': '執行中 {count}',
+  'statusCount.completed': '已完成 {count}',
+  'statusCount.failed': '失敗 {count}',
+  'statusCount.cancelled': '已取消 {count}',
+  'statusCount.interrupted': '已中斷 {count}',
+  'member.empty': '空的成員名稱',
+  'member.open': '開啟 {name}',
+  'status.running': '執行中',
+  'status.completed': '已完成',
+  'status.failed': '失敗',
+  'status.cancelled': '已取消',
+  'status.interrupted': '已中斷',
+}
+
+/** Japanese dictionary (same key set). */
+export const ja: Record<WorkflowRunKey, string> = {
+  'run.title': '{name}',
+  'run.members.one': 'メンバー {count} 件',
+  'run.members.other': 'メンバー {count} 件',
+  'run.empty': '開始されたメンバーはありません',
+  'phase.unassigned': 'フェーズなし',
+  'phase.empty': 'フェーズ名が空です',
+  'statusCount.running': '実行中 {count}',
+  'statusCount.completed': '完了 {count}',
+  'statusCount.failed': '失敗 {count}',
+  'statusCount.cancelled': 'キャンセル {count}',
+  'statusCount.interrupted': '中断 {count}',
+  'member.empty': 'メンバー名が空です',
+  'member.open': '{name} を開く',
+  'status.running': '実行中',
+  'status.completed': '完了',
+  'status.failed': '失敗',
+  'status.cancelled': 'キャンセル',
+  'status.interrupted': '中断',
+}

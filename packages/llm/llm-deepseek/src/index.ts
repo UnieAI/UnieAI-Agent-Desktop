@@ -431,11 +431,35 @@ export function apply(ctx: Context, config: Config): void {
     )
   }
 
+  /**
+   * Whether a request could authenticate right now, answered WITHOUT reading
+   * the key: `credentials.describe` reports exactly what `resolve` would find
+   * — the process environment, the managed store, and `.env` layers — and
+   * reports it value-free, so a readiness probe never has to touch a secret.
+   *
+   * The ranking mirrors {@link resolveApiKey} exactly, including the branch
+   * where no credential seam is mounted and the launching environment is the
+   * whole credential plane. Any other outcome answers `undefined` rather than
+   * `false`: this plugin ships a catalog of three models that exist whether or
+   * not a key does, and a consumer hiding them needs a definite negative, not
+   * a failed probe.
+   */
+  const credentialReady = async (
+    connection: ResolvedDeepSeekOptions,
+  ): Promise<boolean | undefined> => {
+    const ref = connection.apiKeyEnv
+    const credentials = ctx.get('credentials')
+    if (credentials !== undefined) return (await credentials.describe(ref)).configured
+    const ambient = launchEnvironmentOf(ctx).get(ref)
+    return ambient !== undefined && ambient.value.length > 0
+  }
+
   let userId: AnonymousUserId | undefined
   const resolveUserId = (): AnonymousUserId => userId ??= getOrCreateAnonymousUserId()
   const adapter = new DeepSeekAdapter({
     options,
     resolveApiKey,
+    credentialReady,
     resolveUserId,
     resolveAttachments: () => ctx.get('attachments'),
   })

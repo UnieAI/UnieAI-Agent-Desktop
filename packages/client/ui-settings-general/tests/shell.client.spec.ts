@@ -6,6 +6,7 @@ import { apply as settingsApply, inject as settingsInject } from '@deepseek-ai/d
 import { apply, inject } from '../src/client/index.ts'
 import type { SettingsRootInjected } from '../src/client/shell-contract.ts'
 import { SettingsRoot } from '../src/client/SettingsRoot.tsx'
+import { PluginsNavRow } from '../src/client/PluginsNavRow.tsx'
 
 async function bench() {
   const ctx = new Context()
@@ -15,7 +16,7 @@ async function bench() {
   ctx.provide('locale', {
     register: () => () => {},
     bind: () => (key: string) => key,
-    getSnapshot: () => ({ active: 'zh', locales: [], revision: 0 }),
+    getSnapshot: () => ({ active: 'zh-CN', locales: [], revision: 0 }),
     subscribe: () => () => {},
   } as never)
   ctx.provide('connection', {
@@ -50,6 +51,18 @@ const CHILD_SPECS = {
 } as const
 
 describe('ui-settings apply', () => {
+  it('fills the sidebar nav seat with the Plugins row on the shell\'s own store', async () => {
+    const b = await bench()
+    b.slots.register(
+      { name: 'root', children: { 'sidebar.nav.action': { kind: 'list', scope: 'root' } } } as never,
+      () => null,
+    )
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const entry = b.slots.entries('sidebar.nav.action')[0]!
+    expect(entry.component).toBe(PluginsNavRow)
+    expect(entry.options.id).toBe('plugins')
+  })
+
   it('declares only the slot registry (a pure composition face, no locale)', () => {
     expect(inject).toEqual(['slots', 'locale', 'connection', 'settingsScope'])
   })

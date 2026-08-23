@@ -1,3 +1,17 @@
+/* Agent presets, in the settings-panel design language: `border-l2` hairlines,
+ * radii from the shared scale (`--dsw-radius-control` 8, `--dsw-radius-card`
+ * 16, `--dsw-radius-pill`), and no literal colour.
+ *
+ * A preset IS a card, and stays one: the roster is a grid of peers you scan and
+ * pick from, and the description is the part that tells two apart. What the
+ * cards could not do before was SAY they were picked — `.card` was filled with
+ * `bg-layer-3` and `.cardActive` with `bg-layer-2`, and layers 1-3 all resolve
+ * to the same white in the light palette, so the selected preset differed from
+ * its siblings only under the dark theme. The card is outlined now, and the one
+ * in use takes the `bg-module-platform` fill, which separates in both. Every
+ * other `bg-layer-1` hover on this page had the same problem and is now
+ * `interactive-bg-hover`. */
+
 .section {
   display: flex;
   flex-direction: column;
@@ -55,10 +69,9 @@
 
 .card {
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 12px;
+  border-radius: var(--dsw-radius-card);
   display: flex;
   flex-direction: column;
-  background: var(--dsw-alias-bg-layer-3);
   transition: border-color .16s, background .16s;
 }
 
@@ -67,9 +80,11 @@
   border-color: var(--dsw-alias-label-dimmed);
 }
 
-/* The default preset reads as selected, not merely badged. */
+/* The default preset reads as selected, not merely badged — in both palettes:
+   the fill is the module surface, which is a real step away from the page in
+   light as well as in dark. */
 .cardActive {
-  background: var(--dsw-alias-bg-layer-2);
+  background: var(--dsw-alias-bg-module-platform);
   border-color: var(--dsw-alias-label-primary);
 }
 
@@ -84,14 +99,14 @@
 }
 
 .brokenBadge {
-  border-radius: 999px;
+  border-radius: var(--dsw-radius-pill);
   padding: 1px 8px;
   font-size: 11px;
   line-height: 17px;
   white-space: nowrap;
   font-weight: 500;
   background: var(--dsw-alias-state-error-primary);
-  color: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-primary-foreground);
 }
 
 /* The discovery-reported reason, verbatim: it names the file and the fix. */
@@ -116,7 +131,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px 12px;
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--dsw-radius-card) var(--dsw-radius-card) 0 0;
 }
 
 .cardMain:disabled {
@@ -142,7 +157,7 @@
 
 .badge,
 .inUse {
-  border-radius: 999px;
+  border-radius: var(--dsw-radius-pill);
   padding: 1px 8px;
   font-size: 11px;
   line-height: 17px;
@@ -158,7 +173,7 @@
 .inUse {
   margin-left: auto;
   background: var(--dsw-alias-label-primary);
-  color: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-primary-foreground);
 }
 
 /* Bounded to four lines. A preset publishes its own description, so one long
@@ -183,7 +198,7 @@
 
 .cardId {
   margin-top: auto;
-  font-family: var(--dsw-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--ds-font-family-code);
   font-size: 11px;
   color: var(--dsw-alias-label-dimmed);
 }
@@ -202,7 +217,7 @@
   position: relative;
   appearance: none;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--dsw-radius-pill);
   padding: 6px;
   background: none;
   color: var(--dsw-alias-label-tertiary);
@@ -217,7 +232,7 @@
 }
 
 .iconButton:hover:not(:disabled) {
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
 
@@ -233,9 +248,9 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--dsw-radius-control);
   background: var(--dsw-alias-label-primary);
-  color: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-primary-foreground);
   font-size: 11px;
   line-height: 17px;
   white-space: nowrap;
@@ -267,7 +282,7 @@
 }
 
 .revealedPath code {
-  font-family: var(--dsw-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--ds-font-family-code);
   color: var(--dsw-alias-label-secondary);
   user-select: all;
   overflow-wrap: anywhere;
@@ -279,7 +294,7 @@
 
 .secondaryButton {
   border: none;
-  border-radius: 7px;
+  border-radius: var(--dsw-radius-control);
   padding: 5px 8px;
   background: none;
   color: var(--dsw-alias-label-secondary);
@@ -290,7 +305,7 @@
 
 
 .secondaryButton:hover:not(:disabled) {
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsw-alias-interactive-bg-hover);
 }
 
 .secondaryButton:disabled {
@@ -314,10 +329,10 @@
   box-sizing: border-box;
   padding: 9px 12px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 10px;
+  border-radius: var(--dsw-radius-control);
   font: inherit;
   font-size: 13px;
-  background: var(--dsw-alias-bg-layer-1);
+  background: var(--dsw-alias-bg-module-platform);
   color: var(--dsw-alias-label-primary);
 }
 
@@ -347,10 +362,10 @@
   max-height: min(52vh, 480px);
   overflow: auto;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 10px;
-  background: var(--dsw-alias-bg-layer-2);
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-bg-module-platform);
   color: var(--dsw-alias-label-secondary);
-  font-family: var(--dsw-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--ds-font-family-code);
   font-size: 12.5px;
   line-height: 1.5;
   white-space: pre;
@@ -379,8 +394,9 @@
 }
 
 /* The conversational authoring entry, after the card grid in the spot the
-   create button vacated. Dashed like the Models page's add affordances: it
-   reads as a place a preset will appear, not a command. */
+   create button vacated. It spans the grid because that is where a new preset
+   will appear, and it is outlined at the card radius so it reads as the empty
+   seat in that grid rather than as one more control. */
 .creatorButton {
   box-sizing: border-box;
   align-self: stretch;
@@ -389,8 +405,8 @@
   justify-content: center;
   gap: 6px;
   height: 44px;
-  border: 1px dashed var(--dsw-alias-border-l3);
-  border-radius: 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-card);
   font: inherit;
   font-size: 14px;
   line-height: 22px;

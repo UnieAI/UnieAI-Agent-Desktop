@@ -64,6 +64,26 @@ class CatalogAdapter extends LlmAdapter {
   }
 }
 
+/**
+ * An adapter that answers the credential-readiness question, so the catalog's
+ * "only a definite no hides a route" rule can be exercised in all three
+ * states rather than only in the default `undefined` one.
+ */
+class KeyedAdapter extends CatalogAdapter {
+  constructor(
+    name: string,
+    models: readonly LlmModelInfo[],
+    private readonly ready: boolean | undefined | Error,
+  ) {
+    super(name, models)
+  }
+
+  override credentialReady(): Promise<boolean | undefined> {
+    if (this.ready instanceof Error) return Promise.reject(this.ready)
+    return Promise.resolve(this.ready)
+  }
+}
+
 const REASONING: LlmModelReasoningInfo = {
   efforts: [
     { id: ReasoningEffortId('off'), name: 'Off' },
@@ -475,6 +495,51 @@ describe('Web session model selection', () => {
     expect(catalog.routable).toBe(true)
     expect(catalog.groups.flatMap(group => group.models.map(model => model.id)))
       .not.toContain('unlisted-but-served')
+    await ctx.fiber.dispose()
+  })
+
+  it('hides a route with no credential, and shows one that is ready or cannot say', async () => {
+    const { ctx, sessionId } = await harness()
+    ctx.llm.registerAdapter(['keyless'], new KeyedAdapter('Keyless Gateway', [
+      { provider: 'keyless', id: 'keyless-large', name: 'Keyless Large' },
+    ], false))
+    ctx.llm.registerAdapter(['keyed'], new KeyedAdapter('Keyed Gateway', [
+      { provider: 'keyed', id: 'keyed-large', name: 'Keyed Large' },
+    ], true))
+    ctx.llm.registerAdapter(['silent'], new KeyedAdapter('Silent Gateway', [
+      { provider: 'silent', id: 'silent-large', name: 'Silent Large' },
+    ], undefined))
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+      cwd: '/tmp',
+    })
+
+    const catalog = expectValue(await api.sessions.models(request({ sessionId })))
+    const routes = catalog.groups.map(group => group.id)
+    expect(routes).not.toContain('keyless')
+    // The two that stay are the whole point: a definite yes, and an adapter
+    // that cannot answer. Only the first of these would be caught by a test
+    // that checked the hiding alone.
+    expect(routes).toContain('keyed')
+    expect(routes).toContain('silent')
+    // Absent, not reported: an unconfigured provider is a deployment state the
+    // Models page narrates, not a catalog this host failed to read.
+    expect(catalog.failures.map(failure => failure.id)).not.toContain('keyless')
+    await ctx.fiber.dispose()
+  })
+
+  it('keeps a route whose readiness check throws, rather than hiding a working provider', async () => {
+    const { ctx, sessionId } = await harness()
+    ctx.llm.registerAdapter(['flaky'], new KeyedAdapter('Flaky Gateway', [
+      { provider: 'flaky', id: 'flaky-large', name: 'Flaky Large' },
+    ], new Error('credential store unreachable')))
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+      cwd: '/tmp',
+    })
+
+    const catalog = expectValue(await api.sessions.models(request({ sessionId })))
+    expect(catalog.groups.map(group => group.id)).toContain('flaky')
     await ctx.fiber.dispose()
   })
 

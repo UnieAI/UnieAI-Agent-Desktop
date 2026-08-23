@@ -1,21 +1,24 @@
-/* Plugin card: a header that names the plugin, disclosing its controls in place. */
+/* One plugin in the section's list: a header that names it, disclosing its
+ * controls in place.
+ *
+ * Not a card. A card is right for a repeated TILE — a grid of peers you scan
+ * and pick from — and this is a stack of single settings, one per plugin, read
+ * top to bottom. It used to be an outlined, filled, rounded box per plugin,
+ * which drew a second edge around content the list already separates and put
+ * every plugin's fields inside a well. The hairline under the row is the
+ * separation now, and the fields keep their own edges.
+ *
+ * Two fills are gone with it. `bg-layer-3` on the resting card and
+ * `bg-layer-2` on the open one both resolve to the same white as the page in
+ * the light palette, so "open" was a dark-theme-only state; the open row now
+ * says so with ink, which reads in both.
+ *
+ * Radii come from the shared scale: `--dsw-radius-control` (8) and
+ * `--dsw-radius-pill`. Nothing here spells a number the scale does not carry. */
 
 .card {
   list-style: none;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 12px;
-  background: var(--dsw-alias-bg-layer-3);
-  transition: border-color .16s, background .16s;
-}
-
-.card:hover {
-  border-color: var(--dsw-alias-label-dimmed);
-}
-
-/* An open card reads as the one being worked on, not merely taller. */
-.cardOpen {
-  background: var(--dsw-alias-bg-layer-2);
-  border-color: var(--dsw-alias-label-dimmed);
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
 }
 
 .header {
@@ -30,13 +33,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
-  border-radius: 12px;
+  padding: 14px 0;
 }
 
 .header:focus-visible {
+  /* `brand-primary` is neutral ink in this palette (bluish-1000 light /
+     bluish-50 dark), not a hue: it is the strongest ring available and it
+     inverts with the theme. */
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: -2px;
+  border-radius: var(--dsw-radius-control);
 }
 
 /* Name over description: the description is what tells two plugins apart, so
@@ -62,20 +68,33 @@
   color: var(--dsw-alias-label-tertiary);
 }
 
+/* The affordance the row has instead of a hover fill, following the shared
+   DisclosureRow: the chevron comes up to full ink when the row is reachable.
+   A fill would need to bleed past the column to stay aligned with the section
+   title, and a fill inset to the text would read as a box returning. */
 .chevron {
   flex: none;
   color: var(--dsw-alias-label-tertiary);
-  transition: transform .16s;
+  transition: transform .16s, color .16s;
+}
+
+.header:hover .chevron {
+  color: var(--dsw-alias-label-primary);
 }
 
 .chevronOpen {
   transform: rotate(180deg);
 }
 
+/* An open plugin reads as the one being worked on, not merely taller — carried
+   by ink rather than by a fill, so it is visible in both palettes. */
+.cardOpen .chevron {
+  color: var(--dsw-alias-label-primary);
+}
+
 .body {
   border-top: 1px solid var(--dsw-alias-border-l2);
-  margin: 0 16px;
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 }
 
 .readOnly {
@@ -85,10 +104,10 @@
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* Carried on the header so a collapsed card still says it holds edits. */
+/* Carried on the header so a collapsed row still says it holds edits. */
 .pending {
   flex: none;
-  border-radius: 999px;
+  border-radius: var(--dsw-radius-pill);
   padding: 1px 8px;
   font-size: 11px;
   line-height: 17px;
@@ -113,14 +132,14 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: var(--dsw-alias-label-error);
+  color: var(--dsw-alias-state-error-primary);
 }
 
 .discard,
 .save {
   appearance: none;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--dsw-radius-control);
   padding: 5px 14px;
   font: inherit;
   font-size: 13px;
@@ -141,7 +160,7 @@
 
 .save {
   background: var(--dsw-alias-label-primary);
-  color: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-primary-foreground);
 }
 
 .discard:disabled,
@@ -154,4 +173,10 @@
 .save:focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary);
   outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
 }

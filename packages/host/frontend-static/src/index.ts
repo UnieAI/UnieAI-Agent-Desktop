@@ -44,6 +44,10 @@ const MIME: Record<string, string> = {
   '.json': 'application/json',
   '.map': 'application/json',
   '.webmanifest': 'application/manifest+json',
+  // Notification cues (apps/web/public/sounds). A media element decides
+  // whether to decode from the response type, so octet-stream would leave the
+  // clip silent in browsers that refuse to sniff.
+  '.wav': 'audio/wav',
 }
 
 const STATIC_MISS_CODES: ReadonlySet<string | undefined> = new Set([

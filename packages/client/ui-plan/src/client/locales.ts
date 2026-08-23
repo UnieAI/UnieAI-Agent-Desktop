@@ -18,3 +18,19 @@ export const en = {
   'chip.off.aria': 'Plan mode off, press to turn on',
   'chip.off.title': 'Plan mode off — click to turn on (/plan)',
 } satisfies Record<PlanKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'chip.on.aria': 'plan mode 已開啟，按下可關閉',
+  'chip.on.title': 'plan mode 已開啟 — 點擊關閉（/plan off）',
+  'chip.off.aria': 'plan mode 已關閉，按下可開啟',
+  'chip.off.title': 'plan mode 已關閉 — 點擊開啟（/plan）',
+} satisfies Record<PlanKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'chip.on.aria': 'plan mode オン、押すとオフになります',
+  'chip.on.title': 'plan mode オン — クリックでオフ（/plan off）',
+  'chip.off.aria': 'plan mode オフ、押すとオンになります',
+  'chip.off.title': 'plan mode オフ — クリックでオン（/plan）',
+} satisfies Record<PlanKey, string>

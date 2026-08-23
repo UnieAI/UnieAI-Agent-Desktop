@@ -124,12 +124,26 @@ describe('apply', () => {
     expect(entry?.component).toBe(SkillToolRow)
     expect(presentation.dictionaries).toEqual([{
       namespace: 'skill', dictionaries: {
-        zh: {
+        'zh-CN': {
           'row.running': '正在加载 skill',
           'row.failed': 'skill 加载失败',
           'row.stopped': 'skill 加载已中止',
           'row.instructions': '说明',
           'menu.userOnly': '仅用户',
+        },
+        'zh-TW': {
+          'row.running': '正在載入 skill',
+          'row.failed': 'skill 載入失敗',
+          'row.stopped': 'skill 載入已中止',
+          'row.instructions': '說明',
+          'menu.userOnly': '僅使用者',
+        },
+        ja: {
+          'row.running': 'skill を読み込み中',
+          'row.failed': 'skill の読み込みに失敗しました',
+          'row.stopped': 'skill の読み込みを中止しました',
+          'row.instructions': '説明',
+          'menu.userOnly': 'ユーザーのみ',
         },
         en: {
           'row.running': 'Loading skill',

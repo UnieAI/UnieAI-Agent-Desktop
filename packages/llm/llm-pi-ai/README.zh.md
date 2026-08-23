@@ -118,6 +118,8 @@ pi-ai 依据提供方 id 与 baseURL 决定每个请求的形状：系统提示�
 
 凭据在每次流调用时通过 `apiKeyEnv` 与可选的 `ctx.credentials` seam 解析；未挂载该 seam 时，适配器只读取该引用指向的环境变量。只有完全没有点名任何凭据的 profile——仅限这一种情况——才交给 pi-ai 的环境发现。每个解析出的密钥都会在使用前去除首尾空白并校验格式，因此 HTTP 标头无法承载的值会被拒绝，而不是以语义不明的 `fetch` `TypeError` 形式浮现；这种拒绝会抛出 `LlmError('INVALID_CREDENTIAL')`，点名失败的路由与凭据引用，但绝不透露密钥的任何部分。路由集合与每条路由捕获的重试策略是注册级事实：两者任一变化时，插件都会原子地替换自己的注册（同一适配器实例，候选集合先经校验），因此某条路由若已被另一适配器占有，先前的路由会继续服务，而改回可用配置时注册会重新生效。提供方键的顺序绝不算作变化。本适配器无法服务的分节会在写入处被拒——注册的 `validate` 会解析整份 profile 集合，因此 `ctx.settings.mutate` 以 resolver 自身的错误拒绝（该协议将其报为 `settings-rejected`），什么都不会存储。已存储分节若因其他途径变得不可服务——比如外部编辑了 `settings.yaml`——则由 settings seam 保留该 namespace 最后可用的值并告警。entry 配置本身仍会使插件加载失败；而 llm 注册表拒绝的路由（已被另一适配器族占有的那种）会被记录下来，先前注册的路由继续服务。
 
+适配器还会回答 `ctx.llm.credentialReady(provider)`，这与「这条路由有没有模型」是两个问题，且作答时不读取凭据。未点名 `apiKeyEnv` 的 profile 被报告为**就绪**：部署正是这样记录「以提供方自身方式认证」——Bedrock 凭据链、Vertex ADC、一次已存下的登录——把它称作未配置，恰好会藏起那些根本不需要 key 的路由。确实点名了引用的 profile，则交由 `credentials.describe` 判定，它报告 `resolve` 会找到什么却不透露内容；未挂载该 seam 时则改看该引用指向的环境变量。只有这一种情况才可能答 `false`。本适配器并不拥有的路由答 `undefined` 而非 `false`，如此一个适配器族便无法藏起另一个族的模型。
+
 适配器通过 `ctx.llm.listModels(provider)` 公开每条已配置路由的模型。这是从请求路径所用的同一个 pi-ai `Models` 集合读取的提供方无关 selector 元数据，因此发现不会创建第二个模型注册表。`ctx.llm.resolveModelInfo(provider, model)` 会执行一次精确 descriptor 查找，并返回其身份、上下文窗口、已配置输出上限和可选思考级别，让权威元数据保留在拥有路由的适配器上，而非消费方。模型**已配置**的 `maxTokens` 会成为 seam 的 `defaultMaxTokens`，因此未点名输出上限的请求会携带部署选定的那一个；而从已安装 catalog 继承来的值是模型的输出**能力**，绝不会自行变成请求默认值。
 
 携带推理元数据的模型——来自已安装 catalog，或来自其条目的 `reasoningEfforts`——会公开 pi-ai 有序的 `getSupportedThinkingLevels(model)` 结果，不经筛选或规范化，其中包括 `off`，以及模型对 `xhigh` 或 `max` 的特定支持。Harness 将每个规范 pi-ai 级别公开为不透明 ID；提供方／模型在协议格式中的表示仍保留在 pi-ai 的 `thinkingLevelMap` 中。

@@ -7,11 +7,11 @@
    mid-slide. */
 
 .root {
-  --dsh-sidebar-inline-padding: 12px;
+  --dsh-sidebar-inline-padding: 8px;
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 6px var(--dsh-sidebar-inline-padding);
+  padding: 0 var(--dsh-sidebar-inline-padding);
   box-sizing: border-box;
   background: var(--dsw-specific-sidebar-fill);
   color: var(--dsw-alias-label-primary);
@@ -65,6 +65,7 @@
    render stays static. */
 .railIn .iconButton,
 .railIn .newSession,
+.railIn .navActions,
 .railIn .regionArea {
   animation: rail-in 150ms var(--ds-ease-in-out) backwards;
 }
@@ -84,7 +85,9 @@
   from { opacity: 0; }
 }
 
-/* Logo row (figma pad (4,8,4,8)): expanded keeps the panel toggle at the
+/* Brand header, in the reference column's own box: 12px above and 4px below a
+   36px trigger, so the 28px identity plate lands 16px from the column top and
+   the row below it starts at 56px. Expanded keeps the panel toggle at the
    right edge; the rail gives every control the same base left anchor before
    the shared entry translation is applied. */
 .logoRow {
@@ -92,10 +95,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  height: 60px;
-  padding: 8px 0 8px 4px;
-  margin-bottom: 8px;
+  gap: 4px;
+  height: 52px;
+  padding: 12px 0 4px;
+  margin-bottom: 0;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -107,21 +110,27 @@
   justify-content: flex-start;
 }
 
-/* Brand group (figma I133:7632): the full wordmark rides the text ink
-   (figma flows: the main-screen instance is black; blue is brand
-   emphasis only). A button only in behavior (New Session shortcut): the
-   pointer cursor is the sole affordance — no hover chrome on the mark. */
+/* Brand trigger (New Session shortcut): the reference header's own
+   `rounded-md px-1.5 py-1` hit box, which puts the plate 6px inside the
+   column's 8px inset and gives the row the same quiet hover fill every other
+   row in the column takes. */
 .brand {
   flex: 1;
   min-width: 0;
   display: inline-flex;
   align-items: center;
   overflow: hidden;
-  padding: 0;
+  padding: 4px 6px;
   border: none;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   cursor: pointer;
+  transition: background-color 150ms var(--ds-ease-in-out);
+}
+
+.brand:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
 }
 
 /* Mark and name are independent slots; the shell owns their shared baseline,
@@ -130,15 +139,24 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 24px;
+  height: 28px;
   min-width: 0;
 }
 
+/* Identity plate: the mark sits in a hairline square rather than free on the
+   fill, so the brand row reads as the same kind of object as the rows below
+   it (reference: the sidebar header's 28px `rounded-md border` plate). */
 .brandMark {
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-module-platform);
 }
 
 .brandName {
@@ -146,15 +164,15 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  height: 24px;
-  font-size: 18px;
+  height: 20px;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 24px;
-  letter-spacing: 0.04em;
+  line-height: 20px;
+  letter-spacing: -0.01em;
 }
 
 .fallbackBrandName {
-  font-size: 17px;
+  font-size: 13px;
   letter-spacing: 0px;
   white-space: nowrap;
 }
@@ -167,20 +185,27 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 50%;
+  border-radius: 6px;
   padding: 0;
   background: transparent;
   cursor: pointer;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--dsw-alias-label-tertiary);
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
 }
 
 .iconButton:hover {
   background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
+/* The rail's control language is a circle, and it is this app's own — the
+   reference column has no rail to copy. */
 .collapsed .iconButton {
   width: 36px;
   height: 36px;
+  border-radius: var(--dsw-radius-pill);
 }
 
 /* Rail logo swap: collapsed, the toggle rests as the whale mark (brand ink,
@@ -224,42 +249,50 @@
   line-height: 16px;
 }
 
-/* New Session: 38px bar, 12px radius (figma 133:7634 geometry, squared-off
-   corners); collapsed it renders as the rail's plain icon control. */
+/* New Session: a sidebar row, not an elevated button. In this language the
+   primary navigation affordance sits flush with the list below it — same box
+   edges, same --dsw-radius-control — and earns its emphasis from position and
+   weight rather than from a border and a fill. The box is built the way the
+   reference builds it — 7px/10px padding around a 13/19.5 line, so the row
+   measures 248x33.5 inside the 264px column — and the row itself stays at the
+   inherited weight while the label alone carries the 500. Collapsed it renders
+   as the rail's plain icon control. */
 .newSession {
   flex: none;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 38px;
-  padding: 8px 16px;
-  margin: 0 2px 8px;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 7px 10px;
+  margin: 4px 0 0;
   box-sizing: border-box;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 12px;
-  background: var(--dsw-alias-button-elevated-fill);
-  color: var(--dsw-alias-label-primary);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 22px;
+  border: none;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19.5px;
   cursor: pointer;
   overflow: hidden;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
 }
 
 .newSession:hover {
-  background: var(--dsw-alias-button-floating-hover);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
 .collapsed .newSession {
   align-self: flex-start;
+  justify-content: center;
   width: 36px;
   height: 36px;
   padding: 0;
   margin: 0 0 12px;
   gap: 0;
-  border-color: transparent;
-  background: transparent;
 }
 
 .collapsed .newSession:hover {
@@ -267,6 +300,7 @@
 }
 
 .newSessionLabel {
+  font-weight: 500;
   max-width: 200px;
   overflow: hidden;
   white-space: nowrap;
@@ -276,12 +310,30 @@
   max-width: 0;
 }
 
+/* Nav-action seat: the rows registered under New chat, stacked full width in
+   the column and centred as 36px controls on the rail. The occupants own
+   their button geometry — the shell's own row box, which New chat above them
+   draws: 248x34 at `7px 10px`, 10px gap, 13/19.5 with the label at 500. */
+.navActions {
+  flex: none;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.collapsed .navActions {
+  align-items: center;
+  width: auto;
+}
+
 /* Region seat: always mounted so the foot never moves. Its trailing margin
    cancels the wide shell inset so the nested scrollbar can sit at the sidebar
    edge; the browser restores that inset inside its own rows. */
 .regionArea {
   flex: 1;
   min-height: 0;
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
   margin-left: -4px;
@@ -291,46 +343,97 @@
 }
 
 .collapsed .regionArea {
+  margin-top: 0;
   margin-left: 0;
   margin-right: 0;
   padding-left: 0;
 }
 
-/* Footer seats: additive actions stack above Settings. Each occupant owns its
-   button geometry and hover chrome. */
+/* Footer band: additive actions stack above the identity row, which is the
+   column's last row. The 2px side padding cancels the -2px bleed that row
+   uses, landing its box on the same left and right edges as New Session and
+   the session rows. The hairline and the 8px inset above them are the
+   reference sidebar's own footer treatment: the foot is where the column
+   stops being a list and starts being about you. The negative inline margin
+   takes the hairline out to the column edges, which is where the reference
+   draws it — the rule crosses the whole column, not just the row track. */
 .footArea {
   flex: none;
   display: flex;
   flex-direction: column;
+  margin: 0 calc(-1 * var(--dsh-sidebar-inline-padding));
+  padding: 8px calc(var(--dsh-sidebar-inline-padding) + 2px);
+  border-top: 1px solid var(--dsw-alias-border-l2);
 }
 
-.settingsArea,
+/* A list slot: every registered action is a full-width row above the identity
+   row. */
 .footerActions {
   flex: none;
   min-width: 0;
   width: 100%;
-}
-
-.footerActions {
   display: flex;
+  flex-direction: column;
 }
 
+/* The identity row: `sidebar.account` and `sidebar.settings` in ONE box, the
+   way the reference column closes its own sidebar — a 248x40 row at the
+   control radius, 6px/8px of padding around a 28px mark, 10px gaps, and the
+   settings glyph pinned at the right end. Two packages share this box, so the
+   seat owns it rather than either occupant: the account occupant brings the
+   mark and the name, the settings occupant brings its glyph, and each brings
+   only its own interactive chrome. The -2px bleed lands the box on the same
+   edges as the rows above it. */
+.identityRow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% + 4px);
+  margin: 0 -2px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  border-radius: var(--dsw-radius-control);
+}
+
+/* The rail centres its 36px controls itself, so the row inset is dropped —
+   and at a 36px content width there is no list edge left for a rule to
+   divide, so the hairline goes with it. */
 .collapsed .footArea {
   align-items: center;
+  margin: 0;
+  padding: 0;
+  border-top: none;
 }
 
-.collapsed .settingsArea,
 .collapsed .footerActions {
   display: flex;
+  align-items: center;
   justify-content: center;
   width: auto;
 }
 
+/* Rail: the same row turned on its side — the identity mark above the
+   settings glyph, in that order, each in the rail's own 36px control box. The
+   row's padding and radius belong to the wide box alone, and the vertical
+   rhythm between the two controls stays with the seat. */
+.collapsed .identityRow {
+  flex-direction: column;
+  gap: 4px;
+  width: auto;
+  margin: 0;
+  padding: 8px 0 0;
+  border-radius: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .newSession,
+  .iconButton,
   .wide,
   .fading > *,
   .railIn .iconButton,
   .railIn .newSession,
+  .railIn .navActions,
   .railIn .footArea,
   .railIn .regionArea {
     transition: none;

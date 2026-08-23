@@ -32,7 +32,7 @@ describe('invariant companion', () => {
     const locale = ctx.get('locale')
     expect(locale).toBeInstanceOf(LocaleRuntime)
     // Seeded dictionaries occupy the (ns, locale) seats even while empty.
-    expect(() => (locale as LocaleRuntime).register(COMMON_NS, 'zh', {})).toThrow('already has locale')
+    expect(() => (locale as LocaleRuntime).register(COMMON_NS, 'zh-CN', {})).toThrow('already has locale')
     expect(() => (locale as LocaleRuntime).register(COMMON_NS, 'en', {})).toThrow('already has locale')
   })
 })

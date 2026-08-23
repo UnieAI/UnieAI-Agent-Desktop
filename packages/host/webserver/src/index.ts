@@ -47,6 +47,18 @@ export interface WebRoute {
   handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void>
 }
 
+/**
+ * Decides whether one request may reach dispatch at all.
+ *
+ * `true` continues to the route table. `false` means the guard has already
+ * answered — it owns the status, the body, and, on the upgrade path, the
+ * socket. `reply.socket` is present only for upgrade requests.
+ */
+export type WebGuard = (
+  req: IncomingMessage,
+  reply: { res?: ServerResponse; socket?: Duplex },
+) => boolean | Promise<boolean>
+
 /** One exact-path HTTP upgrade registration. */
 export interface WebUpgradeRoute {
   /** Absolute pathname, no trailing slash. */
@@ -82,6 +94,7 @@ export class WebServer extends Service {
   private readonly upgradedSockets = new Set<Duplex>()
   private readonly indexTaps: ((html: string) => string)[] = []
   private fallback: WebRoute['handler'] | undefined
+  private guard: WebGuard | undefined
   private server!: Server
   private listenedPort!: number
 
@@ -145,6 +158,56 @@ export class WebServer extends Service {
   }
 
   /**
+   * Claim the request-guard seat: the one decision consulted before ANY
+   * dispatch, on both the HTTP and the upgrade path.
+   *
+   * This exists so an authentication layer can cover every seat at once —
+   * named routes, the fallback SPA, the plugin-bundle prefix, and the
+   * WebSocket downlinks. Gating one route cannot do that: an anonymous visitor
+   * would still be served the application shell and its boot manifest, and
+   * only then fail every call it made.
+   *
+   * A guard that refuses OWNS the response: it writes the status and body, or
+   * destroys the socket, and returns `false`. `true` continues to ordinary
+   * dispatch. One owner only — two guards would have no defined precedence.
+   * @param guard - decides one request; owns the response when it refuses.
+   * @returns the disposer releasing the seat.
+   */
+  registerGuard(guard: WebGuard): () => void {
+    if (this.guard !== undefined) {
+      throw new Error('webserver: guard already registered')
+    }
+    this.guard = guard
+    return () => { this.guard = undefined }
+  }
+
+  /**
+   * Consult the guard, if one is registered. A guard that throws refuses: an
+   * authentication decision that cannot be reached is a decision to deny.
+   * @param req - the request being admitted.
+   * @param reply - the response or socket the guard owns when it refuses.
+   * @returns true when dispatch may continue.
+   */
+  private async admits(
+    req: IncomingMessage,
+    reply: { res?: ServerResponse; socket?: Duplex },
+  ): Promise<boolean> {
+    const guard = this.guard
+    if (guard === undefined) return true
+    try {
+      return await guard(req, reply)
+    } catch (error) {
+      this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
+      if (reply.socket !== undefined) reply.socket.destroy()
+      else if (reply.res !== undefined && !reply.res.headersSent) {
+        reply.res.writeHead(403)
+        reply.res.end()
+      }
+      return false
+    }
+  }
+
+  /**
    * Register a raw-HTML index transform, the escape hatch for markup no
    * {@link IndexInjection} row expresses: {@link renderIndex} applies taps in
    * registration order after rendering the structured rows.
@@ -165,6 +228,7 @@ export class WebServer extends Service {
       /* v8 ignore next -- `?? '/'` arm: node:http always sets url on server
       requests; the field is only optional on the client-side IncomingMessage type */
       const rawPath = new URL(req.url ?? '/', 'http://x').pathname
+      if (!await this.admits(req, { res })) return
       const route = this.match(rawPath)
       if (route !== undefined) {
         await route.handler(req, res)
@@ -193,7 +257,7 @@ export class WebServer extends Service {
         res.end()
       })
     })
-    this.server.on('upgrade', (req, socket, head) => {
+    this.server.on('upgrade', (req, socket, head) => { void (async () => {
       const onError = (error: Error): void => {
         this.ctx.logger.warn(error)
         socket.destroy()
@@ -203,6 +267,7 @@ export class WebServer extends Service {
         socket.off('error', onError)
         this.upgradedSockets.delete(socket)
       })
+      if (!await this.admits(req, { socket })) return
       let route: WebUpgradeRoute | undefined
       try {
         /* v8 ignore next -- node:http always sets url on server requests. */
@@ -226,7 +291,7 @@ export class WebServer extends Service {
         this.ctx.logger.warn(error instanceof Error ? error : new Error(String(error)))
         socket.destroy()
       }
-    })
+    })() })
 
     await new Promise<void>((resolve, reject) => {
       this.server.once('error', reject)

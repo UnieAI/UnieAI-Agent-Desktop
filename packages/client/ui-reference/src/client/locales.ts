@@ -34,3 +34,23 @@ export const en = {
   'candidate.session': 'Session',
   'candidate.noCwd': '(no cwd)',
 } satisfies Record<ReferenceKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'section.files': '檔案與資料夾',
+  'section.sessions': 'Session 對話',
+  'candidate.file': '檔案',
+  'candidate.folder': '資料夾',
+  'candidate.session': 'Session',
+  'candidate.noCwd': '（無工作目錄）',
+} satisfies Record<ReferenceKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'section.files': 'ファイルとフォルダ',
+  'section.sessions': 'Session の会話',
+  'candidate.file': 'ファイル',
+  'candidate.folder': 'フォルダ',
+  'candidate.session': 'Session',
+  'candidate.noCwd': '（作業ディレクトリなし）',
+} satisfies Record<ReferenceKey, string>

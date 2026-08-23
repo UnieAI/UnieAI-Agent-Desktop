@@ -28,7 +28,10 @@ const unusedHook = (() => { throw new Error('unused by settings-general componen
 const kit = { useSessions: unusedHook, useWorkspaces: unusedHook }
 
 describe('chrome content', () => {
-  it('TriggerContent renders the icon with the label in the wide column', () => {
+  it('TriggerContent keeps the wide label as the accessible name only', () => {
+    // Expanded, the trigger is the gear at the right end of the sidebar
+    // foot's identity row: the label stays in the DOM for the button's
+    // accessible name and is taken out of the picture by the sheet.
     const { container } = render(<TriggerContent {...kit} wide t={t} />)
     expect(container.querySelector('svg')).toBeTruthy()
     expect(screen.getByText('Settings')).toBeTruthy()

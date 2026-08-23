@@ -36,6 +36,8 @@ Settings 分节中的 `reasoningEffort` 在 agent-default-model 插件配置中�
 
 会话模型选择属于会话领域约定。`session.models` 将当前 `ModelSelection` 与按提供方分组的建议性模型、精确模型的推理元数据和逐提供方查询失败记录分开返回。该选择可能不在这些分组中，也绝不会作为合成行注入；客户端可以提示用户作出另一项选择，而无需把目录变成路由白名单。`session.selectModel` 校验由适配器持有的可选推理强度，并指定下次组装提示词时使用的完整选择。目录成员关系不构成校验：适配器可以解析未列出的模型，而不可用的提供方或不受支持的推理强度会返回 `model-unavailable`。`session.models` 还会报告 `routable`，即当前是否有适配器为所选提供方提供服务。该值刻意不从分组推导，因为适配器可以服务未公布的模型。`session.prompt` 会依据同一事实，在开启轮次之前以 `model-unavailable` 拒绝；客户端禁用 composer 只是提示性设计，这个方法始终可被调用。
 
+无法完成认证的提供方路由会被整条从目录中剔除，甚至不去列出它的模型。`session.models` 与 `llm.models` 都以这种方式构建分组，先询问 `ctx.llm.credentialReady(provider)`。路由在其插件挂载时就注册——远早于任何人存下密钥——因此随产品交付的 catalog 否则会推销任何请求都抵达不了的模型，而选中其中之一只可能以 `MISSING_CREDENTIAL` 收场。这是剔除，不是 `failure`：failure 指本 host 读不到的 catalog，值得回报；而未配置的提供方是一种部署状态，Models 设置页已经在叙述它，并把读者带去修好它。只有确定的 `false` 才会剔除——适配器答 `undefined` 或抛出，其模型都保留，因为为一个未获回答的问题就藏起可用的提供方，代价高于展示一个之后会索取 key 的提供方。`routable` 刻意不受此影响：它回报的是有没有适配器服务所选提供方，对一条没有密钥的路由而言这仍然成立，因此选中项不可用的会话得到的是一份空选单与上手路径，而不是一个什么都选不了的失效编辑器。
+
 `session.prompt` 和 `subagent.prompt` 接受可选的请求本地 `clientTimeZone` 来源信息。若提供该值，Host 会在进入 Agent 前校验 `UTC` 或 IANA Area/Location 并将其规范化；无效输入以 `invalid-time-zone` 拒绝，规范值则与 `rpcId` 一起记录在这条确切的 `user-rpc` 消息上。该值不属于 Session、连接、create、resume 或 fork 状态；非浏览器调用方可以省略它。
 
 待处理的 queued 输入属于实时控制平面约定，而非对话历史。网关根据持久 `agent/inbox/spliced` 变更派生完整的 `next-turn` 队列，并在每次变更后及重连时广播权威 `session/queue` 快照；待处理的 `next-step` steering（中途引导）不进入此 Web 投影。在 `next-step` 内，用户来源的消息携带 `steering` placement，而注入上下文（审批通知、任务完成、附加快照）携带 `context`，领取前不对外呈现。面向单条消息的 `agent/inbox/inserted`、`claimed` 与 `discarded` 通知仍供生命周期观察方使用，但不用于构建队列视图。`session.updateQueue` 通过 `MessageId` 寻址单个项；编辑和移除经已挂载 Agent 的 `Inbox.splice()` 修改队列。认领操作的纯删除 splice 会在 pre-step 准入前赢得竞态，因此之后的操作返回 `queue-item-not-found`。`session.cancel` 仅中止活动轮次并保留待处理 inbox 工作；取消达到完全停稳且结束中的轮次完成 flush 后，AgentLoop 按 FIFO 顺序认领下一条可唤醒消息，浏览器绝不重发或提升它。队列操作绝不恢复冷会话，客户端也绝不根据轮次或状态事件推断某项已退出队列。
@@ -78,6 +80,7 @@ Workspace 列表与 Session 列表是相互独立的重连基线。`workspace.cr
 - **待处理交互状态位于宿主侧**：wire 使用 POST `/api/respond` 加 `RpcReceipt`；`src/api-proxy.ts` 中的表只处理问题，不包含审批条目。
 - **待回答的提问无法跨宿主重启存活**：登记表持有等待中那次工具调用自身的 `resolve`／`reject`，因此它是宿主进程内存。`events.mux` 在每次重开时重放所有仍在等待的提问，这覆盖了浏览器刷新与重连；宿主重启则把等待中的 turn 一并带走，重新打开的 Session 不会为该提问提供任何作答界面。要让它跨宿主重启恢复，需要一份持久化的待处理交互记录，此项暂缓。
 - **预留 seam 不进入 `RpcMethodMap`**：`prompt.mode: 'inject'`、`job.list` 和描述字段 `hostInstanceId` 都是已记录的预留项；模型发现使用 `llm.models`。未知方法会在信封解析时直接失败，而不会返回「尚未实现」错误码。
+- **没有密钥的所选路由仍会通过 `routable`**：目录会藏起无法认证的提供方，但 `routable` 回答的是另一个问题（有没有适配器为它注册），对该路由仍然为真，因此已经指向那条路由的会话仍保有一个可用的编辑器，而下一次提示会在提供方那侧失败。把凭据就绪度并入 `routable` 会让编辑器被拦下、却又没有任何可选项，那比空选单所引向的 Models 页更糟；一个表达「已在别处配置、此处不可用」的状态暂缓。
 - **没有协议版本字段**：客户端与宿主一同发布；只有出现独立发布的客户端后，`host.describe` 才会增加版本协商字段。
 - **搜索失败会包含提供方诊断信息**：网关是单用户本地服务。将其暴露给多名用户的载体必须用可安全公开的诊断信息替代内部搜索细节。
 - **Linux 原生选择器依赖桌面工具**：在 `native` 能力下，Zenity 和 KDialog 均未安装时，`host.pickDirectory` 会给出包含解决建议的错误提示；组合层面的回退是 browse 后端（见 [native 后端 README](../directory-picker-native/README.zh.md)）。

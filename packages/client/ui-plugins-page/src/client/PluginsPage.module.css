@@ -1,0 +1,139 @@
+/* The page covers the frame it is registered into: `shell.overlay` spans the
+ * whole app box, so the surface paints the base background rather than
+ * floating over a blurred one — it is a place, not a dialog. */
+
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-primary);
+}
+
+.page:focus-visible {
+  outline: none;
+}
+
+/* The rule spans the frame; what it separates does not. The header band and
+   the areas below share ONE reading measure, centred, so a heading and the
+   card under it line up on the same left edge — the reference page centres
+   its body the same way. */
+.header {
+  flex: none;
+  box-sizing: border-box;
+  padding: 20px 32px 16px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+}
+
+/* A centred measure, not the full frame. The page is a directory: the reader
+   comes to choose, and a row is a name over a sentence. Set across a 1400px
+   frame those sentences are scanned rather than read, and the eye loses the
+   column between one row and the next. The frame stays full width — Plugins is
+   a destination, not a dialog — while what is ON it keeps the same 720px
+   column the settings sheets use, so a reader moving between them does not
+   change reading width.
+
+   Centred HERE rather than in each area, so every occupant lines up: an area
+   that centred itself while its neighbour did not would read as a mistake. */
+.measure {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* The way back sits above the title, the way a breadcrumb does: it is the
+   page's parent, not one of its actions. */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 4px;
+  border: none;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 19.5px;
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
+}
+
+.back:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: -2px;
+}
+
+.backIcon {
+  flex: none;
+}
+
+/* The way back and the page's name share one row in the frame's top-left
+   corner — outside the reading measure on purpose. They belong to the window,
+   the way the reference keeps its section tabs in the window chrome; the
+   proposition below is centred against the measure, not against them. */
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Same line box as the control beside it: the button carries 3px of padding,
+   so a bare span sat 3px high of it on the row. */
+.name {
+  padding: 3px 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19.5px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* The proposition. It is the only line of its size on the page: what this
+   place is for, said once. */
+.title {
+  margin: 10px 0 6px;
+  align-self: center;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  text-align: center;
+}
+
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 0 32px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* One rhythm for every area, so two areas from two packages stack alike. */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-width: 0;
+  padding: 28px 0 64px;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .back {
+    transition: none;
+  }
+}

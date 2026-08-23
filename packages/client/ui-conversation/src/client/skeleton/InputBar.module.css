@@ -31,7 +31,7 @@
   max-width: var(--dsh-composer-card-max-width);
   margin-bottom: 6px;
   padding: 4px 8px;
-  border-radius: 8px;
+  border-radius: var(--dsw-radius-control);
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-secondary);
   font-size: 12px;
@@ -43,21 +43,26 @@
   position: relative; /* overlay anchor positioning context */
   display: flex;
   flex-direction: column;
-  /* figma Input 75:8208: 12px between the text area and the button row; 10px
-     top pad on the card before .InputText. */
-  gap: 12px;
+  /* No inter-block gap and no card top pad: every block inside owns its own
+     spacing, as in the reference composer — the draft's 16px top pad is the
+     card's top space and the control row's 6px is the space above the row. */
+  gap: 0;
   width: 100%;
   max-width: var(--dsh-composer-card-max-width);
-  padding-top: 10px;
   /* Input stroke: black/0.10 light, white/0.06 dark (figma darkmode note says
      the input border is one notch weaker than buttons) — exactly the
      l2-darkmode-thin pair. Fill: the input surface token (elevated in dark). */
   border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
-  border-radius: 22px;
+  /* Reference composer radius (--radius-composer = 28px in its chat scope).
+     No token carries 28; --dsw-radius-bubble is 24 and reads visibly tighter. */
+  border-radius: 28px;
   background: var(--dsw-specific-input-major);
-  box-shadow: var(--dsw-shadow-lv2);
-  font-size: 16px;
-  line-height: 24px;
+  /* Hairline + fill only — no elevation. A static surface that already carries
+     a fill does not also take a shadow, so hover/focus step the STROKE instead
+     of adding a ring or a glow. */
+  font-size: var(--dsw-chat-body-size);
+  line-height: var(--dsw-chat-body-leading);
+  transition: border-color 200ms var(--ds-ease-in-out);
   /* Elevated surface in dark, same as the menus: the draft scrollport inside
      scrolls once the composer hits its height cap, so the thumb takes the l2
      pair. Declared on the card because the elevation belongs to the surface,
@@ -67,12 +72,20 @@
   --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
+/* The composer's whole focus treatment: the hairline goes up one notch, on
+   hover and while anything inside holds focus. The trigger state paints its own
+   dashed ::after ring and keeps its transparent border, so it opts out. */
+.card:not(.cardWorkspaceTrigger):hover,
+.card:not(.cardWorkspaceTrigger):focus-within {
+  border-color: var(--dsw-alias-border-l3);
+}
+
 /* No-workspace trigger state: dashed l4 stroke marks the card as a pick-a-
    workspace affordance rather than a live composer; hover answers in the
    business blue to invite the click. Native `dashed` has a fixed browser
    pattern, so the stroke is an ::after overlay: theme-token background masked
    by an SVG dash ring (stroke-width 2 centered on the box edge = 1px visible
-   inside), which keeps the 22px radius and both themes. */
+   inside), which keeps the 28px radius and both themes. */
 .cardWorkspaceTrigger {
   border-color: transparent;
   cursor: pointer;
@@ -82,11 +95,11 @@
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: 22px;
+  border-radius: 28px;
   background: var(--dsw-alias-border-l4);
   transition: background-color 100ms ease;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='22' ry='22' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='22' ry='22' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='28' ry='28' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='none' rx='28' ry='28' stroke='black' stroke-width='2' stroke-dasharray='4 4'/%3E%3C/svg%3E");
   pointer-events: none;
 }
 
@@ -110,10 +123,26 @@
 
 /* Floating overlay anchor (menu / popupSelect shell): entries position
    themselves against the card (bottom: 100% + gap); closed entries render null. */
+/* A zero-height strip the popups (command list, reference menu) anchor to. It
+   sits where they START, so its edge decides their direction.
+
+   Bottom edge by default: in the blank-draft hero the card floats mid-column
+   and a list below it reads as continuing downward from what you typed.
+
+   Top edge once a conversation is live: the card is docked at the window
+   floor, so downward has nowhere to go. These popups are CSS-positioned with
+   no measurement of their own, so they cannot discover that themselves the way
+   the Menu primitive now does — the phase the shell already publishes is what
+   tells them. */
 .overlayAnchor {
   position: absolute;
-  inset: 0 0 auto;
+  inset: auto 0 0;
   height: 0;
+}
+
+:global([data-phase='active']) .overlayAnchor,
+:global([data-phase='settling']) .overlayAnchor {
+  inset: 0 0 auto;
 }
 
 /* The draft's scrollport, and the ONLY scrolling box in the composer: the
@@ -208,9 +237,10 @@
      width:100% textarea gains its padding OUTSIDE the card and text runs past
      the right padding — and wraps 28px later than the mirror/backdrop layers. */
   box-sizing: border-box;
-  /* figma .InputText 34:10434: pl 16 / pr 12 / pt 4. Backdrop MUST share these
-     metrics or the highlight ranges drift off the glyphs. */
-  padding: 4px 12px 0 16px;
+  /* Reference draft box: px-5 / pt-4 = 20px sides, 16px top, no bottom pad
+     (the control row's own top pad is the space below the text). Backdrop MUST
+     share these metrics or the highlight ranges drift off the glyphs. */
+  padding: 16px 20px 0;
   font-family: var(--dsw-font-family);
   font-size: inherit;
   /* Three consumers, not two: the mirror sizes the stack, the layers must break
@@ -233,10 +263,11 @@
      (768 against 776) — worth 2 to 5 wrapped lines on a long draft. */
 }
 
-/* figma 34:10434: #ADB2B8 light / #81858C dark — the caption pair exactly. */
+/* Reference placeholder is --text-placeholder (#707070 light / #9b9b9b dark);
+   the tertiary label pair is the token that lands on those values. */
 .input::placeholder {
-  color: var(--dsw-alias-label-caption);
-  -webkit-text-fill-color: var(--dsw-alias-label-caption);
+  color: var(--dsw-alias-label-tertiary);
+  -webkit-text-fill-color: var(--dsw-alias-label-tertiary);
   user-select: none;
 }
 
@@ -257,24 +288,15 @@
   pointer-events: none;
 }
 
-/* Hero (centered empty-state) keeps the 2-line floor (figma min-h 52 = ~2 × 24
-   line + 4pt); the docked composer collapses to the content height. */
-.hero .mirror {
-  min-height: 52px;
-}
-
 /* Toolbar: attach + Plan + Read-only on the left; model + send on the right
    (figma Input_Bottom chrome). */
 .row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  /* 2px moved from the bottom pad to the top: the whole control row sits 2px
-     lower in the card (it read too high against the textarea) while the card
-     height and the controls' own centering stay untouched. */
-  padding: 2px 8px 6px;
+  /* Reference control row: gap-2 / px-2.5 pt-1.5 pb-2.5. */
+  gap: 8px;
+  padding: 6px 10px 10px;
   min-width: 0;
   /* Size container so the chips inside can collapse to icon-only when the
      card runs out of row width (PermissionSelect @container rule). Anonymous
@@ -291,44 +313,54 @@
   min-width: 0;
 }
 
-/* figma 75:8208 drew 16 between + and the mode chips and 4 between Plan /
-   Read-only; the chip gap widened to 12 so the pill chips read as separate
-   controls. */
+/* One 6px rhythm across the whole row (reference gap-1.5), left and right:
+   the controls are a single band of chrome, not three clusters. The left group
+   takes the slack so the send key stays on screen on a narrow card.
+
+   It deliberately does NOT scroll, unlike the reference's `overflow-x-auto`:
+   that product portals its menus to the document, while these controls render
+   their popovers as children. A scroll container 32px tall clips an opening
+   menu to nothing — which is exactly what it did. */
 .tools {
-  gap: 16px;
+  flex: 1 1 auto;
+  gap: 6px;
+  min-width: 0;
 }
 
 .modes {
-  gap: 12px;
+  gap: 6px;
 }
 
+/* The model pill and the send key never give up width to the group on their
+   left — losing the send key off-screen is the worst outcome of a narrow card
+   (reference: shrink-0). */
 .trailing {
   flex: none;
-  /* Wrap keeps the left mode chips and the right controls apart when the card
-     runs out of row width: the trailing group (model + send) moves to its own
-     line instead of the left group shrinking until its chip overlaps the
-     model trigger (external:107). The auto margin re-anchors it right on the
-     wrapped line; on a single line space-between already pins it right. */
-  margin-left: auto;
-  gap: 12px;
+  gap: 6px;
 }
 
-/* Attach circle (figma + control): 28px, selector fill, primary glyph. */
+/* Attach: a 32px hairline square (reference h-8 w-8 + rounded-md + border),
+   unfilled at rest so the send key stays the only filled control in the row.
+   Hover steps the stroke and adds the quiet fill. 6px is the reference's
+   rounded-md (calc(--radius 8px - 2px)); no --dsw radius token carries it. */
 .add {
   display: grid;
   place-items: center;
   flex: none;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 999px;
-  background: var(--dsw-specific-selector);
-  color: var(--dsw-alias-label-primary);
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
   cursor: pointer;
+  transition: background-color 150ms var(--ds-ease-in-out), border-color 150ms var(--ds-ease-in-out), color 150ms var(--ds-ease-in-out);
 }
 
 .add:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover-solid);
+  border-color: var(--dsw-alias-border-l3);
+  background: var(--dsw-specific-bubble);
+  color: var(--dsw-alias-label-primary);
 }
 
 .add:disabled {
@@ -336,67 +368,60 @@
   cursor: default;
 }
 
-/* Plan / Read-only / model — native <select>, chip-like closed chrome
-   (figma ToggleButton: 13/20 medium secondary, 12px chevron). */
-.select {
-  max-width: 220px;
-  height: 28px;
-  padding: 0 20px 0 8px;
-  border: none;
-  border-radius: 8px;
-  outline: none;
-  background-color: transparent;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2381858C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 4px center;
-  background-size: 12px 12px;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 13px;
-  line-height: 20px;
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-  appearance: none;
-}
-
-.select:hover:not(:disabled) {
-  background-color: var(--dsw-alias-interactive-bg-hover);
-}
-
-.select:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-/* Primary send (figma IconButton 34:10465): 34px circle, #3964FE light /
-   #679EFE dark — the info-fill pair (500→400), NOT button-primary (ink);
-   white glyph; empty text = 0.4 opacity. */
+/* Primary send: the ONE emphasised control on the surface — an INK PILL, black
+   on light and white on dark (button-primary resolves to that pair in this
+   sheet), never the accent blue. 36px and a full circle: every other control in
+   the row is a hairline rectangle, so roundness alone makes the send key
+   findable without spending a colour on it. Disabled is a real quiet fill with
+   a dimmed glyph, not a translucent copy of the enabled ink. */
 .primary {
   display: grid;
   place-items: center;
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border: none;
-  border-radius: 999px;
-  background: var(--dsw-alias-button-info-fill);
-  /* Static white, not the foreground token: the arrow stays white on the blue
-     fill in both themes (design 34:10465). */
-  color: #fff;
+  border-radius: var(--dsw-radius-pill);
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
   cursor: pointer;
-  transition: background-color 100ms ease;
-  /* Opts out of the row's 2px downward shift (.row top pad): the send circle
-     keeps its original seat while the smaller chips sit lower. Transform, not
-     margin, so flex centering math is untouched. */
-  transform: translateY(-2px);
+  transition: background-color 200ms var(--ds-ease-in-out), color 200ms var(--ds-ease-in-out);
 }
 
 .primary:hover:not(:disabled) {
-  background: var(--dsw-alias-button-info-hover);
+  background: var(--dsw-alias-button-primary-hover);
 }
 
 .primary:disabled {
-  opacity: 0.4;
+  background: var(--dsw-specific-bubble);
+  color: var(--dsw-alias-label-tertiary);
+  cursor: default;
+}
+
+/* Interrupt: the reference's stop key is a 32px ink SQUARE (h-8 w-8 +
+   rounded-md + the inverted fill) — one step smaller and one shape apart from
+   the 36px send circle beside it, so the two never read as the same control. */
+.stop {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
+  cursor: pointer;
+  transition: background-color 150ms var(--ds-ease-in-out);
+}
+
+.stop:hover:not(:disabled) {
+  background: var(--dsw-alias-button-primary-hover);
+}
+
+.stop:disabled {
+  background: var(--dsw-specific-bubble);
+  color: var(--dsw-alias-label-tertiary);
   cursor: default;
 }
 
@@ -470,4 +495,45 @@
   text-decoration: line-through;
   opacity: 0.7;
   color: var(--dsw-alias-state-error-primary);
+}
+
+/* Dictation: a bare glyph, not a bordered control. It sits immediately left of
+   the send pill, so giving it the `.add` hairline box would put two rectangles
+   either side of the one round key and cost send its findability. Same 32px
+   pointer target as `.add`, no border, no fill until hover. */
+.voice {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--dsw-radius-pill);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  transition: background-color 150ms var(--ds-ease-in-out), color 150ms var(--ds-ease-in-out);
+}
+
+.voice:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.voice:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Listening is a STATE, and the only place on this surface that earns the
+   accent: it is the one control whose behaviour continues while the user is
+   not touching it, so it has to be legible at a glance from across the row. */
+.voiceLive {
+  background: var(--dsw-alias-button-info-fill, var(--dsw-static-deepseek-500));
+  color: var(--dsw-alias-button-info-label);
+}
+
+.voiceLive:hover:not(:disabled) {
+  background: var(--dsw-alias-button-info-fill, var(--dsw-static-deepseek-600));
+  color: var(--dsw-alias-button-info-label);
 }

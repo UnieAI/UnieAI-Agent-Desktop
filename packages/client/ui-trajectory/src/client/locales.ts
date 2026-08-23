@@ -62,3 +62,39 @@ export const en: Record<TrajectoryKey, string> = {
   'toolbar.search': 'Search trajectory',
   'toolbar.searchPlaceholder': 'Search',
 }
+
+/** Traditional Chinese dictionary. */
+export const zhTW: Record<TrajectoryKey, string> = {
+  'view.trajectory': '軌跡',
+  'toolbar.aria': '軌跡工具列',
+  'toolbar.duration': '時長',
+  'toolbar.useActualDuration': '使用實際時長',
+  'toolbar.useEqualWidth': '操作等寬顯示',
+  'toolbar.actualTime': '實際時間',
+  'toolbar.turns': '回合',
+  'toolbar.expandTurns': '展開回合',
+  'toolbar.collapseTurns': '收合回合',
+  'toolbar.calls': '呼叫',
+  'toolbar.expandCalls': '展開呼叫',
+  'toolbar.collapseCalls': '收合呼叫',
+  'toolbar.search': '搜尋軌跡',
+  'toolbar.searchPlaceholder': '搜尋',
+}
+
+/** Japanese dictionary. */
+export const ja: Record<TrajectoryKey, string> = {
+  'view.trajectory': '軌跡',
+  'toolbar.aria': '軌跡ツールバー',
+  'toolbar.duration': '所要時間',
+  'toolbar.useActualDuration': '実際の所要時間を使用',
+  'toolbar.useEqualWidth': '操作を等幅で表示',
+  'toolbar.actualTime': '実時間',
+  'toolbar.turns': 'ターン',
+  'toolbar.expandTurns': 'ターンを展開',
+  'toolbar.collapseTurns': 'ターンを折りたたむ',
+  'toolbar.calls': '呼び出し',
+  'toolbar.expandCalls': '呼び出しを展開',
+  'toolbar.collapseCalls': '呼び出しを折りたたむ',
+  'toolbar.search': '軌跡を検索',
+  'toolbar.searchPlaceholder': '検索',
+}

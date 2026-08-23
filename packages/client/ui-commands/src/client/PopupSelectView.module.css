@@ -3,10 +3,10 @@
  * shadow-lv3), anchored by the conversation.input.overlay slot. */
 
 .card {
-  /* The overlay anchor is a zero-height strip on the composer card's top
-     edge; entries float themselves above it (same rule as MenuView). */
+  /* The overlay anchor is a zero-height strip on one edge of the composer
+     card; entries drop from it (same rule as MenuView). */
   position: absolute;
-  bottom: calc(100% + 4px);
+  top: calc(100% + 4px);
   left: 0;
   z-index: 100;
   padding: 4px;
@@ -115,4 +115,15 @@
   font-size: 12px;
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
+}
+
+/* Once a conversation is live the composer is docked at the window floor and
+   the anchor strip moves to the card's TOP edge, so the card grows upward from
+   it instead. Both halves have to flip together: the strip alone would leave
+   the popup dropping down over the composer, and this rule alone would leave
+   it above the card's bottom edge — inside the card. */
+:global([data-phase='active']) .card,
+:global([data-phase='settling']) .card {
+  top: auto;
+  bottom: calc(100% + 4px);
 }

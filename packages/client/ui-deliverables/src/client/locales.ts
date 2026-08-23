@@ -23,3 +23,21 @@ export const en: Record<DeliverablesKey, string> = {
 
 /** Union of this namespace's dictionary keys. */
 export type DeliverablesKey = keyof typeof zh
+
+/** Traditional Chinese dictionary (same key set). */
+export const zhTW: Record<DeliverablesKey, string> = {
+  'produced.label': '產物',
+  'produced.moreOne': '+ 1 個檔案',
+  'produced.more': '+ {count} 個檔案',
+  'produced.open': '開啟 {name}',
+  'produced.showInFolder': '在資料夾中顯示',
+}
+
+/** Japanese dictionary (same key set). */
+export const ja: Record<DeliverablesKey, string> = {
+  'produced.label': '成果物',
+  'produced.moreOne': '+ 1 ファイル',
+  'produced.more': '+ {count} ファイル',
+  'produced.open': '{name} を開く',
+  'produced.showInFolder': 'フォルダに表示',
+}

@@ -16,8 +16,15 @@ const icons = Object.fromEntries(
 const iconNames = Object.keys(icons)
 
 describe('ic_ds_ icon set', () => {
-  it('exports the full icon set (46 deepsuite + 20 figma extracts + four product glyphs outside those sets)', () => {
-    expect(iconNames.length).toBe(70)
+  it('exports the full icon set (46 deepsuite + 20 figma extracts + seven product glyphs outside those sets)', () => {
+    // The seven: the sparkle approximation, the three the harness draws itself,
+    // the sidebar nav row's compose and blocks marks — hand-authored on this
+    // set's 16 grid to carry the same metaphors as the UnieAI web product's own
+    // New chat and Plugins rows — and the minus. The minus exists because the
+    // plugin directory's row control has to say "remove" as plainly as it says
+    // "add", and it is drawn as the plus's own horizontal bar so the two read
+    // as one pair rather than as two glyphs that happen to sit in one column.
+    expect(iconNames.length).toBe(73)
   })
 
   it.each(iconNames)('%s renders an svg with currentColor fills and no hardcoded palette', (name) => {

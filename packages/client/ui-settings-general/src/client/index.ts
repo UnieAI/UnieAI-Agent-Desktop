@@ -3,7 +3,8 @@
  * `sidebar.settings` occupant — panel chrome, section navigation, and the
  * onboarding stage — and registers everything on the Settings pages that
  * belongs to no single feature: the trigger/header chrome content,
- * local-document action, General section, and `settings` dictionaries.
+ * local-document action, the sidebar's Plugins nav row, the General section,
+ * and the `settings` dictionaries.
  * Feature-owned rows and sections stay with their features.
  * Export discipline: packages/client/AGENTS.md.
  */
@@ -14,18 +15,26 @@ import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
 // merge. Cross-plugin collaboration goes through the service, never a value
 // import (client bundle purity gate).
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+// Type-only namespace: the service NAME is written as a literal below and
+// pinned to the base layer's constant, so a rename there fails this build
+// without putting a value import from ui-settings in this bundle.
+import type * as SettingsContract from '@deepseek-ai/dsh-client-ui-settings/client'
+// Type-only: pulls ui-sidebar's SlotMap merge (the nav-row and settings seats).
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 // Type-only: pulls ctx.locale into this program.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {
   SettingsOnboardingStep, SettingsRootInjected, SettingsSectionRow,
 } from './shell-contract.ts'
 import { SettingsRoot } from './SettingsRoot.tsx'
+import { PluginsNavRow } from './PluginsNavRow.tsx'
+import { SettingsPanelController } from './settings-panel-store.ts'
 import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
 import { GeneralSection } from './GeneralSection.tsx'
 import { SettingsDocumentAction } from './SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from './SettingsDocumentAction.tsx'
 import { SettingsDocumentStore } from './settings-document-store.ts'
-import { en, zh, type SettingsKey } from './locales.ts'
+import { en, ja, zh, zhTW, type SettingsKey } from './locales.ts'
 
 export type {
   CloseLabelProps, HeaderContentProps, TriggerContentProps,
@@ -34,7 +43,10 @@ export type {
   GeneralSectionComponentProps,
 } from './GeneralSection.tsx'
 export type { SettingsDocumentActionInjected, SettingsDocumentActionProps } from './SettingsDocumentAction.tsx'
+export type { PluginsNavRowComponentProps } from './shell-contract.ts'
 export type { SettingsDocumentState } from './settings-document-store.ts'
+export { SettingsPanelController } from './settings-panel-store.ts'
+export type { SettingsPanelState } from './settings-panel-store.ts'
 export { SettingsDocumentStore } from './settings-document-store.ts'
 export type { SettingsKey } from './locales.ts'
 
@@ -47,6 +59,9 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** Dictionary namespace owned by this plugin (shell chrome + General copy). */
 const NS = 'settings'
+
+/** The service name this shell provides its panel face under. */
+const PANEL_SERVICE: typeof SettingsContract.SETTINGS_PANEL_SERVICE = 'settingsPanel'
 
 /**
  * Required services (cordis fiber inject). The target slots are declared by
@@ -61,7 +76,7 @@ export const inject = ['slots', 'locale', 'connection', 'settingsScope']
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-settings-general: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { 'zh-CN': zh, 'zh-TW': zhTW, ja, en }), 'ui-settings-general: dictionaries')
 
   // Copy freshness is framework-owned: components read the standard `t`
   // seat, and the nav label is a thunk the owner resolves per render — no
@@ -90,8 +105,22 @@ export function apply(ctx: ClientContext): void {
   let rows: readonly SettingsSectionRow[] = []
   let onboardingVersion = -1
   let onboardingSteps: readonly SettingsOnboardingStep[] = []
+  // One controller, three openers: the panel's own trigger, the Plugins nav
+  // row, and — through the `settingsPanel` service — any surface outside this
+  // package, which today is the sidebar's account menu. It is an apply-level
+  // object rather than a slot-declared store because `apply` has to write it
+  // to serve that service, and a declared store is the renderer's to create.
+  const panel = new SettingsPanelController()
+  ctx.provide(PANEL_SERVICE, {
+    open: (sectionId, anchorId) => { panel.open(sectionId, anchorId) },
+  })
+
   const shellInjected = (): SettingsRootInjected => ({
+    openPanel: (sectionId, anchorId) => { panel.open(sectionId, anchorId) },
+    selectSection: (sectionId) => { panel.select(sectionId) },
+    closePanel: () => { panel.close() },
     hooks: {
+      panel: panel.store,
       sections: {
         getSnapshot: () => {
           const version = ctx.slots.getVersion('settings.section')
@@ -148,8 +177,20 @@ export function apply(ctx: ClientContext): void {
       'settings.section': { kind: 'list', scope: 'root' },
       'settings.onboarding': { kind: 'list', scope: 'root' },
     },
+    locale: NS,
     inject: shellInjected,
   }, SettingsRoot))
+
+  // The reference column's Plugins entry, opening this panel at the section
+  // ui-settings-plugins registers. The row hides itself when that section is
+  // absent, so no composition draws a control with nothing behind it.
+  ctx.slots.inject('sidebar.nav.action', () => ctx.slots.register({
+    name: 'sidebar.nav.action',
+    id: 'plugins',
+    order: 10,
+    locale: NS,
+    inject: shellInjected,
+  }, PluginsNavRow))
 
   ctx.slots.inject('settings.trigger', () =>
     ctx.slots.register({ name: 'settings.trigger', locale: NS }, TriggerContent))

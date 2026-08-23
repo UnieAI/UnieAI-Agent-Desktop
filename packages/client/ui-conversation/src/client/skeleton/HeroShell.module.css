@@ -8,7 +8,10 @@
   justify-content: center;
   height: 100%;
   min-width: 0;
-  padding: 0 24px;
+  /* The same clearance the composer keeps from the scrollport edge, so the
+     headline and the card below it share one left edge — 768px of content
+     inside the hero's 800px box, which is what the reference measures. */
+  padding: 0 var(--dsh-composer-side-clearance);
 }
 
 /* Cap matches the InputBar card. Glow may paint past the sides. */
@@ -16,25 +19,31 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  /* figma 75:8208: 12 between title block / workspace / card. */
-  gap: 12px;
+  /* 24 here + 8 from the owner's .composerHero gap = the reference's 32px
+     between the headline and the composer cluster below it. */
+  gap: 24px;
   width: 100%;
   max-width: var(--dsh-composer-card-max-width);
   overflow: visible;
 }
 
-/* figma 34:10411: fish + title, gap 10, centered; 26/32 wt500. The preview
-   badge is a product addition outside that source: a mono superscript pill
-   riding the title's top-right. */
+/* Headline: brand mark + title on one centered line, 28/1.2 at REGULAR weight
+   with tightened tracking. The weight carries the whole reading: a medium
+   line over the composer announces what the screen IS, a regular one invites
+   you to type, and the hero wants the second. The preview badge is a product
+   addition outside the figma source: a quiet mono superscript riding the
+   title's top-right, deliberately neutral so the only colour on this screen
+   stays on the send key. */
 .headline {
   display: grid;
   grid-template-columns: 34px auto auto;
-  column-gap: 10px;
+  column-gap: 8px;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
-  line-height: 32px;
-  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: -0.01em;
   color: var(--dsw-alias-label-primary);
 }
 
@@ -47,16 +56,16 @@
   grid-row: 1;
   grid-column: 3;
   align-self: start;
-  margin-top: 2px;
-  margin-left: -3px;
-  padding: 1px 7px 0;
-  border: 1px solid var(--dsw-alias-interactive-bg-hover);
-  border-radius: 24px;
-  background: var(--dsw-alias-state-business-tertiary);
-  color: var(--dsw-alias-label-primary-bluish);
+  margin-top: 3px;
+  margin-left: -2px;
+  padding: 0 7px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-pill);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-tertiary);
   font-family: var(--ds-font-family-code);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 11px;
+  line-height: 17px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -133,7 +142,7 @@
   min-height: 28px;
   padding: 0 8px;
   border: none;
-  border-radius: 16px;
+  border-radius: var(--dsw-radius-pill);
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font-size: 13px;

@@ -2,17 +2,21 @@
 
 English | [中文](README.zh.md)
 
-The **Plugins** settings section and its **Plugin configuration** tab. The section owns the heading and compact tab chrome; feature plugins contribute pages through `settings.plugins.tab`. This package's own tab shows one expandable card per Host plugin whose configuration a user owns. A card shows the plugin's name and what it governs; expanding it in place reveals hand-written controls bound to that plugin's settings namespace, each field marking whether the user overrode it and offering a reset back to the value the deployment composed.
+The **Deployment plugins** area of the [Plugins page](../ui-plugins-page/README.md) and its **Plugin configuration** tab. The area owns the heading and compact tab chrome; feature plugins contribute pages through `settings.plugins.tab`. This package's own tab shows one expandable card per Host plugin whose configuration a user owns. A card shows the plugin's name and what it governs; expanding it in place reveals hand-written controls bound to that plugin's settings namespace, each field marking whether the user overrode it and offering a reset back to the value the deployment composed.
+
+## Where it lives
+
+This is the cordis plugin registry — what a plugin is to this deployment. It used to be a `settings.section` reached from the sidebar's Plugins row, which promised the account's installable plugins instead. It now occupies `plugins.page.area`, a seat of the same shape on the Plugins page, beside the account's Studio MCP servers. Nothing inside the area changed: the same component, the same tabs, the same cards, the same settings scope. A composition without [`ui-plugins-page`](../ui-plugins-page/README.md) has nowhere to render it.
 
 ## What appears here
 
 The configurable tab reads which settings namespaces the Host serves and dispatches one slot key per namespace, so what renders is the intersection of two ledgers: the namespaces a live Host plugin registered, and the cards registered under those keys. A served namespace no card claims renders nothing — another surface owns it, or this deployment ships no browser half for it — and a card whose namespace this deployment does not serve is never dispatched, so an uncomposed plugin leaves no trace and does not hold the tab back from its empty line. The empty line waits for the Host's first answer, so an unanswered read never reads as "this deployment configures no plugin". Cards appear in the order they registered, which is stable for the cards one package installs together and not stable across plugins: apply order between packages is unconstrained.
 
-The cards this package ships cover the shell executor (`bash`), the agent loop's tool-call parallelism (`agent-loop`), and the DeepSeek search provider (`web-search-deepseek`).
+The cards this package ships cover the shell executor (`bash`), the agent loop's tool-call parallelism (`agent-loop`), and the Host's web-search provider (`web-search-deepseek`), which is served by DeepSeek's search API — the card names that vendor as the supplier of the capability, not as this product.
 
 ## Extension point
 
-The section declares `settings.plugins.tab`, a root list slot whose labels become ordered tabs. It keeps a tab mounted after its first selection, so local drafts and read-only snapshots survive tab switches. The package registers its own `configurable` contribution, which declares the nested `settings.plugin.item` slot — keyed on the settings namespace a card edits. A plugin that ships a browser half registers its own card under its own namespace and owns every part of it: chrome, controls, and copy. Keying on the namespace is what lets a plugin distributed outside this repository appear here — it registers the namespace on the Host and the card in the browser, and the tab pairs the two without learning what the namespace means. Tabs follow the contribution's `order`; cards follow registration order.
+The area declares `settings.plugins.tab`, a root list slot whose labels become ordered tabs. It keeps a tab mounted after its first selection, so local drafts and read-only snapshots survive tab switches. The package registers its own `configurable` contribution, which declares the nested `settings.plugin.item` slot — keyed on the settings namespace a card edits. A plugin that ships a browser half registers its own card under its own namespace and owns every part of it: chrome, controls, and copy. Keying on the namespace is what lets a plugin distributed outside this repository appear here — it registers the namespace on the Host and the card in the browser, and the tab pairs the two without learning what the namespace means. Tabs follow the contribution's `order`; cards follow registration order.
 
 ## Writes
 

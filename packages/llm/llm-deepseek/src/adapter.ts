@@ -118,6 +118,13 @@ export interface DeepSeekAdapterOptions {
    * `MISSING_CREDENTIAL` when no key is available anywhere.
    */
   resolveApiKey: (connection: DeepSeekConnectionOptions) => Promise<string>
+  /**
+   * Answer whether a request could authenticate right now, WITHOUT reading the
+   * key. Absent when the composition supplies no way to tell, which reports
+   * the route as unknown rather than as unusable — see
+   * {@link LlmAdapter.credentialReady}.
+   */
+  credentialReady?: (connection: DeepSeekConnectionOptions) => Promise<boolean | undefined>
   /** Resolve the harness-home anonymous id shared with telemetry and feedback. */
   resolveUserId: () => AnonymousUserId
   /** Resolve the current durable attachment service; absence rejects image input. */
@@ -369,6 +376,23 @@ export class DeepSeekAdapter extends LlmAdapter {
 
   override listModels(provider: string): Promise<readonly LlmModelInfo[]> {
     return Promise.resolve(this.config.options().models.map(model => modelInfo(provider, model)))
+  }
+
+  /**
+   * Whether this route could authenticate, asked of the same connection
+   * snapshot a request would use, so the answer names the endpoint the key
+   * would actually be sent to.
+   *
+   * The catalog above is a shipped constant: it advertises the same three
+   * models whether or not a key was ever stored, which is exactly why a
+   * consumer must be able to ask this separately.
+   * @param _provider - the single route this adapter owns.
+   * @returns whether a request could authenticate, or `undefined` when unknown.
+   */
+  override credentialReady(_provider: string): Promise<boolean | undefined> {
+    const answer = this.config.credentialReady
+    if (answer === undefined) return Promise.resolve(undefined)
+    return answer(this.config.options())
   }
 
   override resolveModel(

@@ -88,6 +88,24 @@ registerUpgrade(route: WebUpgradeRoute): () => void
 registerFallback(handler: WebRoute['handler']): () => void
 
 /**
+ * Claim the request-guard seat: the one decision consulted before ANY
+ * dispatch, on both the HTTP and the upgrade path.
+ *
+ * This exists so an authentication layer can cover every seat at once —
+ * named routes, the fallback SPA, the plugin-bundle prefix, and the
+ * WebSocket downlinks. Gating one route cannot do that: an anonymous visitor
+ * would still be served the application shell and its boot manifest, and
+ * only then fail every call it made.
+ *
+ * A guard that refuses OWNS the response: it writes the status and body, or
+ * destroys the socket, and returns `false`. `true` continues to ordinary
+ * dispatch. One owner only — two guards would have no defined precedence.
+ * @param guard - decides one request; owns the response when it refuses.
+ * @returns the disposer releasing the seat.
+ */
+registerGuard(guard: WebGuard): () => void
+
+/**
  * Register a raw-HTML index transform, the escape hatch for markup no
  * {@link IndexInjection} row expresses: {@link renderIndex} applies taps in
  * registration order after rendering the structured rows.

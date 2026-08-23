@@ -1,21 +1,32 @@
 /**
- * Plugins settings surface, browser half — one section whose feature-owned
- * tabs include configurable Host plugin cards and read-only inventory.
+ * Cordis plugin surface, browser half — one area on the Plugins page whose
+ * feature-owned tabs include configurable Host plugin cards and read-only
+ * inventory.
  *
- * The section declares `settings.plugins.tab`; its own `configurable` tab then
+ * The area declares `settings.plugins.tab`; its own `configurable` tab then
  * declares `settings.plugin.item` and renders whatever cards were registered
  * into it. The three cards this package ships are the host-plane sections the
  * deployment already exposes; each binds its namespace through the client
  * settings scope, which keeps them unaware of one another and of other tabs.
+ *
+ * It used to be a `settings.section`. It is now a `plugins.page.area`, which
+ * is the same shape of seat on a different surface: nothing inside the
+ * section, the tabs, or the cards changed, and the settings scope it writes
+ * through is the same one. The reason is naming, not behaviour — see the
+ * package README.
  */
 
 import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
-// Type-only: the settings shell's SlotMap merge (the 'settings.section' entry)
-// and the ctx.settingsScope Context merge. Cross-plugin collaboration goes
-// through the service, never a value import (client bundle purity gate).
+// Type-only: the settings shell's SlotMap merge (the 'settings.plugins.tab'
+// entry type) and the ctx.settingsScope Context merge. Cross-plugin
+// collaboration goes through the service, never a value import (client bundle
+// purity gate).
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+// Type-only: the Plugins page's SlotMap merge (the 'plugins.page.area' seat
+// this section now occupies).
+import type {} from '@deepseek-ai/dsh-client-ui-plugins-page/client'
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the ctx.remote Context merge and the forwarded-event key face.
@@ -58,7 +69,7 @@ export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope
 export function apply(ctx: ClientContext): void {
   const { api } = ctx.get('connection') as ConnectionHandle
   const t = ctx.locale.bind(NS)
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-settings-plugins: section dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { 'zh-CN': zh, en }), 'ui-settings-plugins: section dictionaries')
 
   const bash = new BashCardController(ctx.settingsScope.bind({ namespace: SHELL_NS }))
   const agentLoop = new AgentLoopCardController(ctx.settingsScope.bind({ namespace: AGENT_LOOP_NS }))
@@ -119,13 +130,20 @@ export function apply(ctx: ClientContext): void {
     },
   })
 
-  // This package owns the one Plugins navigation entry and the tab chrome;
-  // feature plugins contribute pages without competing for Settings nav rows.
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
-    name: 'settings.section',
-    id: 'plugins',
-    order: 15,
-    label: () => t('nav'),
+  // This surface is an area on the Plugins PAGE, not a section in the
+  // settings dialog. It moved there because "plugin" meant two things in this
+  // product and only one of them was reachable from the sidebar's Plugins row:
+  // this deployment registry is the developer-facing one, and it must not be
+  // what that row opens on its own. Nothing about the section itself changed —
+  // the same component, the same tabs, the same cards.
+  //
+  // The move also retires the settings shell's own Plugins nav row without
+  // touching it: that row renders only while a `plugins` settings section
+  // exists, and after this registration none does.
+  ctx.slots.inject('plugins.page.area', () => ctx.slots.register({
+    name: 'plugins.page.area',
+    id: 'cordis-plugins',
+    order: 10,
     locale: NS,
     inject: sectionInjected,
     children: { 'settings.plugins.tab': { kind: 'list', scope: 'root' } },

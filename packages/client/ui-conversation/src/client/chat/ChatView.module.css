@@ -37,9 +37,13 @@
   min-height: auto;
 }
 
-/* Message column: shared chat width (ConversationRoot --dsh-chat-content-width),
+/* Message column: the shared reading measure (ConversationRoot's
+   --dsh-chat-content-width, which resolves to ui-theme's --dsw-chat-measure),
    centered on the same axis as the input box (which caps at chat + 16px); the
-   scroller itself stays full-bleed. */
+   scroller itself stays full-bleed. The column gap stays at 16px rather than
+   taking the reference's 32px between messages: this list is flat, so tool
+   rows, status lines and context rows are siblings of the two message voices
+   and a 32px rhythm would push a tool-heavy turn off the screen. */
 .column {
   max-width: var(--dsh-chat-content-width);
   width: 100%;
@@ -138,7 +142,7 @@
 
 .older button {
   border: none;
-  border-radius: 14px;
+  border-radius: var(--dsw-radius-pill);
   padding: 4px 12px;
   font-size: 12px;
   color: var(--dsw-alias-label-secondary);
@@ -184,7 +188,7 @@
   margin-top: -34px;
   padding: 0;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 100px;
+  border-radius: var(--dsw-radius-pill);
   color: var(--dsw-alias-label-primary);
   background: var(--dsw-alias-button-floating-fill);
   box-shadow: var(--dsw-shadow-lv2);

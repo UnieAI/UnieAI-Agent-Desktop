@@ -1,5 +1,9 @@
-/* Tree rows: project 34px, session 32px, radius 8, indent step 22px
-   (16px slot + 6px gap). Hover swaps
+/* Tree rows: the reference sidebar's own list-row box — 7px/10px padding
+   around a 13/19.5 line at --dsw-radius-control, so a row measures 248x33.5
+   inside the 264px column and stacks on the reference's 2px row gap.
+   Ink follows the same rule it does there: an idle row is secondary and only
+   the row you are pointing at (or the one you are in) reaches full strength,
+   so "where am I" is a contrast step rather than a fill alone. Hover swaps
    are pure CSS: project folder -> chevron + action buttons; session time ->
    ellipsis button. */
 
@@ -8,20 +12,22 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  border-radius: 8px;
-  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: var(--dsw-radius-control);
+  padding: 7px 10px;
+  font-size: 13px;
   cursor: pointer;
   user-select: none;
-  color: var(--dsw-alias-label-primary);
+  color: var(--dsw-alias-label-secondary);
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
 }
 
 .projectRow:hover,
 .sessionRow:hover {
   background: var(--dsw-alias-interactive-bg-hover);
-}
-
-.sessionRow.selected {
-  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
 .searchResultRow {
@@ -32,20 +38,20 @@
   min-height: 48px;
   box-sizing: border-box;
   border: none;
-  border-radius: 8px;
-  padding: 4px 8px;
+  border-radius: var(--dsw-radius-control);
+  padding: 4px 10px;
   background: transparent;
   cursor: pointer;
   text-align: left;
-  color: var(--dsw-alias-label-primary);
+  color: var(--dsw-alias-label-secondary);
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
 }
 
 .searchResultRow:hover {
   background: var(--dsw-alias-interactive-bg-hover);
-}
-
-.searchResultRow.selected {
-  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
 .searchResultHeading {
@@ -60,7 +66,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 20px;
 }
 
@@ -95,18 +101,15 @@
 
 /* Compact one-line Workspace row after removing the session-count subtitle. */
 .projectRow {
-  height: 34px;
   align-items: center;
-  box-sizing: border-box;
 }
 
 .projectRow .rowActions {
-  height: 20px;
+  height: 19.5px;
 }
 
-/* Session cell (figma): pad 8, a 16px status slot, then a 4px title gap. */
+/* Session cell: a 16px status slot, then a 4px title gap. */
 .sessionRow {
-  height: 32px;
   gap: 0;
   /* Mount fade: session rows appear by unfolding a group (or the tree
      mounting). Stable row keys keep already-visible rows from replaying it. */
@@ -128,7 +131,7 @@
 .slot {
   flex: none;
   width: 16px;
-  height: 20px;
+  height: 19.5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -176,14 +179,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 19.5px;
 }
 
 .renameInput {
   min-width: 0;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 19.5px;
   padding: 0 2px;
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 4px;
@@ -201,14 +204,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12px;
-  line-height: 20px;
+  line-height: 19.5px;
   color: var(--dsw-alias-label-tertiary);
 }
 
 .time {
   flex: none;
   font-size: 12px;
-  line-height: 20px;
+  line-height: 19.5px;
   color: var(--dsw-alias-label-tertiary);
 }
 
@@ -242,6 +245,22 @@
 .projectRow.menuOpen,
 .sessionRow.menuOpen {
   background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* The current item is a step above hover, not the same fill: it keeps the
+   stronger interactive fill and a heavier title through hover and through an
+   open overflow menu, so "where am I" never dissolves into "what am I
+   pointing at". Declared last so it outranks the equally specific
+   :hover/.menuOpen rules above. */
+.sessionRow.selected,
+.searchResultRow.selected {
+  background: var(--dsw-alias-interactive-bg-active);
+  color: var(--dsw-alias-label-primary);
+}
+
+.sessionRow.selected .title,
+.searchResultRow.selected .searchResultTitle {
+  font-weight: 500;
 }
 
 /* Session drag insert marker: a leading chevron and 2px rule between rows,
@@ -348,6 +367,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .projectRow,
+  .searchResultRow,
   .sessionRow,
   .arrow {
     animation: none;

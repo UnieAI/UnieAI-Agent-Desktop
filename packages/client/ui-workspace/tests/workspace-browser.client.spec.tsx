@@ -63,6 +63,7 @@ function mount(overrides: Partial<WorkspaceBrowserProps> = {}) {
   const props: WorkspaceBrowserProps = {
     wide: true,
     expandSidebar: vi.fn(),
+    searchRequest: 0,
     useSessions: hook(sessionState([])),
     useWorkspaces: hook(workspaceState([])),
     useStore: bindSnapshotSelector(store),
@@ -1240,5 +1241,17 @@ describe('WorkspaceBrowser', () => {
     fireEvent.change(screen.getByPlaceholderText('搜索会话…'), { target: { value: 'needle' } })
     const row = screen.getByText('Needle A').closest('[role="treeitem"]') as HTMLElement
     expect(row.hasAttribute('draggable')).toBe(false)
+  })
+})
+
+describe('the column\'s search request', () => {
+  it('opens the search field and takes focus when the shell raises the nonce', () => {
+    const bench = mount({ searchRequest: 0 })
+    const input = bench.view.container.querySelector('input')
+    // The field is always mounted; what the request changes is whether it is
+    // OPEN and holding focus. The first render is not a request.
+    expect(document.activeElement).not.toBe(input)
+    bench.view.rerender(<WorkspaceBrowser {...bench.props} searchRequest={1} />)
+    expect(document.activeElement).toBe(input)
   })
 })

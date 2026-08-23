@@ -744,6 +744,7 @@ function SearchResults({
 export function WorkspaceBrowser({
   wide,
   expandSidebar,
+  searchRequest,
   useSessions,
   useWorkspaces,
   useStore,
@@ -828,6 +829,21 @@ export function WorkspaceBrowser({
   const [wsPickerOpen, setWsPickerOpen] = useState(false)
   const wsPlusRef = useRef<HTMLButtonElement>(null)
   const composingRef = useRef(false)
+
+  // The column's Search nav row asks for this field rather than reaching into
+  // it: the field, its debounce and its results are the region's, so the
+  // shell raises a nonce and the region decides what opening means. The first
+  // render is not a request — only a raise is.
+  const seenSearchRequest = useRef(searchRequest)
+  useEffect(() => {
+    if (searchRequest === seenSearchRequest.current) return
+    seenSearchRequest.current = searchRequest
+    setSearchExpanded(true)
+    // Wide already: focus now. Still sliding: the wide-flip effect below
+    // owns the landing, which is the same path the rail's own icon takes.
+    if (wide) searchInput.current?.focus({ preventScroll: true })
+    else setSearchOnExpand(true)
+  }, [searchRequest, wide])
 
   // Rail search = expand + land in the search box: the flag arms before the
   // expand request; once the shell flips wide the input mounts and takes focus.

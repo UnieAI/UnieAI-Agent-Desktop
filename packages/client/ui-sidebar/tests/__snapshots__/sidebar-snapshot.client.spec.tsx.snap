@@ -47,12 +47,12 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
       </button>
     </div>
     <button
-      aria-label="New session"
+      aria-label="New chat"
       class="newSession"
       type="button"
     >
       <svg
-        data-content="c0ce4dcc"
+        data-content="a10c56fb"
         fill="none"
         height="18"
         viewBox="0 0 16 16"
@@ -60,6 +60,28 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
         xmlns="http://www.w3.org/2000/svg"
       />
     </button>
+    <button
+      aria-label="Search"
+      class="newSession"
+      type="button"
+    >
+      <svg
+        data-content="4ca56c6d"
+        fill="none"
+        height="18"
+        viewBox="0 0 16 16"
+        width="18"
+        xmlns="http://www.w3.org/2000/svg"
+      />
+    </button>
+    <div
+      class="navActions"
+    >
+      <div
+        data-slot="sidebar.nav.action"
+        style="display: contents;"
+      />
+    </div>
     <div
       class="regionArea"
     >
@@ -80,8 +102,12 @@ exports[`sidebar shell snapshots > renders the collapsed rail after the crossfad
         />
       </div>
       <div
-        class="settingsArea"
+        class="identityRow"
       >
+        <div
+          data-slot="sidebar.account"
+          style="display: contents;"
+        />
         <div
           data-slot="sidebar.settings"
           style="display: contents;"
@@ -105,7 +131,7 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
       class="logoRow"
     >
       <button
-        aria-label="New session"
+        aria-label="New chat"
         class="brand wide"
         type="button"
       >
@@ -124,9 +150,9 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
                 aria-hidden="true"
                 data-content="965fe321"
                 fill="none"
-                height="17.6580310880829"
+                height="11.7720207253886"
                 viewBox="0 0 23.16 17.04"
-                width="24"
+                width="16"
               />
             </div>
           </span>
@@ -140,7 +166,7 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
               <span
                 class="fallbackBrandName"
               >
-                DSH Local Build
+                UnieAI Agent
               </span>
               <span
                 class="buildRevision"
@@ -160,32 +186,59 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
           class="panelIcon"
           data-content="35f95b0c"
           fill="none"
-          height="16"
+          height="15"
           viewBox="0 0 16 16"
-          width="16"
+          width="15"
           xmlns="http://www.w3.org/2000/svg"
         />
       </button>
     </div>
     <button
-      aria-label="New session"
+      aria-label="New chat"
       class="newSession"
       type="button"
     >
       <svg
-        data-content="c0ce4dcc"
+        data-content="a10c56fb"
         fill="none"
-        height="14"
+        height="15"
         viewBox="0 0 16 16"
-        width="14"
+        width="15"
         xmlns="http://www.w3.org/2000/svg"
       />
       <span
         class="newSessionLabel wide"
       >
-        New Session
+        New chat
       </span>
     </button>
+    <button
+      aria-label="Search"
+      class="newSession"
+      type="button"
+    >
+      <svg
+        data-content="4ca56c6d"
+        fill="none"
+        height="15"
+        viewBox="0 0 16 16"
+        width="15"
+        xmlns="http://www.w3.org/2000/svg"
+      />
+      <span
+        class="newSessionLabel wide"
+      >
+        Search
+      </span>
+    </button>
+    <div
+      class="navActions"
+    >
+      <div
+        data-slot="sidebar.nav.action"
+        style="display: contents;"
+      />
+    </div>
     <div
       class="regionArea"
     >
@@ -206,8 +259,12 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
         />
       </div>
       <div
-        class="settingsArea"
+        class="identityRow"
       >
+        <div
+          data-slot="sidebar.account"
+          style="display: contents;"
+        />
         <div
           data-slot="sidebar.settings"
           style="display: contents;"
@@ -231,7 +288,7 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
       class="logoRow"
     >
       <button
-        aria-label="新建会话"
+        aria-label="新聊天"
         class="brand wide"
         type="button"
       >
@@ -250,9 +307,9 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
                 aria-hidden="true"
                 data-content="965fe321"
                 fill="none"
-                height="17.6580310880829"
+                height="11.7720207253886"
                 viewBox="0 0 23.16 17.04"
-                width="24"
+                width="16"
               />
             </div>
           </span>
@@ -266,7 +323,7 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
               <span
                 class="fallbackBrandName"
               >
-                DSH Local Build
+                UnieAI Agent
               </span>
               <span
                 class="buildRevision"
@@ -286,32 +343,59 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
           class="panelIcon"
           data-content="35f95b0c"
           fill="none"
-          height="16"
+          height="15"
           viewBox="0 0 16 16"
-          width="16"
+          width="15"
           xmlns="http://www.w3.org/2000/svg"
         />
       </button>
     </div>
     <button
-      aria-label="新建会话"
+      aria-label="新聊天"
       class="newSession"
       type="button"
     >
       <svg
-        data-content="c0ce4dcc"
+        data-content="a10c56fb"
         fill="none"
-        height="14"
+        height="15"
         viewBox="0 0 16 16"
-        width="14"
+        width="15"
         xmlns="http://www.w3.org/2000/svg"
       />
       <span
         class="newSessionLabel wide"
       >
-        新会话
+        新聊天
       </span>
     </button>
+    <button
+      aria-label="搜索"
+      class="newSession"
+      type="button"
+    >
+      <svg
+        data-content="4ca56c6d"
+        fill="none"
+        height="15"
+        viewBox="0 0 16 16"
+        width="15"
+        xmlns="http://www.w3.org/2000/svg"
+      />
+      <span
+        class="newSessionLabel wide"
+      >
+        搜索
+      </span>
+    </button>
+    <div
+      class="navActions"
+    >
+      <div
+        data-slot="sidebar.nav.action"
+        style="display: contents;"
+      />
+    </div>
     <div
       class="regionArea"
     >
@@ -332,8 +416,12 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
         />
       </div>
       <div
-        class="settingsArea"
+        class="identityRow"
       >
+        <div
+          data-slot="sidebar.account"
+          style="display: contents;"
+        />
         <div
           data-slot="sidebar.settings"
           style="display: contents;"

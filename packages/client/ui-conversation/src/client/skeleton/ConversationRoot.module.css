@@ -18,30 +18,30 @@
      chat scroller and the takeover frames pad clearance + 16px per side while
      the input card clears the bare clearance, so the input card stays exactly
      content + 32px at every width. Declared on the root because the
-     transcript and the composer seat are sibling subtrees. */
-  --dsh-chat-content-width: 748px;
-  --dsh-composer-card-max-width: calc(var(--dsh-chat-content-width) + 32px);
+     transcript and the composer seat are sibling subtrees.
+
+     The width itself is NOT decided here: `--dsw-chat-measure` (ui-theme) is
+     the reading measure for the whole conversation language, and this name
+     stays because it is the cross-package layout contract three other
+     packages already read (ui-goal, ui-user-questions, and this package's own
+     dock/takeover sheets). One axis, theme-owned value: 748px -> 48rem. */
+  --dsh-chat-content-width: var(--dsw-chat-measure);
+  /* The reference product's composer card is exactly the reading measure, not
+     the measure plus a bleed: measured 768px against a 768px transcript. The
+     side clearance below still separates the card from the scrollport edge. */
+  --dsh-composer-card-max-width: var(--dsh-chat-content-width);
   --dsh-composer-side-clearance: 16px;
   --dsh-composer-dock-inset: 8px;
 }
 
+/* No rule under the header. The transcript already ends where the composer
+   begins, and a hairline across the full column cut the session title off from
+   the conversation it names. `position: relative` stays — the header's own
+   children position against it. */
 .header {
   position: relative;
   flex: none;
   padding: 12px 28px 0 20px;
-  border-bottom: 1px solid transparent;
-}
-
-.header::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 1px;
-  left: 0;
-  z-index: 0;
-  height: 1px;
-  background: var(--dsw-alias-border-l2);
-  pointer-events: none;
 }
 
 /* Blank hero/settling: keep the strict Session header mounted without taking
@@ -137,49 +137,52 @@
   display: none;
 }
 
-/* figma Tab_Group 34:11441: 35px strip, gap 36, pad-left 8, tabs bottom-aligned. */
-.tabs {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: 36px;
-  margin-top: 4px;
-  padding-left: 8px;
-}
-
-/* figma .Tab 34:11442: 13/16 text (figma wt510, rendered 500), gap 8 to the 2px bar. */
-.tab {
-  position: relative;
-  padding: 0 0 11px;
-  border: none;
+/* The alternate view opens from the header's right-hand utilities rather than
+   from a tab strip under the title: the transcript is the screen, and the
+   other view is somewhere you go, not a peer sitting beside it. */
+.viewToggle {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
+  border-radius: var(--dsw-radius-control);
   background: transparent;
-  font-size: 13px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 18px;
   font-weight: 500;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
   cursor: pointer;
+  transition: color 150ms var(--ds-ease-in-out), background-color 150ms var(--ds-ease-in-out),
+    border-color 150ms var(--ds-ease-in-out);
 }
 
-.tab::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 1px;
-  left: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: transparent;
+.viewToggle:hover {
+  border-color: var(--dsw-alias-border-l3);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
-/* Selected tab is blue, not ink: brand-primary resolves to neutral black in
-   this token sheet, so the selected state rides the business blue — the
-   nearest semantic token that stays blue in both themes. */
-.tabActive {
-  color: var(--dsw-alias-state-business-primary);
+/* Pressed state: the alternate view is the one on screen, so the control reads
+   as "you are here" and its next press returns to the transcript. */
+.viewToggleActive {
+  border-color: var(--dsw-alias-border-l3);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
-.tabActive::after {
-  background: var(--dsw-alias-state-business-primary);
+/* Measured from the reference: 11px/16.5px, centred, in the dimmest ink the
+   sheet carries. It sits under the card in both the hero and the docked
+   composer, so it belongs to the stack rather than to either phase. */
+.disclaimer {
+  flex: none;
+  margin: 0;
+  padding: 6px 0 10px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 16.5px;
+  font-weight: 400;
+  color: var(--dsw-alias-label-dimmed);
 }
 
 .viewArea {
@@ -213,7 +216,8 @@
      the seat because it is the chain's only shared ancestor — fallback and
      elected overlay are siblings — and custom properties inherit down to
      whichever entry is mounted. */
-  --dsh-composer-text-max-height: 336px;
+  /* Reference draft scrollport cap: max-h-[220px]. */
+  --dsh-composer-text-max-height: 220px;
 }
 
 /* Active phase: header is ordinary column chrome above the scrollport (not
@@ -318,8 +322,9 @@
 .composerHero {
   position: relative; /* .heroGlow positioning context */
   align-self: center;
-  /* figma 75:8208 drew 12 between all three rows; the workspace row now sits
-     8 above the card (its margin-top restores 12 under the hero chrome). */
+  /* 8 between the workspace row and the card: they read as one composer
+     cluster. The distance from the headline down to that cluster is the
+     reference's 32px and is carried by HeroShell's .stack gap plus this one. */
   gap: 8px;
   /* Foot inside the centered box floats the stack a bit above true center. */
   padding-bottom: 32px;
@@ -335,6 +340,11 @@
    vs design card 776) so blur scales in userSpace with it. z-index -1 keeps
    it behind the in-flow hero content inside this stacking context. */
 .heroGlow {
+  /* The reference hero is flat: the composer earns its focus from position and
+     from being the only filled control on the screen, not from a light source
+     behind it. The element stays mounted (it is the positioning contract the
+     comment on .composerHero refers to) and simply does not paint. */
+  display: none;
   position: absolute;
   left: 50%;
   bottom: 92px;
@@ -348,13 +358,19 @@
 .heroWorkspaceRow {
   display: flex;
   align-items: center;
-  gap: 2px;
+  /* The workspace chip anchors the left edge and the preset chip the right, so
+     the pair frames the card above them instead of huddling under its corner. */
+  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
-  margin-top: 4px;
-  /* figma drew px 8; nudged +12 so the chip's folder glyph lines up closer to
-     the card's inner controls below. */
-  padding-left: 20px;
+  margin-top: 8px;
+  /* 24px on the left, not 4px: the workspace chip is a bare label with no box
+     of its own, so aligning its glyph to the card's edge left it reading as
+     out-dented against the composer's inset controls. The right stays at 4px
+     because the preset chip on that end does carry a box. */
+  padding: 0 4px 0 24px;
 }
+
 
 /* Hero: the composer sits inside the session scroll body; center there so
    the tree seat matches active (sticky footer) without a Root remount. */

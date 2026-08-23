@@ -70,7 +70,7 @@ describe('document language', () => {
   it('states the resolved locale at activation, not the value the markup shipped', async () => {
     // A Chinese browser resolves zh even though the markup said en.
     const { locale } = await bench()
-    expect(locale.getLocale().active).toBe('zh')
+    expect(locale.getLocale().active).toBe('zh-CN')
     expect(langOf()).toBe('zh-CN')
   })
 
@@ -81,7 +81,7 @@ describe('document language', () => {
     // `en` needs no region; `zh` names its script variant, which bare `zh`
     // leaves ambiguous for pronunciation and font selection.
     expect(langOf()).toBe('en')
-    locale.setLocale('zh')
+    locale.setLocale('zh-CN')
     expect(langOf()).toBe('zh-CN')
   })
 

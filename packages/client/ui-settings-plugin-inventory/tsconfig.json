@@ -21,7 +21,7 @@
       "path": "../runtime"
     },
     {
-      "path": "../ui-settings"
+      "path": "../ui-plugins-page"
     },
     {
       "path": "../ui-primitives"

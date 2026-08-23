@@ -1175,6 +1175,53 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     source: 'packages/client/ui-layout/src/client/index.ts:72',
   },
   {
+    key: 'plugins.page.area',
+    kind: 'list',
+    scope: 'root',
+    summary: 'One area stacked down the Plugins page, in `order`.',
+    doc: 'One area stacked down the Plugins page, in `order`. Declared by this\npackage\'s `shell.overlay` entry (declaring is claiming); this package\nregisters the Studio MCP area, `ui-settings-plugin-inventory` registers\nthe read-only plugin directory, and `ui-settings-plugins` registers the\ncordis plugin registry it used to register as a settings section.\n\nThe owner supplies nothing at all: an area draws its own heading,\nits own intro, and its own body, because the page has no opinion about\nwhat an area is. It is deliberately the same shape as\n`settings.section` in that respect, so a surface can move between the\ntwo without its component learning anything new.',
+    registerOptions: [
+      {
+        name: 'id',
+        requirement: 'required',
+        type: 'string',
+        doc: 'Your cell key. Use an id of your own: a fresh id is added beside the shipped entries, while reusing a shipped id puts you in THAT cell and replaces it. Owners that filter by id address you by it.',
+      },
+      {
+        name: 'order',
+        requirement: 'optional',
+        type: 'number',
+        doc: 'Position among the entries, ascending (default 0).',
+      },
+      {
+        name: 'label',
+        requirement: 'optional',
+        type: 'string | (() => string)',
+        doc: 'Display text where the owner projects one (nav rows, tabs). A thunk is re-read on every projection, so localized text follows the active locale without re-registering.',
+      },
+    ],
+    ownerProps: [
+      '/** Owner share of a page area (the page supplies nothing). */\nexport interface PluginsPageAreaOwnerProps {\n  /** Marker field: area owner props are intentionally empty. */\n  children?: never\n}',
+    ],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'shell.overlay\' (client-ui-plugins-page), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-plugins-page StudioMcpArea id \'studio-mcp\'',
+      'client-ui-settings-plugin-inventory PluginDirectoryArea id \'plugin-directory\'',
+      'client-ui-settings-plugins PluginsSettingsSection id \'cordis-plugins\'',
+    ],
+    replaceRisk: 'none',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'plugins.page.area\', () => ctx.slots.register(\n      { name: \'plugins.page.area\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-plugins-page/src/client/contract/slots.ts:44',
+  },
+  {
     key: 'root',
     kind: 'single',
     scope: 'root',
@@ -1204,8 +1251,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     key: 'settings.action',
     kind: 'list',
     scope: 'root',
-    summary: 'Optional actions rendered in the content-column header before Close.',
-    doc: 'Optional actions rendered in the content-column header before Close.\nRegistrants own visibility, behavior, copy, and failure presentation;\nthe shell supplies only the ordered render site.',
+    summary: 'Optional actions rendered at the right end of the header band.',
+    doc: 'Optional actions rendered at the right end of the header band.\nRegistrants own visibility, behavior, copy, and failure presentation;\nthe shell supplies only the ordered render site.',
     registerOptions: [
       {
         name: 'id',
@@ -1250,7 +1297,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     kind: 'single',
     scope: 'root',
     summary: 'The close button\'s visually-hidden label text (the button itself — icon, geometry, focus — is shell chrome).',
-    doc: 'The close button\'s visually-hidden label text (the button itself —\nicon, geometry, focus — is shell chrome). Absent contribution leaves\nthe button without an accessible name (broken-composition state).',
+    doc: 'The close button\'s visually-hidden label text (the button itself —\nicon, geometry, focus — is shell chrome). Absent contribution leaves\nthe button without an accessible name (broken-composition state). The\nbutton is pinned to the panel\'s top-right corner, outside the band.',
     registerOptions: [],
     ownerProps: [
       '/** Owner share of the header title seat (the shell supplies nothing). */\nexport interface SettingsHeaderOwnerProps {\n  /** Marker field: header owner props are intentionally empty. */\n  children?: never\n}',
@@ -1269,7 +1316,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.close\', () => ctx.slots.register(\n      { name: \'settings.close\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:41',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:42',
   },
   {
     key: 'settings.general.item',
@@ -1318,14 +1365,14 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.general.item\', () => ctx.slots.register(\n      { name: \'settings.general.item\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:88',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:89',
   },
   {
     key: 'settings.header',
     kind: 'single',
     scope: 'root',
     summary: 'The panel title text seat.',
-    doc: 'The panel title text seat. Content renders inside the nav heading row;\nthe dialog\'s accessible name points at that node via aria-labelledby.\nAbsent contribution leaves the heading empty.',
+    doc: 'The panel title text seat. Content renders as the header band\'s\nheading; the dialog\'s accessible name points at that node via\naria-labelledby. Absent contribution leaves the heading empty.',
     registerOptions: [],
     ownerProps: [
       '/** Owner share of the header title seat (the shell supplies nothing). */\nexport interface SettingsHeaderOwnerProps {\n  /** Marker field: header owner props are intentionally empty. */\n  children?: never\n}',
@@ -1390,7 +1437,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.onboarding\', () => ctx.slots.register(\n      { name: \'settings.onboarding\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:73',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:74',
   },
   {
     key: 'settings.plugin.item',
@@ -1464,14 +1511,13 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     keyDomain: '',
     hookContext: '',
     slotInject: '',
-    declaredBy: 'an entry in \'settings.section\' (client-ui-settings-plugins), so it exists while that entry is mounted',
+    declaredBy: 'an entry in \'plugins.page.area\' (client-ui-settings-plugins), so it exists while that entry is mounted',
     occupants: [
-      'client-ui-settings-plugin-inventory PluginInventorySettingsTab id \'all\'',
       'client-ui-settings-plugins ConfigurablePluginsTab id \'configurable\'',
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.plugins.tab\', () => ctx.slots.register(\n      { name: \'settings.plugins.tab\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:62',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:63',
   },
   {
     key: 'settings.section',
@@ -1500,9 +1546,11 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
       },
     ],
     ownerProps: [
-      '/**\n * Owner share of a settings section entry. The shell owns modal visibility\n * and navigation; a section\'s data arrives through its own inject faces and\n * stores. `close` is the one shell affordance a section receives, for flows\n * that leave settings altogether (starting a session from a section) — the\n * onboarding coordinator\'s `openSection`/`complete` precedent, inverted.\n */\nexport interface SettingsSectionOwnerProps {\n  /** Close the settings panel (the shell owns the open state). */\n  close: () => void\n}',
+      '/**\n * Owner share of a settings section entry. The shell owns modal visibility\n * and navigation; a section\'s data arrives through its own inject faces and\n * stores. `close` is the one shell affordance a section receives, for flows\n * that leave settings altogether (starting a session from a section) — the\n * onboarding coordinator\'s `openSection`/`complete` precedent, inverted.\n */\nexport interface SettingsSectionOwnerProps {\n  /** Close the settings panel (the shell owns the open state). */\n  close: () => void\n  /**\n   * Anchor the opener asked for inside this section, when it named one (see\n   * `SettingsPanelFace.open`). A section decides what anchors it publishes and\n   * what reaching one means; a section that publishes none ignores this.\n   */\n  anchor?: string | undefined\n}',
     ],
-    ownerPropsReferences: [],
+    ownerPropsReferences: [
+      'SettingsPanelFace',
+    ],
     standardProps: [
       'useSessions: SnapshotSelectorHook<SessionListState>',
       'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
@@ -1515,11 +1563,15 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
       'client-ui-agent-preset AgentPresetSection id \'agent-presets\'',
       'client-ui-settings-general GeneralSection id \'general\'',
       'client-ui-settings-models ModelsSection id \'models\'',
-      'client-ui-settings-plugins PluginsSettingsSection id \'plugins\'',
+      'client-ui-settings-notifications NotificationsSection id \'notifications\'',
+      'client-ui-unieai-account AccountSection',
+      'client-ui-unieai-account UsageSection',
+      'client-ui-unieai-account InviteSection',
+      'client-ui-unieai-providers ProvidersSection id \'unieai-providers\'',
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.section\', () => ctx.slots.register(\n      { name: \'settings.section\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-settings/src/client/contract/slots.ts:53',
+    source: 'packages/client/ui-settings/src/client/contract/slots.ts:54',
   },
   {
     key: 'settings.trigger',
@@ -1583,7 +1635,9 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     hookContext: '',
     slotInject: '',
     declaredBy: 'an entry in \'root\' (client-ui-layout), so it exists while that entry is mounted',
-    occupants: [],
+    occupants: [
+      'client-ui-plugins-page PluginsPage id \'plugins-page\'',
+    ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'shell.overlay\', () => ctx.slots.register(\n      { name: \'shell.overlay\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
     source: 'packages/client/ui-layout/src/client/index.ts:83',
@@ -1615,6 +1669,32 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     source: 'packages/client/ui-layout/src/client/index.ts:49',
   },
   {
+    key: 'sidebar.account',
+    kind: 'single',
+    scope: 'root',
+    summary: 'The account row: the column\'s last row, and the one place the signed-in person appears.',
+    doc: 'The account row: the column\'s last row, and the one place the signed-in\nperson appears. Declared by this package\'s \'sidebar\' entry;\nui-unieai-account registers the row. The sidebar passes only its column\nstate — it holds no account state and knows of no account gateway.',
+    registerOptions: [],
+    ownerProps: [
+      '/**\n * Owner share of the account row at the very bottom of the column: the same\n * column display state every foot occupant renders against (wide row vs rail\n * avatar). Who the row is about belongs to its occupant, not to this shell.\n */\nexport interface SidebarAccountOwnerProps {\n  /** Whether the sidebar renders wide content (false = 56px rail). */\n  wide: boolean\n}',
+    ],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-unieai-account SidebarAccountRow',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.account\', () => ctx.slots.register(\n      { name: \'sidebar.account\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:63',
+  },
+  {
     key: 'sidebar.brand.mark',
     kind: 'single',
     scope: 'root',
@@ -1635,10 +1715,11 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
     occupants: [
       'client-ui-brand-official OfficialBrandMark',
+      'client-ui-brand-unieai UnieAiBrandMark',
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.brand.mark\', () => ctx.slots.register(\n      { name: \'sidebar.brand.mark\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:23',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:24',
   },
   {
     key: 'sidebar.brand.name',
@@ -1661,10 +1742,11 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
     occupants: [
       'client-ui-brand-official OfficialBrandName',
+      'client-ui-brand-unieai UnieAiBrandName',
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.brand.name\', () => ctx.slots.register(\n      { name: \'sidebar.brand.name\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:28',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:29',
   },
   {
     key: 'sidebar.footer.action',
@@ -1709,7 +1791,53 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.footer.action\', () => ctx.slots.register(\n      { name: \'sidebar.footer.action\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:46',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:56',
+  },
+  {
+    key: 'sidebar.nav.action',
+    kind: 'list',
+    scope: 'root',
+    summary: 'Nav rows under New chat, the way the reference column opens: one ordered list of full-width rows that reach a capability elsewhere in the app.',
+    doc: 'Nav rows under New chat, the way the reference column opens: one\nordered list of full-width rows that reach a capability elsewhere in\nthe app. Declared by this package\'s \'sidebar\' entry; each occupant\nreceives only the column state and draws the shell\'s own row box\n(248x34 at `7px 10px`, 10px gap, 13/19.5 with the label at 500; the\nrail\'s 36px control collapsed). The shell holds no state for them.',
+    registerOptions: [
+      {
+        name: 'id',
+        requirement: 'required',
+        type: 'string',
+        doc: 'Your cell key. Use an id of your own: a fresh id is added beside the shipped entries, while reusing a shipped id puts you in THAT cell and replaces it. Owners that filter by id address you by it.',
+      },
+      {
+        name: 'order',
+        requirement: 'optional',
+        type: 'number',
+        doc: 'Position among the entries, ascending (default 0).',
+      },
+      {
+        name: 'label',
+        requirement: 'optional',
+        type: 'string | (() => string)',
+        doc: 'Display text where the owner projects one (nav rows, tabs). A thunk is re-read on every projection, so localized text follows the active locale without re-registering.',
+      },
+    ],
+    ownerProps: [
+      '/** Owner share of a nav row rendered under New chat. */\nexport interface SidebarNavActionOwnerProps {\n  /** Whether the sidebar renders wide content (false = 56px rail). */\n  wide: boolean\n}',
+    ],
+    ownerPropsReferences: [],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
+    occupants: [
+      'client-ui-plugins-page PluginsNavRow id \'plugins-page\'',
+      'client-ui-settings-general PluginsNavRow id \'plugins\'',
+    ],
+    replaceRisk: 'none',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.nav.action\', () => ctx.slots.register(\n      { name: \'sidebar.nav.action\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:38',
   },
   {
     key: 'sidebar.settings',
@@ -1735,7 +1863,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.settings\', () => ctx.slots.register(\n      { name: \'sidebar.settings\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:41',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:51',
   },
   {
     key: 'sidebar.workspaces',
@@ -1745,7 +1873,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     doc: 'The workspace/session browsing region: section header, search, the\ngrouped/flat session list, and every workspace dialog. Declared by this\npackage\'s \'sidebar\' entry (declaring is claiming); ui-workspace\nregisters the browser.',
     registerOptions: [],
     ownerProps: [
-      '/**\n * Owner share of the browser hole — the only facts crossing the shell/region\n * boundary. Business data and actions arrive through the region\'s own inject.\n */\nexport interface SidebarSectionOwnerProps {\n  /** Shell fold-state output: wide renders the full browser, rail the icon column. */\n  wide: boolean\n  /** Rail icons request expansion; the browser rides the wide flip for focus. */\n  expandSidebar: () => void\n}',
+      '/**\n * Owner share of the browser hole — the only facts crossing the shell/region\n * boundary. Business data and actions arrive through the region\'s own inject.\n */\nexport interface SidebarSectionOwnerProps {\n  /** Shell fold-state output: wide renders the full browser, rail the icon column. */\n  wide: boolean\n  /** Rail icons request expansion; the browser rides the wide flip for focus. */\n  expandSidebar: () => void\n  /**\n   * Nonce raised whenever the column\'s Search nav row is pressed. The search\n   * field belongs to the region, not to the shell, so the shell asks rather\n   * than reaches: every raise means "open your search and take focus". A\n   * counter rather than a boolean, because pressing the row twice in a row is\n   * two requests and a boolean would swallow the second.\n   */\n  searchRequest: number\n}',
     ],
     ownerPropsReferences: [],
     standardProps: [
@@ -1761,7 +1889,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.workspaces\', () => ctx.slots.register(\n      { name: \'sidebar.workspaces\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:35',
+    source: 'packages/client/ui-sidebar/src/client/contract/slots.ts:45',
   },
   {
     key: 'sidebar.workspaces.directoryFlow',

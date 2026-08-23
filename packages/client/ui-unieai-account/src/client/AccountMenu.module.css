@@ -1,0 +1,63 @@
+/* Row decorations the menu primitive does not draw for these two cases.
+ *
+ * The primitive renders its selection check on top-level rows only, and draws
+ * no affordance on a submenu parent — so the active locale's check and the
+ * Language row's chevron are rendered inside the rows' own labels. Both are
+ * the reference's own marks (`Check` on the active locale, a submenu
+ * indicator on the trigger); neither is invented here.
+ */
+
+.rowLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Trailing marks ride the tertiary ink: they report a state, they are not
+   the row's action. The check is the exception the reference makes — it is
+   full-strength, because it answers "which one am I on?". */
+.chevron {
+  flex: none;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.check {
+  flex: none;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* The signed-in header: sign-in address on its own line, plan under it as a
+   bordered badge. Resolved from the reference's
+   `mt-0.5 rounded-md border px-1.5 py-0.5 text-[11px] font-medium`. The 6px
+   radius has no --dsw-* token (the scale is 8/16/24/pill), so it is a literal
+   here, as the settings nav cell already is. */
+.address {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plan {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2px;
+  padding: 2px 6px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-tertiary);
+}

@@ -1,0 +1,16 @@
+.mark {
+  /* The mark is drawn with `fill="currentColor"`, so one colour declaration
+     serves both slots it occupies. The ramp is theme-aware in `ui-theme`;
+     this package states no light/dark branch of its own. */
+  color: var(--dsw-static-deepseek-500);
+}
+
+.name {
+  /* Size, weight, and line height come from the host surface's own brand-name
+     box; the occupant owns only colour and the tracking its letterforms need.
+     The sidebar's default 0.04em suits an all-caps wordmark — UnieAI is mixed
+     case and reads loose at that tracking. */
+  letter-spacing: 0;
+  color: var(--dsw-alias-label-primary);
+  white-space: nowrap;
+}

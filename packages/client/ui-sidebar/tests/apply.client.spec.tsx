@@ -37,14 +37,16 @@ describe('ui-sidebar apply', () => {
     expect(b.slots.entries('sidebar')).toHaveLength(1)
     expect(b.slots.spec('sidebar.brand.mark')).toEqual({ kind: 'single', scope: 'root' })
     expect(b.slots.spec('sidebar.brand.name')).toEqual({ kind: 'single', scope: 'root' })
+    expect(b.slots.spec('sidebar.nav.action')).toEqual({ kind: 'list', scope: 'root' })
     expect(b.slots.spec('sidebar.workspaces')).toEqual({ kind: 'single', scope: 'root' })
     expect(b.slots.spec('sidebar.settings')).toEqual({ kind: 'single', scope: 'root' })
     expect(b.slots.spec('sidebar.footer.action')).toEqual({ kind: 'list', scope: 'root' })
+    expect(b.slots.spec('sidebar.account')).toEqual({ kind: 'single', scope: 'root' })
     // Copy rides the standard locale seat, not the inject face.
     expect(b.slots.entries('sidebar')[0]!.locale).toBe('sidebar')
     const injected = (b.slots.entries('sidebar')[0]!.inject as () => SidebarRootInjected)()
     expect(Object.keys(injected)).toEqual(['startSession', 'toggleSidebar'])
-    // Both arms delegate to the runtime's shared New Session action.
+    // Both arms delegate to the runtime's shared New chat action.
     injected.startSession('workspace' as never)
     expect(b.workspaces.startSession).toHaveBeenCalledWith('workspace')
     injected.startSession()
@@ -68,5 +70,6 @@ describe('ui-sidebar apply', () => {
     expect(b.slots.spec('sidebar.brand.name')).toBeUndefined()
     expect(b.slots.spec('sidebar.workspaces')).toBeUndefined()
     expect(b.slots.spec('sidebar.footer.action')).toBeUndefined()
+    expect(b.slots.spec('sidebar.account')).toBeUndefined()
   })
 })

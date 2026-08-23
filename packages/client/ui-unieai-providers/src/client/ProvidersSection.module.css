@@ -1,0 +1,304 @@
+/* API Provider section, in the settings-panel design language the other
+ * sections already speak: 24/32 page title, 14/22 body, 12/18 caption,
+ * `border-l2` hairlines, 8px control radius and 16px card radius.
+ *
+ * The reference page this mirrors is a Tailwind surface in the web product;
+ * none of its utility classes come across. What comes across is the layout —
+ * a titled section, one row per provider carrying its name, prefix, endpoint
+ * and badges, an Add Provider control, and the form that edits or removes one
+ * row — drawn with this app's own tokens.
+ *
+ * Exactly one surface here is a card: the Add Provider form, which belongs to
+ * nothing above it and so has to say where it begins. The provider list is
+ * hairlines; the same form opened FROM a row drops its bounds, because the
+ * row already has them; and the empty state is prose, not a tile.
+ * No literal colour appears here: every fill and edge resolves through a
+ * `--dsw-alias-*` alias, so light and dark are the theme owner's decision.
+ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.intro {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.failure {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.status {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* Empty state: two lines of prose where the rows would be. Not a tile — it is
+   one block of text, and the Add Provider control the second line points at is
+   directly below it, so a box would fence the sentence off from its own
+   answer. It sits on the page's own left edge like every other line here. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0 4px;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* The provider list. It is NOT a card: a card around a list of rows draws a
+   second edge around content the row hairlines already separate, and it insets
+   every provider from the column the title and the intro are set on. The rules
+   are the list — one above the first row, one under each — so a provider lines
+   up with everything else on the page. */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--dsw-alias-border-l2);
+}
+
+/* A row carries three lines — identity, address, and (when the product manages
+   it) a sentence about who does. They get the Account page's row rhythm rather
+   than being packed 4px apart under a generous run of empty page: 6px between
+   the lines, 16px of band around them. */
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+}
+
+.rowHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowName {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+  overflow-wrap: anywhere;
+}
+
+/* The routing prefix is copied and compared character by character, so it is
+   set in the code face and spaced like one. */
+.prefix {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--dsw-radius-pill);
+  background: var(--dsw-alias-bg-module-platform);
+  font-family: var(--ds-font-family-code);
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0.12em;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.badge {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--dsw-radius-pill);
+  border: 1px solid var(--dsw-alias-border-l2);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.rowMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* The managed sentence is prose, so it takes a reading measure instead of the
+   full 720px column: a line that runs the whole width reads as a wall under
+   two short ones. */
+.row .note {
+  max-width: 60ch;
+}
+
+.url {
+  overflow-wrap: anywhere;
+}
+
+/* The add card and the actions row beneath the list. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-card);
+}
+
+/* The SAME form, opened from a row, is not a card: the row's own hairlines
+   already bound it, and a box inside a row is a box inside a box — the defect
+   this page had one level up. Standalone (Add Provider) it keeps the bounds,
+   because nothing above it says where it begins. */
+.row .card {
+  padding: 0;
+  border: none;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-bg-module-platform);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.input:disabled {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* The prefix field is four characters wide by contract, so it is drawn that
+   way and set in the same code face the row badge uses. */
+.prefixInput {
+  font-family: var(--ds-font-family-code);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* The per-row Edit control sits at the far end of the row's head line, so the
+   name, prefix and badges keep reading as one phrase before it. */
+.rowAction {
+  margin-left: auto;
+}
+
+/* A checkbox and its label on one line: the enable switch and every model in
+   the selection list. */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* The model list scrolls inside the card: a catalogue can run to hundreds of
+   entries, and letting it grow would push the card's own actions off screen.
+   Scrolling on an elevated rung means rebinding the thumb to the l2 pair, or
+   the resting thumb differs from its surface only in the dark palette. */
+.models {
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+  list-style: none;
+  margin: 0;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-control);
+}
+
+/* Model ids are compared character by character, like the routing prefix. */
+.modelId {
+  font-family: var(--ds-font-family-code);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* The delete confirmation, boxed so it reads as a question this card is
+   waiting on rather than as one more paragraph in it. */
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--dsw-alias-state-error-primary);
+  border-radius: var(--dsw-radius-control);
+}
+
+.confirmTitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* The one destructive control on this page. The button atom has no danger
+   family, so the colour is carried on the label here. */
+.danger {
+  color: var(--dsw-alias-state-error-primary);
+}

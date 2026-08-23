@@ -6,7 +6,10 @@
  * reference graph closes a cycle through ui-sidebar → ui-layout → ui-theme.
  * The settings SLOT types (what registrants contribute) stay in ui-settings.
  */
-import type { HostObservable, InjectFace, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import type {
+  HostObservable, InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime,
+} from '@deepseek-ai/dsh-client-ui-slots'
+import type { SettingsPanelState } from './settings-panel-store.ts'
 // Type-only: pulls ui-sidebar's SlotMap merge (the 'sidebar.settings' entry)
 // into every program that sees this contract.
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
@@ -37,14 +40,29 @@ export type SettingsRootInjected = {
     sections: HostObservable<readonly SettingsSectionRow[]>
     /** settings.onboarding ledger projected into coordinator order. */
     onboardingSteps: HostObservable<readonly SettingsOnboardingStep[]>
+    /** Panel open state, bound by the UI renderer as usePanel. */
+    panel: HostObservable<SettingsPanelState>
   }
+  /**
+   * Open the panel, optionally on a section and an anchor inside it. Same
+   * gesture the `settingsPanel` service exposes to other packages.
+   */
+  openPanel: (sectionId?: string, anchorId?: string) => void
+  /** Move the selection inside the open panel. */
+  selectSection: (sectionId: string) => void
+  /** Close the panel. */
+  closePanel: () => void
 }
 
 /**
  * Full component props of the settings shell root: the sidebar owner share
- * (wide/rail state) plus the declared render shares and the injected face
- * (hooks compartment bound to useSections). No store is registered — modal
- * open state and active section id are component-local viewing state.
+ * (wide/rail state) plus the declared render shares, the injected face (hooks
+ * compartment bound to useSections and usePanel), and the locale seat. Panel
+ * open state and the requested section live in the apply-level controller
+ * rather than in local state, because two other surfaces open this panel —
+ * the Plugins nav row, and the sidebar account menu through the
+ * `settingsPanel` service. The locale seat carries the nav's own group
+ * headings, the one piece of copy the shell owns.
  */
 export type SettingsRootComponentProps =
   PropsRuntime<'sidebar.settings'>
@@ -57,3 +75,14 @@ export type SettingsRootComponentProps =
     | 'settings.onboarding'
   >
   & InjectFace<SettingsRootInjected>
+  & PropsLocale<'settings'>
+
+/**
+ * Full component props of the Plugins nav row: the sidebar nav owner share,
+ * the same section ledger the shell projects (so the row can tell whether a
+ * plugins section exists), the panel controller it opens, and the locale seat.
+ */
+export type PluginsNavRowComponentProps =
+  PropsRuntime<'sidebar.nav.action'>
+  & InjectFace<SettingsRootInjected>
+  & PropsLocale<'settings'>

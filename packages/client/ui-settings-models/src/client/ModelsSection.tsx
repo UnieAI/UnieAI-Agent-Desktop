@@ -461,8 +461,9 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
             : (
               // One row for the two ways to gain a provider: adopt one the
               // adapter already knows, or declare one it does not. Side by side
-              // and equal-width so they read as siblings and line up with the
-              // rows above, rather than two pills of different lengths.
+              // as ordinary outlined capsules — the same control the rows above
+              // use for Edit — so the two read as siblings without adding two
+              // more boxes to a page that is otherwise hairlines.
               <div className={styles['addActions']}>
                 <button
                   type="button"

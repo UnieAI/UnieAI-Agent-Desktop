@@ -71,6 +71,10 @@ export function ConversationSessionHeader({
   const tabs = views.list()
   const selectedId = useStore(s => s.view)
   const active = resolveActiveView(tabs, selectedId)
+  // The first registered view that is not the transcript. The header offers one
+  // alternate rather than a strip of peers: further views would need a menu,
+  // and nothing registers a third today.
+  const alternate = tabs.find(view => view.id !== DEFAULT_VIEW_ID)
   const ancestry = useSessions(s => deriveAncestry(s, sessionId), equalBreadcrumbs)
   const composerPhase = useSession(s => s.composerPhase)
   const blank = useSession(s => s.blank)
@@ -140,24 +144,20 @@ export function ConversationSessionHeader({
             </div>
             <div className={css.headerUtilities}>
               {renderSlot('conversation.session.header.utilities', {})}
+              {alternate !== undefined && (
+                <button
+                  type="button"
+                  aria-pressed={alternate.id === active?.id}
+                  className={clsx(css.viewToggle, alternate.id === active?.id && css.viewToggleActive)}
+                  onClick={() => {
+                    actions.setView(alternate.id === active?.id ? DEFAULT_VIEW_ID : alternate.id)
+                  }}
+                >
+                  {alternate.label}
+                </button>
+              )}
             </div>
           </div>
-          {tabs.length > 1 && (
-            <div className={css.tabs} role="tablist">
-              {tabs.map(viewTab => (
-                <button
-                  key={viewTab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={viewTab.id === active?.id}
-                  className={clsx(css.tab, viewTab.id === active?.id && css.tabActive)}
-                  onClick={() => { actions.setView(viewTab.id) }}
-                >
-                  {viewTab.label}
-                </button>
-              ))}
-            </div>
-          )}
         </>
       )}
     </header>

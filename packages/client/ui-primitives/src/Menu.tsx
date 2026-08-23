@@ -7,6 +7,15 @@
 // Entries also cover non-interactive `label` headings and `danger` rows.
 // Lists keep 12px clearance to the viewport's top/bottom edges and scroll
 // internally past that; submenu-bearing menus are exempt (see .scrollable).
+//
+// Metrics: the card is 240 wide at radius 6 with a 4px inset, and a row is
+// 36 tall at `8px 12px` around a 14/20 line at radius 4. Those are the UnieAI
+// Copilot dropdown's own numbers, and they are the defaults here rather than
+// a variant: every menu in this product is the same chrome, and a second set
+// of menu metrics would leave the account menu in one visual language and the
+// ten other call sites in another. `compact` (JsonTree's copy menu) restates
+// every one of them and is unaffected; `dense` (the workspace group-by menu)
+// overrides the block axis only and keeps its 34px row.
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
@@ -39,7 +48,10 @@ export interface MenuSeparator {
 export interface MenuLabel {
   type: 'label'
   id: string
-  text: string
+  /** Heading content. A node, not a string, so a heading can carry the marks
+   * its owner draws on it — the account menu's plan badge is a bordered pill
+   * beside the address, and only that package knows what a plan is. */
+  text: ReactNode
 }
 
 /** One primary-menu entry: a row, a separator, or a heading label. */
@@ -51,6 +63,29 @@ function isSeparator(entry: MenuEntry): entry is MenuSeparator {
 
 function isLabel(entry: MenuEntry): entry is MenuLabel {
   return 'type' in entry && entry.type === 'label'
+}
+
+/**
+ * Whether a menu anchored at `el` belongs to a composer that is docked at the
+ * floor of a live conversation.
+ *
+ * Such a menu opens upward whatever the space below measures. The measurement
+ * cannot decide it: the transcript column grows to whatever the composer needs,
+ * so there is never a shortage below to detect — a downward list always "fits",
+ * in the strip between the composer and the window edge, on top of the control
+ * the pointer is still on.
+ *
+ * Read from the DOM rather than passed in, because the composer's controls
+ * arrive from several packages through slots and threading one layout fact
+ * through every one of their contracts would spread it rather than settle it.
+ * @param el - any element inside the menu's own root.
+ * @returns true when the menu should open upward on that ground alone.
+ */
+function docksUpward(el: Element | null | undefined): boolean {
+  const owner = el?.closest('[data-composer]') ?? null
+  if (owner === null) return false
+  const phase = owner.closest('[data-phase]')?.getAttribute('data-phase')
+  return phase === 'active' || phase === 'settling'
 }
 
 /** Unplaced portal list: hidden but laid out at a fixed origin so offsetWidth/offsetHeight are real. */
@@ -109,6 +144,11 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
   const listRef = useRef<HTMLDivElement>(null)
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null)
   const [fixedPos, setFixedPos] = useState<CSSProperties | null>(null)
+  // In-place mode is positioned by CSS, so the flip has to reach the class
+  // list. Measured in a layout effect rather than during render: the answer
+  // comes from the DOM, and reading it while rendering would make the first
+  // paint depend on a tree React has not committed yet.
+  const [dockedUp, setDockedUp] = useState(false)
   const { arm: armClose, cancel: cancelClose } = usePointerGrace(onClose)
 
   // Portal mode: fixed-position the list from the anchor rect before paint;
@@ -116,6 +156,11 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
   // getAnchorRect trumps measuring the wrapper span: a child layout effect
   // runs before the parent's, so a wrapper the host positions in its own
   // effect measures stale here — the host callback owns the truth instead.
+  useLayoutEffect(() => {
+    if (!open || portal) { setDockedUp(false); return }
+    setDockedUp(docksUpward(rootRef.current))
+  }, [open, portal])
+
   useLayoutEffect(() => {
     if (!open || !portal) { setFixedPos(null); return }
     const place = () => {
@@ -134,17 +179,42 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
       const lw = listEl?.offsetWidth ?? 0
       const lh = listEl?.offsetHeight ?? 0
 
+      // Flip before clamping. Clamping alone slides a too-tall menu up until it
+      // fits, which lands it ON TOP of the anchor that opened it — the composer
+      // docked at the window floor is where this shows: every menu there would
+      // cover the control the pointer is still on. Flipping first puts the menu
+      // on the side that has room; the clamp below stays as the last resort for
+      // a menu taller than either gap.
+      const spaceBelow = vh - r.bottom - 4 - MARGIN
+      const spaceAbove = r.top - 4 - MARGIN
+      let resolved = side
+      // A composer with a conversation above it is docked at the floor, and
+      // every popup it owns opens upward — not only the ones that fail to fit.
+      // The arithmetic below cannot express that: a short menu DOES fit under a
+      // docked composer, in the strip between it and the window edge, and a
+      // reader who opened the model list expects it where the list has always
+      // been rather than in whichever gap happened to be large enough. Read
+      // from the DOM because the composer's controls arrive from several
+      // packages through slots; a prop would put this one layout fact in every
+      // one of their contracts.
+      const docked = docksUpward(rootRef.current)
+      if (side !== 'right' && lh > 0) {
+        if (docked && side === 'bottom') resolved = 'top'
+        else if (side === 'bottom' && lh > spaceBelow && spaceAbove > spaceBelow) resolved = 'top'
+        else if (side === 'top' && lh > spaceAbove && spaceBelow > spaceAbove) resolved = 'bottom'
+      }
+
       let x: number
       let y: number
-      if (side === 'right') {
+      if (resolved === 'right') {
         x = r.right + 4
         y = r.top
       } else if (align === 'start') {
         x = r.left
-        y = side === 'bottom' ? r.bottom + 4 : r.top - lh - 4
+        y = resolved === 'bottom' ? r.bottom + 4 : r.top - lh - 4
       } else {
         x = r.right - lw
-        y = side === 'bottom' ? r.bottom + 4 : r.top - lh - 4
+        y = resolved === 'bottom' ? r.bottom + 4 : r.top - lh - 4
       }
 
       if (lw > 0) x = Math.min(Math.max(x, MARGIN), vw - lw - MARGIN)
@@ -265,7 +335,7 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
   const list = open && (
     <div
       ref={listRef}
-      className={clsx(css.list, dense && css.denseList, compact && css.compactList, scrollable && css.scrollable, portal && css.portal, side === 'top' && !portal && css.sideTop, align === 'end' && !portal && css.alignEnd)}
+      className={clsx(css.list, dense && css.denseList, compact && css.compactList, scrollable && css.scrollable, portal && css.portal, (side === 'top' || dockedUp) && !portal && css.sideTop, align === 'end' && !portal && css.alignEnd)}
       style={portal ? fixedPos ?? MEASURE_STYLE : undefined}
       role="menu"
       // React portals bubble synthetic events through the REACT tree: without

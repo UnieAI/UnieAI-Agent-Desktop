@@ -23,6 +23,7 @@
 - `ctx.llm.discoverModels(settingsNs: string, request: LlmModelDiscoveryRequest): Promise<LlmDiscoveredModel[]>` 询问某个端点它公布了哪些模型。
 - `ctx.llm.providerRetryPolicy(provider: string): ResolvedRetryPolicy` 返回注册时捕获的提供方自身的重试策略，并解析 normal 默认值。
 - `ctx.llm.listModels(provider: string): Promise<LlmModelInfo[]>` 发现某个已注册提供方当前公布的模型。
+- `ctx.llm.credentialReady(provider: string): Promise<boolean | undefined>` 询问某个已注册路由此刻能否为一次请求完成认证，且不读取密钥本身。路由在其插件挂载时就注册，远早于任何人存下 key，因此仅凭注册说明不了请求会不会被应答——把某路由的模型摆到人面前的界面，需要的正是这第二项事实。`true` 表示请求能找到凭据，或该路由以自身方式认证、根本不需要凭据；`false` 表示找不到；`undefined` 表示适配器无法判断，此时消费方必须把该路由当作可用。适配器在作答时抛出，会被回报为 `undefined` 而非 `false`：因为一个未获回答的问题就藏起一个可用的提供方，代价高于展示一个之后会索取 key 的提供方。
 - `ctx.llm.resolveModelInfo(provider: string, model: string, signal?: AbortSignal): Promise<LlmResolvedModelInfo>` 从拥有该精确路由的适配器中，解析并校验确切模型身份，以及可用上下文、输出默认值和推理（reasoning）元数据；异步适配器可选地支持取消。
 - `ctx.llm.resolveCallConfig(config: LlmCallConfig, signal?: AbortSignal): Promise<LlmCallConfig>` 校验显式推理强度，并填入适配器配置的调用默认值，但不自动调整。
 - `ctx.llm.prepareCall(config: LlmCallConfig, signal?: AbortSignal): Promise<PreparedLlmCall>` 在一次精确模型查询中解析配置、脱耦的上下文与模态元数据以及标明哪些字段由适配器默认值填入的标记，再把适配器匹配的分发世代和不可变重试策略捕获为一次可取消、一次性调用。

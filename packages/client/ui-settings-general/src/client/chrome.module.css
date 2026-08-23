@@ -1,7 +1,21 @@
-/* Trigger row label (the shell's button provides layout/colors; the label
- * only guards against overflow during the sidebar collapse crossfade). */
+/* Trigger label. Expanded, the trigger is a bare 15px gear in a row that has
+ * no room for a second label, so the text is kept for the accessible name and
+ * taken out of the picture.
+ *
+ * Both clips are written on purpose. `clip` is deprecated, and an engine that
+ * drops it would paint this word at the right end of the sidebar's identity
+ * row — a label nobody asked for, over the account row beside it. The
+ * `clip-path` is the one that survives; `clip` stays for engines that predate
+ * it. `position: absolute` keeps the word out of the 15px flex line either
+ * way, so the glyph never moves.
+ */
 
 .triggerLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }

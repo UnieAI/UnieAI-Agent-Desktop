@@ -1,0 +1,288 @@
+/* The reading measure is the page's — `PluginsPage.module.css` centres it, so
+ * every area on the page shares one column edge. This area sets only its own
+ * internal rhythm. */
+
+.area {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Filters left, search right, on one line — the reference's arrangement, and
+   the one that keeps both reachable without either owning a row of its own.
+   They wrap onto two lines rather than compressing the field to nothing. */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.pill {
+  flex: none;
+  padding: 5px 10px;
+  border: none;
+  border-radius: var(--dsw-radius-pill);
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
+}
+
+/* The More pill carries a chevron; it sits inside the pill's own padding so
+   the row's rhythm does not change when the control appears. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.pillChevron {
+  flex: none;
+  opacity: 0.7;
+}
+
+.pill:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* The chosen pill takes a surface, not a hue: `bg-module-platform` is the one
+   fill that separates from the page in BOTH palettes — the layer tokens all
+   resolve to the same white in light, which would make the choice invisible
+   exactly where it matters most. */
+.pillActive {
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-primary);
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: -2px;
+}
+
+.search {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 1 220px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 5px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-control);
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.search:focus-within {
+  border-color: var(--dsw-alias-border-l4);
+}
+
+.searchIcon {
+  flex: none;
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* A category is a heading with a rule under it. The rule is the separation —
+   the rows beneath draw no boxes, so without it two categories run together. */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.groupTitle {
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+  text-transform: capitalize;
+}
+
+/* Two to a line. At one column the rows would be a list of names in a wide
+   empty frame; at four the description has no room to be a sentence. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 40px;
+  row-gap: 2px;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* No card. The reference draws none, and a fill per row would put 22 boxes on
+   a page whose job is to be read down. What the row does take is a hover fill,
+   because it carries a control and a reader needs to see which row they are
+   about to act on — pulled out into the column gap so the text keeps its
+   place while the fill covers the whole row. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 13px 8px;
+  margin: 0 -8px;
+  border-radius: var(--dsw-radius-control);
+  transition: background-color 120ms var(--ds-ease-in-out);
+}
+
+.row:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* The publisher's mark, or the initials standing in for one. Same tile either
+   way, so a catalogue where only some publishers uploaded an image does not
+   render as two different kinds of row. */
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--dsw-radius-control);
+  object-fit: cover;
+  background: var(--dsw-alias-bg-module-platform);
+}
+
+.markInitials {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+}
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rowName {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+  color: var(--dsw-alias-label-primary);
+  text-transform: capitalize;
+}
+
+/* One line, clipped. A description that wraps makes the rows in a pair
+   different heights, and the eye then reads the grid as broken rather than as
+   two columns. */
+.rowDesc {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--dsw-radius-pill);
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
+}
+
+.action:hover:not(:disabled) {
+  color: var(--dsw-alias-label-primary);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 1px;
+}
+
+.action:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 19.5px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.retry {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.retry:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill,
+  .row,
+  .action {
+    transition: none;
+  }
+}

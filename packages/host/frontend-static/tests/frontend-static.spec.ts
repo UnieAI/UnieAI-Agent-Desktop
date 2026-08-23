@@ -37,6 +37,8 @@ async function loadComposition(): Promise<Context> {
   await writeFile(join(dist, 'app.js'), 'export {}')
   await writeFile(join(dist, 'blob.bin'), 'BLOB')
   await writeFile(join(dist, 'manifest.webmanifest'), '{}')
+  await mkdir(join(dist, 'sounds'))
+  await writeFile(join(dist, 'sounds', 'handoff.wav'), 'RIFF')
   await mkdir(join(dist, 'empty'))
   const configPath = join(root, 'cordis.yml')
   await writeFile(configPath, [
@@ -108,6 +110,14 @@ describe('real Loader composition', () => {
     })
     await writeFile(join(root!, 'dist', 'app.js'), 'export const rebuilt = true')
     expect(await request(port, '/app.js')).toMatchObject({ status: 200, body: 'export const rebuilt = true' })
+
+    // Notification cues carry an audio type: a media element decides whether to
+    // decode from the response type, and octet-stream leaves the clip silent.
+    expect(await request(port, '/sounds/handoff.wav')).toMatchObject({
+      status: 200,
+      type: 'audio/wav',
+      body: 'RIFF',
+    })
 
     // Unknown extension ships as octet-stream.
     expect(await request(port, '/blob.bin')).toMatchObject({ status: 200, type: 'application/octet-stream', body: 'BLOB' })

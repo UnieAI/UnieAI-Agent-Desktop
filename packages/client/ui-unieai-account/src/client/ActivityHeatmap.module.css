@@ -1,0 +1,165 @@
+/* Token Activity: the heatmap grid, its month ruler, and the Daily / Weekly /
+ * Cumulative toggle above it.
+ *
+ * The shade ramp is the one thing here that could not be lifted from the
+ * reference. That sheet ramps a Tailwind zinc scale with a `dark:` twin per
+ * step — ten literal colours — and this repository allows none. The ramp is
+ * therefore mixed from two tokens the theme already defines for both palettes:
+ * the panel fill the empty cell takes, and the page's own ink. One expression
+ * per step then inverts correctly on its own, because `label-primary` is dark
+ * ink on the light palette and near-white on the dark one, exactly as the
+ * reference's two hand-written ramps are.
+ *
+ * No token expresses "a five-step neutral ramp", so the five percentages are
+ * this sheet's own: they are the steps that keep five cells distinguishable
+ * against `bg-module-platform`, not values taken from the design platform.
+ */
+
+.heatmap {
+  display: flex;
+  width: 100%;
+  /* The grid inside is 689px wide at its narrowest and this box is what
+     absorbs that: without the explicit floor a row-direction ancestor would
+     take the child's minimum as its own and widen the settings column, which
+     would make the whole panel scroll sideways instead of the grid. */
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  overflow-x: auto;
+  /* Elevated surface: a year of cells is a wall of `bg-module-platform`, and
+     the horizontal bar runs along the bottom of it, so the thumb takes the l2
+     elevation tokens. Declared on the scroll container itself here — unlike
+     the picker card, which declares them on its surface for a scrolling child
+     — because this element IS both the surface's container and the thing that
+     scrolls (see ui-theme styles/scrollbar.css for the rebinding contract). */
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+/* The grid FILLS its container rather than sizing itself: each week column
+   takes an equal share and each cell is a square derived from that width. The
+   min-width is 53 columns at the 10px below which a cell stops being legible;
+   under that the row scrolls, which is the correct degradation in a narrow
+   settings panel. */
+.grid {
+  display: flex;
+  width: 100%;
+  min-width: 689px;
+  gap: 3px;
+}
+
+.week {
+  display: flex;
+  flex: 1;
+  min-width: 10px;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 2px;
+}
+
+.level0 {
+  background: var(--dsw-alias-bg-module-platform);
+}
+
+.level1 {
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 14%, var(--dsw-alias-bg-module-platform));
+}
+
+.level2 {
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 32%, var(--dsw-alias-bg-module-platform));
+}
+
+.level3 {
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 58%, var(--dsw-alias-bg-module-platform));
+}
+
+.level4 {
+  background: var(--dsw-alias-label-primary);
+}
+
+.months {
+  display: flex;
+  width: 100%;
+  min-width: 689px;
+  gap: 3px;
+}
+
+.month {
+  flex: 1;
+  min-width: 10px;
+  overflow: visible;
+  white-space: nowrap;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--dsw-alias-label-caption);
+}
+
+/* Title row: the block's name on the left, the mode toggle on the right. */
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 0;
+}
+
+.activityHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.activityTitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Segmented control. The selected segment is a STATE, so it takes a quiet
+   neutral fill rather than the screen's primary weight — the page already has
+   exactly one control it wants pressed. */
+.toggle {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-control);
+}
+
+.toggleButton {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 4px 12px;
+  border-radius: var(--dsw-radius-control);
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.toggleButton:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+.toggleButtonOn {
+  background: var(--dsw-alias-interactive-bg-active);
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.empty {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}

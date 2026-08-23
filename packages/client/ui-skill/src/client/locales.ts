@@ -23,3 +23,21 @@ export const en = {
   'row.instructions': 'Instructions',
   'menu.userOnly': 'user-only',
 } satisfies Record<SkillKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'row.running': '正在載入 skill',
+  'row.failed': 'skill 載入失敗',
+  'row.stopped': 'skill 載入已中止',
+  'row.instructions': '說明',
+  'menu.userOnly': '僅使用者',
+} satisfies Record<SkillKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'row.running': 'skill を読み込み中',
+  'row.failed': 'skill の読み込みに失敗しました',
+  'row.stopped': 'skill の読み込みを中止しました',
+  'row.instructions': '説明',
+  'menu.userOnly': 'ユーザーのみ',
+} satisfies Record<SkillKey, string>

@@ -27,12 +27,12 @@ export const inject = ['slots', 'workspaces', 'locale']
  */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => {
-    // The two dictionaries land as a unit: if the second registration hits a
-    // rival owner of the namespace, the first rolls back before the throw —
-    // a failed activation must not squat the namespace's other locale.
+    // The dictionaries land as a unit: if a later registration hits a rival
+    // owner of the namespace, the earlier ones roll back before the throw —
+    // a failed activation must not squat the namespace's other locales.
     const disposers: (() => void)[] = []
     const dictionaries: [locale: string, dict: Record<string, string>][] = [
-      ['zh', {
+      ['zh-CN', {
         'browser.title': '选择工作区目录',
         'browser.home': '主目录',
         'browser.newFolder': '新建文件夹',
@@ -46,6 +46,36 @@ export function apply(ctx: ClientContext): void {
         'browser.loading': '加载中…',
         'browser.truncated': '文件夹过多，仅显示开头部分。',
         'browser.showHidden': '显示隐藏文件',
+      }],
+      ['zh-TW', {
+        'browser.title': '選擇工作區目錄',
+        'browser.home': '主目錄',
+        'browser.newFolder': '新增資料夾',
+        'browser.folderName': '資料夾名稱',
+        'browser.createIn': '在「{name}」中新增資料夾',
+        'browser.untitledFolder': '未命名資料夾',
+        'browser.create': '建立',
+        'browser.cancel': '取消',
+        'browser.open': '開啟',
+        'browser.editPath': '編輯路徑',
+        'browser.loading': '載入中…',
+        'browser.truncated': '資料夾過多，僅顯示開頭部分。',
+        'browser.showHidden': '顯示隱藏檔案',
+      }],
+      ['ja', {
+        'browser.title': 'ワークスペースディレクトリを選択',
+        'browser.home': 'ホーム',
+        'browser.newFolder': '新規フォルダ',
+        'browser.folderName': 'フォルダ名',
+        'browser.createIn': '「{name}」に新規フォルダを作成',
+        'browser.untitledFolder': '無題のフォルダ',
+        'browser.create': '作成',
+        'browser.cancel': 'キャンセル',
+        'browser.open': '開く',
+        'browser.editPath': 'パスを編集',
+        'browser.loading': '読み込み中…',
+        'browser.truncated': 'フォルダが多すぎるため、先頭部分のみ表示しています。',
+        'browser.showHidden': '隠しファイルを表示',
       }],
       ['en', {
         'browser.title': 'Select Workspace Directory',

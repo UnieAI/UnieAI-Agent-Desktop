@@ -26,7 +26,8 @@
   min-width: 0;
   overflow: hidden;
   background: var(--dsw-specific-sidebar-fill);
-  border-right: 1px solid var(--dsw-alias-border-l1);
+  /* No seam: the sidebar fill is what separates the two columns.
+     A visible line is what the reference design contract calls out. */
 }
 
 .centerCol {

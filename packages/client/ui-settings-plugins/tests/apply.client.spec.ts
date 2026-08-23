@@ -24,7 +24,7 @@ async function bench(served?: string[]) {
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
-  locale.setLocale('zh')
+  locale.setLocale('zh-CN')
   ctx.provide('locale', locale)
   const describeCredentials = vi.fn(() => Promise.resolve({ rpcId: 'c', result: { ok: false, error: {} } }))
   const describeSettings = vi.fn(() => Promise.resolve(served === undefined
@@ -57,10 +57,11 @@ async function bench(served?: string[]) {
   return { ctx, slots: ctx.get('slots') as SlotRegistry, describeCredentials, describeSettings }
 }
 
+/** Stand in for the Plugins page: declare the area hole from root. */
 function declareRoot(slots: SlotRegistry): () => void {
   return slots.register({
     name: 'root',
-    children: { 'settings.section': { kind: 'list', scope: 'root' } },
+    children: { 'plugins.page.area': { kind: 'list', scope: 'root' } },
   } as never, () => null)
 }
 
@@ -69,16 +70,14 @@ describe('ui-settings-plugins apply', () => {
     expect(inject).toEqual(['slots', 'locale', 'connection', 'remote', 'settingsScope'])
   })
 
-  it('registers one Plugins section and declares the tab and card slots', async () => {
+  it('registers one cordis area on the Plugins page and declares the tab and card slots', async () => {
     const { ctx, slots } = await bench()
     declareRoot(slots)
 
     await ctx.plugin({ inject: [...inject], apply }).await()
 
-    const section = slots.entries('settings.section')[0]!
-    expect(section.options).toMatchObject({ id: 'plugins', order: 15 })
-    // The nav label is a locale-following thunk; owners resolve it at read time.
-    expect(resolveSlotLabel(section.options.label)).toBe('插件')
+    const section = slots.entries('plugins.page.area')[0]!
+    expect(section.options).toMatchObject({ id: 'cordis-plugins', order: 10 })
     expect(slots.spec('settings.plugins.tab')).toMatchObject({ kind: 'list', scope: 'root' })
     const tab = slots.entries('settings.plugins.tab')[0]!
     expect(tab.options).toMatchObject({ id: 'configurable', order: 0 })
@@ -92,7 +91,7 @@ describe('ui-settings-plugins apply', () => {
     declareRoot(slots)
     await ctx.plugin({ inject: [...inject], apply }).await()
 
-    const section = slots.entries('settings.section')[0]!
+    const section = slots.entries('plugins.page.area')[0]!
     const sectionFace = (section.inject as unknown as () => PluginsSettingsSectionInjected)()
     const initialTabs = sectionFace.hooks.tabs.getSnapshot()
     expect(initialTabs).toEqual([
@@ -204,7 +203,7 @@ describe('ui-settings-plugins apply', () => {
 
     declareRoot(slots)
 
-    await vi.waitFor(() => { expect(slots.entries('settings.section')).toHaveLength(1) })
+    await vi.waitFor(() => { expect(slots.entries('plugins.page.area')).toHaveLength(1) })
   })
 
   it('collapses every contribution on teardown', async () => {
@@ -216,7 +215,7 @@ describe('ui-settings-plugins apply', () => {
 
     await fiber.dispose()
 
-    expect(slots.entries('settings.section')).toHaveLength(0)
+    expect(slots.entries('plugins.page.area')).toHaveLength(0)
     expect(slots.spec('settings.plugins.tab')).toBeUndefined()
     expect(slots.spec('settings.plugin.item')).toBeUndefined()
   })

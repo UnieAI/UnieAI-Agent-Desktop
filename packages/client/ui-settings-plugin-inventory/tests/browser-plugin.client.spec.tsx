@@ -4,11 +4,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
-import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
 import { usePinnedBrowserLanguages } from '@deepseek-ai/dsh-client-test-runtime'
 import { apply, inject, NS } from '../src/client/index.ts'
-import { PluginInventorySettingsTab } from '../src/client/PluginInventorySettingsTab.tsx'
-import type { PluginInventorySettingsTabInjected } from '../src/client/PluginInventorySettingsTab.tsx'
+import { PluginDirectoryArea } from '../src/client/PluginDirectoryArea.tsx'
+import type { PluginDirectoryAreaInjected } from '../src/client/PluginDirectoryArea.tsx'
+import { en, ja, zh, zhTW } from '../src/client/locales.ts'
 
 usePinnedBrowserLanguages('zh-CN')
 afterEach(cleanup)
@@ -38,28 +38,34 @@ async function bench() {
 function declare(slots: SlotRegistry): () => void {
   return slots.register({
     name: 'root',
-    children: { 'settings.plugins.tab': { kind: 'list', scope: 'root' } },
+    children: { 'plugins.page.area': { kind: 'list', scope: 'root' } },
   } as never, () => null)
 }
 
 describe('ui-settings-plugin-inventory browser plugin', () => {
-  it('declares only the services used by the Settings Remote contribution', () => {
+  it('declares only the services used by the page contribution and its Remote', () => {
     expect(inject).toEqual(['slots', 'locale', 'remote', 'remote.pluginInventory'])
   })
 
-  it('registers a localized tab without reading the Remote eagerly', async () => {
+  it('ships one complete dictionary per shipped locale', () => {
+    const keys = Object.keys(zh).sort()
+    for (const dictionary of [en, ja, zhTW]) {
+      expect(Object.keys(dictionary).sort()).toEqual(keys)
+    }
+  })
+
+  it('registers a page area without reading the Remote eagerly', async () => {
     const b = await bench()
     declare(b.slots)
     await b.ctx.plugin({ inject: [...inject], apply }).await()
 
-    const entry = b.slots.entries('settings.plugins.tab')[0]!
-    expect(entry.component).toBe(PluginInventorySettingsTab)
-    expect(entry.options).toMatchObject({ id: 'all', order: 10 })
+    const entry = b.slots.entries('plugins.page.area')[0]!
+    expect(entry.component).toBe(PluginDirectoryArea)
+    expect(entry.options).toMatchObject({ id: 'plugin-directory', order: 5 })
     expect(entry.locale).toBe(NS)
-    expect(resolveSlotLabel(entry.options.label)).toBe('插件列表')
     expect(b.list).not.toHaveBeenCalled()
 
-    const injected = (entry.inject as unknown as () => PluginInventorySettingsTabInjected)()
+    const injected = (entry.inject as unknown as () => PluginDirectoryAreaInjected)()
     await expect(injected.list()).resolves.toEqual(EMPTY)
     expect(b.list).toHaveBeenCalledOnce()
     b.list.mockResolvedValueOnce({ ok: false, error: { code: 'REMOTE_ERROR', message: 'unavailable' } })
@@ -71,22 +77,28 @@ describe('ui-settings-plugin-inventory browser plugin', () => {
     const b = await bench()
     const fiber = b.ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
-    expect(b.slots.entries('settings.plugins.tab')).toHaveLength(0)
+    expect(b.slots.entries('plugins.page.area')).toHaveLength(0)
 
     const stop = declare(b.slots)
-    await vi.waitFor(() => { expect(b.slots.entries('settings.plugins.tab')).toHaveLength(1) })
+    await vi.waitFor(() => { expect(b.slots.entries('plugins.page.area')).toHaveLength(1) })
+    const t = b.locale.bind(NS)
+    expect(t('title')).toBe(zh.title)
     b.locale.setLocale('en')
-    expect(resolveSlotLabel(b.slots.entries('settings.plugins.tab')[0]!.options.label)).toBe('Plugin list')
+    expect(t('title')).toBe(en.title)
+    b.locale.setLocale('zh-TW')
+    expect(t('title')).toBe(zhTW.title)
+    b.locale.setLocale('ja')
+    expect(t('title')).toBe(ja.title)
 
     stop()
-    expect(b.slots.entries('settings.plugins.tab')).toHaveLength(0)
+    expect(b.slots.entries('plugins.page.area')).toHaveLength(0)
     declare(b.slots)
     await vi.waitFor(() => {
-      expect(b.slots.entries('settings.plugins.tab')[0]?.component).toBe(PluginInventorySettingsTab)
+      expect(b.slots.entries('plugins.page.area')[0]?.component).toBe(PluginDirectoryArea)
     })
 
     await fiber.dispose()
-    expect(b.slots.entries('settings.plugins.tab')).toHaveLength(0)
+    expect(b.slots.entries('plugins.page.area')).toHaveLength(0)
     expect(() => b.locale.register(NS, 'zh', {})).not.toThrow()
     await b.ctx.fiber.dispose()
   })

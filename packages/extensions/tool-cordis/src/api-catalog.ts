@@ -2274,6 +2274,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'the disposer releasing the seat.',
       },
       {
+        signature: 'registerGuard(guard: WebGuard): () => void',
+        description: 'Claim the request-guard seat: the one decision consulted before ANY dispatch, on both the HTTP and the upgrade path.\n\nThis exists so an authentication layer can cover every seat at once — named routes, the fallback SPA, the plugin-bundle prefix, and the WebSocket downlinks. Gating one route cannot do that: an anonymous visitor would still be served the application shell and its boot manifest, and only then fail every call it made.\n\nA guard that refuses OWNS the response: it writes the status and body, or destroys the socket, and returns `false`. `true` continues to ordinary dispatch. One owner only — two guards would have no defined precedence.',
+        parameters: [{ name: 'guard', description: 'decides one request; owns the response when it refuses.' }],
+        returns: 'the disposer releasing the seat.',
+      },
+      {
         signature: 'tapIndex(transform: (html: string) => string): () => void',
         description: 'Register a raw-HTML index transform, the escape hatch for markup no IndexInjection row expresses: renderIndex applies taps in registration order after rendering the structured rows.',
         parameters: [{ name: 'transform', description: 'pure html-to-html function.' }],
@@ -4964,6 +4970,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'WebFetchResultView',
     declaration: 'export interface WebFetchResultView {\n    card: \'web\';\n    kind: \'fetch\';\n    title?: string;\n    url: string;\n    statusCode: number;\n    truncated: boolean;\n}',
+  },
+  {
+    name: 'WebGuard',
+    declaration: 'export type WebGuard = (req: IncomingMessage, reply: {\n    res?: ServerResponse;\n    socket?: Duplex;\n}) => boolean | Promise<boolean>;',
   },
   {
     name: 'WebResultView',

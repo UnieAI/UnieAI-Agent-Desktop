@@ -43,3 +43,37 @@ export const en = {
   'error.load': 'Could not load feedback',
   'error.generic': 'Could not save feedback',
 } satisfies Record<MessageFeedbackKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'action.like': '好的回答',
+  'action.likeActive': '取消標記',
+  'action.dislike': '有問題的回答',
+  'action.dislikeActive': '取消標記',
+  'note.open': '補充說明',
+  'note.dialog': '回饋',
+  'note.placeholder': '這則回答哪裡好，或哪裡有問題？（選填）',
+  'note.save': '儲存',
+  'note.cancel': '取消',
+  'note.aria': '回饋說明',
+  'error.conflict': '這則回饋已在其他地方變更，目前顯示最新狀態',
+  'error.load': '回饋狀態載入失敗',
+  'error.generic': '回饋儲存失敗',
+} satisfies Record<MessageFeedbackKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'action.like': '良い回答',
+  'action.likeActive': '評価を取り消す',
+  'action.dislike': '悪い回答',
+  'action.dislikeActive': '評価を取り消す',
+  'note.open': 'メモを追加',
+  'note.dialog': 'フィードバック',
+  'note.placeholder': 'どこが良かったか、どこに問題があったか（任意）',
+  'note.save': '保存',
+  'note.cancel': 'キャンセル',
+  'note.aria': 'フィードバックのメモ',
+  'error.conflict': 'このフィードバックは他の場所で変更されました。最新の状態を表示しています',
+  'error.load': 'フィードバックを読み込めませんでした',
+  'error.generic': 'フィードバックを保存できませんでした',
+} satisfies Record<MessageFeedbackKey, string>

@@ -25,3 +25,25 @@ export const en: Record<keyof typeof zh, string> = {
 
 /** Stable locale keys consumed by the shared modal. */
 export type SessionLogDownloadKey = keyof typeof zh
+
+/** Traditional-Chinese Session export strings. */
+export const zhTW: Record<SessionLogDownloadKey, string> = {
+  'dialog.preparingTitle': '正在匯出 Session',
+  'dialog.preparingDescription': '正在準備包含目前 Session、子 Session 與附件的 ZIP 檔案。',
+  'dialog.successTitle': 'Session 匯出已開始下載',
+  'dialog.successDescription': '瀏覽器正在下載 Session ZIP 檔案。',
+  'dialog.errorTitle': 'Session 匯出失敗',
+  'dialog.close': '關閉',
+  'dialog.commandFailed': '無法啟動 Session 匯出。',
+}
+
+/** Japanese Session export strings. */
+export const ja: Record<SessionLogDownloadKey, string> = {
+  'dialog.preparingTitle': 'Session をエクスポート中',
+  'dialog.preparingDescription': 'この Session、そのサブ Session、添付ファイルを含む ZIP を準備しています。',
+  'dialog.successTitle': 'Session のダウンロードを開始しました',
+  'dialog.successDescription': 'ブラウザが Session の ZIP をダウンロードしています。',
+  'dialog.errorTitle': 'Session のエクスポートに失敗しました',
+  'dialog.close': '閉じる',
+  'dialog.commandFailed': 'Session のエクスポートを開始できませんでした。',
+}

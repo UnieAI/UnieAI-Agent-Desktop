@@ -52,13 +52,41 @@ describe('ModelsSection theme styles', () => {
     expect((bare.match(/\}/g) ?? []).length).toBe((bare.match(/\{/g) ?? []).length)
   })
 
-  it('separates the row card from the editor it expands into', () => {
-    // `bg-layer-3` and `bg-module-platform` both resolve to neutral-bluish-800
-    // under the dark theme, so filling the row with either erases the nested
-    // editor's boundary. The row is outlined; the fill is the editor's alone.
-    expect(block('.editor')).toContain('background: var(--dsw-alias-bg-module-platform)')
-    expect(block('.rowCard')).toContain('border: 1px solid var(--dsw-alias-border-l2)')
-    expect(block('.rowCard')).not.toMatch(/\bbackground\s*:/)
+  it('draws a provider as a row, not as a box holding another box', () => {
+    // The row used to be an outlined, rounded box and the editor it expands
+    // into a filled one, so an open provider was a box drawn inside a box and
+    // every closed provider carried an edge the list itself already implies.
+    // The row is a hairline entry now, and the editor draws nothing at all: the
+    // fields carry their own edges, which is the whole structure the form
+    // needs. A card on this page is the ADD form alone — a form belonging to
+    // nothing above it, so it needs its own bounds.
+    expect(block('.rows')).toContain('border-top: 1px solid var(--dsw-alias-border-l2)')
+    expect(block('.rowCard')).toContain('border-bottom: 1px solid var(--dsw-alias-border-l2)')
+    expect(block('.rowCard')).not.toMatch(/border-radius|\bbackground\s*:/)
+    expect(block('.editor')).not.toMatch(/\bborder|\bbackground\s*:/)
+    expect(block('.addCard')).toContain('border-radius: var(--dsw-radius-card)')
+  })
+
+  it('fills with bg-module-platform, never a bg-layer step', () => {
+    // bg-layer-1/2/3 all resolve to the same white in the light palette, so a
+    // surface painted with one is invisible there and only separates under the
+    // dark theme. Fills go through bg-module-platform; separation is the
+    // hairline.
+    expect(css).not.toContain('--dsw-alias-bg-layer')
+    expect(block('.input')).toContain('background: var(--dsw-alias-bg-module-platform)')
+  })
+
+  it('takes every radius from the shared scale', () => {
+    // The scale carries four values (`control` 8, `card` 16, `bubble` 24,
+    // `pill`). This sheet used to spell 12, 6 and 4 by hand, which are values
+    // no theme change can reach.
+    const radii = [...css.matchAll(/border-radius:([^;]*);/g)].map(match => (match[1] ?? '').trim())
+    expect(radii.length).toBeGreaterThan(0)
+    for (const value of radii) {
+      for (const part of value.split(/\s+(?=var\()|\s+(?=0)/)) {
+        expect(part, value).toMatch(/^(?:var\(--dsw-radius-[a-z]+\)|0)$/)
+      }
+    }
   })
 
   it('gives every dropdown the shared chevron instead of the OS arrow', () => {

@@ -6,7 +6,7 @@
 
 .menu {
   position: absolute;
-  bottom: calc(100% + 4px);
+  top: calc(100% + 4px);
   left: 0;
   z-index: 100;
   min-width: min(260px, 100%);
@@ -119,4 +119,13 @@
   font-size: 14px;
   line-height: 22px;
   color: var(--dsw-alias-label-dimmed);
+}
+
+/* Flips with the composer's overlay anchor. See PopupSelectView.module.css:
+   once a conversation is live the strip moves to the card's top edge and this
+   menu grows upward from it, because downward is off the window floor. */
+:global([data-phase='active']) .card,
+:global([data-phase='settling']) .card {
+  top: auto;
+  bottom: calc(100% + 4px);
 }

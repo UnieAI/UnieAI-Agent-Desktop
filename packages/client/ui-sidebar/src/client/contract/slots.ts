@@ -1,11 +1,12 @@
 /**
  * Sidebar slot contract: the registrant-side props composition for the
  * layout-owned `sidebar` slot, plus the holes this shell declares. The shell
- * owns column geometry (fold state machine, brand row, New Session);
- * everything between the section header and the list bottom is the
- * `sidebar.workspaces` registrant's (ui-workspace), and the foot is the
- * `sidebar.settings` registrant's (ui-settings), followed by optional footer
- * actions in `sidebar.footer.action`.
+ * owns column geometry (fold state machine, brand row, New chat); the nav
+ * rows under New chat are `sidebar.nav.action` registrants', everything
+ * between the section header and the list bottom is the `sidebar.workspaces`
+ * registrant's (ui-workspace), and the foot holds `sidebar.footer.action`
+ * above one identity row shared by the `sidebar.account` and
+ * `sidebar.settings` registrants.
  */
 import type { PropsLocale, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls ui-layout's SlotMap merge (the 'sidebar' entry) into every
@@ -27,6 +28,15 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'sidebar.brand.name': { kind: 'single'; scope: 'root'; owner: SidebarBrandNameOwnerProps }
     /**
+     * Nav rows under New chat, the way the reference column opens: one
+     * ordered list of full-width rows that reach a capability elsewhere in
+     * the app. Declared by this package's 'sidebar' entry; each occupant
+     * receives only the column state and draws the shell's own row box
+     * (248x34 at `7px 10px`, 10px gap, 13/19.5 with the label at 500; the
+     * rail's 36px control collapsed). The shell holds no state for them.
+     */
+    'sidebar.nav.action': { kind: 'list'; scope: 'root'; owner: SidebarNavActionOwnerProps }
+    /**
      * The workspace/session browsing region: section header, search, the
      * grouped/flat session list, and every workspace dialog. Declared by this
      * package's 'sidebar' entry (declaring is claiming); ui-workspace
@@ -44,6 +54,13 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * package's 'sidebar' entry; each action receives only the column state.
      */
     'sidebar.footer.action': { kind: 'list'; scope: 'root'; owner: SidebarFooterActionOwnerProps }
+    /**
+     * The account row: the column's last row, and the one place the signed-in
+     * person appears. Declared by this package's 'sidebar' entry;
+     * ui-unieai-account registers the row. The sidebar passes only its column
+     * state — it holds no account state and knows of no account gateway.
+     */
+    'sidebar.account': { kind: 'single'; scope: 'root'; owner: SidebarAccountOwnerProps }
   }
 }
 
@@ -68,6 +85,14 @@ export interface SidebarSectionOwnerProps {
   wide: boolean
   /** Rail icons request expansion; the browser rides the wide flip for focus. */
   expandSidebar: () => void
+  /**
+   * Nonce raised whenever the column's Search nav row is pressed. The search
+   * field belongs to the region, not to the shell, so the shell asks rather
+   * than reaches: every raise means "open your search and take focus". A
+   * counter rather than a boolean, because pressing the row twice in a row is
+   * two requests and a boolean would swallow the second.
+   */
+  searchRequest: number
 }
 
 /**
@@ -79,8 +104,24 @@ export interface SidebarSettingsOwnerProps {
   wide: boolean
 }
 
+/** Owner share of a nav row rendered under New chat. */
+export interface SidebarNavActionOwnerProps {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
+}
+
 /** Owner share of an action rendered beside Settings at the sidebar foot. */
 export interface SidebarFooterActionOwnerProps {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
+}
+
+/**
+ * Owner share of the account row at the very bottom of the column: the same
+ * column display state every foot occupant renders against (wide row vs rail
+ * avatar). Who the row is about belongs to its occupant, not to this shell.
+ */
+export interface SidebarAccountOwnerProps {
   /** Whether the sidebar renders wide content (false = 56px rail). */
   wide: boolean
 }
@@ -111,8 +152,10 @@ export type SidebarRootComponentProps =
   & PropsRenderSlots<
     | 'sidebar.brand.mark'
     | 'sidebar.brand.name'
+    | 'sidebar.nav.action'
     | 'sidebar.workspaces'
     | 'sidebar.settings'
     | 'sidebar.footer.action'
+    | 'sidebar.account'
   >
   & SidebarRootInjected & PropsLocale<'sidebar'>

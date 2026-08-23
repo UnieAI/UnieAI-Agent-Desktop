@@ -52,3 +52,45 @@ export const en = {
   'blocked.composer': 'This model is unavailable — select one to continue',
   'empty.efforts': 'This model provides no reasoning effort levels.',
 } satisfies Record<ModelKey, string>
+
+/** Traditional Chinese dictionary, checked complete against the zh key set. */
+export const zhTW = {
+  'command.description': '選擇此對話使用的模型',
+  'option.loadError': '目錄載入失敗：{message}',
+  'trigger.fallback': '選擇模型',
+  'trigger.selectAria': '選擇模型',
+  'trigger.aria': '選擇模型，目前為 {model}',
+  'trigger.ariaEffort': '選擇模型，目前為 {model}，推理等級 {effort}',
+  'menu.aria': '模型與推理等級',
+  'menu.model': '模型',
+  'menu.effort': '推理等級',
+  'effort.providerDefault': 'Default',
+  'status.loading': '正在重新整理模型清單…',
+  'error.action': '模型操作失敗：{message}',
+  'action.reload': '重新載入',
+  'warning.groupLoad': '{name} 載入失敗：{message}',
+  'empty.models': '沒有可用的模型。',
+  'blocked.composer': '目前模型無法使用，請先選擇模型',
+  'empty.efforts': '目前模型未提供推理等級。',
+} satisfies Record<ModelKey, string>
+
+/** Japanese dictionary, checked complete against the zh key set. */
+export const ja = {
+  'command.description': 'この会話で使用するモデルを選択',
+  'option.loadError': 'カタログの読み込みに失敗しました: {message}',
+  'trigger.fallback': 'モデルを選択',
+  'trigger.selectAria': 'モデルを選択',
+  'trigger.aria': 'モデルを選択、現在 {model}',
+  'trigger.ariaEffort': 'モデルを選択、現在 {model}、推論レベル {effort}',
+  'menu.aria': 'モデルと推論レベル',
+  'menu.model': 'モデル',
+  'menu.effort': '推論レベル',
+  'effort.providerDefault': 'Default',
+  'status.loading': 'モデル一覧を更新中…',
+  'error.action': 'モデル操作に失敗しました: {message}',
+  'action.reload': '再読み込み',
+  'warning.groupLoad': '{name} の読み込みに失敗しました: {message}',
+  'empty.models': '利用できるモデルがありません。',
+  'blocked.composer': 'このモデルは利用できません。モデルを選択してください',
+  'empty.efforts': 'このモデルには推論レベルがありません。',
+} satisfies Record<ModelKey, string>

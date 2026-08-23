@@ -29,7 +29,7 @@ async function bench(isLoopback = true) {
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
-  locale.setLocale('zh')
+  locale.setLocale('zh-CN')
   ctx.provide('locale', locale)
   const settingsDescribe = vi.fn(() => Promise.resolve({
     rpcId: 'settings-general' as never,
@@ -129,7 +129,7 @@ describe('ui-settings-general apply', () => {
     expect(b.locale.bind('settings')('title')).toBe('设置')
     b.locale.setLocale('en')
     expect(b.locale.bind('settings')('close')).toBe('Close')
-    b.locale.setLocale('zh')
+    b.locale.setLocale('zh-CN')
     await fiber.dispose()
     // The (ns, locale) seats are free again — the dictionary disposer ran.
     expect(() => b.locale.register('settings', 'zh', {})).not.toThrow()
@@ -149,7 +149,7 @@ describe('ui-settings-general apply', () => {
       expect(b.slots.entries(name)).toHaveLength(1)
     })
     expect(resolveSlotLabel(generalEntry(b.slots)!.options.label)).toBe('General')
-    b.locale.setLocale('zh')
+    b.locale.setLocale('zh-CN')
     expect(resolveSlotLabel(generalEntry(b.slots)!.options.label)).toBe('通用设置')
   })
 
@@ -198,7 +198,7 @@ describe('ui-settings-general apply', () => {
     // The recovered registrations still ride the locale path.
     b.locale.setLocale('en')
     expect(resolveSlotLabel(generalEntry(b.slots)!.options.label)).toBe('General')
-    b.locale.setLocale('zh')
+    b.locale.setLocale('zh-CN')
   })
 
   it('removes every seat and the item declaration on teardown', async () => {

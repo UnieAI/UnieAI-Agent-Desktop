@@ -9,7 +9,9 @@
   min-height: 28px;
   padding: 0 8px;
   border: none;
-  border-radius: 16px;
+  /* The pill token, which is what HeroShell's `.workspace` takes: the hand
+     written 16px here was 2px off the chip it sits beside in the same row. */
+  border-radius: var(--dsw-radius-pill);
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font-size: 13px;

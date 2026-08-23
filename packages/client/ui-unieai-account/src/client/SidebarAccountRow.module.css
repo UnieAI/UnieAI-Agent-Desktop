@@ -1,0 +1,153 @@
+/* The sidebar's account occupant: the identity mark, the name, and the menu
+ * trigger they form. The row box it sits in — 248x40 at the
+ * control radius, `6px 8px` of padding, 10px gaps, the geometry the UnieAI
+ * web product gives its own user row (`rounded-lg px-2 py-1.5`, `gap-2.5`) —
+ * belongs to the sidebar foot's identity seat, because the settings glyph
+ * shares it. What is owned here is the content: a 28px round identity mark,
+ * a 13/500 name that truncates and takes the slack, and the hover and focus
+ * chrome of the states that can actually be pressed.
+ *
+ * Ink comes from the same `--dsw-alias-label-*` ladder the reference's
+ * `--text-*` ladder resolves to, so no colour is written here and none is
+ * branched on a theme.
+ */
+
+/* The menu wrapper is the seat's flex item, and the primitive's own anchor
+   span sits between it and the trigger, so both pass the row's slack down to
+   the button. Selecting the span by element rather than by the primitive's
+   class keeps this a layout pass-through, not a reach into its stylesheet. */
+.menuRoot {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.menuRoot > span {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.menuRoot.rail,
+.menuRoot.rail > span {
+  flex: none;
+}
+
+/* The row is the menu trigger — the whole of it, as in the reference, where
+   the settings glyph beside it is a separate control and not part of this
+   button. */
+.row {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  position: relative;
+  cursor: pointer;
+}
+
+/* The hover fill paints the trigger's half of the shared row: it reaches back
+   out through the seat's 6px/8px padding and stops halfway across the 10px
+   gap before the settings glyph, which is its own control. */
+.row::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -6px -5px -6px -8px;
+  border-radius: var(--dsw-radius-control);
+  transition: background-color 150ms var(--ds-ease-in-out);
+}
+
+.row:hover::before,
+.row[aria-expanded='true']::before {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* Rail: the identity mark alone, in the same 36px control box the rest of the
+   rail uses. The seat owns the rhythm above and below it. */
+.rail {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  gap: 0;
+  justify-content: center;
+  border-radius: var(--dsw-radius-pill);
+}
+
+.rail.row::before {
+  inset: 0;
+  border-radius: var(--dsw-radius-pill);
+}
+
+/* Identity mark: a hairline ring rather than a filled plate. The ring is what
+   the reference shows over the sidebar fill, and it leaves the mark reading as
+   identity rather than as another button. */
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-pill);
+  overflow: hidden;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+/* A photo is its own edge; the ring would read as a second one. */
+.photo {
+  border-color: transparent;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.glyph {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+/* No session yet: the row names a state, not a person, so it sits a step back
+   from the ink a name would take. */
+.absent {
+  color: var(--dsw-alias-label-secondary);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row::before {
+    transition: none;
+  }
+}

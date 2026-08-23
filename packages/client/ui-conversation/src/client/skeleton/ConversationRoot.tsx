@@ -119,7 +119,6 @@ export function ConversationRoot({
         },
         onClose: () => { setPickerOpen(false) },
       })}
-      {renderSlot('conversation.hero.agentPreset', {})}
     </div>
   )
 
@@ -149,7 +148,14 @@ export function ConversationRoot({
         ? { blocked: composerBlock, placeholder: composerBlock.reason }
         : hero ? { placeholder: t('placeholder.hero') } : {}),
     overlay: renderSlot('conversation.input.overlay', {}),
-    leftItems: zone === undefined ? null : renderSlot('conversation.input.left', zone),
+    leftItems: zone === undefined
+      ? null
+      : (
+        <>
+          {renderSlot('conversation.hero.agentPreset', {})}
+          {renderSlot('conversation.input.left', zone)}
+        </>
+      ),
     rightItems: zone === undefined ? null : renderSlot('conversation.input.right', zone),
     // Stats band under the card, inside the bar's width column so both
     // share one constraint (composer.dock = stats-line family).
@@ -159,10 +165,13 @@ export function ConversationRoot({
   const composerBar = (
     <div className={clsx(css.composerStack, hero && css.composerHero)}>
       {hero && <HeroGlow className={css.heroGlow} />}
-      {hero && <HeroShell t={t} renderSlot={renderSlot} />}
-      {hero && heroWorkspaceRow}
+      {hero && <HeroShell t={t} />}
       {zone !== undefined && renderSlot('conversation.input.dock', zone)}
       {inputBar}
+      {/* Workspace and agent preset read as settings FOR the composer, so they
+          sit under it: the card is the thing you act on, not the thing you
+          configure past. */}
+      {hero && heroWorkspaceRow}
     </div>
   )
 
@@ -190,6 +199,10 @@ export function ConversationRoot({
         {renderSlot('conversation.session', {})}
         {composerSeat}
       </div>
+      {/* Pinned to the column floor rather than trailing the composer: the
+          reference keeps it at the bottom edge in every phase, so it never
+          moves when the composer grows or the transcript scrolls. */}
+      <p className={css.disclaimer}>{t('disclaimer')}</p>
     </div>
   )
 }

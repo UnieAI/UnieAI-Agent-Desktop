@@ -1,4 +1,15 @@
-/* Plugin configuration fields: label, control, override badge, and hint. */
+/* Plugin configuration fields: label, control, override badge, and hint.
+ *
+ * One field is one row, separated from the next by a hairline — never a box:
+ * a setting and its control is exactly the case a card is wrong for. The only
+ * chrome here is the control's own edge.
+ *
+ * Radii come from the shared scale (`--dsw-radius-control` 8,
+ * `--dsw-radius-pill`), the fill goes through `bg-module-platform` rather than
+ * `bg-layer-*` (layers 1-3 are the same white in the light palette), and the
+ * error ink is `state-error-primary` — `--dsw-alias-label-error`, which these
+ * rules used to name, is not a token this app defines, so those rules painted
+ * nothing and an invalid field looked valid. */
 
 .field {
   display: flex;
@@ -33,7 +44,7 @@
 }
 
 .badge {
-  border-radius: 999px;
+  border-radius: var(--dsw-radius-pill);
   padding: 1px 8px;
   font-size: 11px;
   line-height: 17px;
@@ -44,7 +55,7 @@
 }
 
 .badgeMuted {
-  border-radius: 999px;
+  border-radius: var(--dsw-radius-pill);
   padding: 1px 8px;
   font-size: 11px;
   line-height: 17px;
@@ -75,8 +86,8 @@
   height: 34px;
   padding: 0 12px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-3);
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-bg-module-platform);
   font: inherit;
   font-size: 13px;
   line-height: 1.5;
@@ -95,14 +106,14 @@
 
 .inputInvalid {
   composes: input;
-  border-color: var(--dsw-alias-label-error);
+  border-color: var(--dsw-alias-state-error-primary);
 }
 
 .invalid {
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: var(--dsw-alias-label-error);
+  color: var(--dsw-alias-state-error-primary);
 }
 
 .hint {

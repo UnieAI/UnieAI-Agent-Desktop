@@ -1,0 +1,79 @@
+/* The shell's nav-row box, which New chat above this row draws: 248x34 built
+ * out of `7px 10px` around a 13/19.5 line, a 10px gap, and the control
+ * radius, with the row itself at the inherited weight and the label alone
+ * carrying the 500. The rail collapses it to the same 36px control every
+ * other rail button uses. Geometry contract: ui-sidebar's README — every
+ * `sidebar.nav.action` occupant draws this box itself, because the shell
+ * holds no state for its rows.
+ */
+
+.row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19.5px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
+}
+
+.row:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* The page is a destination, so the row that opens it marks itself while the
+   reader is standing on it — the same resting fill the session list uses. */
+.row[data-current='true'] {
+  background: var(--dsw-alias-interactive-bg-active);
+  color: var(--dsw-alias-label-primary);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: -2px;
+}
+
+.icon {
+  flex: none;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* Rail: the 36px control box, in the rail's primary ink. */
+.rail {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+  border-radius: var(--dsw-radius-pill);
+  color: var(--dsw-alias-label-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    transition: none;
+  }
+}

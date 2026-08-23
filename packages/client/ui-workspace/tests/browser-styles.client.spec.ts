@@ -46,7 +46,10 @@ describe('WorkspaceBrowser.module.css list', () => {
   it('counts the themed scrollbar inside the shell trailing inset', () => {
     expect(root?.get('--dsh-session-list-edge-inset')).toBe('var(--dsh-sidebar-inline-padding)')
     expect(root?.get('--dsh-session-list-scrollbar-width')).toBe('8px')
-    expect(root?.get('--dsh-session-list-scrollbar-offset')).toBe('2px')
+    // The shell's row inset is now the reserved bar width itself, so the
+    // list's own trailing pad is exactly what the bar takes and no offset
+    // splits the difference.
+    expect(root?.get('--dsh-session-list-scrollbar-offset')).toBe('0px')
     expect(root?.get('padding-right')).toBe('var(--dsh-session-list-edge-inset)')
     expect(listArea?.get('margin-left')).toBe('-4px')
     expect(listArea?.get('padding-left')).toBe('4px')
@@ -69,11 +72,11 @@ describe('WorkspaceBrowser.module.css list', () => {
     expect(list!.get('scrollbar-gutter')).toBe('stable')
   })
 
-  it('keeps 2px between rows and 4px between workspace groups', () => {
+  it('keeps 2px between rows and 12px between workspace groups', () => {
     expect(declarations('.flatList > * + *')?.get('margin-top')).toBe('2px')
     expect(declarations(".searchTree > [role='treeitem'] + [role='treeitem']")?.get('margin-top')).toBe('2px')
     expect(declarations('.groupSection > * + *')?.get('margin-top')).toBe('2px')
-    expect(declarations('.groupSection + .groupSection')?.get('margin-top')).toBe('4px')
+    expect(declarations('.groupSection + .groupSection')?.get('margin-top')).toBe('12px')
   })
 
   it('draws drag targets as a leading chevron joined to the insertion line', () => {
@@ -100,12 +103,48 @@ describe('WorkspaceBrowser.module.css list', () => {
     expect(declarations('.fade')?.get('height')).toBe('24px')
     expect(declarations('.sessionOverflowButton')?.get('height')).toBe('28px')
     expect(declarations('.searchExpanded')?.get('height')).toBe('30px')
-    expect(rowDeclarations('.projectRow')?.get('height')).toBe('34px')
-    expect(rowDeclarations('.sessionRow')?.get('height')).toBe('32px')
+    expect(rowDeclarations('.projectRow')?.get('height')).toBeUndefined()
+    expect(rowDeclarations('.sessionRow')?.get('height')).toBeUndefined()
     expect(rowDeclarations('.flatSessionRowWithoutStatus .title')?.get('margin-left')).toBe('0')
     expect(rowDeclarations('.searchResultRow')?.get('min-height')).toBe('48px')
-    expect(rowDeclarations('.sessionRow.selected')?.get('background'))
-      .toBe('var(--dsw-alias-interactive-bg-hover)')
+  })
+
+  it('fills the current session a step above hover, and keeps it under hover', () => {
+    // Same specificity as .sessionRow:hover and .sessionRow.menuOpen, so the
+    // current-item fill must be the later rule to survive both.
+    const selected = 'var(--dsw-alias-interactive-bg-active)'
+    const hover = 'var(--dsw-alias-interactive-bg-hover)'
+    expect(rowDeclarations('.sessionRow.selected')?.get('background')).toBe(selected)
+    expect(rowDeclarations('.searchResultRow.selected')?.get('background')).toBe(selected)
+    expect(rowDeclarations('.sessionRow:hover')?.get('background')).toBe(hover)
+    const body = rowsCss.replace(/\/\*[\s\S]*?\*\//g, ' ')
+    expect(body.indexOf('.sessionRow.selected')).toBeGreaterThan(body.indexOf('.sessionRow.menuOpen'))
+  })
+
+  it('sets every list row in the reference column\'s row box', () => {
+    // 7px/10px padding around a 13/19.5 line at the control radius — the
+    // reference sidebar's own list row, built the way it builds it, so the
+    // foot, the nav row, and the session list all read as one column of rows
+    // on one 33.5px pitch.
+    const row = rowDeclarations('.projectRow')
+    expect(row?.get('padding')).toBe('7px 10px')
+    expect(row?.get('font-size')).toBe('13px')
+    expect(row?.get('border-radius')).toBe('var(--dsw-radius-control)')
+    expect(row?.get('color')).toBe('var(--dsw-alias-label-secondary)')
+    expect(rowDeclarations('.projectRow:hover')?.get('color'))
+      .toBe('var(--dsw-alias-label-primary)')
+    expect(rowDeclarations('.title')?.get('font-size')).toBe('13px')
+    expect(rowDeclarations('.title')?.get('line-height')).toBe('19.5px')
+  })
+
+  it('sets the section heading as the reference eyebrow', () => {
+    const label = declarations('.sectionLabel')
+    expect(label?.get('font-size')).toBe('10px')
+    expect(label?.get('text-transform')).toBe('uppercase')
+    expect(label?.get('letter-spacing')).toBe('0.06em')
+    expect(label?.get('color')).toBe('var(--dsw-alias-label-caption)')
+    // pt-3 / pb-1 around the heading band, starting at the rows' own inset.
+    expect(declarations('.sectionHeader')?.get('padding')).toBe('12px 0 4px 8px')
   })
 
   it('pins both rail controls to the shared left anchor during the column slide', () => {

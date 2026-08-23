@@ -26,6 +26,8 @@ export type {
   SettingsGeneralItemOwnerProps, SettingsHeaderOwnerProps, SettingsOnboardingOwnerProps,
   SettingsPluginsTabOwnerProps, SettingsSectionOwnerProps, SettingsTriggerOwnerProps,
 } from './contract/slots.ts'
+export type { SettingsPanelFace } from './contract/panel.ts'
+export { SETTINGS_PANEL_SERVICE } from './contract/panel.ts'
 export type { SettingsScopeController, SettingsScopeBinder } from './settings-scope.ts'
 export type { SettingsSchemaService } from './schema.ts'
 export type { SchemaNode } from './schema.ts'

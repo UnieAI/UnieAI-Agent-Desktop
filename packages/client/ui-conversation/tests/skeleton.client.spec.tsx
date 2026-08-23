@@ -23,7 +23,6 @@ import { en, zh } from '../src/client/locales.ts'
 import { ConversationRoot } from '../src/client/skeleton/ConversationRoot.tsx'
 import { ConversationSession, ConversationSessionHeader } from '../src/client/skeleton/ConversationSession.tsx'
 import { HeroShell } from '../src/client/skeleton/EmptyHero.tsx'
-import type { HeroShellProps } from '../src/client/skeleton/EmptyHero.tsx'
 import { InputBar } from '../src/client/skeleton/InputBar.tsx'
 import type { InputBarProps } from '../src/client/skeleton/InputBar.tsx'
 import type {
@@ -278,20 +277,71 @@ function mount(
 }
 
 describe('Hero chrome', () => {
-  it('renders the English preview badge through the hero locale seat', () => {
-    const renderSlot = vi.fn<HeroShellProps['renderSlot']>(() => null)
-    const view = render(<HeroShell t={makeTranslate(en, commonEn)} renderSlot={renderSlot} />)
-    expect(view.getByText('Into the Unknown')).toBeTruthy()
-    expect(view.getByText('Preview')).toBeTruthy()
-    expect(renderSlot).toHaveBeenCalledOnce()
-    expect(renderSlot.mock.calls[0]?.[0]).toBe('conversation.hero.brand.mark')
-    const brandMarkOwner = renderSlot.mock.calls[0]?.[1]
-    if (brandMarkOwner === undefined || !('size' in brandMarkOwner) || !('className' in brandMarkOwner)) {
-      throw new Error('hero brand-mark owner must provide size and className')
+  it('renders the headline alone, with no brand mark and no badge', () => {
+    const view = render(<HeroShell t={makeTranslate(en, commonEn)} />)
+    expect(view.getByText('What do you want to do in your workspace?')).toBeTruthy()
+    // The hero used to carry a brand-mark seat and a Preview badge. Both are
+    // gone: the product is named in the sidebar, and a second mark here
+    // competes with the composer for the eye. HeroShell now takes no slot
+    // renderer at all, so there is no seat left to assert on.
+    expect(view.queryByText('Preview')).toBeNull()
+    expect(view.container.querySelector('svg')).toBeNull()
+  })
+})
+
+describe('Composer dictation', () => {
+  /** The vendor API jsdom does not have; one instance per construction. */
+  function installSpeech(): { session: () => Record<string, unknown> | undefined } {
+    let latest: Record<string, unknown> | undefined
+    class FakeRecognition {
+      lang = ''
+      continuous = false
+      interimResults = false
+      onresult: ((e: unknown) => void) | null = null
+      onerror: ((e: unknown) => void) | null = null
+      onend: (() => void) | null = null
+      start(): void { latest = this as unknown as Record<string, unknown> }
+      stop(): void { this.onend?.() }
+      abort(): void {}
     }
-    expect(brandMarkOwner.size).toBe(34)
-    expect(brandMarkOwner.className).toBeTypeOf('string')
-    expect(renderSlot.mock.calls[0]?.[2]?.fallback).toBeTruthy()
+    ;(window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition = FakeRecognition
+    return { session: () => latest }
+  }
+
+  afterEach(() => { delete (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition })
+
+  it('offers no mic when the browser cannot recognise speech', () => {
+    const b = mount(conversationSnapshot())
+    expect(b.view.queryByLabelText('语音输入')).toBeNull()
+  })
+
+  it('inserts only finalized phrases into the draft, through the paste transaction', () => {
+    const speech = installSpeech()
+    const b = mount(conversationSnapshot())
+    const mic = b.view.getByLabelText('语音输入')
+    fireEvent.click(mic)
+
+    const session = speech.session()
+    if (session === undefined) throw new Error('clicking the mic must open a recognition session')
+    const before = b.chat.store.getSnapshot().draft
+    // Interim text must not reach the draft: the engine revises it mid-phrase.
+    act(() => {
+      ;(session['onresult'] as (e: unknown) => void)({
+        resultIndex: 0,
+        results: { length: 1, 0: { isFinal: false, length: 1, 0: { transcript: 'draft in' } } },
+      })
+    })
+    expect(b.chat.store.getSnapshot().draft).toBe(before)
+
+    act(() => {
+      ;(session['onresult'] as (e: unknown) => void)({
+        resultIndex: 0,
+        results: { length: 1, 0: { isFinal: true, length: 1, 0: { transcript: 'draft in hero' } } },
+      })
+    })
+    const after = b.chat.store.getSnapshot().draft
+    expect(after).not.toBe(before)
+    expect(after).toContain('draft in hero')
   })
 })
 
@@ -409,8 +459,10 @@ describe('ConversationRoot resident composer', () => {
     const header = b.view.container.querySelector('header')
     expect(host).not.toBeNull()
     expect(header?.getAttribute('aria-hidden')).toBe('true')
-    expect(b.view.getByText('探索未至之境')).toBeTruthy()
-    expect(b.view.getByText('预览版')).toBeTruthy()
+    expect(b.view.getByText('要在工作区里做什么?')).toBeTruthy()
+    // The Preview badge was removed with the hero brand mark; the headline is
+    // the whole of the hero's own chrome now.
+    expect(b.view.queryByText('预览版')).toBeNull()
     expect(b.view.queryByTestId('view-chat')).toBeNull()
     // The same machine-backed textarea is live in the hero, and the
     // persistence mirror stays bound (ConversationSession mounts chrome-hidden
@@ -433,7 +485,7 @@ describe('ConversationRoot resident composer', () => {
     const b = mount(conversationSnapshot({ composerPhase: 'blank', blank: true, openState: 'loading' }))
     const root = b.view.container.querySelector('[data-phase]')
     expect(root?.getAttribute('data-phase')).toBe('settling')
-    expect(b.view.queryByText('探索未至之境')).toBeNull()
+    expect(b.view.queryByText('要在工作区里做什么?')).toBeNull()
   })
 
   it('settling phase: a session the list has no row for settles conservatively', () => {
@@ -458,7 +510,7 @@ describe('ConversationRoot resident composer', () => {
     // blank the column for the history round-trip.
     const root = b.view.container.querySelector('[data-phase]')
     expect(root?.getAttribute('data-phase')).toBe('hero')
-    expect(b.view.getByText('探索未至之境')).toBeTruthy()
+    expect(b.view.getByText('要在工作区里做什么?')).toBeTruthy()
     expect(b.view.getByRole('textbox')).toBeTruthy()
   })
 
@@ -476,7 +528,7 @@ describe('ConversationRoot resident composer', () => {
     expect(after.value).toBe('kept across flip')
     expect(b.chat.store.getSnapshot().draft).toBe('kept across flip')
     expect(b.view.container.querySelector('[data-conversation-scroll]')?.contains(after)).toBe(true)
-    expect(b.view.queryByText('探索未至之境')).toBeNull()
+    expect(b.view.queryByText('要在工作区里做什么?')).toBeNull()
     expect(b.view.getByTestId('view-chat')).toBeTruthy()
   })
 
@@ -503,8 +555,10 @@ describe('ConversationRoot resident composer', () => {
 
     expect(b.view.getByTestId('view-chat')).toBeTruthy()
     expect(b.view.queryByTestId('view-new-view')).toBeNull()
-    expect(b.view.getByRole('tab', { name: 'Chat' }).getAttribute('aria-selected')).toBe('true')
-    expect(b.view.getByRole('tab', { name: 'New view' }).getAttribute('aria-selected')).toBe('false')
+    // One header toggle offers the alternate view; unpressed means the
+    // transcript is the one on screen.
+    expect(b.view.getByRole('button', { name: 'New view' }).getAttribute('aria-pressed')).toBe('false')
+    expect(b.view.queryByRole('button', { name: 'Chat' })).toBeNull()
   })
 
   it('rolls the pending workspace label back when switching fails', async () => {

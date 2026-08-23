@@ -1,9 +1,13 @@
-/** Plugins settings section: localized tabs around feature-owned pages. */
+/** Cordis plugin area: localized tabs around feature-owned pages. */
 
 import { useEffect, useId, useRef, useState } from 'react'
 import type {
   HostObservable, InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime,
 } from '@deepseek-ai/dsh-client-ui-slots'
+// Type-only: the Plugins page's SlotMap merge, so `PropsRuntime` resolves the
+// seat this area occupies. It used to be `settings.section`; the two owner
+// shares are the same shape, which is why the component below is unchanged.
+import type {} from '@deepseek-ai/dsh-client-ui-plugins-page/client'
 import type { PluginsSettingsLocaleKey } from './locales.ts'
 import css from './PluginsSettingsSection.module.css'
 
@@ -24,12 +28,12 @@ export interface PluginsSettingsSectionInjected {
 
 /** Props the renderer binds for the section. */
 export type PluginsSettingsSectionProps =
-  PropsRuntime<'settings.section'>
+  PropsRuntime<'plugins.page.area'>
   & PropsLocale<'settings.plugins'>
   & PropsRenderSlots<'settings.plugins.tab'>
   & InjectFace<PluginsSettingsSectionInjected>
 
-/** Render one Plugins page whose contents arrive from feature-owned tabs. */
+/** Render one cordis plugin area whose contents arrive from feature-owned tabs. */
 export function PluginsSettingsSection({ t, renderSlot, useTabs }: PluginsSettingsSectionProps) {
   const tabsId = useId()
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])

@@ -1,6 +1,8 @@
 /**
  * The web-search card's staged form over the `web-search-deepseek` settings
- * namespace.
+ * namespace. The namespace and the default credential reference below are the
+ * Host provider's own identifiers, naming DeepSeek as the supplier of the
+ * search API this deployment calls.
  *
  * The key is the one control that does not live in the section: its literal
  * never rides a response, so the card learns only whether one is configured
@@ -17,8 +19,10 @@ import {
 } from './card-form.ts'
 
 /**
- * Namespace of the DeepSeek search provider. Spelled here rather than
- * imported: a client package must not depend on a Host package.
+ * Settings namespace of the Host's web-search provider, which is served by
+ * DeepSeek's search API — a third-party supplier named by its own identifier,
+ * not by this product's. Spelled here rather than imported: a client package
+ * must not depend on a Host package.
  */
 export const WEB_SEARCH_NS = 'web-search-deepseek'
 

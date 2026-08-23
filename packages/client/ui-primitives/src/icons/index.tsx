@@ -17,6 +17,53 @@ export const IconNewChatOutline16 = ({ size = 16, className }: IconProps) => (
   </svg>
 )
 
+/** compose_16 (sidebar New chat nav row; hand-authored square-with-pen mark
+ *  plotted on this set's 16 grid to carry the same metaphor as the UnieAI web
+ *  product's own New chat row — a stroke glyph, like the sparkle below, rather
+ *  than a figma fill extract) */
+export const IconComposeOutline16 = ({ size = 16, className }: IconProps) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M8 2.75H4.25A1.5 1.5 0 0 0 2.75 4.25v7.5a1.5 1.5 0 0 0 1.5 1.5h7.5a1.5 1.5 0 0 0 1.5-1.5V8"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M12.1 2.15a1.2 1.2 0 0 1 1.7 1.7L9.15 8.5a1.2 1.2 0 0 1-.51.3l-1.72.5a.3.3 0 0 1-.37-.37l.5-1.72a1.2 1.2 0 0 1 .3-.51z"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+/** blocks_16 (sidebar Plugins nav row; hand-authored two-block mark plotted on
+ *  this set's 16 grid, carrying the same metaphor as the UnieAI web product's
+ *  own Plugins row) */
+export const IconBlocksOutline16 = ({ size = 16, className }: IconProps) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M6.67 14.67V4.67a.67.67 0 0 0-.67-.67H2.67A1.33 1.33 0 0 0 1.34 5.33v8a1.33 1.33 0 0 0 1.33 1.34h8a1.33 1.33 0 0 0 1.33-1.34V10a.67.67 0 0 0-.66-.67H1.34"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <rect
+      x="9.33"
+      y="1.33"
+      width="5.33"
+      height="5.33"
+      rx="0.67"
+      stroke="currentColor"
+      strokeWidth="1.3"
+    />
+  </svg>
+)
+
 /** ic_ds_search_outline_16 */
 export const IconSearchOutline16 = ({ size = 16, className }: IconProps) => (
   <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -120,6 +167,15 @@ export const IconPlusOutline16 = ({ size = 16, className }: IconProps) => (
   <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M8.64453 1.5V7.34961H14.5V8.65039H8.64453V14.5H7.34473V8.65039H1.5V7.34961H7.34473V1.5H8.64453Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
+export const IconMinusOutline16 = ({ size = 16, className }: IconProps) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M1.5 7.34961H14.5V8.65039H1.5V7.34961Z"
       fill="currentColor"
     />
   </svg>
