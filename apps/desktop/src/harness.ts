@@ -104,6 +104,16 @@ export async function startHarness(environment: HarnessEnvironment): Promise<Run
     {
       stdio: 'pipe',
       env: { ...process.env, DSH_HOME: environment.home },
+      // The harness watches the user's own patch layer through Cordis HMR, and
+      // HMR needs Node's internal module loader. `vendor/loader` reaches it two
+      // ways: this flag, or the `node-addon-require-builtin` native addon. The
+      // addon is built for Node's ABI and does not load inside Electron, so
+      // without the flag both routes are closed and the harness dies AFTER
+      // printing its URL — the server bound, then the process exited 1.
+      //
+      // The flag is the documented first route in that same function, not a way
+      // around it.
+      execArgv: ['--expose-internals'],
     },
   )
 

@@ -22,6 +22,12 @@ Three choices carry most of the design.
 
 The harness runs in Electron's utility process — the Node environment Electron already carries. A packaged app ships no separate `node` binary to spawn.
 
+Two things about that environment are not obvious, and both cost a long diagnosis:
+
+**Electron's Node resolves modules with preserve-symlinks semantics, and pnpm's `node_modules` is built entirely from symlinks.** A shell started against the workspace tree therefore cannot find the harness's plugins, and says so with `Cannot find package '@unieai/cordis-plugin-timer'`. Proven by elimination: system `node` runs the same entry and prints its URL; `ELECTRON_RUN_AS_NODE=1` on Electron's own Node fails identically, which rules out the utility process; and system `node --preserve-symlinks` reproduces it exactly. An npm-installed tree — real directories, no symlinks — resolves cleanly, which is why packaging installs rather than links.
+
+**`--expose-internals` is passed to the harness on purpose.** The harness watches the user's own patch layer through Cordis HMR, and HMR needs Node's internal module loader. `vendor/loader` reaches it two ways: that flag, or the `node-addon-require-builtin` native addon. The addon is built for Node's ABI and does not load inside Electron, so without the flag both routes are closed — and the failure arrives AFTER the URL line, because the server binds first and the process then exits 1. The flag is the documented first route in that same function, not a way around it.
+
 ## Failure is shown
 
 A harness that cannot start would otherwise leave a blank window and no way to find out why. The window renders what the harness wrote before it stopped, from a data URL rather than a bundled page: a failure page that itself has to load from somewhere is one more thing that can fail at the moment nothing else works.
