@@ -39,7 +39,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unieai/deepseek-harness.git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
     "directory": "packages/client/ui-jobs"
   },
   "publishConfig": {

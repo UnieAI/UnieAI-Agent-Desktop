@@ -1,6 +1,6 @@
 /**
  * Profile discovery, initialization, and patch-layer composition for the
- * `dsh --profile` launcher family.
+ * `uad --profile` launcher family.
  *
  * A profile is a directory under `$DSH_HOME/profiles/<name>` holding a
  * `package.json` (out-of-tree plugin dependencies plus the profile manifest
@@ -38,20 +38,20 @@ export const PROFILES_DIR = 'profiles'
 /** The user patch layer inside a profile directory (hot-reloaded on long-lived surfaces). */
 export const PROFILE_PATCH_FILENAME = 'cordis.patch.yml'
 
-/** The bundle half of the `dsh` manifest section: what a bundle package exports. */
+/** The bundle half of the `uad` manifest section: what a bundle package exports. */
 export interface DshBundleManifest {
   /** The patch layer this bundle exports, relative to its package root. */
   patch: string
 }
 
-/** The profile half of the `dsh` manifest section: what a profile directory composes. */
+/** The profile half of the `uad` manifest section: what a profile directory composes. */
 export interface DshProfileManifest {
   /** Ordered bundle layer list (package names). */
   bundles?: string[]
 }
 
 /**
- * The profile-launcher slice of the `dsh`-owned package.json section. A
+ * The profile-launcher slice of the `uad`-owned package.json section. A
  * manifest may declare both roles; other consumers own additional keys.
  */
 export interface DshManifestSection {
@@ -97,7 +97,7 @@ export interface Profile {
 
 /**
  * Resolve a profile's directory under the Harness home.
- * @param name - the profile name (`dsh --profile <name>`).
+ * @param name - the profile name (`uad --profile <name>`).
  * @param home - the Harness home; defaults to {@link resolveDshHome}.
  * @returns the absolute profile directory (which may not exist yet).
  */
@@ -121,7 +121,7 @@ const INSTALLATION_OWNED_PROFILE_TUPLES: Record<string, readonly string[]> = {
   headless: ['@unieai/uad-base', '@unieai/uad-web-app', '@unieai/uad-headless'],
 }
 
-/** The bundle list a `dsh plugin` init uses for a name with no shipped template. */
+/** The bundle list a `uad plugin` init uses for a name with no shipped template. */
 export const DEFAULT_PROFILE_BUNDLES: readonly string[] = ['@unieai/uad-base']
 
 const PROFILE_PATCH_TEMPLATE = `# Your patch layer for this dsh profile, applied after every bundle layer:
@@ -350,7 +350,7 @@ export function resolveBundleDir(
   }
   throw new Error(
     `${binName}: cannot resolve profile bundle ${JSON.stringify(packageName)} from the dsh installation or ${profileDir}; `
-    + `run 'dsh plugin --profile ${basename(profileDir)} install' if its dependency is not installed`,
+    + `run 'uad plugin --profile ${basename(profileDir)} install' if its dependency is not installed`,
   )
 }
 
@@ -377,7 +377,7 @@ export function loadProfile(
     const template = PROFILE_TEMPLATES[name]
     if (template === undefined) {
       throw new Error(
-        `${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'dsh plugin --profile ${name} add <package>'`,
+        `${binName}: profile ${JSON.stringify(name)} does not exist; create it with 'uad plugin --profile ${name} add <package>'`,
       )
     }
     initProfile(dir, template)

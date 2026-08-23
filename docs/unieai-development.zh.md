@@ -25,10 +25,10 @@ git clone https://github.com/UnieAI/UnieAI-Agent-Desktop.git
 cd UnieAI-Agent-Desktop
 pnpm install
 pnpm run build
-pnpm dsh web
+pnpm uad web
 ```
 
-`pnpm dsh web` 會印出它綁定的網址並開啟瀏覽器。加 `--no-open` 可以留在終端機，加 `--port <n>` 可以指定連接埠，預設是 3080。
+`pnpm uad web` 會印出它綁定的網址並開啟瀏覽器。加 `--no-open` 可以留在終端機，加 `--port <n>` 可以指定連接埠，預設是 3080。
 
 從側邊欄最下面的帳號列登入。它走的是裝置碼流程：桌面端顯示一組代碼，你在網頁產品上核准，之後桌面端就持有這個 session。
 
@@ -70,7 +70,7 @@ gate 可以把這台主機釘給特定帳號。出貨的 bundle 釘了一個—�
 
 ## 桌面應用程式
 
-`apps/desktop` 是一個 Electron 視窗，罩在它自己啟動的 harness 上。它不加任何產品行為：它在一個由作業系統指派的 loopback 連接埠上啟動 `dsh web`，等那個伺服器印出網址那一行，然後載入它。
+`apps/desktop` 是一個 Electron 視窗，罩在它自己啟動的 harness 上。它不加任何產品行為：它在一個由作業系統指派的 loopback 連接埠上啟動 `uad web`，等那個伺服器印出網址那一行，然後載入它。
 
 ```sh
 pnpm --filter @unieai/uad-desktop run start

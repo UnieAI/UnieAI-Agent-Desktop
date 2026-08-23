@@ -127,12 +127,12 @@ describe('web-app runtime glue', () => {
       lanAddresses: ['192.168.1.5'],
       trustedHosts: ['192.168.1.5', 'lab.internal'],
     })
-    expect(log).toHaveBeenCalledWith('dsh web: http://127.0.0.1:4567 (LAN: http://192.168.1.5:4567)')
-    expect(log).toHaveBeenCalledWith('dsh web: opening the default browser; pass --no-open to disable')
+    expect(log).toHaveBeenCalledWith('uad web: http://127.0.0.1:4567 (LAN: http://192.168.1.5:4567)')
+    expect(log).toHaveBeenCalledWith('uad web: opening the default browser; pass --no-open to disable')
     expect(openBrowser).toHaveBeenCalledWith('http://127.0.0.1:4567')
     expect(lifecycle).toEqual([
-      'dsh web: http://127.0.0.1:4567 (LAN: http://192.168.1.5:4567)',
-      'dsh web: opening the default browser; pass --no-open to disable',
+      'uad web: http://127.0.0.1:4567 (LAN: http://192.168.1.5:4567)',
+      'uad web: opening the default browser; pass --no-open to disable',
       'open:http://127.0.0.1:4567',
     ])
     const assembly = await ctx.systemPrompt.assemble()
@@ -193,7 +193,7 @@ describe('web-app runtime glue', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {})
     apply(ctx, new Config({ openBrowser: false, printUrl: true, surfaceContext: true, trustedHosts: [] }))
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(log).toHaveBeenCalledWith('dsh web: http://127.0.0.1:4567')
+    expect(log).toHaveBeenCalledWith('uad web: http://127.0.0.1:4567')
     await ctx.fiber.dispose()
   })
 
@@ -210,7 +210,7 @@ describe('web-app runtime glue', () => {
     internals.openBrowser = openBrowser
     apply(ctx, new Config({ openBrowser: true, printUrl: true, surfaceContext: false, trustedHosts: [] }))
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(log).toHaveBeenCalledWith('dsh web: http://127.0.0.1:4567')
+    expect(log).toHaveBeenCalledWith('uad web: http://127.0.0.1:4567')
     expect(openBrowser).not.toHaveBeenCalled()
     await ctx.fiber.dispose()
   })
@@ -233,7 +233,7 @@ describe('web-app runtime glue', () => {
     expect(openBrowser).not.toHaveBeenCalled()
     release!()
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(log).toHaveBeenCalledWith('dsh web: http://127.0.0.1:4567')
+    expect(log).toHaveBeenCalledWith('uad web: http://127.0.0.1:4567')
     expect(openBrowser).toHaveBeenCalledWith('http://127.0.0.1:4567')
     await settled.fiber.dispose()
 
@@ -310,7 +310,7 @@ describe('web-app runtime glue', () => {
     const diagnostic = vi.spyOn(console, 'error').mockImplementation(() => {})
     apply(ctx, new Config({ openBrowser: true, printUrl: false, surfaceContext: false, trustedHosts: [] }))
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(log).toHaveBeenCalledWith('dsh web: opening the default browser; pass --no-open to disable')
+    expect(log).toHaveBeenCalledWith('uad web: opening the default browser; pass --no-open to disable')
     expect(diagnostic).toHaveBeenCalledWith(
       `web-app: could not open the default browser because ${reason}; visit http://127.0.0.1:4567 manually`,
     )

@@ -28,7 +28,7 @@
 
 ## 不安装、不开关、不移除
 
-参考目录的行末尾是 `+` 或 `✓`。这里一个都不画，也不能画：`pluginInventory.list()` 是本部署唯一存在的插件 RPC。安装是 `dsh plugin --profile web add <spec>`，一个在 profile 目录里转发给 `pnpm` 并随后调和 `dsh.profile.bundles` 的 CLI 命令；启停是某个 patch 层里的一行 `disabled:`。在浏览器里为两者中的任何一个放按钮，按下去每次都会失败。区块画的是另一样东西：一句话说明每个动作真正在哪里发生 —— 与它上方的 Studio MCP 区块出于同样理由所做的事相同。
+参考目录的行末尾是 `+` 或 `✓`。这里一个都不画，也不能画：`pluginInventory.list()` 是本部署唯一存在的插件 RPC。安装是 `uad plugin --profile web add <spec>`，一个在 profile 目录里转发给 `pnpm` 并随后调和 `dsh.profile.bundles` 的 CLI 命令；启停是某个 patch 层里的一行 `disabled:`。在浏览器里为两者中的任何一个放按钮，按下去每次都会失败。区块画的是另一样东西：一句话说明每个动作真正在哪里发生 —— 与它上方的 Studio MCP 区块出于同样理由所做的事相同。
 
 尾列画的是状态圆点而不是图标，正是为了让行上没有任何东西看起来可按。共享的 `StateDot` 原子没有被使用：它带四种语义，而 Loader 报告六种阶段，会有两种不得不借用它们并不具备的含义。
 
@@ -54,7 +54,7 @@
 
 - **每次打开页面或重试只读取一份快照。** 区块不订阅 Loader 变化，重连后也不会自动重读；离开插件页面再回来会取得新的一份。Loader 会发出 `loader/config-update` 与 `loader/entry-init`，Cordis 也会发出 Fiber 状态变化，订阅是有东西可依托的；缺的是 `pluginInventory` 的推送流，而加一条是 host 侧的改动。
 - **来源无法从这一侧报告，按 bundle 分组需要 host 改动。** 层的身份在合成时是存在的 —— [`app-boot`](../../boot/app-boot/README.zh.md) 的 `loadProfile` 为每个 bundle 返回一个 `ProfileLayer`，带着它的 `packageName` 与解析后的 patch 列表 —— 却在任何 Loader 条目出现之前就被丢弃了。要报告它，要么在合成时给每一条被插入的行盖上它的来源层，要么把已加载的 profile 交给 `PluginInventoryGateway`，由它把每个 id 归因到最后一个在 `insert` 列表里点名过它的层。两者都要动 [`plugin-inventory`](../../host/plugin-inventory/README.zh.md) 与 `app-boot`，而第二种的准确度取决于 id：没有写明 `id` 的 patch 行会拿到生成的 id，只能按位置归因。
-- **安装需要一个并不存在的 RPC。** `dsh plugin` 在 profile 目录里以同步子进程方式启动 `pnpm`，并改写 `package.json`。浏览器里的控件需要一个新的 Host Remote —— 长时间运行、把进度推流出来，并持有写 profile 与执行包管理器的权限，而现有任何 Remote 都不持有这种权限。它先是一个信任边界的决定，然后才是 UI 的决定。
+- **安装需要一个并不存在的 RPC。** `uad plugin` 在 profile 目录里以同步子进程方式启动 `pnpm`，并改写 `package.json`。浏览器里的控件需要一个新的 Host Remote —— 长时间运行、把进度推流出来，并持有写 profile 与执行包管理器的权限，而现有任何 Remote 都不持有这种权限。它先是一个信任边界的决定，然后才是 UI 的决定。
 - **启用、停用与移除需要一条可写的 Loader 路径。** Loader 可以在线切换条目（`entry.update({disabled})`），所以运行时那一半是有的；缺的是够到它的 Remote、变更该持久化到哪里的规则 —— 在浏览器里停用的行必须能扛过重启，也就是要写 profile 的 `cordis.patch.yml` 而不是合成出来的树 —— 以及对那些不能允许用户停用的行（例如承载这次请求的传输层）该怎么办的答案。
 - **Loader 条目 id 可搜索但不绘制。** 它以 `data-plugin-entry` 留在行上，并且仍是搜索目标。不绘制是因为除了极少数行以外它都在重复标题，而在它不重复的地方 —— 一条没写明 id 的 patch 插入行 —— 它是一串什么都不指的生成十六进制。需要它的读者是在编辑 `cordis.patch.yml` 的人，那位读者手上就开着那个文件。
 - **没有筛选行。** 参考里的胶囊按来源筛选，而本部署没有来源（见上）。剩下的那一个维度做成胶囊行，只会把紧贴其下的组标题重说一遍，而只有一个取值的筛选器是一个无事可做的控件。

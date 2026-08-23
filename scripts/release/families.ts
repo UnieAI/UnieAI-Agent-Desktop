@@ -1,7 +1,7 @@
 /**
  * The three independent publish sequences this repository releases from
  * (`packages/` + `apps/`, `vendor/`, and `native/`) and the two this module
- * owns: `dsh` and `vendor`. Each family carries its own version baseline, tag
+ * owns: `uad` and `vendor`. Each family carries its own version baseline, tag
  * naming, and publish set, so releasing one never republishes another
  * ([rationale](../../.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
  *

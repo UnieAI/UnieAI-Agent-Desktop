@@ -312,7 +312,7 @@ export function bundlePluginDependencyErrors(
 
 /**
  * Every configured specifier of a local workspace package must resolve through
- * the tsconfig `paths` facade to a `.ts`/`.tsx` source file. The `dsh` source
+ * the tsconfig `paths` facade to a `.ts`/`.tsx` source file. The `uad` source
  * launch (tsx) and vitest resolve in the source plane; without a `paths` match
  * they fall back to package `exports`, which reach built `lib/` — present on a
  * built dev tree, absent on a clean one — so a missing mapping boots locally

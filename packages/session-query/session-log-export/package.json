@@ -5,7 +5,7 @@
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unieai/deepseek-harness.git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
     "directory": "packages/session-query/session-log-export"
   },
   "type": "module",

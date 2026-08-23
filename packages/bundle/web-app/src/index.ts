@@ -138,7 +138,7 @@ export function resolveLanTrust(bindHost: string, extra: readonly string[]): Web
   return { lanAddresses, trustedHosts: [...lanAddresses, ...extra] }
 }
 
-/** Model-visible orientation and acceptance boundary for sessions created through `dsh web`. */
+/** Model-visible orientation and acceptance boundary for sessions created through `uad web`. */
 function webSurfacePrompt(webUrl: string): string {
   const updateContract = 'The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while '
     + '`pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. '
@@ -148,7 +148,7 @@ function webSurfacePrompt(webUrl: string): string {
     + 'The browser provides no implicit DOM, route, or screenshot context. '
     + updateContract
     + 'Starting another server does not update this GUI. '
-    + 'The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. '
+    + 'The apps/web Vite entry builds the shell but is not a standalone application because only uad web injects window.__DSH_BOOT__. '
     + 'Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.'
 }
 
@@ -262,10 +262,10 @@ export function apply(ctx: Context, config: Config): void {
       const lanCandidate = runtime.lanAddresses[0]
       const port = ctx.webServer.port
       if (config.printUrl) {
-        console.log(`dsh web: ${webUrl}${lanCandidate === undefined ? '' : ` (LAN: http://${lanCandidate}:${String(port)})`}`)
+        console.log(`uad web: ${webUrl}${lanCandidate === undefined ? '' : ` (LAN: http://${lanCandidate}:${String(port)})`}`)
       }
       if (handoffBrowser) {
-        console.log('dsh web: opening the default browser; pass --no-open to disable')
+        console.log('uad web: opening the default browser; pass --no-open to disable')
         void internals.openBrowser(webUrl).catch((error: unknown) => {
           const reason = error instanceof Error ? error.message : String(error)
           console.error(`web-app: could not open the default browser because ${reason}; visit ${webUrl} manually`)

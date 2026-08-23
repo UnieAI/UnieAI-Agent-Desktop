@@ -1,5 +1,5 @@
 /**
- * Shared profile boot for every `dsh` surface: resolve the profile, stack its
+ * Shared profile boot for every `uad` surface: resolve the profile, stack its
  * patch layers (bundle layers in `dsh.profile.bundles` order, the profile's
  * own `cordis.patch.yml`, `--patch` overlays, the telemetry switch), mount the
  * tree over the profile's empty root config, keep the profile patch layer
@@ -38,7 +38,7 @@ import { DSH_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@uni
 import { provideCmdline } from '@unieai/uad-cmdline'
 import { createProcessShutdown, type ProcessShutdown } from './process-shutdown.ts'
 
-const NAME = 'dsh'
+const NAME = 'uad'
 
 /**
  * The home-level user patch layer (`$DSH_HOME/cordis.patch.yml`), applied

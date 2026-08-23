@@ -44,9 +44,9 @@ SDK 接收由文本块原样拼接成的任务。提供方会完整迭代 SDK �
 本包是可选的 Profile Bundle。将它安装进目标 Profile 后重启该 Profile；安装会把锁定的 Agent SDK 与一个兼容的平台 CLI 载荷带入该 Profile，而包所声明的 `cordis.patch.yml` 层只注册休眠的 `claude-code` Host provider，不会启动 Claude 进程。移除该包后，下一次 Profile 启动会撤回这一 provider 及其私有运行时闭包。
 
 ```sh
-dsh plugin --profile <name> add @unieai/uad-subagent-claude-code
-dsh plugin --profile <name> remove @unieai/uad-subagent-claude-code
-dsh --profile <name>
+uad plugin --profile <name> add @unieai/uad-subagent-claude-code
+uad plugin --profile <name> remove @unieai/uad-subagent-claude-code
+uad --profile <name>
 ```
 
 安装决定 Host 可用性，而不是模型权限。Bundle 会提供休眠的默认 `claude-code` 配置项；Profile 可以替换该配置项的完整 config，也可以挂载更多具有不同 `providerName`、`permissionMode` 与 `env` 的配置项。加载实例本身不会在绑定工具调用前启动 Claude 进程。每个 `dsh-tool-subagent` 配置项指定一个提供方，并需要独立的 `toolName`，因此模型看到的是静态工具，而不是动态提供方选择器。完整 Agent Preset 携带对应的默认产品工具行并设置 `disabled: true`；复制一个 preset 后删除该字段，即可只向由该副本组装的 agent 暴露 `subagent_claude_code`。其 `one-shot` 策略会让省略 `run_in_background` 或传入 `false` 的调用继续在前台等待，而显式传入 `true` 会返回由父 agent 拥有的 Job ID，供 `job_output` 或 `job_kill` 使用。base host（基础宿主）与完整 preset 已提供通用作业注册表和控制工具。

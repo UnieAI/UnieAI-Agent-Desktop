@@ -11,7 +11,7 @@ describe('repository link policy', () => {
     const jsonEscapedRepository = unavailableRepository.replace('/', '\\/')
     const unicodeEscapedRepository = unavailableRepository.replace('/', String.raw`\u002f`)
     const source = [
-      'https://github.com/unieai/deepseek-harness',
+      'https://github.com/deepseek-ai/deepseek-harness',
       `https://github.com/${unavailableRepository.toUpperCase()}/issues/1`,
       `https://github.com/${encodedRepository}/issues/2`,
       `https://github.com/${htmlEncodedRepository}/issues/3`,
@@ -31,7 +31,13 @@ describe('repository link policy', () => {
   })
 
   it('preserves frozen archived Agent Notes', () => {
-    const unavailableRepository = ['unieai', 'deepseek-harness-sdk'].join('/')
+    // Assembled from parts for the same reason the policy itself is
+    // (`verify-public-repository-links.ts`): a literal here would make this
+    // file a reference to the unavailable repository, so the policy would flag
+    // its own test. It also puts the name out of reach of a scope rewrite —
+    // this IS a GitHub org, not a package scope, and one such rewrite already
+    // turned it into `unieai` and silently disarmed the check.
+    const unavailableRepository = [['deepseek', 'ai'].join('-'), ['deepseek', 'harness', 'sdk'].join('-')].join('/')
 
     expect(findUnavailableRepositoryReferences(
       '.agents/notes/archived/process/historical-record.md',

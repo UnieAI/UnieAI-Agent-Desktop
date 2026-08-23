@@ -7,12 +7,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unieai/deepseek-harness.git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
     "directory": "apps/cli"
   },
   "type": "module",
   "bin": {
-    "dsh": "lib/bin.js"
+    "uad": "lib/bin.js"
   },
   "files": [
     "lib/*.js",

@@ -1,13 +1,13 @@
 {
   "name": "@unieai/uad-web-frontend",
-  "description": "Web application entry: vite build over the @unieai/uad-client-web shell library; dist/ served by apps/cli's dsh web",
+  "description": "Web application entry: vite build over the @unieai/uad-client-web shell library; dist/ served by apps/cli's uad web",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unieai/deepseek-harness.git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
     "directory": "apps/web"
   },
   "type": "module",

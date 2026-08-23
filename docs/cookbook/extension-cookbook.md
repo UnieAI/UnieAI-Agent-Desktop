@@ -90,7 +90,7 @@ export function apply(ctx: Context) {
 
 ## Runnable wirings
 
-Runnable leaves load their plugin trees from `examples/*/cordis.yml`; the root `demo:*` scripts and those leaf directories are the authoritative inventory. The product `dsh` launcher owns Web and one-shot headless execution, ACP leaves use [`@unieai/uad-acp-demo`](../../packages/examples/acp-demo), and JSON-RPC leaves use [`@unieai/uad-sdk-jsonrpc-demo`](../../packages/examples/jsonrpc-demo). The headless snapshot leaf mounts [`@unieai/uad-agent-spine-demo`](../../packages/examples/agent-spine-demo) and JSONL persistence explicitly, then drives them through an example-owned test fixture rather than a shipped app package.
+Runnable leaves load their plugin trees from `examples/*/cordis.yml`; the root `demo:*` scripts and those leaf directories are the authoritative inventory. The product `uad` launcher owns Web and one-shot headless execution, ACP leaves use [`@unieai/uad-acp-demo`](../../packages/examples/acp-demo), and JSON-RPC leaves use [`@unieai/uad-sdk-jsonrpc-demo`](../../packages/examples/jsonrpc-demo). The headless snapshot leaf mounts [`@unieai/uad-agent-spine-demo`](../../packages/examples/agent-spine-demo) and JSONL persistence explicitly, then drives them through an example-owned test fixture rather than a shipped app package.
 
 ## The feature → mechanism map
 

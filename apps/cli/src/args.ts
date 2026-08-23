@@ -1,5 +1,5 @@
 /**
- * Commander adapter for the `dsh` command line.
+ * Commander adapter for the `uad` command line.
  *
  * The launcher parses only what it owns — which profile to boot, which extra
  * patch overlays to apply, and the config dumps — and hands **everything after
@@ -7,8 +7,8 @@
  * their own flag families and print their own `--help` (see
  * `@unieai/uad-cmdline`). Launcher flags therefore come first: the first
  * token this parser does not recognize starts the inner arguments, so
- * `dsh --profile tui --resume abc` boots the tui profile with `--resume abc`,
- * and `dsh --profile web -h` prints the web app's help, not this one's.
+ * `uad --profile tui --resume abc` boots the tui profile with `--resume abc`,
+ * and `uad --profile web -h` prints the web app's help, not this one's.
  *
  * `web` is a hardcoded alias for `--profile web`; `plugin` manages a profile's
  * plugin dependencies by forwarding to pnpm.
@@ -44,7 +44,7 @@ interface PluginInvocation {
   args: string[]
 }
 
-/** The resolved `dsh` invocation. Help, version, and errors exit inside {@link parseDshArgs}. */
+/** The resolved `uad` invocation. Help, version, and errors exit inside {@link parseDshArgs}. */
 export type DshInvocation = ProfileInvocation | DumpConfigInvocation | PluginInvocation
 
 /** Launcher flags shared by the default command and the `web` alias. */
@@ -63,12 +63,12 @@ const collect = (value: string, previous: string[] = []): string[] => [...previo
 /** The launcher's own help text; each app prints its own. */
 const HELP_EXAMPLES = `
 Examples:
-  dsh --profile web                          boot the web profile (same as: dsh web)
-  dsh --profile headless "run the tests"     answer one task, print the result, and exit
-  dsh --profile tui --patch ./extra.yml      boot a custom profile with one extra overlay
-  dsh --profile tui --resume <session>       arguments after the launcher flags reach the app
-  dsh --profile web --help                   the web app's own flags and help
-  dsh plugin --profile tui add <package>     install a plugin into the tui profile
+  uad --profile web                          boot the web profile (same as: uad web)
+  uad --profile headless "run the tests"     answer one task, print the result, and exit
+  uad --profile tui --patch ./extra.yml      boot a custom profile with one extra overlay
+  uad --profile tui --resume <session>       arguments after the launcher flags reach the app
+  uad --profile web --help                   the web app's own flags and help
+  uad plugin --profile tui add <package>     install a plugin into the tui profile
 `
 
 /**
@@ -127,7 +127,7 @@ export function parseDshArgs(argv: readonly string[], version: string): DshInvoc
     .allowUnknownOption()
     .passThroughOptions()
     .enablePositionalOptions()
-    .argument('[args...]', 'arguments for the booted profile\'s app (see: dsh --profile <name> --help)')
+    .argument('[args...]', 'arguments for the booted profile\'s app (see: uad --profile <name> --help)')
     .option('--profile <name>', 'the profile under $DSH_HOME/profiles to boot')
     .option('--patch <path>', 'extra patch-list overlay applied after the profile layer (repeatable)', collect)
     .option('--dump-config', 'print the composed profile tree and exit')
@@ -159,7 +159,7 @@ export function parseDshArgs(argv: readonly string[], version: string): DshInvoc
     .allowUnknownOption()
     .passThroughOptions()
     .enablePositionalOptions()
-    .argument('[args...]', 'arguments for the web app (see: dsh web --help)')
+    .argument('[args...]', 'arguments for the web app (see: uad web --help)')
     .option('--patch <path>', 'extra patch-list overlay applied after the profile layer (repeatable)', collect)
     .option('--dump-config', 'print the composed web-profile tree (with the user layer and any --patch) and exit')
     .option('--dump-default-config', 'print the web profile\'s bundle layers (no user layer) and exit')

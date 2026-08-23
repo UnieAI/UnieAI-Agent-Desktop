@@ -6,8 +6,8 @@ import { clientBuildEnvironmentDefines } from '../../scripts/client-build-enviro
 
 const src = (rel: string): string => fileURLToPath(new URL(rel, import.meta.url))
 const STANDALONE_ERROR = 'apps/web is not a standalone application: bare Vite cannot inject window.__DSH_BOOT__. '
-  + 'From a repository checkout, run `pnpm dsh web`; an installed package uses `dsh web`. '
-  + 'For client-plugin HMR, run `pnpm dsh web` together with `pnpm run dev:web`.'
+  + 'From a repository checkout, run `pnpm uad web`; an installed package uses `uad web`. '
+  + 'For client-plugin HMR, run `pnpm uad web` together with `pnpm run dev:web`.'
 const DEFAULT_CLIENT_TITLE = 'UnieAI Agent'
 
 /** Escape build-time text before placing it in the HTML title element. */

@@ -41,7 +41,7 @@ The producer injects `commands` and `compact`. Mount the command registry, one b
   name: '@unieai/uad-command-compact'
 ```
 
-The shipped `dsh` base mounts it beside `compaction-basic`, and the Web client provides the command adapter. Automation surfaces that compose no command adapter keep automatic compaction only.
+The shipped `uad` base mounts it beside `compaction-basic`, and the Web client provides the command adapter. Automation surfaces that compose no command adapter keep automatic compaction only.
 
 ## Model Experience
 
