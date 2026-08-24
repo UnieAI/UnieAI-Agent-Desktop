@@ -50,6 +50,8 @@ class FakeTerminal implements SubprocessTerminalHandle {
   readonly done = this.outcome.promise
   throwWrite = false
   throwKill = false
+  /** Sizes this fake was told about, newest last. */
+  readonly resizes: { cols: number; rows: number }[] = []
   autoExitOnKill = true
   terminateError: Error | undefined
   private cleanup: Promise<void> | undefined
@@ -80,6 +82,15 @@ class FakeTerminal implements SubprocessTerminalHandle {
       signal: signal === 9 ? 'SIGKILL' : signal === 15 ? 'SIGTERM' : null,
     })
   }
+
+  resize(cols: number, rows: number): Promise<void> {
+
+    this.resizes.push({ cols, rows })
+
+    return Promise.resolve()
+
+  }
+
 
   async write(data: string): Promise<void> {
     if (this.throwWrite) throw new Error('write failed')

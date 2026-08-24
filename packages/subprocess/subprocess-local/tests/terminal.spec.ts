@@ -37,6 +37,9 @@ class FakePty {
 
   write(data: string): void { this.writes.push(data) }
 
+  readonly resizes: { cols: number; rows: number }[] = []
+  resize(cols: number, rows: number): void { this.resizes.push({ cols, rows }) }
+
   kill(signal?: string): void {
     if (this.throwKill) throw new Error('process raced')
     this.kills.push(signal ?? 'SIGHUP')
@@ -507,5 +510,34 @@ describe('LocalTerminalHandle on Windows', () => {
     await handle.terminate()
     expect(pty.kills).toHaveLength(1)
     expect(inspector.processes).toEqual([])
+  })
+})
+
+describe('LocalTerminalHandle.resize', () => {
+  it('passes the size straight through', async () => {
+    const pty = new FakePty()
+    const handle = new LocalTerminalHandle(pty.asPty(), new FakeInspector(), 10)
+    await handle.resize(120, 40)
+    expect(pty.resizes).toEqual([{ cols: 120, rows: 40 }])
+  })
+
+  it('clamps a zero or fractional size instead of refusing it', async () => {
+    // The caller is a layout: a hidden panel legitimately measures zero, and
+    // node-pty rejects a zero dimension outright.
+    const pty = new FakePty()
+    const handle = new LocalTerminalHandle(pty.asPty(), new FakeInspector(), 10)
+    await handle.resize(0, 0)
+    await handle.resize(80.7, 24.2)
+    expect(pty.resizes).toEqual([{ cols: 1, rows: 1 }, { cols: 80, rows: 24 }])
+  })
+
+  it('ignores a resize after the terminal exited', async () => {
+    // The view keeps reporting geometry while the shell is on its way out.
+    const pty = new FakePty()
+    const handle = new LocalTerminalHandle(pty.asPty(), new FakeInspector(), 10)
+    pty.emitExit()
+    await handle.done
+    await handle.resize(100, 30)
+    expect(pty.resizes).toEqual([])
   })
 })

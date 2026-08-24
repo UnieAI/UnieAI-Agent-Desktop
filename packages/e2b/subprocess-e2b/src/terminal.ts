@@ -311,6 +311,20 @@ export class E2BTerminalHandle implements SubprocessTerminalHandle {
   }
 
   /** @inheritdoc */
+  resize(cols: number, rows: number): Promise<void> {
+    return this.trackOperation(async (signal) => {
+      // A resize after exit is not a fault: the view that owns the geometry
+      // keeps reporting it while the terminal is on its way out.
+      if (this.topLevelExited) return
+      await this.sandbox.pty.resize(
+        this.pid,
+        { cols: Math.max(1, Math.trunc(cols)), rows: Math.max(1, Math.trunc(rows)) },
+        { signal },
+      )
+    })
+  }
+
+  /** @inheritdoc */
   inspectForeground(): Promise<SubprocessTerminalForeground | undefined> {
     return this.trackOperation(signal => this.inspectForegroundOnce(signal))
   }

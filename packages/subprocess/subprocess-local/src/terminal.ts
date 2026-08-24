@@ -92,6 +92,17 @@ export class LocalTerminalHandle implements SubprocessTerminalHandle {
     }
   }
 
+  async resize(cols: number, rows: number): Promise<void> {
+    // A resize after exit is not a fault: the panel that owns the view keeps
+    // reporting its geometry while the shell is on its way out.
+    if (this.exited) return
+    // node-pty rejects a zero dimension outright, and a shell asked to wrap at
+    // zero columns is not a size anyone meant. Clamp rather than throw: the
+    // caller is a layout, and a hidden panel legitimately measures zero.
+    this.terminal.resize(Math.max(1, Math.trunc(cols)), Math.max(1, Math.trunc(rows)))
+    return Promise.resolve()
+  }
+
   async signalForeground(signal: SubprocessTerminalSignal): Promise<number> {
     const foreground = await this.inspectForeground()
     if (foreground === undefined) {

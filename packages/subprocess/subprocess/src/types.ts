@@ -256,6 +256,17 @@ export interface SubprocessTerminalHandle {
    */
   signalForeground(signal: SubprocessTerminalSignal): Promise<number>
   /**
+   * Tell the terminal its window changed size.
+   *
+   * The size is not decoration: a shell and every full-screen program it runs
+   * wrap, redraw and place the cursor from it, so a terminal shown in a panel
+   * someone can drag reports a size that changes after `spawnTerminal` fixed
+   * one. Providers whose substrate cannot resize document that and no-op.
+   * @param cols - column count; at least 1.
+   * @param rows - row count; at least 1.
+   */
+  resize(cols: number, rows: number): Promise<void>
+  /**
    * Idempotently terminate every terminal-session member the provider can still observe and await quiescence.
    * After settlement, no write, inspection, or signal call remains in flight.
    * Providers document substrate-specific observability limits.

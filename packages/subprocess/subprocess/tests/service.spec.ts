@@ -44,6 +44,7 @@ class StubSubprocessRuntime extends SubprocessRuntime {
       done: Promise.resolve({ exitCode: 0, signal: null }),
       write: async () => {},
       inspectForeground: async () => ({ processGroupId: 1, inputWaiting: true }),
+      resize: () => Promise.resolve(),
       signalForeground: async () => 1,
       terminate: async () => {},
     }
