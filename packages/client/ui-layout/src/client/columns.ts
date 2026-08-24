@@ -19,6 +19,16 @@ export interface Columns { sidebar: number; center: number; details: number }
 // Contract-frozen geometry: the three-column concession chain's fixed points.
 /** Center column floor; only the final fallback may go below it. */
 export const CENTER_MIN = 640
+/**
+ * Whether the details panel is maximized, as the solver takes it.
+ *
+ * Maximizing is not a wide drag. A drag concedes against the center's floor,
+ * which is what caps a dragged panel near half the frame. Maximizing says the
+ * panel IS the surface being read: the center goes to zero and the panel takes
+ * everything beside the sidebar, ceiling included. One press puts it back, and
+ * the transcript is never unmounted — only given no width.
+ */
+export type DetailsMaximized = boolean
 /** Sidebar drag clamp floor. */
 export const SIDEBAR_MIN = 264
 /** Sidebar drag clamp ceiling. */
@@ -32,11 +42,18 @@ export const SIDEBAR_COLLAPSED = 56
  * (stores.ts narrowExpanded). */
 export const SIDEBAR_AUTO_COLLAPSE = 1024
 /** Details drag clamp floor. */
-export const DETAILS_MIN = 300
-/** Details drag clamp ceiling. */
-export const DETAILS_MAX = 520
+export const DETAILS_MIN = 320
+/**
+ * Details drag clamp ceiling.
+ *
+ * The column now holds a file viewer beside its tree, so the old 520 ceiling
+ * left roughly 280px for code — narrower than the lines it had to show. The
+ * center keeps its own CENTER_MIN floor, so raising this cannot squeeze the
+ * transcript away; the solver simply refuses the preference that would.
+ */
+export const DETAILS_MAX = 1200
 /** Details width before any user drag. */
-export const DETAILS_DEFAULT = 360
+export const DETAILS_DEFAULT = 560
 
 /**
  * Clamp a panel width into its contract range.
@@ -57,12 +74,21 @@ export function clampWidth(px: number, min: number, max: number): number {
  * @param viewport - available frame width in px.
  * @param sidebar - sidebar width preference in px (0 = closed).
  * @param details - details width preference in px (0 = closed).
+ * @param maximized - when true the center yields entirely and the panel takes
+ * the whole frame beside the sidebar, past {@link DETAILS_MAX}.
  * @returns resolved widths; details 0 means visually closed (never unmounted), while a closed sidebar keeps its compact rail.
  */
-export function computeColumns(viewport: number, sidebar: number, details: number): Columns {
+export function computeColumns(
+  viewport: number, sidebar: number, details: number, maximized: DetailsMaximized = false,
+): Columns {
   // The sidebar is fixed at its preference (or the rail) — it never concedes.
   const s = sidebar === 0 ? SIDEBAR_COLLAPSED : clampWidth(sidebar, SIDEBAR_MIN, SIDEBAR_MAX)
   const d0 = details === 0 ? 0 : clampWidth(details, DETAILS_MIN, DETAILS_MAX)
+
+  // Maximized: the center yields completely. Not a concession step — the
+  // chain below concedes against a floor, and a floor is exactly what this
+  // state exists to leave behind.
+  if (maximized && details !== 0) return { sidebar: s, center: 0, details: Math.max(0, viewport - s) }
 
   // Step 1: everything fits at preferred widths.
   if (s + d0 + CENTER_MIN <= viewport) return { sidebar: s, center: viewport - s - d0, details: d0 }

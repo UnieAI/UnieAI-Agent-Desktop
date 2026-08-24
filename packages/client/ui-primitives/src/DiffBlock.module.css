@@ -33,11 +33,18 @@
   font: var(--dsw-font-xs-13);
 }
 
+/* Vertical scrolling lives on the BODY, not the card root: a root scroller
+   would run its scrollbar over the floating copy control and hide the footer
+   counts, while here both stay put and only the diff lines scroll. Unset, the
+   max-height is none and the auto overflow never engages, so the details
+   panel keeps its full-height reading surface; a render site that must stay
+   inside a bounded flow (the chat tool row) binds the property. */
 .body {
+  max-height: var(--dsl-diff-body-max-height, none);
   padding: 12px 14px;
   font: var(--dsw-font-markdown-code-block);
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 /* No wrapping, no word-break: a diff is read by its indentation. */

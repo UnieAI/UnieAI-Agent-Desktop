@@ -20,7 +20,18 @@ import {
  * `narrowExpanded` is the manual override that re-expands the auto-collapsed
  * sidebar over the squeezed center without rewriting the width preference.
  */
-type LayoutState = { sidebar: number; details: number; narrow: boolean; narrowExpanded: boolean }
+type LayoutState = {
+  sidebar: number
+  details: number
+  narrow: boolean
+  narrowExpanded: boolean
+  /**
+   * Width the details panel held before it was maximized, so the toggle has
+   * somewhere to go back to. Absent whenever the panel is not maximized; a
+   * drag while maximized clears it, because the drag IS the new preference.
+   */
+  detailsRestore?: number
+}
 
 /**
  * Annotation twin of the actions literal below (the export needs a declared
@@ -33,6 +44,8 @@ type LayoutActions = {
   setNarrow: (draft: LayoutState, narrow: boolean) => void
   openDetails: (draft: LayoutState) => void
   closeDetails: (draft: LayoutState) => void
+  toggleDetails: (draft: LayoutState) => void
+  toggleDetailsMaximized: (draft: LayoutState) => void
 }
 
 /**
@@ -50,7 +63,12 @@ export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutAction
     init: (): LayoutState => ({ sidebar: SIDEBAR_DEFAULT, details: 0, narrow: false, narrowExpanded: false }),
     actions: {
       setSidebar: (d, px: number) => { d.sidebar = clampWidth(px, SIDEBAR_MIN, SIDEBAR_MAX) },
-      setDetails: (d, px: number) => { d.details = clampWidth(px, DETAILS_MIN, DETAILS_MAX) },
+      setDetails: (d, px: number) => {
+        d.details = clampWidth(px, DETAILS_MIN, DETAILS_MAX)
+        // A drag states a width outright; keeping a restore point from before
+        // it would send the toggle back to a width nobody asked for twice.
+        delete d.detailsRestore
+      },
       // Narrow toggles flip only the override: the width preference survives
       // untouched, so re-widening restores the pre-squeeze layout.
       toggleSidebar: (d) => {
@@ -65,6 +83,26 @@ export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutAction
         d.narrowExpanded = false
       },
       openDetails: (d) => { if (d.details === 0) d.details = DETAILS_DEFAULT },
+      // One control opens and closes: a button that only opens leaves the
+      // column with no way back except its own close, which the opener's
+      // pressed state then contradicts.
+      toggleDetails: (d) => {
+        if (d.details === 0) { d.details = DETAILS_DEFAULT; return }
+        d.details = 0
+        delete d.detailsRestore
+      },
+      toggleDetailsMaximized: (d) => {
+        // Closed has nothing to widen, and widening it would open the panel
+        // as a side effect of a button that does not say "open".
+        if (d.details === 0) return
+        if (d.detailsRestore !== undefined) {
+          d.details = clampWidth(d.detailsRestore, DETAILS_MIN, DETAILS_MAX)
+          delete d.detailsRestore
+          return
+        }
+        d.detailsRestore = d.details
+        d.details = DETAILS_MAX
+      },
       closeDetails: (d) => { d.details = 0 },
     },
   })

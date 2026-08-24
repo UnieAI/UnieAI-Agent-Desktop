@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Button, ConnectionBanner, Input, Menu, Modal, Pill } from '@unieai/uad-client-ui-primitives'
+import { Button, ConnectionBanner, Input, Menu, MenuItemButton, Modal, Pill } from '@unieai/uad-client-ui-primitives'
 import { POINTER_GRACE_MS } from '../src/pointer-grace.ts'
 
 afterEach(cleanup)
@@ -87,6 +87,34 @@ describe('Menu', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
     fireEvent.pointerDown(document.body)
     expect(onClose).toHaveBeenCalledTimes(2)
+  })
+
+  it('renders owner-supplied extra rows after items and outside onSelect dispatch', () => {
+    const onSelect = vi.fn()
+    const onExtra = vi.fn()
+    render(
+      <Menu
+        open
+        anchor={<span>trigger</span>}
+        items={items}
+        extra={<MenuItemButton label="Extra" onClick={onExtra} />}
+        onSelect={onSelect}
+        onClose={() => {}}
+      />)
+    expect(screen.getAllByRole('menuitem').map(row => row.textContent)).toEqual(['Alpha', 'Beta', 'Extra'])
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Extra' }))
+    expect(onExtra).toHaveBeenCalledOnce()
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  it('a standalone leaf row advertises no popup and honors disabled', () => {
+    const onClick = vi.fn()
+    render(<MenuItemButton label="Leaf" icon={<span>ico</span>} disabled onClick={onClick} />)
+    const row = screen.getByRole('menuitem')
+    expect(row.textContent).toBe('icoLeaf')
+    expect(row.getAttribute('aria-haspopup')).toBeNull()
+    fireEvent.click(row)
+    expect(onClick).not.toHaveBeenCalled()
   })
 
   it('inside pointerdown does not close', () => {

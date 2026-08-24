@@ -65,6 +65,9 @@ describe('diffCardModel', () => {
   it('derives a running card from the call view alone', () => {
     expect(diffCardModel(running())).toEqual({
       card: { diffs: [{ path: 'notes/demo.txt', oldText: 'hello', newText: 'hello fixture' }] },
+      // The counts ride the model so the collapsed row can state the change
+      // size without drawing the card.
+      stats: { added: 1, removed: 1, files: 1 },
     })
   })
 
@@ -74,6 +77,7 @@ describe('diffCardModel', () => {
       resultView: resultDiff({ diffs: [{ path: 'notes/demo.txt', oldText: 'a', newText: 'b' }] }),
     }))).toEqual({
       card: { diffs: [{ path: 'notes/demo.txt', oldText: 'a', newText: 'b' }] },
+      stats: { added: 1, removed: 1, files: 1 },
     })
   })
 
@@ -344,6 +348,11 @@ describe('DetailsPanel diff Output section', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={vi.fn()}
+        listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
+        readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        toggleDetailsMaximized={() => {}}
+        canOpenFileHere
+        openFile={() => Promise.resolve()}
         t={t}
       />,
     )

@@ -27,6 +27,13 @@ export interface ILayout {
   openDetails(): void
   /** Close the details panel. */
   closeDetails(): void
+  /** Open the details panel, or close it when it is already open. */
+  toggleDetails(): void
+  /**
+   * Widen the details panel to its ceiling, or back to the width it held
+   * before. A no-op while the panel is closed: there is nothing to widen.
+   */
+  toggleDetailsMaximized(): void
 }
 
 /** Cross-plugin panel-action face (ctx.layout). */
@@ -57,6 +64,19 @@ export class LayoutController implements ILayout {
   /** Close the details panel. */
   closeDetails(): void {
     this.#require().closeDetails()
+  }
+
+  /** Open the details panel, or close it when it is already open. */
+  toggleDetails(): void {
+    this.#require().toggleDetails()
+  }
+
+  /**
+   * Widen the details panel to its ceiling, or back to the width it held
+   * before. A no-op while the panel is closed.
+   */
+  toggleDetailsMaximized(): void {
+    this.#require().toggleDetailsMaximized()
   }
 
   #require(): PanelActions {

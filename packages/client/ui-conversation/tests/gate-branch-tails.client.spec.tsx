@@ -112,7 +112,7 @@ describe('render branch tails', () => {
     expect(view.container.querySelector('[data-state="running"]')).not.toBeNull()
   })
 
-  it('DetailsPanel title falls to 详情 when the selection has no toolName and no material', () => {
+  it('an unnamed selection falls to 详情 on the tab it opens', () => {
     localStorage.clear()
     const snap = snapshotBase()
     const chat = createChatStore().create()
@@ -143,9 +143,16 @@ describe('render branch tails', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={vi.fn()}
+        listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
+        readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        toggleDetailsMaximized={() => {}}
+        canOpenFileHere
+        openFile={() => Promise.resolve()}
         t={t}
       />,
     )
+    // The panel dropped its own title: the tab strip names what is open, and a
+    // second copy of the same name above it said nothing extra.
     expect(view.getByText('详情')).toBeTruthy()
     expect(view.getByText('该调用不在当前窗口内')).toBeTruthy()
   })
@@ -200,6 +207,11 @@ describe('render branch tails', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={vi.fn()}
+        listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
+        readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        toggleDetailsMaximized={() => {}}
+        canOpenFileHere
+        openFile={() => Promise.resolve()}
         t={t}
       />,
     )

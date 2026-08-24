@@ -347,11 +347,17 @@ describe('conversation slot inject API', () => {
 })
 
 describe('details inject API', () => {
-  it('details injects the one layout callback; selection rides the shared store instead', async () => {
+  it('details injects layout and workspace reads; selection rides the shared store instead', async () => {
     const b = await bench()
     const entry = b.entryOf('details')
     const injected = (entry.inject as unknown as () => DetailsInjected)()
-    expect(Object.keys(injected)).toEqual(['closeDetails'])
+    // Layout close, plus the two the file view needs. Selection is deliberately
+    // absent: it rides the shared store so conversation and details agree.
+    expect(Object.keys(injected).sort())
+      .toEqual([
+        'canOpenFileHere', 'closeDetails', 'listWorkspaceEntries', 'openFile',
+        'readWorkspaceFile', 'toggleDetailsMaximized',
+      ])
     injected.closeDetails()
     expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)
     // The shared handle: details resolves the SAME instance conversation writes.

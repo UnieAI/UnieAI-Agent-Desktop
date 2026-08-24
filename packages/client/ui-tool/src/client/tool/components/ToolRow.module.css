@@ -295,6 +295,17 @@
   border: 1px solid var(--dsw-alias-border-l1);
 }
 
+/* Bound the expanded diff to the same height a terminal card gets in the flow:
+   the row caps the card at CHAT_DIFF_MAX_LINES, but the card's own "show the
+   rest" control lifts that cap, and an unbounded thousand-line diff would push
+   the rest of the conversation off screen. The cap rides the primitive's body
+   seam, so the copy control and the +A -R footer stay put while the diff lines
+   scroll inside the card. The details panel binds nothing and keeps full
+   height — it is the single-call reading surface. */
+.diffBody {
+  --dsl-diff-body-max-height: 224px;
+}
+
 /* Visually hidden run-state label for assistive technology: the StateDot and
    the running sweep are aria-hidden / colour-only, so the text carries the
    running/failed/interrupted state to a screen reader. */

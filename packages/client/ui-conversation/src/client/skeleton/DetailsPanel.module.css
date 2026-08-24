@@ -9,35 +9,225 @@
   min-width: 0;
   border-left: 1px solid var(--dsw-alias-border-l2);
   background: var(--dsw-alias-bg-base);
+  /* The column paints elevated surfaces (the active tab, the `+` seat) and
+     scrolls in two places. A bar bound to the base pair would disappear into
+     them, so the whole column rebinds to the elevated pair once. */
+  /* Quiet by default: the bar is transparent until the pointer is over the
+     column, so a resting panel shows no chrome. `scrollbar-width` is
+     deliberately NOT set — ui-theme's scrollbar.css records that any non-auto
+     value makes Chromium and Safari drop every ::-webkit-scrollbar rule for
+     the element, hover thumb included. */
+  --dsh-scrollbar-thumb: transparent;
+  --dsh-scrollbar-thumb-hover: transparent;
 }
 
-/* figma RightSidebar header frame (I54:42735;43:36451): pad 14/12/12/12, gap 8. */
-.header {
+.root:hover {
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+/* Tab strip: every open thing is a capsule, `+` opens the same menu the empty
+   column shows, and the column's own close sits apart on the right. */
+.strip {
   display: flex;
+  flex: none;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  padding: 14px 12px 12px;
+  padding: 6px 6px 6px 8px;
   border-bottom: 1px solid var(--dsw-alias-border-l2);
 }
 
-/* figma I54:42735;43:41479: 14/20 wt500. */
-.title {
-  overflow: hidden;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+.tabs {
+  display: flex;
+  /* Shrink-to-fit, never grow: `+` belongs immediately after the last tab,
+     not pinned to the far edge with a gap in between. */
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  max-width: 156px;
+  padding: 0 2px 0 8px;
+  border-radius: 8px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.tab[data-active] {
+  background: var(--dsw-alias-bg-module-platform);
   color: var(--dsw-alias-label-primary);
+}
+
+.tabOpen {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 5px 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
+}
+
+.tabIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.tab[data-active] .tabIcon {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.tabLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabClose {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tabClose:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Outside `.tabs` on purpose: that container scrolls, and an absolutely
+   positioned menu inside a scroll container is clipped by it — the menu opened
+   invisibly and the dismiss scrim then swallowed the next click, so the button
+   read as dead. */
+.plusWrap {
+  position: relative;
+  flex: none;
+}
+
+.plus {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.plus:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Keyboard focus only. A pointer click left a ring around the tab it opened,
+   which read as the tab's own border and made the strip look outlined. */
+.tabOpen:focus,
+.tabClose:focus,
+.plus:focus {
+  outline: none;
+}
+
+.tabOpen:focus-visible,
+.tabClose:focus-visible,
+.plus:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-tertiary);
+  outline-offset: -2px;
+}
+
+/* The scrim carries no appearance: it exists so a click outside the menu
+   dismisses it, which a menu without one cannot offer. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Left-anchored under `+`, which now follows the last tab. `max-width` keeps
+   a menu opened near a full strip inside the column. */
+/* Anchored to the button's right edge. `+` sits at the right of the strip, so
+   a left-anchored menu grew away from the panel and off the window. */
+.menuAnchor {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 2;
+  max-width: calc(100vw - 24px);
+}
+
+/* The column's own controls, pushed to the far end together: widen sits
+   before close so the destructive one stays last. */
+.widen {
+  display: grid;
+  flex: none;
+  margin-left: auto;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.widenIn {
+  display: none;
+}
+
+/* The frame publishes the maximized state; the icon reads it from an ancestor
+   rather than through a second copy of the state in this component. */
+:global([data-details-maximized]) .widenOut {
+  display: none;
+}
+
+:global([data-details-maximized]) .widenIn {
+  display: block;
+}
+
+.widen:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
 }
 
 .close {
   display: grid;
   flex: none;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 999px;
   background: transparent;
@@ -49,18 +239,28 @@
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
+/* The empty column: the same menu, in place. */
+.empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 24px 0;
+}
+
+.note {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
 .body {
   flex: 1;
   min-height: 0;
   padding: 12px 16px;
   overflow-y: auto;
-}
-
-.empty {
-  padding: 8px 0;
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--dsw-alias-label-tertiary);
 }
 
 .section {
@@ -91,4 +291,115 @@
 
 .code[data-error] {
   color: var(--dsw-alias-state-error-primary);
+}
+
+/* Artifact list: what this session wrote, shown where the panel would
+   otherwise say "select a tool row". One row per act, newest last. */
+.artifacts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artifact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.artifact:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.artifactName {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artifact[data-state='error'] .artifactName {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+/* The directory, dimmed and clipped from the left so the file's own
+   folder stays visible when the path is too long for the column. */
+.artifactPath {
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: left;
+}
+
+/* Panel tabs: what this session produced, and the workspace it produced it in. */
+.tabClose:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* File tree: one level per expansion, indented by depth. */
+.tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.treeRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.treeRow:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.treeMark {
+  flex: none;
+  width: 12px;
+  font-size: 10px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.treeName {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.treeRow[data-kind='directory'] .treeName {
+  font-weight: 500;
+}
+
+.treeNote {
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
 }

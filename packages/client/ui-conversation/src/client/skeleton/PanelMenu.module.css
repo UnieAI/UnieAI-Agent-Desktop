@@ -1,0 +1,63 @@
+/* One list in two placements: floating over the tab strip, or filling the
+   empty column. Only the frame differs — rows are identical so the two
+   readings of the same menu cannot drift apart. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.root[data-placement='menu'] {
+  min-width: 240px;
+  padding: 6px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 12px;
+  background: var(--dsw-alias-bg-elevated, var(--dsw-alias-bg-base));
+  box-shadow: 0 12px 32px rgb(0 0 0 / 28%);
+}
+
+.root[data-placement='panel'] {
+  width: 100%;
+  max-width: 460px;
+  padding: 0 16px;
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.root[data-placement='panel'] .item {
+  background: var(--dsw-alias-bg-module-platform);
+}
+
+.item:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

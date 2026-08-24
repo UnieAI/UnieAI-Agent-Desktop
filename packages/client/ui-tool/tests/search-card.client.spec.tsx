@@ -409,6 +409,11 @@ describe('DetailsPanel Output section (search)', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={vi.fn()}
+        listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
+        readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        toggleDetailsMaximized={() => {}}
+        canOpenFileHere
+        openFile={() => Promise.resolve()}
         t={t}
       />,
     )

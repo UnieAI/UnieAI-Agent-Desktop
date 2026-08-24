@@ -254,6 +254,7 @@ function mount(
       : (opts?.fallback ?? null)
   )) as ConversationRootProps['renderSlotChain']
   const props: ConversationRootProps = {
+    hostIsLocal: true,
     sessionId: SID,
     SessionProvider: ({ children }) => children(SID),
     useSession,
@@ -576,7 +577,9 @@ describe('ConversationRoot resident composer', () => {
     await act(async () => { owner.onPick(wid('second')); await Promise.resolve() })
     expect(selectWorkspace).toHaveBeenCalledWith(wid('second'))
     expect(b.view.queryByText('Selected Folder')).toBeNull()
-    expect(b.view.getByText('one')).toBeTruthy()
+    // Two nodes carry the name in the hero: the picker chip under the card and
+    // the context strip above it. This assertion is about the chip's rollback.
+    expect(b.view.container.querySelector('[class*="workspaceLabel"]')?.textContent).toBe('one')
   })
 
   it('blank session keeps the interactive picker chip (workspace switchable until the first message)', () => {

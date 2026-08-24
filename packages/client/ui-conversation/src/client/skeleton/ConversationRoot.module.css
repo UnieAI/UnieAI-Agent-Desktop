@@ -355,20 +355,49 @@
   pointer-events: none;
 }
 
+/* A recessed bar tucked BEHIND the composer card: narrower than the card, and
+   painted under it so only its lower edge shows. Two things this got wrong
+   first: it was sized against the stack (which is wider than the card, so it
+   stuck out both sides), and it came later in the DOM (so it painted OVER the
+   card and its square top corners made a step). Both are stated here. */
 .heroWorkspaceRow {
+  position: relative;
+  z-index: 0;
   display: flex;
   align-items: center;
-  /* The workspace chip anchors the left edge and the preset chip the right, so
-     the pair frames the card above them instead of huddling under its corner. */
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  /* The card's own measure, inset on each side. */
+  max-width: calc(var(--dsh-composer-card-max-width) - 56px);
   min-width: 0;
-  margin-top: 8px;
-  /* 24px on the left, not 4px: the workspace chip is a bare label with no box
-     of its own, so aligning its glyph to the card's edge left it reading as
-     out-dented against the composer's inset controls. The right stays at 4px
-     because the preset chip on that end does carry a box. */
-  padding: 0 4px 0 24px;
+  /* Pulled UP past the stack gap so the card, which paints above it, covers
+     this row's top edge. */
+  margin: calc(-1 * var(--dsh-composer-stack-gap) - 22px) auto 0;
+  padding: 26px 16px 8px;
+  border-radius: 0 0 18px 18px;
+  /* Recessed chrome, not an elevated module. `bg-module-platform` is
+     rgb(63,63,63) in the dark palette — lighter than the page behind it, so
+     the strip read as a panel sitting on top rather than a plate the card
+     rests in. The sidebar fill is the token that goes DARKER than base in
+     dark (rgb(24,24,24)) and stays the same near-white in light. */
+  background: var(--dsw-specific-sidebar-fill);
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+/* The card paints over the bar's top edge; without this the later sibling
+   wins and the tuck reads as a step. */
+.composerHero .composerSeat {
+  position: relative;
+  z-index: 1;
+}
+
+.heroMachine {
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  color: var(--dsw-alias-label-tertiary);
 }
 
 

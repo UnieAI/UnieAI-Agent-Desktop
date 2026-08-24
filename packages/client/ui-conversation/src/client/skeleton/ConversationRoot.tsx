@@ -14,7 +14,7 @@ export type ConversationRootProps = ConversationSlotProps
 
 export function ConversationRoot({
   sessionId, useSession, useSessions, useWorkspaces, useInput, useComposerBlock,
-  renderSlot, renderSlotChain, selectWorkspace, t,
+  renderSlot, renderSlotChain, selectWorkspace, hostIsLocal, t,
 }: ConversationRootProps) {
   const openState = useSession(s => s.openState)
   const composerPhase = useSession(s => s.composerPhase)
@@ -119,6 +119,19 @@ export function ConversationRoot({
         },
         onClose: () => { setPickerOpen(false) },
       })}
+      {/* Where the agent's tools will run. Icon only: the fact is worth one
+          glyph on the bar, and spelling it out made the strip read as a status
+          line. The label carries it for anyone who cannot see the glyph. */}
+      <span
+        className={css.heroMachine}
+        title={t(hostIsLocal ? 'hero.machineLocal' : 'hero.machineRemote')}
+        aria-label={t(hostIsLocal ? 'hero.machineLocal' : 'hero.machineRemote')}
+      >
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
+          <rect x="2.25" y="3.25" width="11.5" height="7.5" rx="1.4" fill="none" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M1.25 12.75h13.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        </svg>
+      </span>
     </div>
   )
 
@@ -168,9 +181,10 @@ export function ConversationRoot({
       {hero && <HeroShell t={t} />}
       {zone !== undefined && renderSlot('conversation.input.dock', zone)}
       {inputBar}
-      {/* Workspace and agent preset read as settings FOR the composer, so they
-          sit under it: the card is the thing you act on, not the thing you
-          configure past. */}
+      {/* BELOW the card, narrower than it, and darker, with its TOP edge tucked
+          under the card's bottom: the card is the thing you act on, this row is
+          what you configure past. The card carries the higher stacking so it
+          covers the tuck rather than the row covering the card. */}
       {hero && heroWorkspaceRow}
     </div>
   )

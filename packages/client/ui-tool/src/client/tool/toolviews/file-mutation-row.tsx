@@ -12,7 +12,7 @@ import type { Context } from '@unieai/cordis'
 import { IconEditOutline16 } from '@unieai/uad-client-ui-primitives'
 import type { PropsLocale } from '@unieai/uad-client-ui-slots'
 import type { ToolCallViewProps } from '../../contract/slots.ts'
-import { diffCardModel } from '../models/diff-card-model.ts'
+import { diffCardModel, diffSummarySuffix } from '../models/diff-card-model.ts'
 import { toolRowModel } from '../models/tool-call-model.ts'
 import { ToolRow } from '../components/ToolRow.tsx'
 import { CONVERSATION_NS as NS } from '../../locale.ts'
@@ -21,13 +21,15 @@ import { CONVERSATION_NS as NS } from '../../locale.ts'
 type FileMutationRowProps = ToolCallViewProps & PropsLocale<'conversation'>
 
 /**
- * File-mutation row: icon + {Edit,Write} · {path} in the shared ToolRow chrome,
- * with the applied diff as the row's collapsed-by-default card body. The
- * summary is a path link (a file tool's interaction); the host's `openFile`
- * resolves it against the session cwd, so this passes the tool's own path
- * verbatim. An errored mutation has no diff card, so ToolRow surfaces the
- * model-facing error text through its Output section and its first line in the
- * collapsed summary instead.
+ * File-mutation row: icon + {Edit,Write} · {path} · `+A -R` in the shared
+ * ToolRow chrome, with the applied diff as the row's collapsed-by-default card
+ * body. The counts state the change's size while collapsed, so the transcript
+ * stays scannable and the diff itself is one expand away. The summary is a path
+ * link (a file tool's interaction); the host's `openFile` resolves it against
+ * the session cwd, so this passes the tool's own path verbatim. An errored
+ * mutation has no diff card, so ToolRow surfaces the model-facing error text
+ * through its Output section and its first line in the collapsed summary
+ * instead — and with no card there are no counts to state.
  */
 export function FileMutationRow({ toolName, block, cwd, home, openFile, inspect, t }: FileMutationRowProps) {
   const model = toolRowModel(toolName, block, cwd, home)
@@ -40,6 +42,7 @@ export function FileMutationRow({ toolName, block, cwd, home, openFile, inspect,
       icon={<IconEditOutline16 size={14} />}
       title={model.title}
       summary={model.summary}
+      summarySuffix={diffSummarySuffix(diff, t)}
       body={null}
       output={model.output}
       errorSummary={model.errorSummary}

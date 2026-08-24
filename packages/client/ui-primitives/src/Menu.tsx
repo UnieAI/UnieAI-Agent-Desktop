@@ -5,6 +5,8 @@
 // The owner controls `open`; outside-click closing uses one document listener
 // active only while open. Submenus open on hover/focus inside the same root.
 // Entries also cover non-interactive `label` headings and `danger` rows.
+// `extra` holds rows the owner renders itself — the escape hatch for a row
+// whose behavior the menu's `onSelect` dispatch cannot name (a slot occupant).
 // Lists keep 12px clearance to the viewport's top/bottom edges and scroll
 // internally past that; submenu-bearing menus are exempt (see .scrollable).
 //
@@ -65,6 +67,59 @@ function isLabel(entry: MenuEntry): entry is MenuLabel {
   return 'type' in entry && entry.type === 'label'
 }
 
+/** One menu row's presentation and activation, shared by {@link Menu}'s own rows and by owner-supplied `extra` rows. */
+export interface MenuItemButtonProps {
+  /** Row content. */
+  label: ReactNode
+  /** Leading 16px icon. */
+  icon?: ReactNode | undefined
+  /** Row cannot be activated. */
+  disabled?: boolean | undefined
+  /** Destructive row: error-colored text/icon and danger hover fill. */
+  danger?: boolean | undefined
+  /** Row carries the trailing selection check. */
+  selected?: boolean | undefined
+  /** Row activation. */
+  onClick: () => void
+  /**
+   * Submenu state of a row that owns one: sets `aria-haspopup`/`aria-expanded`.
+   * Omit on a leaf row, which advertises no popup at all.
+   */
+  submenuOpen?: boolean | undefined
+  /** Keyboard focus reached the row. */
+  onFocus?: (() => void) | undefined
+}
+
+/**
+ * Render one menu row in the house menu chrome (36px cell, 16px icon slot,
+ * trailing check). Exported so a contribution rendered through `extra` draws
+ * the same row as the menu's own `items` instead of restating the metrics and
+ * tokens in its own package.
+ * @param props - row presentation and activation.
+ * @returns the row button.
+ */
+export function MenuItemButton({
+  label, icon, disabled = false, danger = false, selected = false, onClick, submenuOpen, onFocus,
+}: MenuItemButtonProps) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      className={clsx(css.item, selected && css.selected, danger && css.danger)}
+      disabled={disabled}
+      aria-haspopup={submenuOpen === undefined ? undefined : 'menu'}
+      aria-expanded={submenuOpen}
+      onFocus={onFocus}
+      onClick={onClick}
+    >
+      {icon !== undefined && <span className={css.itemIcon}>{icon}</span>}
+      <span className={css.itemLabel}>{label}</span>
+      {/* Selection marker is a trailing check (figma .Menu_cell), not a fill. */}
+      {selected && <IconCheckOutline16 className={css.check} />}
+    </button>
+  )
+}
+
 /**
  * Whether a menu anchored at `el` belongs to a composer that is docked at the
  * floor of a live conversation.
@@ -96,6 +151,11 @@ const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
  * @param props.open - whether the list is showing (owner-controlled).
  * @param props.anchor - the trigger element (rendered in place).
  * @param props.items - selectable rows and optional separators.
+ * @param props.extra - rows the owner renders itself, placed after `items`
+ * inside the scrolling area and outside `onSelect` dispatch. They are the
+ * only way a menu can hold a row whose behavior the owner does not know —
+ * a slot occupant's row. Draw them with {@link MenuItemButton} so they match
+ * the rows above them; the owner remains responsible for closing the menu.
  * @param props.selectedId - row shown as selected.
  * @param props.selectedIds - rows shown as selected when a menu contains independent option groups.
  * @param props.onSelect - row click callback (not called for disabled rows or submenu parents that only open children).
@@ -122,10 +182,11 @@ const MEASURE_STYLE: CSSProperties = { visibility: 'hidden', left: 0, top: 0 }
  * by a hairline; they stay visible while the items above scroll.
  * @returns anchor wrapper with the conditional list.
  */
-export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, onClose, align = 'start', side = 'bottom', portal = false, closeOnPointerLeave = false, dense = false, compact = false, getAnchorRect, footer, className }: {
+export function Menu({ open, anchor, items, extra, selectedId, selectedIds, onSelect, onClose, align = 'start', side = 'bottom', portal = false, closeOnPointerLeave = false, dense = false, compact = false, getAnchorRect, footer, className }: {
   open: boolean
   anchor: ReactNode
   items: readonly MenuEntry[]
+  extra?: ReactNode
   footer?: readonly MenuEntry[]
   selectedId?: string | undefined
   selectedIds?: readonly string[] | undefined
@@ -286,13 +347,13 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
         onMouseEnter={() => { setOpenSubmenuId(hasSub ? entry.id : null) }}
         onMouseLeave={() => { setOpenSubmenuId(null) }}
       >
-        <button
-          type="button"
-          role="menuitem"
-          className={clsx(css.item, selected && css.selected, entry.danger === true && css.danger)}
+        <MenuItemButton
+          label={entry.label}
+          icon={entry.icon}
           disabled={entry.disabled}
-          aria-haspopup={hasSub ? 'menu' : undefined}
-          aria-expanded={hasSub ? subOpen : undefined}
+          danger={entry.danger}
+          selected={selected}
+          submenuOpen={hasSub ? subOpen : undefined}
           onFocus={() => { setOpenSubmenuId(hasSub ? entry.id : null) }}
           onClick={() => {
             if (hasSub) {
@@ -301,26 +362,17 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
             }
             onSelect(entry.id)
           }}
-        >
-          {entry.icon !== undefined && <span className={css.itemIcon}>{entry.icon}</span>}
-          <span className={css.itemLabel}>{entry.label}</span>
-          {/* Selection marker is a trailing check (figma .Menu_cell), not a fill. */}
-          {selected && <IconCheckOutline16 className={css.check} />}
-        </button>
+        />
         {subOpen && entry.submenu !== undefined && (
           <div className={clsx(css.submenu, compact && css.compactList)} role="menu">
             {entry.submenu.map(sub => (
-              <button
+              <MenuItemButton
                 key={sub.id}
-                type="button"
-                role="menuitem"
-                className={css.item}
+                label={sub.label}
+                icon={sub.icon}
                 disabled={sub.disabled}
                 onClick={() => { onSelect(sub.id) }}
-              >
-                {sub.icon !== undefined && <span className={css.itemIcon}>{sub.icon}</span>}
-                <span className={css.itemLabel}>{sub.label}</span>
-              </button>
+              />
             ))}
           </div>
         )}
@@ -345,6 +397,7 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
     >
       <div className={css.viewport} role="presentation">
         {items.map(renderEntry)}
+        {extra}
       </div>
       {footer !== undefined && footer.length > 0 && (
         <div className={css.footer} role="presentation">

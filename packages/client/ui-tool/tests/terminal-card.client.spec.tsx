@@ -475,6 +475,11 @@ describe('DetailsPanel Output section', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={vi.fn()}
+        listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
+        readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        toggleDetailsMaximized={() => {}}
+        canOpenFileHere
+        openFile={() => Promise.resolve()}
         t={t}
       />,
     )
@@ -624,15 +629,17 @@ describe('DetailsPanel Output section', () => {
     expect(view.getByText('该调用不在当前窗口内')).toBeTruthy()
   })
 
-  it('no selection at all renders the guidance line and the default title', () => {
+  it('no selection at all offers what the column can open', () => {
+    // The panel used to spend this state telling someone to go and click
+    // something. It offers the menu instead — the same one `+` shows.
     const view = mount(snapshot(), null)
-    expect(view.getByText('详情')).toBeTruthy()
-    expect(view.getByText('点击消息流中的工具行查看详情')).toBeTruthy()
+    expect(view.getByText('产出')).toBeTruthy()
+    expect(view.getByText('文件')).toBeTruthy()
   })
 
-  it('a step selection without a callId renders the guidance line too', () => {
+  it('a step selection without a callId offers the same menu', () => {
     const view = mount(snapshot(), { turnSeq: 3, stepSeq: 1 })
-    expect(view.getByText('点击消息流中的工具行查看详情')).toBeTruthy()
+    expect(view.getByText('产出')).toBeTruthy()
   })
 
   it('the close button reaches closeDetails', () => {
@@ -661,6 +668,11 @@ describe('DetailsPanel Output section', () => {
         useStore={bindSnapshotSelector(chat)}
         actions={chat.actions}
         closeDetails={closeDetails}
+        listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
+        readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        toggleDetailsMaximized={() => {}}
+        canOpenFileHere
+        openFile={() => Promise.resolve()}
         t={t}
       />,
     )

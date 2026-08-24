@@ -108,7 +108,9 @@ describe('apply wiring', () => {
     // one component under both web tool names.
     expect(b.slots.entries('conversation.chat.node').map(entry => entry.options.key)).not.toContain('tool-call')
     // Stats stick with the composer (not inside ChatView).
-    expect(b.slots.entries('conversation.composer.dock').map(e => e.options.id)).toEqual(['stats'])
+    // Declared and deliberately empty: the stats line is built and not mounted,
+    // so the seat stays for whatever occupies it next.
+    expect(b.slots.entries('conversation.composer.dock').map(e => e.options.id)).toEqual([])
     await b.runtime.dispose()
   })
 

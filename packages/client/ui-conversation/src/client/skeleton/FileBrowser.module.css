@@ -1,0 +1,219 @@
+/* A file beside the tree it came from: the viewer takes the width, the tree
+   keeps a fixed column so picking the next file never reflows the code. */
+.root {
+  display: flex;
+  /* Fills the panel's remaining column. `height: 100%` alone resolved against
+     a flex parent that gives no definite height, so the browser collapsed to
+     its content — and its content is two `overflow: auto` regions with
+     `min-height: 0`, which measure zero. The tab rendered blank. */
+  flex: 1;
+  min-height: 0;
+  /* The filter field paints an elevated surface and both the tree and the
+     viewer scroll beside it; a bar bound to the base pair would vanish into
+     the field. */
+  /* Quiet until the pointer arrives; see DetailsPanel.module.css for why
+     `scrollbar-width` stays unset. */
+  --dsh-scrollbar-thumb: transparent;
+  --dsh-scrollbar-thumb-hover: transparent;
+}
+
+.root:hover {
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.side {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: 186px;
+  min-height: 0;
+  border-left: 1px solid var(--dsw-alias-border-l2);
+}
+
+.filter {
+  flex: none;
+  margin: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-module-platform);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.filter::placeholder {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.tree {
+  flex: 1;
+  min-height: 0;
+  padding: 0 6px 10px;
+  overflow: auto;
+}
+
+/* Header strip above the code: where this file sits, and the controls that
+   act on this surface. Always present — the tree toggle belongs to the
+   surface, not to whether a file is open. */
+.crumbs {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 12px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+}
+
+/* The path scrolls; the controls do not. A long path used to push them out of
+   the panel, which put the tree toggle somewhere the pointer could not reach. */
+.trail {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+  white-space: nowrap;
+  /* Scrolls, shows nothing. A bar under a one-line path is more chrome than
+     the path itself, and the crumbs are short enough to drag or wheel. */
+  scrollbar-width: none;
+}
+
+.trail::-webkit-scrollbar {
+  display: none;
+}
+
+.crumbActions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.crumb[data-last] {
+  color: var(--dsw-alias-label-primary);
+}
+
+.crumbSep {
+  padding: 0 4px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.external {
+  padding: 3px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.external:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Sits with the external-open control at the end of the crumb row: putting
+   the tree away is a property of this reading surface, not of the column. */
+.treeToggle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 24px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+}
+
+.treeToggle:hover,
+.treeToggle[aria-pressed='true'] {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.viewer {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* A table, not a <pre>: the gutter must not scroll away horizontally with the
+   code, and every row's number must line up with exactly one line. */
+.code {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--ds-font-family-code);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.gutter {
+  position: sticky;
+  left: 0;
+  width: 1%;
+  padding: 0 12px 0 14px;
+  background: var(--dsw-alias-bg-base);
+  color: var(--dsw-alias-label-tertiary);
+  text-align: right;
+  vertical-align: top;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  padding: 0 16px 0 0;
+  color: var(--dsw-alias-label-primary);
+  white-space: pre;
+}
+
+.placeholder {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.placeholderMark {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.placeholderTitle {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.placeholderBody {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.note {
+  padding: 16px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}

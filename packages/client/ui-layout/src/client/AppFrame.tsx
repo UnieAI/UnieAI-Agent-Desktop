@@ -6,16 +6,36 @@
  * renders HERE with live parameters from the concession solve, and the
  * session-aware occupants render in fixed column positions; strict entries
  * gate themselves on current-session availability while session-maybe
- * entries retain identity. Pure component: everything arrives
+ * entries retain identity. The frame element also publishes its rendered
+ * sidebar width as {@link SIDEBAR_WIDTH_PROPERTY}, which is the only way an
+ * overlay occupant can align to a column instead of to the whole box. Pure
+ * component: everything arrives
  * through the three framework shares — zero cordis or framework imports,
  * zero self-made hooks.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { PropsRenderSlots, PropsRuntime, PropsStore } from '@unieai/uad-client-ui-slots'
-import { computeColumns, SIDEBAR_AUTO_COLLAPSE, SIDEBAR_DEFAULT } from './columns.ts'
+import {
+  computeColumns, SIDEBAR_AUTO_COLLAPSE, SIDEBAR_DEFAULT,
+} from './columns.ts'
 import type { createLayoutStore } from './stores.ts'
 import css from './AppFrame.module.css'
+
+/**
+ * Custom property carrying the frame's rendered sidebar column width.
+ *
+ * `shell.overlay` spans the whole frame box, so an occupant that must leave
+ * the navigation column uncovered has no other way to learn the column's
+ * current width: drag, collapse, and the narrow-viewport auto-collapse all
+ * move it, and the store's preference is not the rendered value once the
+ * concession chain clamps it. Published on the frame element, so every
+ * descendant inherits it.
+ */
+export const SIDEBAR_WIDTH_PROPERTY = '--dsh-shell-sidebar-width'
+
+/** Frame inline style: the grid tracks plus the published column width. */
+type FrameStyle = CSSProperties & { [SIDEBAR_WIDTH_PROPERTY]: string }
 
 /** Full composed props: runtime share + child-slot render share + store share. */
 export type AppFrameProps =
@@ -139,7 +159,14 @@ export function AppFrame({
   const sidebarPreference = sidebarCollapsed
     ? 0
     : panels.sidebar === 0 ? SIDEBAR_DEFAULT : panels.sidebar
-  const cols = computeColumns(viewport, sidebarPreference, detailsSession === undefined ? 0 : panels.details)
+  // `detailsRestore` is set only while the panel is maximized, so it doubles
+  // as the flag for which center floor this frame solves against.
+  const cols = computeColumns(
+    viewport,
+    sidebarPreference,
+    detailsSession === undefined ? 0 : panels.details,
+    panels.detailsRestore !== undefined,
+  )
   const colsRef = useRef(cols)
   colsRef.current = cols
 
@@ -165,9 +192,13 @@ export function AppFrame({
     <div
       ref={frameRef}
       className={css.frame}
-      style={{ gridTemplateColumns: `${cols.sidebar}px minmax(0, 1fr) ${cols.details}px` }}
+      style={{
+        gridTemplateColumns: `${cols.sidebar}px minmax(0, 1fr) ${cols.details}px`,
+        [SIDEBAR_WIDTH_PROPERTY]: `${cols.sidebar}px`,
+      } as FrameStyle}
       data-sidebar-collapsed={sidebarCollapsed || undefined}
       data-details-collapsed={cols.details === 0 || undefined}
+      data-details-maximized={panels.detailsRestore !== undefined || undefined}
       data-dragging={dragging || undefined}
     >
       <div className={css.sidebarCol}>

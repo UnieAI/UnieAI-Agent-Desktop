@@ -7,7 +7,9 @@
  * call this, so the hunks they show are derived once.
  * @module
  */
-import type { DiffBlockProps, DiffHunk } from '@unieai/uad-client-ui-primitives'
+import { diffStats } from '@unieai/uad-client-ui-primitives'
+import type { DiffBlockProps, DiffHunk, DiffStats } from '@unieai/uad-client-ui-primitives'
+import type { TranslateNS } from '@unieai/uad-client-ui-slots'
 import type { ToolCallBlock } from './tool-call-model.ts'
 
 /**
@@ -33,6 +35,13 @@ export interface DiffCardModel {
    * neighbouring field into it.
    */
   card: Pick<DiffBlockProps, 'diffs'>
+  /**
+   * The same change stated as counts, for a render site that must show the size
+   * of the change WITHOUT drawing the card — the chat tool row's collapsed
+   * summary. Derived by the primitive's own {@link diffStats}, so the summary
+   * and the card footer can never disagree.
+   */
+  stats: DiffStats
 }
 
 /**
@@ -86,12 +95,28 @@ export function diffCardModel(block: ToolCallBlock): DiffCardModel | null {
     // Running: the call view may carry the intended diff; the result is absent.
     const call = block.callView?.card === 'diff' ? block.callView : null
     const diffs = call === null ? null : narrowDiffs(call.diffs)
-    return diffs === null ? null : { card: { diffs } }
+    return diffs === null ? null : { card: { diffs }, stats: diffStats(diffs) }
   }
   // Settled: the result view's applied hunks replace the call-time diff. A
   // window that dropped the call head leaves only the result, which still
   // renders — the result view carries the whole change.
   const result = block.resultView?.card === 'diff' ? block.resultView : null
   const diffs = result === null ? null : narrowDiffs(result.diffs)
-  return diffs === null ? null : { card: { diffs } }
+  return diffs === null ? null : { card: { diffs }, stats: diffStats(diffs) }
+}
+
+/**
+ * The collapsed row's change size: `+A -R` beside the file summary, so a reader
+ * scanning the transcript learns how large a mutation is without expanding it.
+ * Null for a call with no diff material — a still-running call whose tool
+ * declared no call-time diff, and a failed mutation, which carries its failure
+ * line in the summary slot instead and must never show counts for a change that
+ * was not applied.
+ * @param diff - the derived diff card, or null on the generic path.
+ * @param t - the render site's conversation locale seat.
+ * @returns the summary suffix text, or null when there is nothing to state.
+ */
+export function diffSummarySuffix(diff: DiffCardModel | null, t: TranslateNS<'conversation'>): string | null {
+  if (diff === null) return null
+  return t('row.diffStat', { added: diff.stats.added, removed: diff.stats.removed })
 }

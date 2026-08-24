@@ -15,6 +15,7 @@ import type {
   ApprovalWait, ChatNodeTurnDataInjected, ChatScrollPosition, ChatViewInjected, ComposerBarInjected,
   ComposerChainProps, ConversationInjected, ConversationSessionHeaderInjected, ConversationSessionInjected,
   DetailsInjected,
+  DetailsToggleInjected,
 } from './contract/slots.ts'
 import type { InputNotice } from './input/contract.ts'
 import { createChatStore } from './stores.ts'
@@ -34,6 +35,7 @@ import { todoDockEntry } from './skeleton/TodoPanel.tsx'
 import { queueDockEntry } from './queue/QueueDock.tsx'
 import { ConversationRoot } from './skeleton/ConversationRoot.tsx'
 import { ConversationSession, ConversationSessionHeader } from './skeleton/ConversationSession.tsx'
+import { DetailsToggle } from './skeleton/DetailsToggle.tsx'
 import { DetailsPanel } from './skeleton/DetailsPanel.tsx'
 import { en, ja, NS, zh, zhTW, type ConversationKey } from './locales.ts'
 import { registerConversationNodes } from './conversation-nodes/register.ts'
@@ -212,6 +214,9 @@ export function apply(ctx: Context): void {
     },
     inject: (sessionId: SessionId | undefined): ConversationInjected => ({
       hooks: { composerBlock: sessionId === undefined ? ABSENT_BLOCK : composerBlocks.storeFor(sessionId) },
+      // The client Context carries no `connection` type merge, so the declared
+      // injection is read by name, as ui-settings-* already do.
+      hostIsLocal: (ctx.get('connection') as { isLoopback?: boolean } | undefined)?.isLoopback === true,
       selectWorkspace: async (workspaceId) => {
         const nextId = await workspaces.connectWorkspace(workspaceId)
         if (sessionId !== undefined && nextId !== sessionId) {
@@ -427,8 +432,12 @@ export function apply(ctx: Context): void {
     },
   }, ChatView)
 
-  // Session stats stick with the composer (composer.dock = stats-line family).
-  slots.register({ name: 'conversation.composer.dock', id: 'stats', order: 0, locale: NS }, StatsLine)
+  // Session stats are BUILT AND NOT MOUNTED. The line reports rounds, latency,
+  // throughput and cache hit rate under every composer, which is instrumentation
+  // for whoever is tuning the harness and permanent noise for whoever is using
+  // it. `StatsLine` and its projection stay; restoring the row is this one
+  // registration.
+  void StatsLine
 
   // Class-plugin mount (packages/AGENTS.md service form): the service
   // registers itself as `conversation` and lives on its own child fiber.
@@ -443,6 +452,17 @@ export function apply(ctx: Context): void {
   // registration path into the input dock declared above.
   ctx.plugin(queueDockEntry)
 
+  // The way into the details column. Registered as a header utility so it sits
+  // with the other optional controls rather than in the title-adjacent group.
+  slots.register({
+    name: 'conversation.session.header.utilities',
+    id: 'details-toggle',
+    locale: NS,
+    inject: (): DetailsToggleInjected => ({
+      toggleDetails: () => { layout.toggleDetails() },
+    }),
+  }, DetailsToggle)
+
   slots.register({
     name: 'details',
     locale: NS,
@@ -452,6 +472,15 @@ export function apply(ctx: Context): void {
     store: chatStore,
     inject: (): DetailsInjected => ({
       closeDetails: () => { layout.closeDetails() },
+      toggleDetailsMaximized: () => { layout.toggleDetailsMaximized() },
+      listWorkspaceEntries: (root, path, signal) => ctx.workspaces.listWorkspaceEntries(root, path, signal),
+      readWorkspaceFile: (root, path, signal) => ctx.workspaces.readWorkspaceFile(root, path, signal),
+      // The tree reports absolute host paths, so this needs no cwd resolution
+      // the way the transcript's relative mentions do.
+      openFile: path => ctx.workspaces.openPath(path),
+      // The client Context carries no `connection` type merge, so the declared
+      // injection is read by name — the same way ui-settings-* reach it.
+      canOpenFileHere: (ctx.get('connection') as { isLoopback?: boolean } | undefined)?.isLoopback === true,
     }),
   }, DetailsPanel)
 

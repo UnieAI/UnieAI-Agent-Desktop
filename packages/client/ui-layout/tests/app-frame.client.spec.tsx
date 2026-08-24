@@ -13,7 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, render } from '@testing-library/react'
 import { useSyncExternalStore } from 'react'
-import { AppFrame } from '@unieai/uad-client-ui-layout/src/client/AppFrame.tsx'
+import { AppFrame, SIDEBAR_WIDTH_PROPERTY } from '@unieai/uad-client-ui-layout/src/client/AppFrame.tsx'
 import type { AppFrameProps } from '@unieai/uad-client-ui-layout/src/client/AppFrame.tsx'
 import { SIDEBAR_COLLAPSED } from '@unieai/uad-client-ui-layout/src/client/columns.ts'
 import { createLayoutStore } from '@unieai/uad-client-ui-layout/src/client/stores.ts'
@@ -142,6 +142,27 @@ describe('AppFrame', () => {
     expect(tracks(frame)).toEqual([264, 0])
   })
 
+  it('publishes the rendered sidebar width, which follows a drag rather than the preference', () => {
+    // The overlay layer spans the whole frame, so an occupant that must leave
+    // the navigation column uncovered reads this property. The rendered value
+    // is what it needs: the store preference is not the width once the
+    // concession chain clamps it.
+    const { frame } = mountFrame()
+    expect(frame.style.getPropertyValue(SIDEBAR_WIDTH_PROPERTY)).toBe('264px')
+
+    drag(frame.querySelectorAll('[data-side="sidebar"]')[0]!, 264, 344)
+    expect(frame.style.getPropertyValue(SIDEBAR_WIDTH_PROPERTY)).toBe(`${tracks(frame)[0]!}px`)
+    expect(tracks(frame)[0]).toBe(344)
+  })
+
+  it('follows the collapsed rail, so an overlay beside it never covers the control column', () => {
+    const { frame, instance, rerenderFrame } = mountFrame()
+    act(() => { instance.actions.toggleSidebar() })
+    rerenderFrame()
+    expect(tracks(frame)[0]).toBe(SIDEBAR_COLLAPSED)
+    expect(frame.style.getPropertyValue(SIDEBAR_WIDTH_PROPERTY)).toBe(`${SIDEBAR_COLLAPSED}px`)
+  })
+
   it('renders the session pair with empty owner shares (sessionId is framework-standard)', () => {
     const { slotCalls, getByTestId } = mountFrame()
     expect(getByTestId('center-content')).toBeTruthy()
@@ -177,7 +198,7 @@ describe('AppFrame', () => {
     expect(tracks(frame)).toEqual([264, 0])
 
     act(() => { instance.actions.openDetails() })
-    expect(tracks(frame)).toEqual([264, 360])
+    expect(tracks(frame)).toEqual([264, 560])
 
     selectedSession.current = 's-next' as SessionId
     act(() => { rerenderFrame() })
@@ -188,12 +209,12 @@ describe('AppFrame', () => {
     selectedSessionBlank.current = true
     act(() => { rerenderFrame() })
     expect(tracks(frame)).toEqual([264, 0])
-    expect(instance.getSnapshot().details).toBe(360)
+    expect(instance.getSnapshot().details).toBe(560)
 
     selectedSession.current = 's-next' as SessionId
     selectedSessionBlank.current = false
     act(() => { rerenderFrame() })
-    expect(tracks(frame)).toEqual([264, 360])
+    expect(tracks(frame)).toEqual([264, 560])
 
     selectedSession.current = undefined
     act(() => { rerenderFrame() })
@@ -231,11 +252,11 @@ describe('AppFrame', () => {
     act(() => { instance.actions.openDetails() })
     const handles = frame.querySelectorAll('[class*="handle"]')
     drag(handles[1]!, 1560, 1500)
-    expect(tracks(frame)[1]).toBe(420)
+    expect(tracks(frame)[1]).toBe(620)
   })
 
   it('drag base is the rendered (concession-clamped) width, not the preference', () => {
-    frameWidth = 1250 // step-2 squeeze: details renders 346 while preference is 360
+    frameWidth = 1250 // step-2 squeeze: details renders below its preference of 560
     const { frame, instance } = mountFrame()
     act(() => { instance.actions.openDetails() })
     expect(tracks(frame)).toEqual([264, 346])
@@ -269,7 +290,7 @@ describe('AppFrame', () => {
     expect(tracks(frame)).toEqual([264, 346])
     frameWidth = 1920
     act(() => { fireResize?.(); vi.advanceTimersByTime(20) })
-    expect(tracks(frame)).toEqual([264, 360])
+    expect(tracks(frame)).toEqual([264, 560])
   })
 
   it('drag handles disappear for collapsed columns', () => {

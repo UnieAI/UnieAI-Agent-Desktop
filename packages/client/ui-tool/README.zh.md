@@ -14,6 +14,8 @@ Client 工具展示插件。`ui-conversation` 通过 `conversation.chat.node` �
 
 本包还通过 `ToolDetails` 填充 `conversation.details.tool`。行 renderer 与详情 renderer 共用同一组面向 `terminal`、`read`、`diff`、`search` 和 `web` render intent 的纯 card model。未知的 intent 标签和格式错误的 wire card 数据都会回退为压平的工具结果文本。
 
+文件改动的 diff 直接渲染在 transcript 行内，与详情面板使用同一个 `diffCardModel`。折叠状态下，行在文件名旁以 `+A -R` 说明改动规模，该计数由 primitive 自己的 `diffStats` 推导，因此永远不会与卡片页脚不一致；展开后卡片就地绘制，受 `CHAT_DIFF_MAX_LINES` 限制并绑定 224px 滚动高度，长 diff 不会把对话挤出屏幕。运行中的调用只显示 call 时的预期 hunk；失败的改动只显示错误行，没有 diff 也没有计数，因为改动并未生效。
+
 通用行把已知工具名称归类为 search、read、shell、write、edit、code 或 generic 变体。运行中、成功、失败和中断状态只来自冻结的 call/result slice。只有用户调用 Host 打开文件回调时，文件路径才相对会话 `cwd` 解析；展示代码不读取会话服务。
 
 ## 原子工具视图

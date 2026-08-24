@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   CENTER_MIN, clampWidth, computeColumns,
-  DETAILS_DEFAULT, DETAILS_MIN, SIDEBAR_COLLAPSED, SIDEBAR_DEFAULT, SIDEBAR_MIN,
+  DETAILS_DEFAULT, DETAILS_MAX, DETAILS_MIN,
+  SIDEBAR_COLLAPSED, SIDEBAR_DEFAULT, SIDEBAR_MIN,
 } from '@unieai/uad-client-ui-layout/src/client/columns.ts'
 
 // Numeric preference form (0 = closed); helpers keep the scenario names readable.
@@ -19,7 +20,7 @@ describe('clampWidth', () => {
 describe('computeColumns', () => {
   it('step 1: everything fits at preferred widths', () => {
     const cols = computeColumns(1920, open(SIDEBAR_DEFAULT), open(DETAILS_DEFAULT))
-    expect(cols).toEqual({ sidebar: 264, center: 1920 - 264 - 360, details: 360 })
+    expect(cols).toEqual({ sidebar: 264, center: 1920 - 264 - DETAILS_DEFAULT, details: DETAILS_DEFAULT })
   })
 
   it('closed sidebar keeps its compact rail while closed details contribute zero width', () => {
@@ -27,10 +28,31 @@ describe('computeColumns', () => {
       .toEqual({ sidebar: SIDEBAR_COLLAPSED, center: 1920 - SIDEBAR_COLLAPSED, details: 0 })
   })
 
+  it('maximizing gives the center no width and the panel the rest', () => {
+    // Raising DETAILS_MAX alone changed nothing: the concession chain caps a
+    // dragged panel at viewport - sidebar - CENTER_MIN, which is about half
+    // the frame. Maximizing leaves the chain rather than lowering its floor.
+    const dragged = computeColumns(1680, SIDEBAR_DEFAULT, DETAILS_MAX)
+    const maximized = computeColumns(1680, SIDEBAR_DEFAULT, DETAILS_MAX, true)
+    expect(dragged.details).toBe(1680 - SIDEBAR_DEFAULT - CENTER_MIN)
+    expect(maximized).toEqual({ sidebar: SIDEBAR_DEFAULT, center: 0, details: 1680 - SIDEBAR_DEFAULT })
+  })
+
+  it('maximizing passes the drag ceiling, which is a drag clamp not a limit', () => {
+    expect(computeColumns(1920, SIDEBAR_DEFAULT, DETAILS_MIN, true).details)
+      .toBeGreaterThan(DETAILS_MAX)
+  })
+
+  it('maximizing a closed panel stays closed', () => {
+    // The control does not say "open"; opening as a side effect would be a
+    // second act nobody asked for.
+    expect(computeColumns(1680, SIDEBAR_DEFAULT, 0, true).details).toBe(0)
+  })
+
   it('preferences beyond the clamp range are clamped before solving', () => {
     const cols = computeColumns(1920, open(9999), open(1))
     expect(cols.sidebar).toBe(420)
-    expect(cols.details).toBe(300)
+    expect(cols.details).toBe(DETAILS_MIN)
     expect(computeColumns(1920, open(1), open(DETAILS_DEFAULT)).sidebar).toBe(SIDEBAR_MIN)
   })
 

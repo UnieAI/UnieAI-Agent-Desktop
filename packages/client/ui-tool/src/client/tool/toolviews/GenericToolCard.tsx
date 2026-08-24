@@ -10,7 +10,7 @@ import {
 } from '@unieai/uad-client-ui-primitives'
 import type { ToolCallOwnerProps, ToolTreeProps } from '../../contract/slots.ts'
 import { readCardModel } from '../models/read-card-model.ts'
-import { diffCardModel } from '../models/diff-card-model.ts'
+import { diffCardModel, diffSummarySuffix } from '../models/diff-card-model.ts'
 import { searchCardModel } from '../models/search-card-model.ts'
 import { terminalCardModel, terminalFailed } from '../models/terminal-card-model.ts'
 import { webCardModel } from '../models/web-card-model.ts'
@@ -57,6 +57,10 @@ export function GenericToolCard({ toolName, block, cwd, home, openFile, inspect,
       // it outranks the args-derived summary here exactly as it does in BashRow;
       // a search result view's replacement title outranks it the same way.
       summary={terminal?.description ?? search?.title ?? model.summary}
+      // A mutation tool with no keyed row of its own (str_replace_editor's
+      // create/str_replace) still states its change size beside the summary,
+      // the same way FileMutationRow does; null on every non-diff row.
+      summarySuffix={diffSummarySuffix(diff, t)}
       // Single-file tools never expose an args body — the path link is the only
       // args interaction. A card is not an args body: a read/write/edit row is
       // single-file AND carries a card, so the card expands under the path link.

@@ -82,12 +82,12 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 12px;
-  height: 32px;
-  border-radius: 10px;
-  box-sizing: border-box;
-  background: var(--dsw-alias-button-floating-fill);
-  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
+  /* A hairline the full height of the seam, not a pill floating in the middle
+     of it: the seam is what moves, and a centred capsule reads as a separate
+     control that happens to sit on it. */
+  width: 1px;
+  height: 100%;
+  background: var(--dsw-alias-label-tertiary);
   /* Hover affordance: the details pill hides until the pointer is over its
      column, the strip itself, or a drag. */
   opacity: 0;

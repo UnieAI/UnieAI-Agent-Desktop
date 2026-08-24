@@ -79,6 +79,11 @@ declare module '@unieai/uad-client-ui-slots' {
      *
      * This is the additive seat for a frame-wide surface of your own: a fresh
      * `id` is added beside the shipped entries instead of replacing them.
+     *
+     * An occupant that must leave the navigation column uncovered offsets
+     * itself by `--dsh-shell-sidebar-width`, the frame's rendered sidebar
+     * width (AppFrame's `SIDEBAR_WIDTH_PROPERTY`); the layer itself always
+     * spans the whole box.
      */
     'shell.overlay': { kind: 'list'; scope: 'root' }
   }

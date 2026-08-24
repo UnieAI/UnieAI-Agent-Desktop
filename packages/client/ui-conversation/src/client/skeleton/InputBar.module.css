@@ -38,9 +38,19 @@
   line-height: 18px;
 }
 
+
+
+
+
 .card {
   box-sizing: border-box;
   position: relative; /* overlay anchor positioning context */
+  /* Above the settings row that tucks under it. Both are children of the
+     composer stack; the row is positioned with `z-index: 0` and comes second
+     in the DOM, so without this the later sibling won and the row painted over
+     the card's bottom edge. Raising their shared wrapper cannot fix that — it
+     lifts both and leaves their order alone. */
+  z-index: 1;
   display: flex;
   flex-direction: column;
   /* No inter-block gap and no card top pad: every block inside owns its own

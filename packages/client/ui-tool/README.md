@@ -14,6 +14,8 @@ Each root and child wrapper preserves the `data-chat-anchor-key="call:<id>"` and
 
 The package also fills `conversation.details.tool` with `ToolDetails`. The row and details renderers share the same pure card models for `terminal`, `read`, `diff`, `search`, and `web` render intents. Unknown intent tags and malformed wire card data fall back to flattened Tool result text.
 
+A file mutation's diff renders in the transcript row itself, from the same `diffCardModel` the details panel uses. The collapsed row states the change size as `+A -R` beside the file name, derived by the primitive's own `diffStats` so it can never disagree with the card's footer; expanding draws the card in place, capped at `CHAT_DIFF_MAX_LINES` and bound to 224px of scroll so a long diff never pushes the conversation off screen. A running call shows only the call-time intended hunk, and a failed mutation shows its error line with no diff and no counts, because the applied change does not exist.
+
 Generic rows classify known Tool names into search, read, shell, write, edit, code, or generic variants. Running, successful, failed, and interrupted lifecycle states come only from the frozen call/result slice. File paths resolve against the session `cwd` only when the user invokes the Host open-file callback; presentation code does not read Session services.
 
 ## Atomic Tool views

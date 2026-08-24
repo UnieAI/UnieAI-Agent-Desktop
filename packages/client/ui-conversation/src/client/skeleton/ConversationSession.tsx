@@ -143,7 +143,6 @@ export function ConversationSessionHeader({
               </div>
             </div>
             <div className={css.headerUtilities}>
-              {renderSlot('conversation.session.header.utilities', {})}
               {alternate !== undefined && (
                 <button
                   type="button"
@@ -156,6 +155,9 @@ export function ConversationSessionHeader({
                   {alternate.label}
                 </button>
               )}
+              {/* Utilities sit after the view switch: the switch names what the
+                  column is showing, and a utility acts on whatever that is. */}
+              {renderSlot('conversation.session.header.utilities', {})}
             </div>
           </div>
         </>

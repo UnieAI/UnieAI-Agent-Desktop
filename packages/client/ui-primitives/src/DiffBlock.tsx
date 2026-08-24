@@ -6,7 +6,9 @@
 // Both front ends share the line-terminator rule and distinct-path file count.
 // Output never soft-wraps — an aligned source line keeps its indentation and
 // scrolls horizontally instead of folding. Colors resolve through --dsw-*
-// tokens; geometry mirrors CodeBlock.
+// tokens; geometry mirrors CodeBlock. A render site inside a bounded flow caps
+// the body by binding --dsl-diff-body-max-height, which leaves the copy control
+// and the footer counts in place while the diff lines scroll.
 
 import { useCallback, useMemo, useState } from 'react'
 import clsx from 'clsx'
@@ -49,6 +51,16 @@ interface DiffRow {
   text: string
 }
 
+/** Change totals of a hunk list, as {@link DiffBlock}'s footer states them. */
+export interface DiffStats {
+  /** Total new-side lines across every hunk. */
+  added: number
+  /** Total old-side lines across every hunk; a create contributes none. */
+  removed: number
+  /** DISTINCT paths touched, so two hunks in one file count as one. */
+  files: number
+}
+
 /** Local exhaustiveness helper — this package does not depend on `dsh-llm`. */
 /* v8 ignore next 3 -- closed-union backstop; only reached if a row kind is forged */
 function assertNever(value: never): never {
@@ -64,38 +76,46 @@ const ROW_CLASS: Record<DiffRow['kind'], string | undefined> = {
 }
 
 /**
- * Flatten the hunks into the body's rows plus the footer counts. A path header
- * opens each new file; a same-file second hunk (a scattered edit) opens with a
- * `⋯` gap instead of repeating the path. Every old-side line counts toward
- * `removed` and every new-side line toward `added`. The file count is of
- * DISTINCT paths, matching the TUI diff card's footer, so two hunks in one file
- * read as `1 file` on both front ends.
- * @param diffs - the hunks to render.
- * @returns the body rows, the +/- totals, and the distinct-file count.
+ * Count what a hunk list changes, by the same line rule the body draws
+ * ({@link contentLines}), so a caller that states the totals outside this card
+ * — the chat tool row's collapsed summary — never counts them a second way.
+ * The file count is of DISTINCT paths, matching the TUI diff card's footer, so
+ * two hunks in one file read as `1 file` on both front ends.
+ * @param diffs - the hunks to count.
+ * @returns the added/removed line totals and the distinct-file count.
  */
-function buildRows(diffs: DiffHunk[]): { rows: DiffRow[]; added: number; removed: number; files: number } {
-  const rows: DiffRow[] = []
+export function diffStats(diffs: DiffHunk[]): DiffStats {
   const paths = new Set<string>()
   let added = 0
   let removed = 0
-  let prevPath: string | undefined
   for (const diff of diffs) {
     paths.add(diff.path)
+    if (diff.oldText !== null) removed += contentLines(diff.oldText).length
+    added += contentLines(diff.newText).length
+  }
+  return { added, removed, files: paths.size }
+}
+
+/**
+ * Flatten the hunks into the body's rows. A path header opens each new file; a
+ * same-file second hunk (a scattered edit) opens with a `⋯` gap instead of
+ * repeating the path.
+ * @param diffs - the hunks to render.
+ * @returns the body rows in draw order.
+ */
+function buildRows(diffs: DiffHunk[]): DiffRow[] {
+  const rows: DiffRow[] = []
+  let prevPath: string | undefined
+  for (const diff of diffs) {
     if (diff.path !== prevPath) rows.push({ kind: 'path', text: diff.path })
     else rows.push({ kind: 'gap', text: '⋯' })
     prevPath = diff.path
     if (diff.oldText !== null) {
-      for (const line of contentLines(diff.oldText)) {
-        rows.push({ kind: 'del', text: line })
-        removed++
-      }
+      for (const line of contentLines(diff.oldText)) rows.push({ kind: 'del', text: line })
     }
-    for (const line of contentLines(diff.newText)) {
-      rows.push({ kind: 'add', text: line })
-      added++
-    }
+    for (const line of contentLines(diff.newText)) rows.push({ kind: 'add', text: line })
   }
-  return { rows, added, removed, files: paths.size }
+  return rows
 }
 
 /**
@@ -139,7 +159,8 @@ function copyText(rows: DiffRow[]): string {
  * @returns the diff block element.
  */
 export function DiffBlock({ diffs, maxLines = DEFAULT_DIFF_MAX_LINES, className }: DiffBlockProps) {
-  const { rows, added, removed, files } = useMemo(() => buildRows(diffs), [diffs])
+  const rows = useMemo(() => buildRows(diffs), [diffs])
+  const { added, removed, files } = useMemo(() => diffStats(diffs), [diffs])
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 

@@ -8,7 +8,7 @@ import type {
 import type {
   CommandNode, CompactionSummaryNode, ConversationSnapshot, ConversationTurnDataMap,
   ObservableSnapshot, PendingInteraction, PendingWait, SessionId, ToolCallBlock,
-  TurnLocation, WorkspaceId,
+  TurnLocation, WorkspaceFile, WorkspaceId, WorkspaceListing,
 } from '@unieai/uad-client-runtime/client'
 import type { MarkdownFileMentions } from '@unieai/uad-client-ui-primitives'
 import type { MessageId } from '@unieai/uad-client-connection/client'
@@ -477,6 +477,12 @@ export interface ConversationInjected {
    */
   selectWorkspace: (workspaceId: WorkspaceId) => Promise<void>
   /**
+   * Whether the Host serving this page answers on a loopback authority, i.e.
+   * whether the agent's tools run on the machine the reader is sitting at.
+   * Stated as one glyph on the hero bar, never as running commentary.
+   */
+  hostIsLocal: boolean
+  /**
    * Framework-bound sources. `composerBlock` is this session's block when a
    * plugin raised one; the reason is the blocker's own localized copy, which
    * the root renders as the inert composer's placeholder.
@@ -801,9 +807,68 @@ export type MessageImagesProps = PropsRuntime<'conversation.message.images'> & P
  * Injected share of the details slot: the panel is otherwise a pure reader of
  * the shared chat store, but its close button is a layout orchestration call.
  */
+/** Injected face of the header control that opens the details column. */
+export interface DetailsToggleInjected {
+  /** Open the details column, or close it when it is already open. */
+  toggleDetails: () => void
+}
+
+/**
+ * Injected face of the details column: what the panel can do that reading the
+ * session snapshot cannot answer — close itself, and reach the workspace.
+ *
+ * Selection is deliberately absent. It rides the shared chat store because the
+ * transcript writes it too, and a second path to the same fact would let the
+ * two disagree about what is open.
+ */
 export interface DetailsInjected {
   /** Close the details panel (layout geometry stays with ctx.layout). */
   closeDetails: () => void
+  /**
+   * Widen the details column to its ceiling, or back to the width it held
+   * before. The panel owns the affordance; the width itself stays with
+   * ctx.layout, which is what the drag handle also writes.
+   */
+  toggleDetailsMaximized: () => void
+  /**
+   * List one level inside the session's workspace, for the panel's file view.
+   *
+   * Injected rather than reached from the component so the panel stays a pure
+   * presenter, and so the bound — a registered workspace root, names only —
+   * lives on the Host side of one call it cannot widen.
+   * @param root - absolute path of the session's workspace.
+   * @param path - absolute directory inside `root`; absent lists the root.
+   * @param signal - aborts a scan the panel has superseded.
+   * @returns the level's entries, directories first then files.
+   */
+  listWorkspaceEntries: (root: string, path?: string, signal?: AbortSignal) => Promise<WorkspaceListing>
+  /**
+   * Read one file inside the session's workspace, for the panel's viewer.
+   *
+   * Bounded on the Host side by the same registered-root fence as the listing,
+   * plus a size the deployment sets. Read only: there is no write counterpart.
+   * @param root - absolute path of the session's workspace.
+   * @param path - absolute file inside `root`.
+   * @param signal - aborts a read the panel has superseded.
+   * @returns the file's text, or why it was withheld.
+   */
+  readWorkspaceFile: (root: string, path: string, signal?: AbortSignal) => Promise<WorkspaceFile>
+  /**
+   * Hand one file to whatever this surface uses to show a file.
+   * @param path - absolute host path, as the listing reported it.
+   * @returns settles when the surface has taken it.
+   */
+  openFile: (path: string) => Promise<void>
+  /**
+   * Whether opening a file would land somewhere this viewer can see.
+   *
+   * `openFile` reaches the operating system of the HOST, not of the browser.
+   * Served over loopback those are one machine and the file opens in front of
+   * the reader; served to another machine it opens on someone else's desktop,
+   * silently. The control is withheld rather than shipped as an action whose
+   * effect the presser cannot observe.
+   */
+  canOpenFileHere: boolean
 }
 
 /** Full details-slot props: selection store, Tool output seat, injected close callback, and locale. */
