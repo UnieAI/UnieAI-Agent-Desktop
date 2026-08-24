@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-ui-plugins-page",
   "description": "The Plugins surface: a main-area view beside the sidebar holding the product's plugin directory, a skills destination, the account's Studio MCP servers and this deployment's cordis plugin registry",
-  "version": "0.1.1-rc.2",
+  "version": "0.1.2",
   "publishConfig": {
     "access": "public"
   },
