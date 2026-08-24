@@ -33,6 +33,7 @@ import type { CommandDescriptor, CommandExecution, CommandResult } from '@unieai
 import { deriveEventMessage, foldSurface } from '@unieai/uad-session/surface'
 import type {
   ApiProxy, ClientRequest, ClientResponse, HistoryEntry, HostFrame, MuxFrame, RpcReceipt,
+  TerminalView,
   ModelProviderGroup, ModelSelection, RpcRequest, RpcResponse, RpcResult, ServerRequest, ServerResponse, SessionSummary,
   ToolCallView, ToolEventView, ToolResultView, WorkspaceId, WorkspaceView,
 } from './api.ts'
@@ -2679,6 +2680,101 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
       },
       openPath: request => ok(request, { opened: true as const }),
     },
+    terminal: (() => {
+      // A fixture terminal is a real enough shell for a panel to be developed
+      // and tested against: it echoes what is typed, answers Enter with a
+      // prompt, and pushes both through the same host frames the Host uses.
+      interface FxTerminal { view: TerminalView; output: string }
+      const fxTerminals = new Map<string, FxTerminal>()
+      let nextTerminal = 0
+      const PROMPT = '\u001b[32muser@rabi\u001b[0m:\u001b[34m~\u001b[0m$ '
+      const views = (): TerminalView[] => [...fxTerminals.values()].map(entry => ({ ...entry.view }))
+      const say = (entry: FxTerminal, chunk: string): void => {
+        entry.output += chunk
+        emitHost({ type: 'terminal/output', terminalId: entry.view.terminalId, chunk })
+      }
+      const found = (terminalId: string): FxTerminal | undefined => fxTerminals.get(terminalId)
+      return {
+        list: request => ok(request, { terminals: views() }),
+
+        open: (request) => {
+          const terminalId = `fx-terminal-${String(nextTerminal++)}`
+          const entry: FxTerminal = {
+            view: {
+              terminalId,
+              workspaceId: request.payload.workspaceId,
+              cwd: request.payload.cwd,
+              shell: '/bin/bash', title: 'user@fixture',
+              cols: Math.max(1, Math.trunc(request.payload.cols)),
+              rows: Math.max(1, Math.trunc(request.payload.rows)),
+              live: true,
+            },
+            output: '',
+          }
+          fxTerminals.set(terminalId, entry)
+          say(entry, PROMPT)
+          emitHost({ type: 'terminal/changed', terminals: views() })
+          return ok(request, { terminal: { ...entry.view }, replay: entry.output })
+        },
+
+        replay: (request) => {
+          const entry = found(request.payload.terminalId)
+          if (entry === undefined) {
+            return err(request, {
+              code: 'terminal-no-terminal',
+              message: `no terminal ${request.payload.terminalId}`,
+              details: { terminalId: request.payload.terminalId },
+            })
+          }
+          return ok(request, { terminal: { ...entry.view }, replay: entry.output })
+        },
+
+        write: (request) => {
+          const entry = found(request.payload.terminalId)
+          if (entry === undefined) {
+            return err(request, {
+              code: 'terminal-no-terminal',
+              message: `no terminal ${request.payload.terminalId}`,
+              details: { terminalId: request.payload.terminalId },
+            })
+          }
+          if (!entry.view.live) {
+            return err(request, {
+              code: 'terminal-exited',
+              message: `terminal ${request.payload.terminalId} has exited`,
+              details: { terminalId: request.payload.terminalId },
+            })
+          }
+          // A real PTY echoes; Enter ends the line and prints a new prompt.
+          const data = request.payload.data
+          say(entry, data.includes('\r') ? `${data.replace(/\r/gu, '\r\n')}${PROMPT}` : data)
+          return ok(request, {})
+        },
+
+        resize: (request) => {
+          const entry = found(request.payload.terminalId)
+          if (entry !== undefined) {
+            entry.view.cols = Math.max(1, Math.trunc(request.payload.cols))
+            entry.view.rows = Math.max(1, Math.trunc(request.payload.rows))
+          }
+          return ok(request, {})
+        },
+
+        signal: (request) => {
+          const entry = found(request.payload.terminalId)
+          if (entry !== undefined && entry.view.live) say(entry, `^C\r\n${PROMPT}`)
+          return ok(request, {})
+        },
+
+        close: (request) => {
+          if (fxTerminals.delete(request.payload.terminalId)) {
+            emitHost({ type: 'terminal/changed', terminals: views() })
+          }
+          return ok(request, {})
+        },
+      }
+    })(),
+
     workspace: {
       list: request => ok(request, {
         items: workspaces.map(w => ({ ...w })),
@@ -3197,8 +3293,15 @@ export class FixtureApiClient extends AbstractApiClient {
     signal: AbortSignal,
   ): Promise<RpcResponse<unknown>> {
     switch (method) {
-      case 'host.listWorkspaceEntries': return this.api.host.listWorkspaceEntries(request as never, signal)
-      case 'host.readWorkspaceFile': return this.api.host.readWorkspaceFile(request as never, signal)
+      case 'terminal.list': return this.api.terminal.list(request, signal)
+      case 'terminal.open': return this.api.terminal.open(request, signal)
+      case 'terminal.replay': return this.api.terminal.replay(request, signal)
+      case 'terminal.write': return this.api.terminal.write(request, signal)
+      case 'terminal.resize': return this.api.terminal.resize(request, signal)
+      case 'terminal.signal': return this.api.terminal.signal(request, signal)
+      case 'terminal.close': return this.api.terminal.close(request, signal)
+      case 'host.listWorkspaceEntries': return this.api.host.listWorkspaceEntries(request, signal)
+      case 'host.readWorkspaceFile': return this.api.host.readWorkspaceFile(request, signal)
       case 'session.list': return this.api.sessions.list(request)
       case 'session.search': return this.api.sessions.search(request, signal)
       case 'session.create': return this.api.sessions.create(request)

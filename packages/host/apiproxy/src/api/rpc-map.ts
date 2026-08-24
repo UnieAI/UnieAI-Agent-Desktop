@@ -7,6 +7,7 @@
 import type { SessionsApi } from './sessions.ts'
 import type { HostApi } from './host.ts'
 import type { WorkspaceApi } from './workspace.ts'
+import type { TerminalApi } from './terminal.ts'
 import type { AgentPresetsApi } from './agent-presets.ts'
 import type { SkillsApi } from './skills.ts'
 import type { GoalsApi } from './goals.ts'
@@ -45,6 +46,13 @@ export interface RpcMethodMap {
   'host.listWorkspaceEntries': HostApi['listWorkspaceEntries']
   'host.readWorkspaceFile': HostApi['readWorkspaceFile']
   'host.openPath': HostApi['openPath']
+  'terminal.list': TerminalApi['list']
+  'terminal.open': TerminalApi['open']
+  'terminal.replay': TerminalApi['replay']
+  'terminal.write': TerminalApi['write']
+  'terminal.resize': TerminalApi['resize']
+  'terminal.signal': TerminalApi['signal']
+  'terminal.close': TerminalApi['close']
   'workspace.list': WorkspaceApi['list']
   'workspace.create': WorkspaceApi['create']
   'workspace.rename': WorkspaceApi['rename']

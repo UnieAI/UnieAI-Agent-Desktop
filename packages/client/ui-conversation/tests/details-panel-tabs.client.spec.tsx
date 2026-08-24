@@ -29,6 +29,16 @@ describe('the open-what menu', () => {
     expect(onOpen).toHaveBeenCalledWith(PANEL_ITEMS[0]!.id)
   })
 
+  it('offers the terminal everywhere, and lets the Host be the fence', () => {
+    // The row used to be withheld off loopback. `terminal.*` is pinned on the
+    // Host, which is the fence; hiding the row here as well only meant that a
+    // person reaching this app through a tunnel or `localhost` rather than
+    // `127.0.0.1` found the feature silently missing with nothing to read.
+    render(<PanelMenu placement="menu" t={t} onOpen={() => {}} />)
+    expect(screen.getAllByRole('menuitem').map(el => el.textContent))
+      .toContain('panel.terminal')
+  })
+
   it('renders the same rows in both placements', () => {
     // The empty column and the `+` dropdown are one menu in two frames; two
     // components would let them drift into different offers for one act.

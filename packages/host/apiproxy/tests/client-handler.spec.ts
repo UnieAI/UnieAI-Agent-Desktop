@@ -82,6 +82,63 @@ function scriptedApi(overrides: {
       openPath: r => ok(r, { opened: true as const }),
       ...overrides.host,
     },
+    terminal: {
+      async list(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: { terminals: [] } } }
+      },
+      async open(request) {
+        return {
+          rpcId: request.rpcId,
+          result: {
+            ok: true,
+            value: {
+              terminal: {
+                terminalId: 't1',
+                workspaceId: request.payload.workspaceId,
+                cwd: request.payload.cwd,
+                shell: '/bin/bash', title: 'user@fixture',
+                cols: 80,
+                rows: 24,
+                live: true,
+              },
+              replay: '',
+            },
+          },
+        }
+      },
+      async replay(request) {
+        return {
+          rpcId: request.rpcId,
+          result: {
+            ok: true,
+            value: {
+              terminal: {
+                terminalId: request.payload.terminalId,
+                workspaceId: 'w1',
+                cwd: '/w',
+                shell: '/bin/bash', title: 'user@fixture',
+                cols: 80,
+                rows: 24,
+                live: true,
+              },
+              replay: '',
+            },
+          },
+        }
+      },
+      async write(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async resize(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async signal(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async close(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+    },
     workspace: {
       list: r => ok(r, { items: [], archivedSessionIds: [] }),
       create: r => ok(r, { workspace: { workspaceId: 'w1' as never, path: '/t', title: 't', sessionIds: [], createdAt: '0', updatedAt: '0' }, created: true }),

@@ -6,6 +6,11 @@
  * business errors are always 200 + ServerResponse.
  */
 
+import {
+  terminalCloseRequestSchema, terminalListRequestSchema, terminalOpenRequestSchema,
+  terminalReplayRequestSchema, terminalResizeRequestSchema, terminalSignalRequestSchema,
+  terminalWriteRequestSchema,
+} from '../api/terminal.schema.ts'
 import { randomUUID } from 'node:crypto'
 import type { z } from 'zod'
 import type { ApiProxy, MuxFrame, HostFrame } from '../api/index.ts'
@@ -113,6 +118,13 @@ const UNARY_ROUTES: UnaryRoutes = {
   'host.listWorkspaceEntries': { schema: hostListWorkspaceEntriesRequestSchema, invoke: (api, r, signal) => api.host.listWorkspaceEntries(r, signal) },
   'host.readWorkspaceFile': { schema: hostReadWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.readWorkspaceFile(r, signal) },
   'host.openPath': { schema: hostOpenPathRequestSchema, invoke: (api, r, signal) => api.host.openPath(r, signal) },
+  'terminal.list': { schema: terminalListRequestSchema, invoke: (api, r, signal) => api.terminal.list(r, signal) },
+  'terminal.open': { schema: terminalOpenRequestSchema, invoke: (api, r, signal) => api.terminal.open(r, signal) },
+  'terminal.replay': { schema: terminalReplayRequestSchema, invoke: (api, r, signal) => api.terminal.replay(r, signal) },
+  'terminal.write': { schema: terminalWriteRequestSchema, invoke: (api, r, signal) => api.terminal.write(r, signal) },
+  'terminal.resize': { schema: terminalResizeRequestSchema, invoke: (api, r, signal) => api.terminal.resize(r, signal) },
+  'terminal.signal': { schema: terminalSignalRequestSchema, invoke: (api, r, signal) => api.terminal.signal(r, signal) },
+  'terminal.close': { schema: terminalCloseRequestSchema, invoke: (api, r, signal) => api.terminal.close(r, signal) },
   'workspace.list': { schema: workspaceListRequestSchema, invoke: (api, r) => api.workspace.list(r) },
   'workspace.create': { schema: workspaceCreateRequestSchema, invoke: (api, r) => api.workspace.create(r) },
   'workspace.rename': { schema: workspaceRenameRequestSchema, invoke: (api, r) => api.workspace.rename(r) },

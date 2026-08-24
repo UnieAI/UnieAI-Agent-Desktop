@@ -74,11 +74,30 @@ export class WebSocketDownlinks {
    * @param socket - Raw socket transferred by the HTTP server.
    * @param head - Bytes already read after the upgrade headers.
    */
-  handleHost(req: IncomingMessage, socket: Duplex, head: Buffer): void {
-    this.upgrade(req, socket, head, signal => this.api.events.host({
-      rpcId: RpcId(randomUUID()),
-      payload: {},
-    }, signal))
+  /**
+   * Open the host event stream for one browser.
+   *
+   * @param req - the upgrade request.
+   * @param socket - the upgraded socket.
+   * @param head - the upgrade head bytes.
+   * @param options - `terminals` carries whether this peer may see
+   *   operator-terminal frames. `terminal.*` is loopback-pinned because it
+   *   runs commands as the host account; a trusted remote browser that cannot
+   *   OPEN a terminal must not READ one either, and this stream is the only
+   *   other place a terminal's bytes leave the Host. The carrier decides it
+   *   because the carrier is the layer that knows who the peer is — a payload
+   *   field would be the client asserting its own privilege.
+   */
+  handleHost(
+    req: IncomingMessage,
+    socket: Duplex,
+    head: Buffer,
+    options: { terminals: boolean },
+  ): void {
+    this.upgrade(req, socket, head, (signal) => {
+      const frames = this.api.events.host({ rpcId: RpcId(randomUUID()), payload: {} }, signal)
+      return options.terminals ? frames : withoutTerminalFrames(frames)
+    })
   }
 
   /**
@@ -150,4 +169,23 @@ export function rejectWebSocketUpgrade(socket: Duplex): void {
     '',
     'forbidden',
   ].join('\r\n'))
+}
+
+/**
+ * Drop every operator-terminal frame from a host stream.
+ *
+ * Filtering rather than never subscribing keeps ONE stream implementation on
+ * the Host: the alternative — a second host() variant that omits the
+ * subscriptions — would be a second thing to keep correct, and the frames it
+ * omitted would be decided in a file that cannot see the peer.
+ * @param frames - the unfiltered host stream.
+ * @returns the same stream without `terminal/*` frames.
+ */
+async function* withoutTerminalFrames(
+  frames: AsyncIterable<RpcRequest<HostFrame>>,
+): AsyncIterable<RpcRequest<HostFrame>> {
+  for await (const frame of frames) {
+    if (frame.payload.type.startsWith('terminal/')) continue
+    yield frame
+  }
 }

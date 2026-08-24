@@ -13,7 +13,7 @@ type PanelLabel = Parameters<DetailsSlotProps['t']>[0]
 import css from './PanelMenu.module.css'
 
 /** What one menu row opens. */
-export type PanelItemId = 'produced' | 'files'
+export type PanelItemId = 'produced' | 'files' | 'terminal'
 
 /** One row: what it opens, and how it is labelled. */
 interface PanelItem {
@@ -31,20 +31,43 @@ interface PanelItem {
 /**
  * The rows, in the order the column offers them.
  *
- * Terminal and browser belong here too and are absent until they exist: a row
- * that opens nothing teaches someone the menu is unreliable.
+ * The browser belongs here too and is absent until it exists: a row that opens
+ * nothing teaches someone the menu is unreliable.
+ *
+ * The terminal row is NOT withheld off loopback. `terminal.*` is pinned on the
+ * Host, which is the fence; hiding the row here as well only meant that a
+ * person reaching this app through a tunnel, a port forward, or `localhost`
+ * rather than `127.0.0.1` found the feature silently missing with nothing to
+ * read. A row that opens and then says why it could not is a surface someone
+ * can act on; a row that is not there is not.
  */
 export const PANEL_ITEMS: readonly PanelItem[] = [
   { id: 'produced', label: 'panel.produced' },
   { id: 'files', label: 'panel.files' },
+  { id: 'terminal', label: 'panel.terminal' },
 ]
 
 /**
  * The glyph for one row.
+ *
+ * Exported because the tab strip's dropdown is the shared `Menu` primitive,
+ * which takes an icon node per row: one glyph source keeps the two readings of
+ * this menu from drifting into different pictures for the same act.
  * @param id - the row.
  * @returns its icon.
  */
-function ItemIcon({ id }: { id: PanelItemId }) {
+export function PanelItemIcon({ id }: { id: PanelItemId }) {
+  if (id === 'terminal') {
+    return (
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
+        <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+        <path
+          d="M4.75 6.25 6.75 8l-2 1.75M8.5 10.25h3"
+          fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
   if (id === 'files') {
     return (
       <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
@@ -67,7 +90,13 @@ function ItemIcon({ id }: { id: PanelItemId }) {
 export interface PanelMenuProps {
   /** Open one item; the caller owns whether the menu then closes. */
   onOpen: (id: PanelItemId) => void
-  /** `menu` floats over the strip; `panel` fills the empty column. */
+  /**
+   * `menu` floats over the strip; `panel` fills the empty column.
+   *
+   * The floating placement is now the shared `Menu` primitive's job — the
+   * details column clips its overflow, and a card positioned inside it is cut
+   * off at the column edge. This component keeps the in-place list.
+   */
   placement: 'menu' | 'panel'
   t: DetailsSlotProps['t']
 }
@@ -80,7 +109,7 @@ export function PanelMenu({ onOpen, placement, t }: PanelMenuProps) {
           key={item.id} type="button" role="menuitem" className={css.item}
           onClick={() => { onOpen(item.id) }}
         >
-          <span className={css.icon}><ItemIcon id={item.id} /></span>
+          <span className={css.icon}><PanelItemIcon id={item.id} /></span>
           <span className={css.label}>{t(item.label)}</span>
         </button>
       ))}

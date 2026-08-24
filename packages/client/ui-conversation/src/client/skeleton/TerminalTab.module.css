@@ -1,0 +1,29 @@
+/* The terminal fills its tab: xterm sizes itself to this box, not the reverse. */
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--dsw-specific-sidebar-fill);
+}
+
+.surface {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+
+.failure {
+  padding: 10px 12px;
+  color: var(--dsw-text-2);
+  font-size: 12px;
+  border-bottom: 1px solid var(--dsw-line-1);
+}
+
+.footer {
+  padding: 6px 12px;
+  color: var(--dsw-text-3);
+  font-size: 11px;
+  border-top: 1px solid var(--dsw-line-1);
+}

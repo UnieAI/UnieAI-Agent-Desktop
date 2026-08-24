@@ -13,6 +13,13 @@ async function bench(declare = true) {
   const workspaces = { startSession: vi.fn() }
   const sessions = { open: vi.fn(), clear: vi.fn() }
   ctx.provide('layout', layout)
+  ctx.provide('panelTerminals', {
+    open: vi.fn(),
+    write: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   ctx.provide('sessions', sessions as never)
   ctx.provide('workspaces', workspaces as never)
   ctx.provide('locale', new LocaleRuntime(ctx))

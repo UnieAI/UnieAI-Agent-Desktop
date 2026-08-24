@@ -153,6 +153,28 @@ export class FakeApiClient implements IApiClient {
     openPath: payload => this.record('host.openPath', payload, this.onOpenPath(payload)),
   }
 
+  readonly terminal: IApiClient['terminal'] = {
+    list: (payload: unknown) => this.record('terminal.list', payload, Promise.resolve(ok({ terminals: [] }))),
+    open: (payload: unknown) => this.record('terminal.open', payload, Promise.resolve(ok({
+      terminal: {
+        terminalId: 'fk-term', workspaceId: 'fk-ws', cwd: '/f/ws', shell: '/bin/bash', title: 'user@fixture',
+        cols: 80, rows: 24, live: true,
+      },
+      replay: '',
+    }))),
+    replay: (payload: unknown) => this.record('terminal.replay', payload, Promise.resolve(ok({
+      terminal: {
+        terminalId: 'fk-term', workspaceId: 'fk-ws', cwd: '/f/ws', shell: '/bin/bash', title: 'user@fixture',
+        cols: 80, rows: 24, live: true,
+      },
+      replay: '',
+    }))),
+    write: (payload: unknown) => this.record('terminal.write', payload, Promise.resolve(ok({}))),
+    resize: (payload: unknown) => this.record('terminal.resize', payload, Promise.resolve(ok({}))),
+    signal: (payload: unknown) => this.record('terminal.signal', payload, Promise.resolve(ok({}))),
+    close: (payload: unknown) => this.record('terminal.close', payload, Promise.resolve(ok({}))),
+  }
+
   readonly workspace: IApiClient['workspace'] = {
     list: (payload: unknown) => this.record('workspace.list', payload, Promise.resolve(ok({ items: [], archivedSessionIds: [] }))),
     create: (payload: unknown) => this.record('workspace.create', payload, Promise.resolve(ok({

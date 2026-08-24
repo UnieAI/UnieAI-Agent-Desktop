@@ -424,6 +424,14 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'The registry owns exact-Agent session identity and cleanup; backends own terminal mechanics, while tool-terminal exposes the owner-scoped model tools.',
   },
   {
+    key: 'operatorTerminals',
+    pkg: 'terminal-operator',
+    title: 'Operator terminal registry',
+    mode: 'core',
+    consumers: ['host-apiproxy'],
+    note: 'The terminal a PERSON drives: workspace-scoped interactive shells over ctx.subprocess.spawnTerminal, streamed as host frames and loopback-pinned. Deliberately not ctx.terminals — that one fences to an Agent, is read by polling, and runs a profile-free shell.',
+  },
+  {
     key: 'sandbox',
     pkg: 'sandbox',
     title: 'Process-sandbox seam',

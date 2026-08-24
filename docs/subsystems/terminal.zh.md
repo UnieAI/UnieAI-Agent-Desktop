@@ -98,6 +98,68 @@ interface TerminalSendResult {
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.zh.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxoperatorterminals--operatorterminalservice"></a>
+
+### `ctx.operatorTerminals` — `OperatorTerminalService`
+
+Registry of the terminals a person opened in the GUI.
+
+Terminals are scoped to a workspace, not to a chat session: a shell running `npm run dev` must not die because the user started a new conversation.
+
+```ts cordis-catalog
+/**
+ * Open one terminal in a workspace directory.
+ * @param spec - workspace, directory, and the client's current size.
+ * @returns the new terminal's view.
+ */
+async open(spec: OperatorTerminalOpenSpec): Promise<OperatorTerminalView>
+
+/**
+ * Deliver keystrokes to a terminal.
+ * @param terminalId - the terminal to write to.
+ * @param data - text exactly as typed; no newline is added.
+ */
+async write(terminalId: OperatorTerminalId, data: string): Promise<void>
+
+/**
+ * Tell a terminal its panel changed size.
+ * @param terminalId - the terminal to resize.
+ * @param cols - column count reported by the client.
+ * @param rows - row count reported by the client.
+ */
+async resize(terminalId: OperatorTerminalId, cols: number, rows: number): Promise<void>
+
+/**
+ * Deliver a signal to a terminal's foreground process group, which is what
+ * Ctrl-C in a real terminal does.
+ * @param terminalId - the terminal to signal.
+ * @param signal - the signal to deliver.
+ */
+async signal(terminalId: OperatorTerminalId, signal: OperatorTerminalSignal): Promise<void>
+
+/**
+ * Everything retained for a terminal, so a reopened panel can repaint.
+ * @param terminalId - the terminal to read.
+ * @returns its retained output in delivery order.
+ */
+replay(terminalId: OperatorTerminalId): string
+
+/**
+ * Project every terminal this service holds, so a reconnecting client and a
+ * second tab converge on the same list.
+ * @returns a view of every terminal the service holds, live or finished.
+ */
+list(): OperatorTerminalView[]
+
+/**
+ * End a terminal and forget it, including its scrollback.
+ * @param terminalId - the terminal to close.
+ */
+async close(terminalId: OperatorTerminalId): Promise<void>
+```
+
+Source: [`packages/terminal/terminal-operator/src/index.ts`](../../packages/terminal/terminal-operator/src/index.ts)
+
 <a id="ctxterminals--terminalsessionservice"></a>
 
 ### `ctx.terminals` — `TerminalSessionService`
@@ -181,4 +243,63 @@ list(owner: Agent): TerminalSessionSnapshot[]
 Types: [Agent](core.zh.md)
 
 Source: [`packages/terminal/terminal/src/index.ts`](../../packages/terminal/terminal/src/index.ts)
+
+<a id="operator-terminal-events"></a>
+
+### `operator-terminal/*` events
+
+<a id="operator-terminalchanged--emit"></a>
+
+#### `operator-terminal/changed` — emit
+
+The set of operator terminals changed: one opened, or one was closed and forgotten. Sent whole because a reconnecting client has to converge on the same list a second tab sees.
+
+```ts cordis-catalog
+/**
+ * The set of operator terminals changed: one opened, or one was closed and
+ * forgotten. Sent whole because a reconnecting client has to converge on
+ * the same list a second tab sees.
+ * @param terminals - every terminal the service still holds.
+ * @mode emit
+ */
+'operator-terminal/changed': (terminals: OperatorTerminalView[]) => void
+```
+
+Source: [`packages/terminal/terminal-operator/src/index.ts`](../../packages/terminal/terminal-operator/src/index.ts)
+
+<a id="operator-terminalexited--emit"></a>
+
+#### `operator-terminal/exited` — emit
+
+One operator terminal's shell exited; the terminal keeps its scrollback.
+
+```ts cordis-catalog
+/**
+ * One operator terminal's shell exited; the terminal keeps its scrollback.
+ * @param terminalId - the terminal that ended.
+ * @param exitCode - platform exit code when one was reported.
+ * @mode emit
+ */
+'operator-terminal/exited': (terminalId: OperatorTerminalId, exitCode?: number) => void
+```
+
+Source: [`packages/terminal/terminal-operator/src/index.ts`](../../packages/terminal/terminal-operator/src/index.ts)
+
+<a id="operator-terminaloutput--emit"></a>
+
+#### `operator-terminal/output` — emit
+
+Output produced by one operator terminal, in delivery order.
+
+```ts cordis-catalog
+/**
+ * Output produced by one operator terminal, in delivery order.
+ * @param terminalId - the terminal that produced it.
+ * @param chunk - UTF-8 text exactly as the PTY delivered it.
+ * @mode emit
+ */
+'operator-terminal/output': (terminalId: OperatorTerminalId, chunk: string) => void
+```
+
+Source: [`packages/terminal/terminal-operator/src/index.ts`](../../packages/terminal/terminal-operator/src/index.ts)
 <!-- END GENERATED cordis-surface -->

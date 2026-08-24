@@ -383,6 +383,11 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     description: 'Root interface of the unified API. New client-request domain = one new file pair + one field here + one map row.',
     methods: [
       {
+        signature: 'terminal: TerminalApi',
+        description: 'The terminal a person drives; loopback-pinned and model-invisible.',
+        parameters: [],
+      },
+      {
         signature: 'downloads: DownloadsApi',
         description: 'Host-only download surfaces (GET, no wire envelope); absent from IApiClient.',
         parameters: [],
@@ -1080,6 +1085,51 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Delete one feedback item. Absence is successful regardless of the supplied version; an existing item requires an exact version match.',
         parameters: [{ name: 'request', description: 'Session, message, and observed item version.' }],
         returns: 'the stable absent postcondition, or an explicit failure.',
+      },
+    ],
+  },
+  {
+    key: 'operatorTerminals',
+    summary: 'Registry of the terminals a person opened in the GUI.',
+    description: 'Registry of the terminals a person opened in the GUI.\n\nTerminals are scoped to a workspace, not to a chat session: a shell running `npm run dev` must not die because the user started a new conversation.',
+    methods: [
+      {
+        signature: 'async open(spec: OperatorTerminalOpenSpec): Promise<OperatorTerminalView>',
+        description: 'Open one terminal in a workspace directory.',
+        parameters: [{ name: 'spec', description: 'workspace, directory, and the client\'s current size.' }],
+        returns: 'the new terminal\'s view.',
+      },
+      {
+        signature: 'async write(terminalId: OperatorTerminalId, data: string): Promise<void>',
+        description: 'Deliver keystrokes to a terminal.',
+        parameters: [{ name: 'terminalId', description: 'the terminal to write to.' }, { name: 'data', description: 'text exactly as typed; no newline is added.' }],
+      },
+      {
+        signature: 'async resize(terminalId: OperatorTerminalId, cols: number, rows: number): Promise<void>',
+        description: 'Tell a terminal its panel changed size.',
+        parameters: [{ name: 'terminalId', description: 'the terminal to resize.' }, { name: 'cols', description: 'column count reported by the client.' }, { name: 'rows', description: 'row count reported by the client.' }],
+      },
+      {
+        signature: 'async signal(terminalId: OperatorTerminalId, signal: OperatorTerminalSignal): Promise<void>',
+        description: 'Deliver a signal to a terminal\'s foreground process group, which is what Ctrl-C in a real terminal does.',
+        parameters: [{ name: 'terminalId', description: 'the terminal to signal.' }, { name: 'signal', description: 'the signal to deliver.' }],
+      },
+      {
+        signature: 'replay(terminalId: OperatorTerminalId): string',
+        description: 'Everything retained for a terminal, so a reopened panel can repaint.',
+        parameters: [{ name: 'terminalId', description: 'the terminal to read.' }],
+        returns: 'its retained output in delivery order.',
+      },
+      {
+        signature: 'list(): OperatorTerminalView[]',
+        description: 'Project every terminal this service holds, so a reconnecting client and a second tab converge on the same list.',
+        parameters: [],
+        returns: 'a view of every terminal the service holds, live or finished.',
+      },
+      {
+        signature: 'async close(terminalId: OperatorTerminalId): Promise<void>',
+        description: 'End a terminal and forget it, including its scrollback.',
+        parameters: [{ name: 'terminalId', description: 'the terminal to close.' }],
       },
     ],
   },
@@ -2664,6 +2714,30 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; their messages already obey the immutable creation contract.' }],
   },
   {
+    name: 'operator-terminal/changed',
+    mode: 'emit',
+    signature: '\'operator-terminal/changed\': (terminals: OperatorTerminalView[]) => void',
+    summary: 'The set of operator terminals changed: one opened, or one was closed and forgotten.',
+    description: 'The set of operator terminals changed: one opened, or one was closed and forgotten. Sent whole because a reconnecting client has to converge on the same list a second tab sees.',
+    parameters: [{ name: 'terminals', description: 'every terminal the service still holds.' }],
+  },
+  {
+    name: 'operator-terminal/exited',
+    mode: 'emit',
+    signature: '\'operator-terminal/exited\': (terminalId: OperatorTerminalId, exitCode?: number) => void',
+    summary: 'One operator terminal\'s shell exited; the terminal keeps its scrollback.',
+    description: 'One operator terminal\'s shell exited; the terminal keeps its scrollback.',
+    parameters: [{ name: 'terminalId', description: 'the terminal that ended.' }, { name: 'exitCode', description: 'platform exit code when one was reported.' }],
+  },
+  {
+    name: 'operator-terminal/output',
+    mode: 'emit',
+    signature: '\'operator-terminal/output\': (terminalId: OperatorTerminalId, chunk: string) => void',
+    summary: 'Output produced by one operator terminal, in delivery order.',
+    description: 'Output produced by one operator terminal, in delivery order.',
+    parameters: [{ name: 'terminalId', description: 'the terminal that produced it.' }, { name: 'chunk', description: 'UTF-8 text exactly as the PTY delivered it.' }],
+  },
+  {
     name: 'session-telemetry/record',
     mode: 'waterfall',
     signature: '\'session-telemetry/record\'(record: SessionTelemetryRecord, next: () => SessionTelemetryRecord): SessionTelemetryRecord',
@@ -3864,6 +3938,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface OneShotSubagentDescriptorData extends SubagentDescriptorBase {\n    readonly mode: \'one-shot\';\n    readonly label?: string;\n}',
   },
   {
+    name: 'OperatorTerminalId',
+    declaration: 'export type OperatorTerminalId = string & {\n    readonly __operatorTerminal: unique symbol;\n};',
+  },
+  {
+    name: 'OperatorTerminalOpenSpec',
+    declaration: 'export interface OperatorTerminalOpenSpec {\n    workspaceId: string;\n    cwd: string;\n    cols: number;\n    rows: number;\n}',
+  },
+  {
+    name: 'OperatorTerminalSignal',
+    declaration: 'export type OperatorTerminalSignal = \'SIGINT\' | \'SIGTERM\' | \'SIGQUIT\' | \'SIGTSTP\';',
+  },
+  {
+    name: 'OperatorTerminalView',
+    declaration: 'export interface OperatorTerminalView {\n    terminalId: OperatorTerminalId;\n    workspaceId: string;\n    cwd: string;\n    shell: string;\n    title: string;\n    cols: number;\n    rows: number;\n    live: boolean;\n    exitCode?: number | undefined;\n}',
+  },
+  {
     name: 'PermissionSelect',
     declaration: 'export interface PermissionSelect {\n    options: PresetOption[];\n    currentValue: string;\n}',
   },
@@ -4037,7 +4127,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'RpcErrorDetailsMap',
-    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'agent-preset-read-only\': {\n        agentPreset: string;\n        reason: string;\n    };\n    \'agent-preset-locked\': {\n        sessionId: SessionId;\n        agentPreset: string;\n    };\n    \'agent-preset-conflict\': {\n        sessionId: SessionId;\n        requestedPreset: string;\n        existingPreset?: string;\n    };\n    \'agent-preset-not-fou /* …truncated — full shape in source */',
+    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n    \'terminal-exited\': {\n        terminalId: string;\n    };\n    \'agent-preset-read-only\': {\n        agentPreset: string;\n        reason: string;\n    };\n /* …truncated — full shape in source */',
   },
   {
     name: 'RpcId',
@@ -4046,6 +4136,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'RpcReceipt',
     declaration: 'export type RpcReceipt = {\n    accepted: true;\n} | {\n    accepted: false;\n    reason: \'not-pending\' | \'bad-response\';\n};',
+  },
+  {
+    name: 'RpcRequest',
+    declaration: 'export interface RpcRequest<P> {\n    rpcId: RpcId;\n    payload: P;\n}',
+  },
+  {
+    name: 'RpcResponse',
+    declaration: 'export interface RpcResponse<T> {\n    rpcId: RpcId;\n    result: RpcResult<T>;\n}',
   },
   {
     name: 'RpcResult',
@@ -4633,7 +4731,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'SubprocessTerminalHandle',
-    declaration: 'export interface SubprocessTerminalHandle {\n    readonly pid: number;\n    readonly output: Readable;\n    readonly done: Promise<SubprocessOutcome>;\n    write(data: string): Promise<void>;\n    inspectForeground(): Promise<SubprocessTerminalForeground | undefined>;\n    signalForeground(signal: SubprocessTerminalSignal): Promise<number>;\n    terminate(): Promise<void>;\n}',
+    declaration: 'export interface SubprocessTerminalHandle {\n    readonly pid: number;\n    readonly output: Readable;\n    readonly done: Promise<SubprocessOutcome>;\n    write(data: string): Promise<void>;\n    inspectForeground(): Promise<SubprocessTerminalForeground | undefined>;\n    signalForeground(signal: SubprocessTerminalSignal): Promise<number>;\n    resize(cols: number, rows: number): Promise<void>;\n    terminate(): Promise<void>;\n}',
   },
   {
     name: 'SubprocessTerminalSignal',
@@ -4704,6 +4802,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface TeamWaitResult {\n    readonly timedOut: boolean;\n}',
   },
   {
+    name: 'TerminalApi',
+    declaration: 'export interface TerminalApi {\n    list(request: RpcRequest<{}>, signal: AbortSignal): Promise<RpcResponse<{\n        terminals: TerminalView[];\n    }>>;\n    open(request: RpcRequest<{\n        workspaceId: string;\n        cwd: string;\n        cols: number;\n        rows: number;\n    }>, signal: AbortSignal): Promise<RpcResponse<TerminalOpened>>;\n    replay(request: RpcRequest<{\n        terminalId: string;\n    }>, signal: AbortSignal): Promise<RpcResponse<TerminalOpened>>;\n    write(request: RpcRequest<{\n        terminalId: string;\n        data: string;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n    resize(request: RpcRequest<{\n        terminalId: string;\n        cols: number;\n        rows: number;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n    signal(request: RpcRequest<{\n        terminalId: string;\n        signal: TerminalSignalName;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n    close(request: RpcRequest<{\n        terminalId: string;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n}',
+  },
+  {
     name: 'TerminalBackend',
     declaration: 'export interface TerminalBackend {\n    readonly type: string;\n    spawn(spec: TerminalBackendSpawnSpec): Promise<TerminalBackendSession>;\n}',
   },
@@ -4718,6 +4820,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'TerminalCallView',
     declaration: 'export interface TerminalCallView {\n    card: \'terminal\';\n    title: string;\n    description?: string;\n    cwd?: string;\n}',
+  },
+  {
+    name: 'TerminalOpened',
+    declaration: 'export interface TerminalOpened {\n    terminal: TerminalView;\n    replay: string;\n}',
   },
   {
     name: 'TerminalReadRequest',
@@ -4768,6 +4874,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type TerminalSignal = \'SIGINT\' | \'SIGTERM\' | \'SIGKILL\' | \'SIGTSTP\' | \'SIGHUP\';',
   },
   {
+    name: 'TerminalSignalName',
+    declaration: 'export type TerminalSignalName = \'SIGINT\' | \'SIGTERM\' | \'SIGQUIT\' | \'SIGTSTP\';',
+  },
+  {
     name: 'TerminalSignalResult',
     declaration: 'export interface TerminalSignalResult {\n    delivered: true;\n    targetPgid: number;\n}',
   },
@@ -4778,6 +4888,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'TerminalSpawnResult',
     declaration: 'export interface TerminalSpawnResult extends TerminalSessionSnapshot {\n    motd: string;\n}',
+  },
+  {
+    name: 'TerminalView',
+    declaration: 'export interface TerminalView {\n    terminalId: string;\n    workspaceId: string;\n    cwd: string;\n    shell: string;\n    title: string;\n    cols: number;\n    rows: number;\n    live: boolean;\n    exitCode?: number;\n}',
   },
   {
     name: 'TerminalWaitReason',

@@ -9,6 +9,7 @@ English | [中文](README.zh.md)
 | [`pty`](terminal/README.md) (`@unieai/uad-terminal`) | Backend registry, branded ids, exact-Agent ownership, session operations, and awaited cleanup | `ctx.terminals` |
 | `terminal-bash` (`@unieai/uad-terminal-bash`) | Shell backend over `ctx.subprocess.spawnTerminal`: readiness detection, bounded terminal state, sandbox policy, and session operations | registers on `ctx.terminals` |
 | `tool-terminal` (`@unieai/uad-tool-terminal`) | Six model-facing tools and generic task integration for background sends | registers on `ctx.tools` |
+| [`terminal-operator`](terminal-operator/README.md) (`@unieai/uad-terminal-operator`) | The terminal a **person** drives: workspace-scoped interactive shells, streamed output, bounded replay — model-invisible | `ctx.operatorTerminals` |
 
 The design and deferred boundaries live in the [persistent PTY Agent Note](../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.md).
 

@@ -413,6 +413,27 @@ describe('DetailsPanel Output section (search)', () => {
         readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
+        terminals={{
+          adopt: () => undefined,
+          replay: () => Promise.resolve({
+            terminal: {
+              terminalId: 't1', workspaceId: 'w1', cwd: '/w', shell: '/bin/bash', title: 'user@fixture',
+              cols: 80, rows: 24, live: true,
+            },
+            replay: '',
+          }),
+          open: () => Promise.resolve({
+            terminal: {
+              terminalId: 't1', workspaceId: 'w1', cwd: '/w', shell: '/bin/bash', title: 'user@fixture',
+              cols: 80, rows: 24, live: true,
+            },
+            replay: '',
+          }),
+          write: () => Promise.resolve(),
+          resize: () => Promise.resolve(),
+          close: () => Promise.resolve(),
+          subscribe: () => () => {},
+        }}
         openFile={() => Promise.resolve()}
         t={t}
       />,

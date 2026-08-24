@@ -14,6 +14,7 @@ import { WorkspaceRuntime } from './workspaces/service.ts'
 import type { ConversationSnapshot } from './sessions/conversation.ts'
 import type { UseProjection } from './sessions/projection-store.ts'
 import { ConversationEventRegistry } from './conversation/event-registry.ts'
+import { TerminalRuntime } from './terminals/service.ts'
 import { ConversationViewRegistry } from './conversation/view-registry.ts'
 
 export { isAppendSurfaceEvent, isReplacementSurfaceEvent } from '@unieai/uad-session/surface'
@@ -46,6 +47,7 @@ export type { SessionProvideChannelHost } from './sessions/provide.ts'
 export { createScope } from './agents/scope.ts'
 export type { AgentScopeHandle } from './agents/scope.ts'
 export { DirectoryBrowseError, WorkspaceCreateError, WorkspaceRuntime } from './workspaces/service.ts'
+export { TerminalError, TerminalRuntime } from './terminals/service.ts'
 export { abbreviateHomePath, resolveWorkspacePath } from './workspaces/path.ts'
 // Contract only: the scope implementation and its Host transport belong to
 // dsh-client-ui-settings (see that package's settings-scope.ts).
@@ -63,6 +65,8 @@ export type { SessionListPhase, SessionSearchResultItem, SubagentCatalogSnapshot
 export type { SubagentAddress, JobView } from '@unieai/uad-client-connection/client'
 export type { WorkspaceListPhase } from './workspaces/manager.ts'
 export type { WorkspaceListState } from './workspaces/service.ts'
+export type { TerminalListState, TerminalSink } from './terminals/service.ts'
+export type { TerminalSignalName, TerminalView } from '@unieai/uad-api-remotes/client'
 export type {
   DirectoryEntry, DirectoryListing, WorkspaceEntry, WorkspaceFile, WorkspaceId, WorkspaceListing,
   WorkspaceView,
@@ -198,6 +202,7 @@ export function apply(ctx: Context): void {
     identity: candidate => sessions.scopeOf(candidate),
   })
   const workspaces = new WorkspaceRuntime(ctx, connection.api, sessions)
+  const panelTerminals = new TerminalRuntime(ctx, connection.api)
   ctx.effect(
     () => workspaces.startInitialSelection(),
     'runtime: initial Workspace selection',
@@ -209,6 +214,7 @@ export function apply(ctx: Context): void {
     onHostEnvelope: (envelope) => {
       sessions.handleHostEnvelope(envelope)
       workspaces.handleHostEnvelope(envelope)
+      panelTerminals.handleHostEnvelope(envelope)
       // Forwarded-event bridge: the session layer ignores registry frames (no
       // session routing). This plugin owns the frame sink, so it hands the
       // decoded frame straight to the Remote service, which fans it out to
@@ -219,6 +225,7 @@ export function apply(ctx: Context): void {
     onConnected: () => {
       sessions.handleConnected()
       workspaces.handleConnected()
+      panelTerminals.handleConnected()
       ctx.emit('connection/reset')
     },
     onStateChange: (state) => {

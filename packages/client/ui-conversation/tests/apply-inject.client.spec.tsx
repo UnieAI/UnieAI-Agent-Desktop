@@ -59,6 +59,15 @@ async function bench() {
   })
   const layoutFake = { openDetails: vi.fn(), closeDetails: vi.fn() }
   runtime.provide('layout', layoutFake)
+  // The panel's terminal seam. A fake rather than the real runtime: this bench
+  // is about what apply() injects, and a real one would open shells.
+  runtime.provide('panelTerminals', {
+    open: vi.fn(),
+    write: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   runtime.provide('locale', locale)
   runtime.slots.installLocale(locale)
@@ -351,12 +360,13 @@ describe('details inject API', () => {
     const b = await bench()
     const entry = b.entryOf('details')
     const injected = (entry.inject as unknown as () => DetailsInjected)()
-    // Layout close, plus the two the file view needs. Selection is deliberately
-    // absent: it rides the shared store so conversation and details agree.
+    // Layout close, plus what the file view and the terminal need. Selection
+    // is deliberately absent: it rides the shared store so conversation and
+    // details agree.
     expect(Object.keys(injected).sort())
       .toEqual([
-        'canOpenFileHere', 'closeDetails', 'listWorkspaceEntries', 'openFile',
-        'readWorkspaceFile', 'toggleDetailsMaximized',
+        'canOpenFileHere', 'closeDetails', 'listWorkspaceEntries',
+        'openFile', 'readWorkspaceFile', 'terminals', 'toggleDetailsMaximized',
       ])
     injected.closeDetails()
     expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)

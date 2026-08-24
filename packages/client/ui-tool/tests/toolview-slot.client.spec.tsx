@@ -74,6 +74,15 @@ async function bench(nodes: ToolResultNode[]) {
   runtime.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
   const layout = { openDetails: vi.fn(), closeDetails: vi.fn() }
   runtime.provide('layout', layout)
+  // The panel's terminal seam: a fake, because these benches assert wiring and
+  // a real one would open shells.
+  runtime.provide('panelTerminals', {
+    open: vi.fn(),
+    write: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   runtime.provide('locale', locale)
   runtime.slots.installLocale(locale)
@@ -216,6 +225,13 @@ describe('registrant declaration injection', () => {
     runtime.provide('remote', { $on: () => () => {} })
     runtime.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
     runtime.provide('layout', { openDetails: vi.fn(), closeDetails: vi.fn() })
+    runtime.provide('panelTerminals', {
+      open: vi.fn(),
+      write: vi.fn(),
+      resize: vi.fn(),
+      close: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    })
     const locale = new LocaleRuntime(runtime.ctx)
     runtime.provide('locale', locale)
     runtime.slots.installLocale(locale)

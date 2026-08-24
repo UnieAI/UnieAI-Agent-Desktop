@@ -13,14 +13,15 @@
  */
 
 import { Fragment, useEffect, useState } from 'react'
-import { CodeBlock } from '@unieai/uad-client-ui-primitives'
+import { CodeBlock, Menu } from '@unieai/uad-client-ui-primitives'
 import { shallowEqual } from '@unieai/uad-client-runtime/client'
 import type { ConversationSnapshot, RunningToolCall, ToolCallBlock, ToolResultNode } from '@unieai/uad-client-runtime/client'
 import type { DetailsSlotProps } from '../contract/slots.ts'
 import { findToolCall } from '../chat/tool-node-reader.ts'
 import { collectArtifacts, fileName, sameArtifacts, type SessionArtifact } from './artifacts.ts'
 import { FileBrowser } from './FileBrowser.tsx'
-import { PanelMenu, type PanelItemId } from './PanelMenu.tsx'
+import { PANEL_ITEMS, PanelItemIcon, PanelMenu, type PanelItemId } from './PanelMenu.tsx'
+import { TerminalTab } from './TerminalTab.tsx'
 import css from './DetailsPanel.module.css'
 
 /** Full props composed by reference from the contract (automatic shares & injected share). */
@@ -121,6 +122,7 @@ type PanelTab =
   | { key: string; kind: 'produced' }
   | { key: string; kind: 'files' }
   | { key: string; kind: 'file'; path: string }
+  | { key: string; kind: 'terminal'; title?: string; terminalId?: string | undefined }
   | { key: string; kind: 'selection'; callId: string }
 
 /**
@@ -153,6 +155,17 @@ function TabIcon({ kind }: { kind: PanelTab['kind'] }) {
       </svg>
     )
   }
+  if (kind === 'terminal') {
+    return (
+      <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden>
+        <rect x="1.5" y="2.5" width="11" height="9" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.1" />
+        <path
+          d="M4 5.75 5.75 7 4 8.25M7.25 9h3"
+          fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
   if (kind === 'produced') {
     return (
       <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden>
@@ -173,12 +186,15 @@ function TabIcon({ kind }: { kind: PanelTab['kind'] }) {
 
 /** The tab an `open` menu item creates. */
 function tabFor(id: PanelItemId): PanelTab {
-  return id === 'files' ? { key: 'files', kind: 'files' } : { key: 'produced', kind: 'produced' }
+  if (id === 'files') return { key: 'files', kind: 'files' }
+  if (id === 'terminal') return { key: 'terminal', kind: 'terminal' }
+  return { key: 'produced', kind: 'produced' }
 }
 
 export function DetailsPanel({
   useSession, useSessions, sessionId, useStore, actions, renderSlot, closeDetails,
-  toggleDetailsMaximized, listWorkspaceEntries, readWorkspaceFile, openFile, canOpenFileHere, t,
+  toggleDetailsMaximized, listWorkspaceEntries, readWorkspaceFile, openFile, canOpenFileHere,
+  terminals, t,
 }: DetailsPanelProps) {
   const [tabs, setTabs] = useState<PanelTab[]>([])
   const [activeKey, setActiveKey] = useState<string | undefined>(undefined)
@@ -207,6 +223,15 @@ export function DetailsPanel({
     // Closing the call's tab clears the selection: the transcript reads the
     // same store, and a highlighted row with no panel behind it is a lie.
     if (key === 'selection') actions.select(null)
+    // Closing a terminal's tab ENDS it. The terminal outliving its panel is
+    // what makes reopening safe; outliving the close of its own tab would
+    // leave a shell no surface can reach, holding a per-workspace slot.
+    if (key === 'terminal') {
+      const closing = tabs.find(one => one.key === 'terminal')
+      if (closing?.kind === 'terminal' && closing.terminalId !== undefined) {
+        void terminals.close(closing.terminalId)
+      }
+    }
   }
 
   // A selection can arrive from the transcript, so the tab follows it rather
@@ -227,6 +252,7 @@ export function DetailsPanel({
   const labelOf = (tab: PanelTab): string => {
     if (tab.kind === 'file') return fileName(tab.path)
     if (tab.kind === 'files') return t('panel.files')
+    if (tab.kind === 'terminal') return tab.title ?? t('panel.terminal')
     if (tab.kind === 'produced') return t('panel.produced')
     return material?.name ?? selection?.toolName ?? t('details.title')
   }
@@ -253,27 +279,36 @@ export function DetailsPanel({
             </span>
           ))}
         </div>
-        <div className={css.plusWrap}>
-          <button
-            type="button" className={css.plus} aria-label={t('panel.open')} aria-expanded={menuOpen}
-            onClick={() => { setMenuOpen(current => !current) }}
-          >
-            +
-          </button>
-          {menuOpen && (
-            <>
-              {/* A click anywhere else dismisses the menu; without it the only
-                  way out is the button that opened it. */}
-              <div className={css.scrim} onClick={() => { setMenuOpen(false) }} />
-              <div className={css.menuAnchor}>
-                <PanelMenu
-                  placement="menu" t={t}
-                  onOpen={(id) => { open(tabFor(id)); setMenuOpen(false) }}
-                />
-              </div>
-            </>
+        {/* The shared portalled Menu, not a hand-rolled dropdown. The details
+            column clips its overflow, so an absolutely-positioned card inside
+            it is cut off at the column edge — which is exactly the case
+            `portal` exists for. The previous hand-rolled one also painted with
+            a colour token that does not exist anywhere in this product, so it
+            came out very nearly transparent on top of being clipped. */}
+        <Menu
+          open={menuOpen}
+          onClose={() => { setMenuOpen(false) }}
+          items={PANEL_ITEMS.map(item => ({
+            id: item.id,
+            label: t(item.label),
+            icon: <PanelItemIcon id={item.id} />,
+          }))}
+          onSelect={(id) => {
+            setMenuOpen(false)
+            open(tabFor(id as PanelItemId))
+          }}
+          align="end"
+          portal
+          anchor={(
+            <button
+              type="button" className={css.plus} aria-label={t('panel.open')}
+              aria-haspopup="menu" aria-expanded={menuOpen}
+              onClick={() => { setMenuOpen(current => !current) }}
+            >
+              +
+            </button>
           )}
-        </div>
+        />
         <button
           type="button" className={css.widen} aria-label={t('details.maximize')}
           title={t('details.maximize')}
@@ -313,58 +348,77 @@ export function DetailsPanel({
             <PanelMenu placement="panel" t={t} onOpen={(id) => { open(tabFor(id)) }} />
           </div>
         )
-        : active.kind === 'files' || active.kind === 'file'
+        : active.kind === 'terminal'
           ? sessionCwd === undefined
             ? <div className={css.note}>{t('files.noWorkspace')}</div>
             : (
-              <FileBrowser
-                root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile} t={t}
-                {...active.kind === 'file' ? { path: active.path } : {}}
-                onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
-                onOpenExternally={canOpenFileHere ? (path) => { void openFile(path) } : undefined}
+              // Keyed on the workspace: pointing the panel at a different
+              // workspace is a different shell, not the same one relocated.
+              <TerminalTab
+                key={sessionCwd} workspaceId={sessionCwd} cwd={sessionCwd}
+                terminals={terminals} t={t}
+                onNamed={(title) => {
+                  setTabs(current => current.map(one =>
+                    one.kind === 'terminal' ? { ...one, title } : one))
+                }}
+                onAttached={(terminalId) => {
+                  setTabs(current => current.map(one =>
+                    one.kind === 'terminal' ? { ...one, terminalId } : one))
+                }}
               />
             )
-          : active.kind === 'produced'
-            ? (
-              <div className={css.body}>
-                <Artifacts
-                  rows={artifacts} t={t}
-                  onSelect={(row) => { actions.select({ turnSeq: row.turnSeq, callId: row.callId, toolName: row.tool }) }}
+          : active.kind === 'files' || active.kind === 'file'
+            ? sessionCwd === undefined
+              ? <div className={css.note}>{t('files.noWorkspace')}</div>
+              : (
+                <FileBrowser
+                  root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile} t={t}
+                  {...active.kind === 'file' ? { path: active.path } : {}}
+                  onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
+                  onOpenExternally={canOpenFileHere ? (path) => { void openFile(path) } : undefined}
                 />
-              </div>
-            )
-            : (
-              <div className={css.body}>
-                {material === null
-                  ? <div className={css.note}>{t('details.notInWindow')}</div>
-                  : (
-                    <>
-                      {material.argsRaw !== null && (
+              )
+            : active.kind === 'produced'
+              ? (
+                <div className={css.body}>
+                  <Artifacts
+                    rows={artifacts} t={t}
+                    onSelect={(row) => { actions.select({ turnSeq: row.turnSeq, callId: row.callId, toolName: row.tool }) }}
+                  />
+                </div>
+              )
+              : (
+                <div className={css.body}>
+                  {material === null
+                    ? <div className={css.note}>{t('details.notInWindow')}</div>
+                    : (
+                      <>
+                        {material.argsRaw !== null && (
+                          <section className={css.section}>
+                            <div className={css.sectionLabel}>{t('details.input')}</div>
+                            <CodeBlock code={pretty(material.argsRaw)} lang="json" copyLabel={t('copy')} copiedLabel={t('copied')} />
+                          </section>
+                        )}
                         <section className={css.section}>
-                          <div className={css.sectionLabel}>{t('details.input')}</div>
-                          <CodeBlock code={pretty(material.argsRaw)} lang="json" copyLabel={t('copy')} copiedLabel={t('copied')} />
-                        </section>
-                      )}
-                      <section className={css.section}>
-                        <div className={css.sectionLabel}>{t('details.output')}</div>
-                        {/* Keyed by the call: the body owns per-call view state
+                          <div className={css.sectionLabel}>{t('details.output')}</div>
+                          {/* Keyed by the call: the body owns per-call view state
                             the panel would otherwise carry into the next one. */}
-                        <Fragment key={active.callId}>
-                          {renderSlot('conversation.details.tool', { block: material.block, cwd: sessionCwd }, {
-                            fallback: 'kind' in material.block
-                              ? (
-                                <pre className={css.code} data-error={material.block.isError || undefined}>
-                                  {rawResultText(material.block)}
-                                </pre>
-                              )
-                              : <div className={css.note}>{t('details.running')}</div>,
-                          })}
-                        </Fragment>
-                      </section>
-                    </>
-                  )}
-              </div>
-            )}
+                          <Fragment key={active.callId}>
+                            {renderSlot('conversation.details.tool', { block: material.block, cwd: sessionCwd }, {
+                              fallback: 'kind' in material.block
+                                ? (
+                                  <pre className={css.code} data-error={material.block.isError || undefined}>
+                                    {rawResultText(material.block)}
+                                  </pre>
+                                )
+                                : <div className={css.note}>{t('details.running')}</div>,
+                            })}
+                          </Fragment>
+                        </section>
+                      </>
+                    )}
+                </div>
+              )}
     </div>
   )
 }

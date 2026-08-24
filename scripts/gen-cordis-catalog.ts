@@ -87,6 +87,7 @@ export const SERVICE_PAGE: Record<string, string> = {
   permissionPresets: 'permission-presets.md',
   planMode: 'plan.md',
   terminals: 'terminal.md',
+  operatorTerminals: 'terminal.md',
   sandbox: 'sandbox.md',
   sandboxPolicy: 'sandbox.md',
   sessionPersistence: 'persistence.md',
@@ -164,6 +165,7 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
   slots: 'client-side interface-typed browser service — packages/client/runtime/README.md owns the API',
   theme: 'client-side interface-typed browser service — packages/client/ui-theme/README.md owns the API',
   workspaces: 'client-side interface-typed browser service — packages/client/runtime/README.md owns the API',
+  panelTerminals: 'client-side browser service for the terminal panel — packages/client/runtime/README.md owns the API; the Host service it talks to (ctx.operatorTerminals) is the catalogued one',
   settingsPanel: 'client-side interface-typed browser service — packages/client/ui-settings/README.md owns the API',
   unieaiAccount: 'client-side interface-typed browser service — packages/client/unieai-account-gateway/README.md owns the API',
   unieaiBootstrap: 'client-side interface-typed browser service — packages/client/unieai-bootstrap/README.md owns the API',
@@ -178,6 +180,9 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
  */
 export const EVENT_SCOPE_PAGE: Record<string, string> = {
   'agent': 'core.md',
+  // The terminal a person drives; documented beside the model-facing PTY
+  // stack it deliberately does not share a registry with.
+  'operator-terminal': 'terminal.md',
   // Emitted by the sign-in gate when the account it acts for changes; same
   // page as the service that emits it.
   'unieai-gate': 'web-server.md',
@@ -214,6 +219,7 @@ export const EVENT_SCOPE_PAGE: Record<string, string> = {
  * exemption cannot mask another declaration in that scope.
  */
 export const EVENT_WALK_EXEMPTIONS: Record<string, string> = {
+  'sidebar/navigate': 'client-face sidebar navigation request — packages/client/ui-sidebar/README.md owns the API',
   'command/executed': 'client-face local command acknowledgment — packages/client/ui-commands/README.md owns the API',
   'connection/reset': 'client-face transport signal — packages/client/runtime/README.md owns the API',
   'locale/change': 'client-face locale switch signal — packages/client/locale/README.md owns the API',
@@ -570,6 +576,10 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   ConsumeTokenRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',
   InsertTextRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',
   AgentHandle: 'agent ownership handle is owned by packages/core/agent/README.md',
+  OperatorTerminalId: 'the id of a terminal a PERSON drives is owned by packages/terminal/terminal-operator/README.md; the model-facing PTY catalog documents TerminalSessionId, and these are deliberately separate registries',
+  OperatorTerminalOpenSpec: 'what opening a terminal a PERSON drives requires is owned by packages/terminal/terminal-operator/README.md',
+  OperatorTerminalSignal: 'the signals the GUI may deliver to a terminal a PERSON drives are owned by packages/terminal/terminal-operator/README.md',
+  OperatorTerminalView: 'the view of a terminal a PERSON drives is owned by packages/terminal/terminal-operator/README.md; its browser-facing twin TerminalView is the wire-documented one',
   AgentPreset: 'discovered preset record is owned by packages/preset/agent-presets/README.md',
   PresetMetadata: 'preset display text is owned by packages/preset/agent-presets/README.md',
   BashEnvContributor: 'service-local extension type is owned by packages/shell/tool-bash/src/index.ts',

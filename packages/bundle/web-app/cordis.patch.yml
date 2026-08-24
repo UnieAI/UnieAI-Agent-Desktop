@@ -73,6 +73,13 @@
     - id: workspace
       name: '@unieai/uad-workspace'
 
+    # The terminal a PERSON drives, over the same subprocess primitive the
+    # agent's PTY tools use — but its own registry, with no Agent behind it.
+    # Web-only on purpose: it exists for the GUI panel, and the headless and
+    # ACP profiles have no one sitting in front of them to type into it.
+    - id: operator-terminal
+      name: '@unieai/uad-terminal-operator'
+
     - id: session-projection-cache
       name: '@unieai/uad-session-projection-cache'
       config:

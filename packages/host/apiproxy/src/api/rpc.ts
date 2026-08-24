@@ -46,6 +46,18 @@ export interface RpcErrorDetailsMap {
   'directory-create-failed': { path: string }
   'directory-picker-unavailable': { capability: string }
   'workspace-listing-unavailable': {}
+  /** The deployment composes no operator-terminal service, so the panel has nothing to open. */
+  'terminal-unavailable': {}
+  /** The deployment turned the operator terminal off; the message says so. */
+  'terminal-disabled': {}
+  /** No terminal by that id; it was closed, or the Host restarted under the panel. */
+  'terminal-no-terminal': { terminalId: string }
+  /** The workspace already holds as many live terminals as the deployment allows. */
+  'terminal-too-many-terminals': {}
+  /** No runnable shell was found via `$SHELL`, `/bin/bash`, or `/bin/sh`. */
+  'terminal-no-shell': {}
+  /** The shell has exited; the panel keeps its output but accepts no more input. */
+  'terminal-exited': { terminalId: string }
   'agent-preset-read-only': { agentPreset: string; reason: string }
   'agent-preset-locked': { sessionId: SessionId; agentPreset: string }
   'agent-preset-conflict': { sessionId: SessionId; requestedPreset: string; existingPreset?: string }

@@ -18,6 +18,7 @@ export type {
   ApprovalResponsePayload, QuestionResponsePayload, HistoryEntry, ToolEventView,
   DirectoryEntry, DirectoryListing, WorkspaceEntry, WorkspaceFile, WorkspaceListing,
   ToolCallView, ToolResultView, WorkspaceApi, WorkspaceId, WorkspaceView,
+  TerminalApi, TerminalOpened, TerminalSignalName, TerminalView,
   SkillsApi, SkillEntry,
   ModelCatalogFailure, ModelCatalogModel, ModelProviderGroup, ModelReasoning,
   MessageId, ModelReasoningEffort, ModelSelection, QueueAction, QueuedInboxItem, SessionModels,

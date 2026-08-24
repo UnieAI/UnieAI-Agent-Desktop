@@ -34,6 +34,13 @@ afterEach(() => {
 async function bench(options: { locale?: 'en' } = {}) {
   const runtime = await SlotTestRuntime.create()
   runtime.provide('layout', { toggleSidebar: vi.fn() })
+  runtime.provide('panelTerminals', {
+    open: vi.fn(),
+    write: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   if (options.locale === 'en') locale.setLocale('en')
   runtime.provide('locale', locale)

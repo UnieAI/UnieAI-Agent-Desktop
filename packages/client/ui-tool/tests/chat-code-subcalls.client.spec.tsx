@@ -158,6 +158,13 @@ async function bench(snapshot: ConversationSnapshot) {
   }
   ctx.provide('workspaces', workspaces)
   ctx.provide('layout', layout)
+  ctx.provide('panelTerminals', {
+    open: vi.fn(),
+    write: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   ctx.provide('connection', {
     api: { settings: {} },
     isLoopback: false,

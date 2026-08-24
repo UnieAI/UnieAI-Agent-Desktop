@@ -29,6 +29,15 @@ async function bench() {
   await runtime.sessions.add(
     { id: CHILD, summary: { title: 'C', displayTitle: 'C', parentId: ROOT } }, { current: false })
   runtime.provide('layout', { openDetails: vi.fn(), closeDetails: vi.fn() })
+  // The panel's terminal seam: a fake, because these benches assert wiring and
+  // a real one would open shells.
+  runtime.provide('panelTerminals', {
+    open: vi.fn(),
+    write: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   runtime.provide('locale', locale)
   runtime.slots.installLocale(locale)

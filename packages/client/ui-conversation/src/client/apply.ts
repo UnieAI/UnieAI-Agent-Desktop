@@ -52,7 +52,7 @@ declare module '@unieai/uad-client-ui-slots' {
 /** Services required by the conversation plugin. */
 export const inject = [
   'slots', 'layout', 'sessions', 'workspaces', 'locale', 'connection', 'remote', 'settingsScope',
-  'conversationEvents', 'conversationViews',
+  'conversationEvents', 'conversationViews', 'panelTerminals',
 ]
 
 // Static no-session sources for the composer-bar hooks compartment: module
@@ -481,6 +481,15 @@ export function apply(ctx: Context): void {
       // The client Context carries no `connection` type merge, so the declared
       // injection is read by name — the same way ui-settings-* reach it.
       canOpenFileHere: (ctx.get('connection') as { isLoopback?: boolean } | undefined)?.isLoopback === true,
+      terminals: {
+        adopt: workspaceId => ctx.panelTerminals.liveIn(workspaceId),
+        replay: terminalId => ctx.panelTerminals.replay(terminalId),
+        open: (workspaceId, cwd, cols, rows) => ctx.panelTerminals.open(workspaceId, cwd, cols, rows),
+        write: (terminalId, data) => ctx.panelTerminals.write(terminalId, data),
+        resize: (terminalId, cols, rows) => ctx.panelTerminals.resize(terminalId, cols, rows),
+        close: terminalId => ctx.panelTerminals.close(terminalId),
+        subscribe: (terminalId, sink) => ctx.panelTerminals.subscribe(terminalId, sink),
+      },
     }),
   }, DetailsPanel)
 

@@ -209,6 +209,28 @@ export class FakeApiClient implements IApiClient {
   onWorkspaceArchiveSession: (payload: unknown) => Promise<RpcResponse<{ archivedSessionIds: SessionId[] }>> =
     payload => Promise.resolve(ok({ archivedSessionIds: [(payload as { sessionId: SessionId }).sessionId] }))
 
+  readonly terminal: IApiClient['terminal'] = {
+    list: (payload: unknown) => this.record('terminal.list', payload, Promise.resolve(ok({ terminals: [] }))),
+    open: (payload: unknown) => this.record('terminal.open', payload, Promise.resolve(ok({
+      terminal: {
+        terminalId: 'fk-term', workspaceId: 'fk-ws', cwd: '/f/ws', shell: '/bin/bash', title: 'user@fixture',
+        cols: 80, rows: 24, live: true,
+      },
+      replay: '',
+    }))),
+    replay: (payload: unknown) => this.record('terminal.replay', payload, Promise.resolve(ok({
+      terminal: {
+        terminalId: 'fk-term', workspaceId: 'fk-ws', cwd: '/f/ws', shell: '/bin/bash', title: 'user@fixture',
+        cols: 80, rows: 24, live: true,
+      },
+      replay: '',
+    }))),
+    write: (payload: unknown) => this.record('terminal.write', payload, Promise.resolve(ok({}))),
+    resize: (payload: unknown) => this.record('terminal.resize', payload, Promise.resolve(ok({}))),
+    signal: (payload: unknown) => this.record('terminal.signal', payload, Promise.resolve(ok({}))),
+    close: (payload: unknown) => this.record('terminal.close', payload, Promise.resolve(ok({}))),
+  }
+
   readonly workspace: IApiClient['workspace'] = {
     list: (payload: unknown) => this.record('workspace.list', payload, this.onWorkspaceList(payload).then(response => (
       response.result.ok
@@ -335,7 +357,45 @@ export class FakeApiClient implements IApiClient {
 
   private record<T>(method: string, payload: unknown, response: Promise<T>): Promise<T> {
     this.calls.push({ method, payload })
+    const delay = this.delays.get(method)
+    if (delay !== undefined) {
+      this.delays.delete(method)
+      return new Promise<T>(resolve => setTimeout(() => { resolve(response) }, delay))
+    }
+    const failure = this.failures.get(method)
+    if (failure !== undefined) {
+      this.failures.delete(method)
+      return Promise.resolve({ rpcId: 'fk-rpc' as never, result: { ok: false, error: failure } } as T)
+    }
     return response
+  }
+
+  /** One-shot failures, keyed by method; consumed by the next call to it. */
+  private readonly failures = new Map<string, { code: string; message: string; details: object }>()
+
+  /** One-shot answer delays, keyed by method; consumed by the next call to it. */
+  private readonly delays = new Map<string, number>()
+
+  /**
+   * Make the NEXT call to one method answer slowly, so a test can prove a
+   * caller's ordering rather than relying on the fake's own timing.
+   * @param method - the wire method to delay.
+   * @param ms - how long to hold the answer.
+   */
+  delayNext(method: string, ms: number): void {
+    this.delays.set(method, ms)
+  }
+
+  /**
+   * Make the NEXT call to one method fail, then behave normally again.
+   *
+   * One-shot rather than sticky so a test can prove both the failure and the
+   * recovery without building two fakes.
+   * @param method - the wire method to fail.
+   * @param error - the wire error to answer with.
+   */
+  failNext(method: string, error: { code: string; message: string; details: object }): void {
+    this.failures.set(method, error)
   }
 
   private async *openStream<F>(registry: StreamConn<F>[], signal: AbortSignal, onOpen?: () => void): AsyncGenerator<RpcRequest<F>> {

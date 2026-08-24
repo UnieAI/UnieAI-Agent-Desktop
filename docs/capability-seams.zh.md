@@ -142,6 +142,8 @@ flowchart LR
   svc_shellEnv["ctx.shellEnv<br/>Managed bash environment registry"]
   pkg_terminal["terminal"]
   svc_terminals["ctx.terminals<br/>Persistent PTY session registry"]
+  pkg_terminal_operator["terminal-operator"]
+  svc_operatorTerminals["ctx.operatorTerminals<br/>Operator terminal registry"]
   pkg_sandbox["sandbox"]
   svc_sandbox["ctx.sandbox<br/>Process-sandbox seam"]
   pkg_sandbox_local["sandbox-local"]
@@ -299,6 +301,7 @@ flowchart LR
   pkg_system_prompt --> svc_systemPrompt
   pkg_terminal --> svc_terminals
   pkg_terminal_bash --> svc_terminals
+  pkg_terminal_operator --> svc_operatorTerminals
   pkg_token_meter --> svc_tokenMeter
   pkg_tools --> svc_tools
   pkg_typert_registry --> svc_typert
@@ -349,6 +352,7 @@ flowchart LR
   svc_llm --> pkg_agent_loop
   svc_llm --> pkg_compaction_basic
   svc_lsp --> pkg_tool_lsp
+  svc_operatorTerminals --> pkg_host_apiproxy
   svc_sandbox --> pkg_bash_sandbox
   svc_sandbox --> pkg_terminal_bash
   svc_sandboxPolicy --> pkg_bash_sandbox
@@ -474,6 +478,7 @@ flowchart LR
 | `ctx.shell` | `seam` | [`shell`](../packages/shell/shell) | [`bash-local`](../packages/shell/bash-local), [`bash-sandbox`](../packages/shell/bash-sandbox), [`pwsh-local`](../packages/shell/pwsh-local) | [`tool-bash`](../packages/shell/tool-bash), [`tool-pwsh`](../packages/shell/tool-pwsh), [`hooks-claude-code`](../packages/hooks/hooks-claude-code), [`hooks-codex`](../packages/hooks/hooks-codex) | - | The model-facing shell tools and hook bridges consume this seam; sandboxed, remote, or PowerShell executors replace bash-local without touching them. |
 | `ctx.shellEnv` | `core` | [`shell-env`](../packages/shell/shell-env) | - | [`tool-bash`](../packages/shell/tool-bash), [`tool-pwsh`](../packages/shell/tool-pwsh) | - | Plugins declare effect-scoped DSH_* facts; each shell tool collects one trusted snapshot per execution and its executor rebuilds the namespace. |
 | `ctx.terminals` | `seam` | [`terminal`](../packages/terminal/terminal) | [`terminal-bash`](../packages/terminal/terminal-bash) | [`tool-terminal`](../packages/terminal/tool-terminal) | - | The registry owns exact-Agent session identity and cleanup; backends own terminal mechanics, while tool-terminal exposes the owner-scoped model tools. |
+| `ctx.operatorTerminals` | `core` | [`terminal-operator`](../packages/terminal/terminal-operator) | - | [`host-apiproxy`](../packages/host/apiproxy) | - | The terminal a PERSON drives: workspace-scoped interactive shells over ctx.subprocess.spawnTerminal, streamed as host frames and loopback-pinned. Deliberately not ctx.terminals — that one fences to an Agent, is read by polling, and runs a profile-free shell. |
 | `ctx.sandbox` | `seam` | [`sandbox`](../packages/sandbox/sandbox) | [`sandbox-local`](../packages/sandbox/sandbox-local) | [`bash-sandbox`](../packages/shell/bash-sandbox), [`terminal-bash`](../packages/terminal/terminal-bash) | - | Consumers hand over the exact argv they are about to spawn; same-world backends wrap it under a per-call policy and report enforcement. |
 | `ctx.sandboxPolicy` | `core` | [`sandbox-policy`](../packages/sandbox/sandbox-policy) | - | [`bash-sandbox`](../packages/shell/bash-sandbox), [`fs-sandbox`](../packages/fs/fs-sandbox), [`terminal-bash`](../packages/terminal/terminal-bash) | - | The one home for the deployment default mode + workspace root; only the sandboxed executor and provider read the service (the tool layers use the pure `sandbox/mode` fold it also exports). Both enforcing families read it so bash and fs cannot confine to different roots. |
 | `ctx.approval` | `seam` | `approval` | [`acp`](../packages/acp/acp) | [`tools`](../packages/core/tools), [`tool-bash`](../packages/shell/tool-bash) | - | One-shot permission decisions dispatched over the `approval/request` waterfall; answerers are listeners (the ACP bridge for its own agents), absence fails closed to `unavailable`. |

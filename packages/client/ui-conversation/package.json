@@ -48,8 +48,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "clsx": "^2.0.0",
-    "@unieai/schemastery": "workspace:^"
+    "@unieai/schemastery": "workspace:^",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "clsx": "^2.0.0"
   },
   "peerDependencies": {
     "@unieai/cordis": "workspace:^",
@@ -60,23 +62,24 @@
     "@unieai/uad-client-connection": "workspace:^",
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
-    "@unieai/uad-client-ui-settings": "workspace:^",
     "@unieai/uad-client-ui-input-trigger": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
+    "@unieai/uad-client-ui-settings": "workspace:^",
     "@unieai/uad-commands": "workspace:^",
     "@unieai/uad-compaction": "workspace:^",
+    "@unieai/uad-goal": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-llm-retry": "workspace:^",
-    "@unieai/uad-session-stats": "workspace:^",
-    "@unieai/uad-token-meter": "workspace:^",
-    "@unieai/uad-tools": "workspace:^",
-    "@unieai/uad-settings": "workspace:^",
-    "@unieai/uad-client-ui-layout": "workspace:^",
-    "@unieai/uad-goal": "workspace:^",
     "@unieai/uad-permission-presets": "workspace:^",
     "@unieai/uad-plan-mode": "workspace:^",
-    "@unieai/uad-tool-todo": "workspace:^"
+    "@unieai/uad-session-stats": "workspace:^",
+    "@unieai/uad-settings": "workspace:^",
+    "@unieai/uad-token-meter": "workspace:^",
+    "@unieai/uad-tool-todo": "workspace:^",
+    "@unieai/uad-tools": "workspace:^"
   },
   "devDependencies": {
+    "@types/react": "~18.3.1",
     "@unieai/cordis": "workspace:^",
     "@unieai/uad-agent": "workspace:^",
     "@unieai/uad-api-remotes": "workspace:^",
@@ -86,10 +89,10 @@
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
     "@unieai/uad-client-test-runtime": "workspace:^",
+    "@unieai/uad-client-ui-input-trigger": "workspace:^",
     "@unieai/uad-client-ui-layout": "workspace:^",
     "@unieai/uad-client-ui-primitives": "workspace:^",
     "@unieai/uad-client-ui-settings": "workspace:^",
-    "@unieai/uad-client-ui-input-trigger": "workspace:^",
     "@unieai/uad-client-ui-slots": "workspace:^",
     "@unieai/uad-commands": "workspace:^",
     "@unieai/uad-compaction": "workspace:^",
@@ -100,12 +103,11 @@
     "@unieai/uad-plan-mode": "workspace:^",
     "@unieai/uad-session-projection": "workspace:^",
     "@unieai/uad-session-stats": "workspace:^",
+    "@unieai/uad-settings": "workspace:^",
     "@unieai/uad-token-meter": "workspace:^",
     "@unieai/uad-tool-todo": "workspace:^",
     "@unieai/uad-tools": "workspace:^",
-    "@types/react": "~18.3.1",
-    "react": "^18.2.0",
-    "@unieai/uad-settings": "workspace:^"
+    "react": "^18.2.0"
   },
   "files": [
     "lib/index.js",

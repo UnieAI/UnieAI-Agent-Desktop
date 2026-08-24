@@ -8,7 +8,7 @@ import type {
 import type {
   CommandNode, CompactionSummaryNode, ConversationSnapshot, ConversationTurnDataMap,
   ObservableSnapshot, PendingInteraction, PendingWait, SessionId, ToolCallBlock,
-  TurnLocation, WorkspaceFile, WorkspaceId, WorkspaceListing,
+  TerminalView, TurnLocation, WorkspaceFile, WorkspaceId, WorkspaceListing,
 } from '@unieai/uad-client-runtime/client'
 import type { MarkdownFileMentions } from '@unieai/uad-client-ui-primitives'
 import type { MessageId } from '@unieai/uad-client-connection/client'
@@ -869,6 +869,74 @@ export interface DetailsInjected {
    * effect the presser cannot observe.
    */
   canOpenFileHere: boolean
+  /**
+   * The terminal a person drives, for the panel's terminal tab.
+   *
+   * Injected rather than reached from the component for the same reason the
+   * file calls are: the panel stays a presenter, and the loopback fence and
+   * the workspace-root fence live on the Host side of calls it cannot widen.
+   */
+  terminals: {
+    /**
+     * The live terminal already running for one workspace, if any.
+     *
+     * Reopening the panel must REATTACH rather than start a second shell:
+     * the terminal deliberately outlives the panel, so a tab that always
+     * opened a new one would strand the first — still running, invisible, and
+     * counting against the per-workspace bound until it is the only thing the
+     * user can hit.
+     * @param workspaceId - the workspace to look in.
+     * @returns the newest live terminal there, or undefined.
+     */
+    adopt: (workspaceId: string) => string | undefined
+    /**
+     * Re-read one terminal and everything the Host retains for it.
+     * @param terminalId - the terminal to reattach to.
+     * @returns the terminal and its retained output.
+     */
+    replay: (terminalId: string) => Promise<{ terminal: TerminalView; replay: string }>
+    /**
+     * Open a terminal in a workspace directory.
+     * @param workspaceId - workspace the terminal belongs to.
+     * @param cwd - absolute path of that workspace.
+     * @param cols - columns the panel measures.
+     * @param rows - rows the panel measures.
+     * @returns the terminal and whatever it has already produced.
+     */
+    open: (workspaceId: string, cwd: string, cols: number, rows: number) =>
+    Promise<{ terminal: TerminalView; replay: string }>
+    /**
+     * Deliver keystrokes verbatim.
+     * @param terminalId - the terminal to write to.
+     * @param data - text exactly as typed.
+     * @returns settles once the Host has taken it.
+     */
+    write: (terminalId: string, data: string) => Promise<void>
+    /**
+     * Report the panel's current size.
+     * @param terminalId - the terminal to resize.
+     * @param cols - columns.
+     * @param rows - rows.
+     * @returns settles once the Host has taken it.
+     */
+    resize: (terminalId: string, cols: number, rows: number) => Promise<void>
+    /**
+     * End a terminal and forget it.
+     * @param terminalId - the terminal to close.
+     * @returns settles once the Host has ended it.
+     */
+    close: (terminalId: string) => Promise<void>
+    /**
+     * Receive one terminal's traffic while this renderer is mounted.
+     * @param terminalId - the terminal to follow.
+     * @param sink - where its traffic goes.
+     * @returns disposer that removes exactly this subscription.
+     */
+    subscribe: (terminalId: string, sink: {
+      output: (chunk: string) => void
+      exited: (exitCode: number | undefined) => void
+    }) => () => void
+  }
 }
 
 /** Full details-slot props: selection store, Tool output seat, injected close callback, and locale. */

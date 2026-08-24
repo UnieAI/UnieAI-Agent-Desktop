@@ -124,15 +124,6 @@
   color: var(--dsw-alias-label-primary);
 }
 
-/* Outside `.tabs` on purpose: that container scrolls, and an absolutely
-   positioned menu inside a scroll container is clipped by it — the menu opened
-   invisibly and the dismiss scrim then swallowed the next click, so the button
-   read as dead. */
-.plusWrap {
-  position: relative;
-  flex: none;
-}
-
 .plus {
   display: grid;
   place-items: center;
@@ -165,26 +156,6 @@
 .plus:focus-visible {
   outline: 2px solid var(--dsw-alias-label-tertiary);
   outline-offset: -2px;
-}
-
-/* The scrim carries no appearance: it exists so a click outside the menu
-   dismisses it, which a menu without one cannot offer. */
-.scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-}
-
-/* Left-anchored under `+`, which now follows the last tab. `max-width` keeps
-   a menu opened near a full strip inside the column. */
-/* Anchored to the button's right edge. `+` sits at the right of the strip, so
-   a left-anchored menu grew away from the panel and off the window. */
-.menuAnchor {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 2;
-  max-width: calc(100vw - 24px);
 }
 
 /* The column's own controls, pushed to the far end together: widen sits

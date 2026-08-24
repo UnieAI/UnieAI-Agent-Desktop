@@ -29,6 +29,15 @@ import { SubagentError } from '@unieai/uad-subagent'
 import type { SubagentListEntry as CatalogSubagentListEntry } from '@unieai/uad-subagent'
 import { isUserInvocable } from '@unieai/uad-skill'
 import type { Workspace, WorkspaceRecord } from '@unieai/uad-workspace'
+// Value import: the error class is matched with instanceof so each failure a
+// person can act on keeps its own wire code. The type-only side also brings
+// the `ctx.operatorTerminals` Context augmentation into this program.
+import {
+  OperatorTerminalError,
+  type OperatorTerminalId,
+  type OperatorTerminalService,
+  type OperatorTerminalView,
+} from '@unieai/uad-terminal-operator'
 import {
   workspaceDomainState, workspaceRecord, WorkspaceId as brandWorkspaceId,
   WorkspaceMoveInvalidError, WorkspaceOrderInvalidError, WorkspaceUnknownSessionError,
@@ -46,6 +55,7 @@ import type {
   ModelReasoning, MuxFrame, PromptContentPart, QuestionResponsePayload, SessionListMetadata, SessionProjectionsBlock, SessionSearchItem,
   QueuedInboxItem, SessionSummary, SettingsNamespaceView, SubagentAddress, JobView, ToolEventView,
   WorkspaceId, WorkspaceView,
+  TerminalView,
 } from './api/index.ts'
 import {
   DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
@@ -607,6 +617,49 @@ async function summarizeCold(
 function directoryError(error: unknown): RpcError {
   if (error instanceof DirectoryPickerError) {
     return { code: error.code, message: error.message, details: { path: error.path } }
+  }
+  return { code: 'internal', message: error instanceof Error ? error.message : String(error), details: {} }
+}
+
+/**
+ * Project one operator terminal onto its wire shape.
+ *
+ * The conditional spread is not decoration: `exactOptionalPropertyTypes` makes
+ * an explicit `exitCode: undefined` a different type from an absent key, and
+ * the wire contract says absent.
+ * @param terminal - the service's own view.
+ * @returns the wire view.
+ */
+function terminalView(terminal: OperatorTerminalView): TerminalView {
+  const { exitCode, ...rest } = terminal
+  return { ...rest, ...exitCode === undefined ? {} : { exitCode } }
+}
+
+/**
+ * Map an operator-terminal failure onto the wire error vocabulary.
+ *
+ * Every code the service raises is one a person can act on — the deployment
+ * turned terminals off, the workspace already has as many as it allows, no
+ * shell is runnable, this one has exited — so each keeps its own code rather
+ * than collapsing into `internal`, which a panel could only render as "an
+ * error occurred". The mapping is written out rather than derived from the
+ * code string so a new service code fails this file's typecheck instead of
+ * silently producing an error code no client knows.
+ * @param method - wire method name, for the message prefix.
+ * @param error - whatever the service threw.
+ * @param terminalId - the terminal the call named, for the codes that carry it.
+ * @returns the wire error to return.
+ */
+function terminalError(method: string, error: unknown, terminalId = ''): RpcError {
+  if (error instanceof OperatorTerminalError) {
+    const message = `${method}: ${error.message}`
+    switch (error.code) {
+      case 'DISABLED': return { code: 'terminal-disabled', message, details: {} }
+      case 'NO_TERMINAL': return { code: 'terminal-no-terminal', message, details: { terminalId } }
+      case 'TOO_MANY_TERMINALS': return { code: 'terminal-too-many-terminals', message, details: {} }
+      case 'NO_SHELL': return { code: 'terminal-no-shell', message, details: {} }
+      case 'EXITED': return { code: 'terminal-exited', message, details: { terminalId } }
+    }
   }
   return { code: 'internal', message: error instanceof Error ? error.message : String(error), details: {} }
 }
@@ -1978,6 +2031,37 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     return ok(request, namespaceView(descriptor))
   }
 
+  /**
+   * Run one operator-terminal operation that returns nothing, mapping an
+   * absent service and a service failure onto the wire vocabulary.
+   * @param request - the request being answered, for the response envelope.
+   * @param method - wire method name, for the message prefix.
+   * @param terminalId - the terminal the call named, for the codes that carry it.
+   * @param run - the operation itself.
+   * @returns the wire response.
+   */
+  const terminalOperation = async <P>(
+    request: RpcRequest<P>,
+    method: string,
+    terminalId: string,
+    run: (terminals: OperatorTerminalService) => Promise<void>,
+  ): Promise<RpcResponse<{}>> => {
+    const terminals = ctx.get('operatorTerminals')
+    if (terminals === undefined) {
+      return err(request, {
+        code: 'terminal-unavailable',
+        message: `${method} needs the operatorTerminals service, which this deployment does not compose`,
+        details: {},
+      })
+    }
+    try {
+      await run(terminals)
+      return ok(request, {})
+    } catch (error: unknown) {
+      return err(request, terminalError(method, error, terminalId))
+    }
+  }
+
   return {
     sessions: {
       // Attached sessions summarize from memory; persisted-but-unattached (cold)
@@ -2739,6 +2823,97 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           }))
         }
         return Promise.resolve(ok(request, { accepted: true as const }))
+      },
+    },
+
+    terminal: {
+      list(request) {
+        const terminals = ctx.get('operatorTerminals')
+        if (terminals === undefined) return Promise.resolve(ok(request, { terminals: [] }))
+        return Promise.resolve(ok(request, { terminals: terminals.list().map(terminalView) }))
+      },
+
+      async open(request, signal) {
+        const terminals = ctx.get('operatorTerminals')
+        if (terminals === undefined) {
+          return err(request, {
+            code: 'terminal-unavailable',
+            message: 'terminal.open needs the operatorTerminals service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        // The same fence the workspace file reader uses: `cwd` is not a
+        // directory the page chose, it is one the host already registered. A
+        // page that could name any directory could start a shell anywhere.
+        const workspace = await ctx.workspaceRegistry.resolveByPath(request.payload.cwd)
+        if (workspace === undefined) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: `terminal.open: ${request.payload.cwd} is not a registered workspace`,
+            details: { path: request.payload.cwd },
+          })
+        }
+        signal.throwIfAborted()
+        try {
+          const terminal = await terminals.open({
+            workspaceId: request.payload.workspaceId,
+            cwd: request.payload.cwd,
+            cols: request.payload.cols,
+            rows: request.payload.rows,
+          })
+          return ok(request, { terminal: terminalView(terminal), replay: terminals.replay(terminal.terminalId) })
+        } catch (error: unknown) {
+          return err(request, terminalError('terminal.open', error))
+        }
+      },
+
+      replay(request) {
+        const terminals = ctx.get('operatorTerminals')
+        if (terminals === undefined) {
+          return Promise.resolve(err(request, {
+            code: 'terminal-unavailable',
+            message: 'terminal.replay needs the operatorTerminals service, which this deployment does not compose',
+            details: {},
+          }))
+        }
+        const id = request.payload.terminalId as OperatorTerminalId
+        const terminal = terminals.list().find(candidate => candidate.terminalId === id)
+        if (terminal === undefined) {
+          return Promise.resolve(err(request, {
+            code: 'terminal-no-terminal',
+            message: `terminal.replay: no terminal ${request.payload.terminalId}`,
+            details: { terminalId: request.payload.terminalId },
+          }))
+        }
+        return Promise.resolve(ok(request, { terminal: terminalView(terminal), replay: terminals.replay(id) }))
+      },
+
+      async write(request) {
+        return terminalOperation(request, 'terminal.write', request.payload.terminalId, async (terminals) => {
+          await terminals.write(request.payload.terminalId as OperatorTerminalId, request.payload.data)
+        })
+      },
+
+      async resize(request) {
+        return terminalOperation(request, 'terminal.resize', request.payload.terminalId, async (terminals) => {
+          await terminals.resize(
+            request.payload.terminalId as OperatorTerminalId,
+            request.payload.cols,
+            request.payload.rows,
+          )
+        })
+      },
+
+      async signal(request) {
+        return terminalOperation(request, 'terminal.signal', request.payload.terminalId, async (terminals) => {
+          await terminals.signal(request.payload.terminalId as OperatorTerminalId, request.payload.signal)
+        })
+      },
+
+      async close(request) {
+        return terminalOperation(request, 'terminal.close', request.payload.terminalId, async (terminals) => {
+          await terminals.close(request.payload.terminalId as OperatorTerminalId)
+        })
       },
     },
 
@@ -3674,6 +3849,22 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
               type: 'host/workspace-changed',
               workspace: changedWorkspaceView(change.key, change.value),
             }))
+          }),
+          // Operator-terminal traffic. These are workspace-scoped, not
+          // session-scoped, so they belong on this stream rather than the mux
+          // one; the carrier drops them for a connection that is not loopback.
+          ctx.on('operator-terminal/output', (terminalId: string, chunk: string) => {
+            queue.push(frame({ type: 'terminal/output', terminalId, chunk }))
+          }),
+          ctx.on('operator-terminal/exited', (terminalId: string, exitCode?: number) => {
+            queue.push(frame({
+              type: 'terminal/exited',
+              terminalId,
+              ...exitCode === undefined ? {} : { exitCode },
+            }))
+          }),
+          ctx.on('operator-terminal/changed', (terminals: OperatorTerminalView[]) => {
+            queue.push(frame({ type: 'terminal/changed', terminals: terminals.map(terminalView) }))
           }),
           // Allowlisted host events ride one verbatim wrapper frame each. The
           // allowlist is api-remotes', and `ctx.remote.$on` is the consumer

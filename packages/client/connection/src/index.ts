@@ -116,6 +116,18 @@ const PRIVILEGED_METHODS = new Set([
   'credentials.set',
   'credentials.unset',
   'llm.discoverModels',
+  // An operator terminal runs any command as the account that started the
+  // Host. That is what a terminal is for, and it is why these are pinned: the
+  // person at the keyboard is the only one who should have it. Reading one is
+  // pinned alongside opening one — `terminal.replay` returns a shell's output,
+  // and the event stream's `terminal/*` frames are filtered by the same check.
+  'terminal.list',
+  'terminal.open',
+  'terminal.replay',
+  'terminal.write',
+  'terminal.resize',
+  'terminal.signal',
+  'terminal.close',
 ])
 
 /**
@@ -191,6 +203,11 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
     }
     apiCtx.effect(() => () => downlinks.close(), 'client-connection: WebSocket downlinks')
     registerDownlink(MUX_EVENTS_PATH, (req, socket, head) => { downlinks.handleMux(req, socket, head) })
-    registerDownlink(HOST_EVENTS_PATH, (req, socket, head) => { downlinks.handleHost(req, socket, head) })
+    // The empty trust list is what "loopback" means here: the same check the
+    // privileged-method fence above applies. A peer that may not CALL
+    // terminal.* may not receive its output frames either.
+    registerDownlink(HOST_EVENTS_PATH, (req, socket, head) => {
+      downlinks.handleHost(req, socket, head, { terminals: isTrustedApiRequest(req, []) })
+    })
   })
 }

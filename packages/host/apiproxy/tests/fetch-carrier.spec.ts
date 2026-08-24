@@ -166,6 +166,63 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
         return { rpcId: request.rpcId, result: { ok: true, value: { opened: true as const } } }
       },
     },
+    terminal: {
+      async list(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: { terminals: [] } } }
+      },
+      async open(request) {
+        return {
+          rpcId: request.rpcId,
+          result: {
+            ok: true,
+            value: {
+              terminal: {
+                terminalId: 't1',
+                workspaceId: request.payload.workspaceId,
+                cwd: request.payload.cwd,
+                shell: '/bin/bash', title: 'user@fixture',
+                cols: 80,
+                rows: 24,
+                live: true,
+              },
+              replay: '',
+            },
+          },
+        }
+      },
+      async replay(request) {
+        return {
+          rpcId: request.rpcId,
+          result: {
+            ok: true,
+            value: {
+              terminal: {
+                terminalId: request.payload.terminalId,
+                workspaceId: 'w1',
+                cwd: '/w',
+                shell: '/bin/bash', title: 'user@fixture',
+                cols: 80,
+                rows: 24,
+                live: true,
+              },
+              replay: '',
+            },
+          },
+        }
+      },
+      async write(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async resize(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async signal(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async close(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+    },
     workspace: {
       async list(request) {
         return { rpcId: request.rpcId, result: { ok: true, value: { items: [], archivedSessionIds: [] } } }

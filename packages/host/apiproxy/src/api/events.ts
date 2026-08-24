@@ -16,6 +16,7 @@ import type { ToolCallView, ToolResultView } from '@unieai/uad-tools/presentatio
 import type { RpcError, RpcId, RpcRequest } from './rpc.ts'
 import type { JobView } from './jobs.ts'
 import type { WorkspaceView } from './workspace.ts'
+import type { TerminalView } from './terminal.ts'
 
 // Client-side consumers take the render-intent vocabulary from the contract;
 // dsh-tools remains its owner.
@@ -141,6 +142,28 @@ export type HostFrame =
   | { type: 'host/workspace-removed'; workspaceId: WorkspaceView['workspaceId'] }
   | { type: 'host/workspace-order-changed'; workspaceIds: WorkspaceView['workspaceId'][] }
   | { type: 'host/archived-sessions-changed'; archivedSessionIds: SessionId[] }
+  /**
+   * Output from one operator terminal, in delivery order.
+   *
+   * A terminal has no request/response shape — the shell speaks whenever it
+   * likes — so output rides this stream rather than a return value. It is a
+   * HOST frame rather than a mux one because an operator terminal is scoped to
+   * a workspace, not to a chat: a shell running `npm run dev` must not die
+   * because the user opened a new conversation.
+   *
+   * Delivered only to a loopback connection. `terminal.*` is loopback-pinned
+   * because it runs commands as the host account; a trusted remote browser
+   * that cannot open a terminal must not read one either.
+   */
+  | { type: 'terminal/output'; terminalId: string; chunk: string }
+  /** One operator terminal's shell exited; its retained output stays readable. */
+  | { type: 'terminal/exited'; terminalId: string; exitCode?: number }
+  /**
+   * The complete set of operator terminals after any change. Sent whole for
+   * the same reason as `session/queue`: a second tab and a reconnecting
+   * browser have to converge on one authoritative list.
+   */
+  | { type: 'terminal/changed'; terminals: TerminalView[] }
   /**
    * One allowlisted host cordis event forwarded verbatim. The allowlist is
    * owned by `@unieai/uad-api-remotes` (`API_REMOTE_FORWARDED_EVENTS`),

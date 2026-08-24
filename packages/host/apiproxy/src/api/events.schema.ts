@@ -67,6 +67,20 @@ export const muxFrameSchema = z.discriminatedUnion('type', [
 ]) as unknown as z.ZodType<MuxFrame>
 
 /** HostFrame union (payload slot of a host-stream ServerRequest). */
+/** One operator terminal inside a `terminal/changed` frame. */
+const terminalFrameViewSchema = z.object({
+  terminalId: z.string(),
+  workspaceId: z.string(),
+  cwd: z.string(),
+  shell: z.string(),
+  title: z.string(),
+  cols: z.number().int().positive(),
+  rows: z.number().int().positive(),
+  live: z.boolean(),
+  exitCode: z.number().int().optional(),
+})
+
+/** HostFrame union (payload slot of a host-stream ServerRequest). */
 export const hostFrameSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('host/session-added'),
@@ -84,6 +98,9 @@ export const hostFrameSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('host/workspace-removed'), workspaceId: workspaceIdSchema }),
   z.object({ type: z.literal('host/workspace-order-changed'), workspaceIds: z.array(workspaceIdSchema) }),
   z.object({ type: z.literal('host/archived-sessions-changed'), archivedSessionIds: z.array(sessionIdSchema) }),
+  z.object({ type: z.literal('terminal/output'), terminalId: z.string(), chunk: z.string() }),
+  z.object({ type: z.literal('terminal/exited'), terminalId: z.string(), exitCode: z.number().int().optional() }),
+  z.object({ type: z.literal('terminal/changed'), terminals: z.array(terminalFrameViewSchema) }),
   // args stays wide, the same posture as session/projection's value: the frame
   // arrives from JSON.parse, so every element is already a JSON value, and the
   // structural contract belongs to the owner package's cordis `Events`

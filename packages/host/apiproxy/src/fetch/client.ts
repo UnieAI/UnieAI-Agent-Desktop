@@ -9,6 +9,11 @@ import type { z } from 'zod'
 import type { ApiProxy, HostFrame, MuxFrame } from '../api/index.ts'
 import type { RequestPayload, ResponseValue, RpcMethodMap } from '../api/rpc-map.ts'
 import type { ClientRequest, ClientResponse, RpcMessage, RpcReceipt, RpcRequest, RpcResponse, ServerRequest } from '../api/rpc.ts'
+import {
+  terminalCloseValueSchema, terminalListValueSchema, terminalOpenValueSchema,
+  terminalReplayValueSchema, terminalResizeValueSchema, terminalSignalValueSchema,
+  terminalWriteValueSchema,
+} from '../api/terminal.schema.ts'
 import { RpcId } from '../api/rpc.ts'
 import type { Wire } from '../api/rpc.schema.ts'
 import { rpcReceiptSchema, serverRequestSchema, serverResponseSchema } from '../api/rpc.schema.ts'
@@ -116,6 +121,15 @@ export interface IApiClient {
     readWorkspaceFile(payload: RequestPayload<'host.readWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.readWorkspaceFile'>>>
     openPath(payload: RequestPayload<'host.openPath'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.openPath'>>>
   }
+  terminal: {
+    list(payload: RequestPayload<'terminal.list'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.list'>>>
+    open(payload: RequestPayload<'terminal.open'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.open'>>>
+    replay(payload: RequestPayload<'terminal.replay'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.replay'>>>
+    write(payload: RequestPayload<'terminal.write'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.write'>>>
+    resize(payload: RequestPayload<'terminal.resize'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.resize'>>>
+    signal(payload: RequestPayload<'terminal.signal'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.signal'>>>
+    close(payload: RequestPayload<'terminal.close'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.close'>>>
+  }
   workspace: {
     list(payload: RequestPayload<'workspace.list'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'workspace.list'>>>
     create(payload: RequestPayload<'workspace.create'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'workspace.create'>>>
@@ -174,6 +188,13 @@ export interface IApiClient {
  * mirror of the handler's request table; key coverage compiler-enforced against RpcMethodMap).
  */
 const UNARY_VALUE_SCHEMAS: { [K in keyof RpcMethodMap]: z.ZodType<Wire<ResponseValue<K>>> } = {
+  'terminal.list': terminalListValueSchema,
+  'terminal.open': terminalOpenValueSchema,
+  'terminal.replay': terminalReplayValueSchema,
+  'terminal.write': terminalWriteValueSchema,
+  'terminal.resize': terminalResizeValueSchema,
+  'terminal.signal': terminalSignalValueSchema,
+  'terminal.close': terminalCloseValueSchema,
   'session.list': sessionListValueSchema,
   'session.search': sessionSearchValueSchema,
   'session.create': sessionCreateValueSchema,
@@ -449,6 +470,16 @@ export abstract class AbstractApiClient implements IApiClient {
     listWorkspaceEntries: (payload, signal) => this.callUnary('host.listWorkspaceEntries', payload, signal),
     readWorkspaceFile: (payload, signal) => this.callUnary('host.readWorkspaceFile', payload, signal),
     openPath: (payload, signal) => this.callUnary('host.openPath', payload, signal),
+  }
+
+  readonly terminal: IApiClient['terminal'] = {
+    list: (payload, signal) => this.callUnary('terminal.list', payload, signal),
+    open: (payload, signal) => this.callUnary('terminal.open', payload, signal),
+    replay: (payload, signal) => this.callUnary('terminal.replay', payload, signal),
+    write: (payload, signal) => this.callUnary('terminal.write', payload, signal),
+    resize: (payload, signal) => this.callUnary('terminal.resize', payload, signal),
+    signal: (payload, signal) => this.callUnary('terminal.signal', payload, signal),
+    close: (payload, signal) => this.callUnary('terminal.close', payload, signal),
   }
 
   readonly workspace: IApiClient['workspace'] = {

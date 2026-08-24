@@ -78,18 +78,20 @@
     "@unieai/cordis": "workspace:^",
     "@unieai/uad-agent-presets": "workspace:^",
     "@unieai/uad-cordis-host-runner": "workspace:^",
+    "@unieai/uad-fs": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
-    "@unieai/uad-fs": "workspace:^"
+    "@unieai/uad-terminal-operator": "workspace:^"
   },
   "devDependencies": {
     "@unieai/cordis": "workspace:^",
     "@unieai/uad-agent-presets": "workspace:^",
     "@unieai/uad-cordis-host-runner": "workspace:^",
+    "@unieai/uad-fs": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-storage": "workspace:^",
     "@unieai/uad-storage-domain": "workspace:^",
+    "@unieai/uad-terminal-operator": "workspace:^",
     "@unieai/uad-typert-protocol": "workspace:^",
-    "@unieai/uad-typert-registry": "workspace:^",
-    "@unieai/uad-fs": "workspace:^"
+    "@unieai/uad-typert-registry": "workspace:^"
   }
 }

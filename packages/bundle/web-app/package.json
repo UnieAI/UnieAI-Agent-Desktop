@@ -44,6 +44,7 @@
     }
   },
   "dependencies": {
+    "@unieai/schemastery": "workspace:^",
     "@unieai/uad-agent-presets": "workspace:^",
     "@unieai/uad-api-remotes": "workspace:^",
     "@unieai/uad-app-boot": "workspace:^",
@@ -115,11 +116,11 @@
     "@unieai/uad-storage-domain": "workspace:^",
     "@unieai/uad-storage-json": "workspace:^",
     "@unieai/uad-subprocess": "workspace:^",
+    "@unieai/uad-terminal-operator": "workspace:^",
     "@unieai/uad-unieai-mcp-supervisor": "workspace:^",
     "@unieai/uad-unieai-web-gate": "workspace:^",
     "@unieai/uad-web-frontend": "workspace:^",
     "@unieai/uad-workspace": "workspace:^",
-    "@unieai/schemastery": "workspace:^",
     "commander": "^15.0.0",
     "open": "^11.0.0"
   },

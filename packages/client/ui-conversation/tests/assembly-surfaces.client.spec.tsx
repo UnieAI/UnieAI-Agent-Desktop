@@ -55,6 +55,15 @@ async function bench(opts?: { blank?: boolean }) {
   runtime.provide('remote', { $on: () => () => {} })
   runtime.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
   runtime.provide('layout', { openDetails: vi.fn(), closeDetails: vi.fn() })
+  // The panel's terminal seam: a fake, because these benches assert wiring and
+  // a real one would open shells.
+  runtime.provide('panelTerminals', {
+    open: vi.fn(),
+    write: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   runtime.provide('locale', locale)
   runtime.slots.installLocale(locale)
@@ -83,6 +92,13 @@ describe('resident composer', () => {
     runtime.provide('remote', { $on: () => () => {} })
     runtime.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
     runtime.provide('layout', { openDetails: vi.fn(), closeDetails: vi.fn() })
+    runtime.provide('panelTerminals', {
+      open: vi.fn(),
+      write: vi.fn(),
+      resize: vi.fn(),
+      close: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    })
     const locale = new LocaleRuntime(runtime.ctx)
     runtime.provide('locale', locale)
     runtime.slots.installLocale(locale)
@@ -113,6 +129,13 @@ describe('resident composer', () => {
     runtime.provide('remote', { $on: () => () => {} })
     runtime.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
     runtime.provide('layout', { openDetails: vi.fn(), closeDetails: vi.fn() })
+    runtime.provide('panelTerminals', {
+      open: vi.fn(),
+      write: vi.fn(),
+      resize: vi.fn(),
+      close: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    })
     const locale = new LocaleRuntime(runtime.ctx)
     runtime.provide('locale', locale)
     runtime.slots.installLocale(locale)
@@ -182,6 +205,13 @@ describe('prompt rejection through the assembled composer', () => {
     runtime.provide('remote', { $on: () => () => {} })
     runtime.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
     runtime.provide('layout', { openDetails: vi.fn(), closeDetails: vi.fn() })
+    runtime.provide('panelTerminals', {
+      open: vi.fn(),
+      write: vi.fn(),
+      resize: vi.fn(),
+      close: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    })
     const locale = new LocaleRuntime(runtime.ctx)
     runtime.provide('locale', locale)
     runtime.slots.installLocale(locale)

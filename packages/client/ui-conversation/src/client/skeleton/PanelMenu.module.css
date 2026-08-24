@@ -1,20 +1,13 @@
-/* One list in two placements: floating over the tab strip, or filling the
-   empty column. Only the frame differs — rows are identical so the two
-   readings of the same menu cannot drift apart. */
+/* The in-place list that fills the empty column. The floating reading of the
+   same rows is the shared Menu primitive (portalled, because the details
+   column clips its overflow); the rows are built from the same PANEL_ITEMS and
+   the same glyphs, so the two cannot drift into different offers. */
 .root {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.root[data-placement='menu'] {
-  min-width: 240px;
-  padding: 6px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 12px;
-  background: var(--dsw-alias-bg-elevated, var(--dsw-alias-bg-base));
-  box-shadow: 0 12px 32px rgb(0 0 0 / 28%);
-}
 
 .root[data-placement='panel'] {
   width: 100%;
