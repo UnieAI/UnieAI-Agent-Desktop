@@ -45,9 +45,20 @@ function main(): void {
   const family = releaseFamily(values.family)
   const root = process.cwd()
   const destination = resolve(root, values.out ?? DEFAULT_OUTPUT)
-  const members = family.publishOrder(family.members(root)).order
+  const discovered = family.members(root)
   family.verifyBuildArtifacts(root)
-  family.verifyVersions(members)
+  // Versions are checked across EVERY member: a private package follows the
+  // family's version even though it never publishes, and the workspace
+  // constraint requires it.
+  family.verifyVersions(discovered)
+  // ...but only publishable members are packed. A `private: true` manifest is
+  // one npm would refuse anyway, and packing it is not harmless: a private
+  // package has no reason to carry a `files` allowlist, so its tarball is the
+  // whole directory — `apps/desktop` packed its own TypeScript sources and six
+  // source maps. The release note already says private members stay outside
+  // pack and publish; this is where that becomes true.
+  const publishable = discovered.filter(member => member.manifest['private'] !== true)
+  const members = family.publishOrder(publishable).order
 
   rmSync(destination, { recursive: true, force: true })
   mkdirSync(destination, { recursive: true })
