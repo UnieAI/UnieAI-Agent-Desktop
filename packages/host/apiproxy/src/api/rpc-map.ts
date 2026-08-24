@@ -45,6 +45,7 @@ export interface RpcMethodMap {
   'host.createDirectory': HostApi['createDirectory']
   'host.listWorkspaceEntries': HostApi['listWorkspaceEntries']
   'host.readWorkspaceFile': HostApi['readWorkspaceFile']
+  'host.writeWorkspaceFile': HostApi['writeWorkspaceFile']
   'host.openPath': HostApi['openPath']
   'terminal.list': TerminalApi['list']
   'terminal.open': TerminalApi['open']

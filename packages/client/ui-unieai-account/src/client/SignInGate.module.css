@@ -1,0 +1,57 @@
+/* `shell.overlay` spans the whole app box. This surface paints the base
+   background because it is a place, not a dialog over one: there is nothing
+   behind it worth showing through. */
+.root {
+  position: absolute;
+  z-index: 40;
+  display: grid;
+  inset: 0;
+  place-items: center;
+  background: var(--dsw-alias-bg-base);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(360px, 100%);
+  padding: 32px;
+  text-align: center;
+}
+
+.mark {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+  letter-spacing: 0.01em;
+}
+
+.title {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.action {
+  margin-top: 8px;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--dsw-alias-interactive-bg-accent, var(--dsw-alias-label-primary));
+  color: var(--dsw-alias-bg-base);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.action:hover {
+  opacity: 0.9;
+}

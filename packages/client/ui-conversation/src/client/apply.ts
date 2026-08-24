@@ -475,6 +475,7 @@ export function apply(ctx: Context): void {
       toggleDetailsMaximized: () => { layout.toggleDetailsMaximized() },
       listWorkspaceEntries: (root, path, signal) => ctx.workspaces.listWorkspaceEntries(root, path, signal),
       readWorkspaceFile: (root, path, signal) => ctx.workspaces.readWorkspaceFile(root, path, signal),
+      writeWorkspaceFile: (root, path, text, version) => ctx.workspaces.writeWorkspaceFile(root, path, text, version),
       // The tree reports absolute host paths, so this needs no cwd resolution
       // the way the transcript's relative mentions do.
       openFile: path => ctx.workspaces.openPath(path),

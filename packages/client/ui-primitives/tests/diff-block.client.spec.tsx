@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-// DiffBlock: the per-file hunk rows (path header, removed block, added block),
-// the same-file second-hunk gap separator, the `+A -R · N file(s)` footer and
+// DiffBlock: the per-file hunk rows (path header, `@@` coordinates, context /
+// removed / added lines with their old and new line numbers), the
+// `+A -R · N file(s)` footer and
 // its singular/plural, the head/tail height cap and its expand control, the
 // empty-diffs null render, and the copy control writing the prefixed diff text
 // on both the accepted and the refused clipboard paths. writeClipboard's own
@@ -22,9 +23,18 @@ function bodyRows(container: HTMLElement): string[] {
   return [...container.querySelectorAll('[class*="_line_"]')].map(row => row.textContent ?? '')
 }
 
-/** Only the changed rows (add/del), excluding the path header and gap chrome. */
+/**
+ * Only the changed rows (add/del), as their SOURCE text — the gutters and the
+ * marker are chrome and are asserted separately.
+ */
 function changeRows(container: HTMLElement): string[] {
-  return [...container.querySelectorAll('[class*="_del_"], [class*="_add_"]')].map(row => row.textContent ?? '')
+  return [...container.querySelectorAll('[class*="_del_"], [class*="_add_"]')]
+    .map(row => row.querySelector('[class*="_text_"]')?.textContent ?? '')
+}
+
+/** One changed row's two gutters, as `old|new` with a blank for an absent side. */
+function gutters(row: Element): string {
+  return [...row.querySelectorAll('[class*="_gutter_"]')].map(cell => cell.textContent ?? '').join('|')
 }
 
 /** `count` numbered added lines as one hunk's newText. */
@@ -37,29 +47,52 @@ describe('DiffBlock structure', () => {
     const diffs: DiffHunk[] = [{ path: 'notes/new.txt', oldText: null, newText: 'hello\nworld' }]
     const { container } = render(<DiffBlock diffs={diffs} />)
     expect(screen.getByText('notes/new.txt')).toBeTruthy()
-    // No removed rows: both change lines are added.
+    // No removed rows: both change lines are added, numbered on the new side
+    // only — a created file has no old side to place them on.
     expect(changeRows(container)).toEqual(['hello', 'world'])
     expect(container.querySelectorAll('[class*="_del_"]').length).toBe(0)
-    expect(container.querySelectorAll('[class*="_add_"]').length).toBe(2)
+    const adds = [...container.querySelectorAll('[class*="_add_"]')]
+    expect(adds).toHaveLength(2)
+    expect(adds.map(gutters)).toEqual(['|1', '|2'])
   })
 
-  it('renders an edit as a removed block above an added block', () => {
+  it('renders an edit as the removed line then the added one, each numbered on its own side', () => {
     const diffs: DiffHunk[] = [{ path: 'a.ts', oldText: 'old', newText: 'new' }]
     const { container } = render(<DiffBlock diffs={diffs} />)
     expect(container.querySelectorAll('[class*="_del_"]').length).toBe(1)
     expect(container.querySelectorAll('[class*="_add_"]').length).toBe(1)
     expect(changeRows(container)).toEqual(['old', 'new'])
+    expect(gutters(container.querySelector('[class*="_del_"]')!)).toBe('1|')
+    expect(gutters(container.querySelector('[class*="_add_"]')!)).toBe('|1')
   })
 
-  it('opens a same-file second hunk with a gap instead of repeating the path', () => {
+  it('keeps unchanged lines as context instead of drawing them on both sides', () => {
+    // The whole reason for a real diff: an edit inside a region used to print
+    // every surrounding line once in red and once in green.
+    const before = 'a\nb\nc\nd\ne\nf\ng'
+    const { container } = render(<DiffBlock diffs={[{ path: 'a.ts', oldText: before, newText: before.replace('d', 'D') }]} />)
+    expect(changeRows(container)).toEqual(['d', 'D'])
+    expect(container.querySelectorAll('[class*="_context_"]').length).toBeGreaterThan(0)
+    expect(screen.getByText('└ +1 -1 · 1 file')).toBeTruthy()
+  })
+
+  it('states where in the file a change lands', () => {
+    const before = Array.from({ length: 40 }, (_v, i) => `line ${String(i + 1)}`).join('\n')
+    const { container } = render(<DiffBlock diffs={[{ path: 'a.ts', oldText: before, newText: before.replace('line 30', 'CHANGED') }]} />)
+    const hunk = container.querySelector('[class*="_hunk_"]')?.textContent ?? ''
+    expect(hunk).toMatch(/^@@ -27,\d+ \+27,\d+ @@$/u)
+  })
+
+  it('opens a same-file second hunk with its own coordinates, not a repeated path', () => {
     const diffs: DiffHunk[] = [
       { path: 'a.ts', oldText: 'x', newText: 'y' },
       { path: 'a.ts', oldText: 'p', newText: 'q' },
     ]
     const { container } = render(<DiffBlock diffs={diffs} />)
-    // One path header, one gap row.
     expect(container.querySelectorAll('[class*="_path_"]').length).toBe(1)
-    expect(container.querySelectorAll('[class*="_gap_"]').length).toBe(1)
+    // Each hunk states where it lands, which is what the `⋯` separator could
+    // never say.
+    expect(container.querySelectorAll('[class*="_hunk_"]').length).toBe(2)
   })
 
   it('opens a new file with its own path header', () => {
@@ -69,7 +102,6 @@ describe('DiffBlock structure', () => {
     ]
     const { container } = render(<DiffBlock diffs={diffs} />)
     expect(container.querySelectorAll('[class*="_path_"]').length).toBe(2)
-    expect(container.querySelectorAll('[class*="_gap_"]').length).toBe(0)
   })
 
   it('renders nothing for empty diffs', () => {
@@ -151,8 +183,10 @@ describe('DiffBlock copy', () => {
     render(<DiffBlock diffs={diffs} />)
     const copy = screen.getByRole('button', { name: '复制' })
     await act(async () => { fireEvent.click(copy) })
-    // Path header, del/add prefixes, and the same-file gap all reach the clipboard.
-    expect(writeText).toHaveBeenCalledWith('a.ts\n- old\n+ new\n⋯\n- p\n+ q')
+    // What comes off the clipboard is a real unified diff: the path header,
+    // each hunk's coordinates, and unpadded `-`/`+` prefixes.
+    expect(writeText).toHaveBeenCalledWith(
+      'a.ts\n@@ -1,1 +1,1 @@\n-old\n+new\n@@ -1,1 +1,1 @@\n-p\n+q')
     expect(screen.getByRole('button', { name: '复制成功' })).toBeTruthy()
     await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
     expect(screen.getByRole('button', { name: '复制' })).toBeTruthy()

@@ -73,6 +73,20 @@ export interface IWorkspaces {
    */
   readWorkspaceFile(root: string, path: string, signal?: AbortSignal): Promise<WorkspaceFile>
   /**
+   * Write one file inside a workspace, from a viewer that edited it.
+   *
+   * The same fence as the read, plus the filesystem's atomic version guard.
+   * @param root - absolute path of a registered workspace.
+   * @param path - absolute file inside `root`; it must already exist.
+   * @param text - the full new content.
+   * @param version - the token the read returned.
+   * @param signal - aborts the wire request and the Host's write.
+   * @returns the token the write produced.
+   */
+  writeWorkspaceFile(
+    root: string, path: string, text: string, version: string, signal?: AbortSignal,
+  ): Promise<string>
+  /**
    * Create one child directory through the Host's `browse` capability.
    * @param path - absolute existing parent directory.
    * @param name - single non-blank path segment.

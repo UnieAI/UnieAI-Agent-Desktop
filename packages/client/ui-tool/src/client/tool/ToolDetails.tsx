@@ -1,7 +1,7 @@
 /** Card-aware output body for the selected Tool call in details. */
 import { DiffBlock, ReadBlock, SearchBlock, TerminalBlock, WebBlock } from '@unieai/uad-client-ui-primitives'
 import type { ToolDetailsProps } from '../contract/slots.ts'
-import { diffCardModel } from './models/diff-card-model.ts'
+import { diffCardModel } from '@unieai/uad-client-ui-conversation/client'
 import { readCardModel } from './models/read-card-model.ts'
 import { searchCardModel } from './models/search-card-model.ts'
 import { terminalBlockLabels, terminalCardModel } from './models/terminal-card-model.ts'

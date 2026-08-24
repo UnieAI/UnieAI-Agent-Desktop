@@ -307,6 +307,7 @@ describe('DetailsPanel Output section (read)', () => {
         closeDetails={vi.fn()}
         listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
         readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        writeWorkspaceFile={() => Promise.resolve('v1')}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
         terminals={{

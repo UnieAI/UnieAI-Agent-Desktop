@@ -150,6 +150,7 @@ export class FakeApiClient implements IApiClient {
       Promise.resolve({ rpcId: RpcId('fake'), result: { ok: true as const, value: { root: '/w', path: '/w', entries: [], truncated: false } } })),
     readWorkspaceFile: payload => this.record('host.readWorkspaceFile', payload,
       Promise.resolve({ rpcId: RpcId('fake'), result: { ok: true as const, value: { root: '/w', path: '/w/a', size: 0, text: '' } } })),
+    writeWorkspaceFile: (payload: unknown) => this.record('host.writeWorkspaceFile', payload, Promise.resolve(ok({ version: 'v1' }))),
     openPath: payload => this.record('host.openPath', payload, this.onOpenPath(payload)),
   }
 

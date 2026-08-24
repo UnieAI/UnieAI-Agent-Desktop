@@ -17,7 +17,7 @@ import type { ToolCallView, ToolResultView } from '@unieai/uad-api-remotes/clien
 import type { SelectionTarget } from '@unieai/uad-client-ui-conversation/client'
 import { makeTranslate } from '@unieai/uad-client-test-runtime'
 import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
-import { CHAT_DIFF_MAX_LINES, diffCardModel } from '../src/client/tool/models/diff-card-model.ts'
+import { CHAT_DIFF_MAX_LINES, diffCardModel } from '@unieai/uad-client-ui-conversation/client'
 import { createChatStore } from '@unieai/uad-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
 import { DetailsPanel } from '@unieai/uad-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
@@ -350,6 +350,7 @@ describe('DetailsPanel diff Output section', () => {
         closeDetails={vi.fn()}
         listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
         readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        writeWorkspaceFile={() => Promise.resolve('v1')}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
         terminals={{

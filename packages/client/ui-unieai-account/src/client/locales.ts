@@ -102,6 +102,9 @@ export const zh = {
   'invite.copied': '已复制',
   'invite.copyFailed': '复制失败',
 
+  'gate.title': '请先登录',
+  'gate.body': 'Rabi 的模型由你的 UnieAI 账号供给，登录后即可开始。',
+  'gate.action': '使用 UnieAI 账号登录',
   'general.hint': '外观（浅色／深色）与语言在「通用设置」中调整。',
 } satisfies Record<string, string>
 
@@ -208,6 +211,9 @@ export const en = {
   'invite.copied': 'Copied',
   'invite.copyFailed': "Couldn't copy",
 
+  'gate.title': 'Sign in to continue',
+  'gate.body': 'Rabi draws its models from your UnieAI account. Sign in to begin.',
+  'gate.action': 'Sign in with UnieAI',
   'general.hint': 'Appearance (light / dark) and language live in General settings.',
 } satisfies Record<AccountKey, string>
 
@@ -444,6 +450,9 @@ export const zhTW = {
   'invite.copy': '複製連結',
   'invite.copied': '已複製',
   'invite.copyFailed': '複製失敗',
+  'gate.title': '請先登入',
+  'gate.body': 'Rabi 的模型由你的 UnieAI 帳號供給，登入後即可開始。',
+  'gate.action': '使用 UnieAI 帳號登入',
   'general.hint': '外觀（淺色／深色）與語言在「一般設定」中調整。',
 } satisfies Record<AccountKey, string>
 
@@ -525,5 +534,8 @@ export const ja = {
   'invite.copy': 'リンクをコピー',
   'invite.copied': 'コピーしました',
   'invite.copyFailed': 'コピーに失敗しました',
+  'gate.title': 'サインインしてください',
+  'gate.body': 'Rabi のモデルは UnieAI アカウントから供給されます。サインインすると使い始められます。',
+  'gate.action': 'UnieAI でサインイン',
   'general.hint': '外観（ライト／ダーク）と言語は「一般設定」で変更します。',
 } satisfies Record<AccountKey, string>

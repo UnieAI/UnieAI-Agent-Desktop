@@ -2616,70 +2616,99 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
       })),
       interrupt: request => Promise.resolve(ok(request, { accepted: true as const })),
     },
-    host: {
-      describe: request => ok(request, {
-        version: '0.0.0-fixture', cwd: '/tmp/fixture', attachedSessions, home: FIXTURE_HOME, canOpenPath: true,
-      }),
-      // Deterministic native pick: the keyless lanes drive the full
-      // pick-then-adopt path without an OS chooser (design-mock content,
-      // same tree the browse primitives serve).
-      pickDirectory: request => ok(request, { path: `${FIXTURE_HOME}/Documents/project` }),
-      listDirectory: (request) => {
-        const target = request.payload.path ?? FIXTURE_HOME
-        const children = childrenOf(target)
-        if (children === undefined) {
-          return err(request, { code: 'directory-unreadable', message: `cannot list ${target}: not in the fixture tree`, details: { path: target } })
-        }
-        return ok(request, {
-          path: target,
-          home: FIXTURE_HOME,
-          crumbs: crumbsOf(target),
-          entries: [...children].sort((a, b) => a.localeCompare(b))
-            .map(name => ({ name, path: target === '/' ? `/${name}` : `${target}/${name}`, hidden: name.startsWith('.') })),
-          // The fixture tree is tiny; no level ever reaches a backend bound.
-          truncated: false,
-        })
-      },
-      readWorkspaceFile: request => ok(request, {
-        root: request.payload.root, path: request.payload.path, size: 0, text: '',
-      }),
+    host: (() => {
+      /** Files this fixture can hand back and take saves for. */
+      const fxFiles = new Map<string, { text: string; version: string }>()
+      return {
+        describe: request => ok(request, {
+          version: '0.0.0-fixture', cwd: '/tmp/fixture', attachedSessions, home: FIXTURE_HOME, canOpenPath: true,
+        }),
+        // Deterministic native pick: the keyless lanes drive the full
+        // pick-then-adopt path without an OS chooser (design-mock content,
+        // same tree the browse primitives serve).
+        pickDirectory: request => ok(request, { path: `${FIXTURE_HOME}/Documents/project` }),
+        listDirectory: (request) => {
+          const target = request.payload.path ?? FIXTURE_HOME
+          const children = childrenOf(target)
+          if (children === undefined) {
+            return err(request, { code: 'directory-unreadable', message: `cannot list ${target}: not in the fixture tree`, details: { path: target } })
+          }
+          return ok(request, {
+            path: target,
+            home: FIXTURE_HOME,
+            crumbs: crumbsOf(target),
+            entries: [...children].sort((a, b) => a.localeCompare(b))
+              .map(name => ({ name, path: target === '/' ? `/${name}` : `${target}/${name}`, hidden: name.startsWith('.') })),
+            // The fixture tree is tiny; no level ever reaches a backend bound.
+            truncated: false,
+          })
+        },
+        readWorkspaceFile: (request) => {
+          const held = fxFiles.get(request.payload.path)
+          return ok(request, {
+            root: request.payload.root,
+            path: request.payload.path,
+            size: held === undefined ? 0 : held.text.length,
+            version: held?.version ?? 'v0',
+            text: held?.text ?? '',
+          })
+        },
 
-      listWorkspaceEntries: (request) => {
-        const target = request.payload.path ?? request.payload.root
-        const children = childrenOf(target)
-        if (children === undefined) {
-          return err(request, { code: 'directory-unreadable', message: `cannot list ${target}: not in the fixture tree`, details: { path: target } })
-        }
-        return ok(request, {
-          root: request.payload.root,
-          path: target,
-          entries: [...children].sort((a, b) => a.localeCompare(b)).map(name => ({
-            name,
-            path: target === '/' ? `/${name}` : `${target}/${name}`,
-            kind: 'directory' as const,
-          })),
-          truncated: false,
-        })
-      },
+        writeWorkspaceFile: (request) => {
+          const held = fxFiles.get(request.payload.path) ?? { text: '', version: 'v0' }
+          // The fixture keeps the guard the Host keeps: a save against a stale
+          // token is what an editor left open beside an agent actually meets,
+          // and a fixture that always accepted would let that path go untested.
+          if (held.version !== request.payload.version) {
+            return err(request, {
+              code: 'workspace-file-stale',
+              message: `fixture: ${request.payload.path} changed since it was read`,
+              details: { path: request.payload.path },
+            })
+          }
+          const version = `v${String(Number.parseInt(held.version.slice(1), 10) + 1)}`
+          fxFiles.set(request.payload.path, { text: request.payload.text, version })
+          return ok(request, { version })
+        },
 
-      createDirectory: (request) => {
-        const parent = request.payload.path
-        const children = childrenOf(parent)
-        if (children === undefined) {
-          return err(request, { code: 'directory-create-failed', message: `missing parent ${parent}`, details: { path: parent } })
-        }
-        // Same root special case as listDirectory's entry paths: a plain join
-        // under '/' would mint '//name' and fork the tree's identity.
-        const target = parent === '/' ? `/${request.payload.name}` : `${parent}/${request.payload.name}`
-        if (children.includes(request.payload.name)) {
-          return err(request, { code: 'directory-exists', message: `${target} already exists`, details: { path: target } })
-        }
-        directoryTree.set(parent, [...children, request.payload.name])
-        directoryTree.set(target, [])
-        return ok(request, { path: target })
-      },
-      openPath: request => ok(request, { opened: true as const }),
-    },
+        listWorkspaceEntries: (request) => {
+          const target = request.payload.path ?? request.payload.root
+          const children = childrenOf(target)
+          if (children === undefined) {
+            return err(request, { code: 'directory-unreadable', message: `cannot list ${target}: not in the fixture tree`, details: { path: target } })
+          }
+          return ok(request, {
+            root: request.payload.root,
+            path: target,
+            entries: [...children].sort((a, b) => a.localeCompare(b)).map(name => ({
+              name,
+              path: target === '/' ? `/${name}` : `${target}/${name}`,
+              kind: 'directory' as const,
+            })),
+            truncated: false,
+          })
+        },
+
+        createDirectory: (request) => {
+          const parent = request.payload.path
+          const children = childrenOf(parent)
+          if (children === undefined) {
+            return err(request, { code: 'directory-create-failed', message: `missing parent ${parent}`, details: { path: parent } })
+          }
+          // Same root special case as listDirectory's entry paths: a plain join
+          // under '/' would mint '//name' and fork the tree's identity.
+          const target = parent === '/' ? `/${request.payload.name}` : `${parent}/${request.payload.name}`
+          if (children.includes(request.payload.name)) {
+            return err(request, { code: 'directory-exists', message: `${target} already exists`, details: { path: target } })
+          }
+          directoryTree.set(parent, [...children, request.payload.name])
+          directoryTree.set(target, [])
+          return ok(request, { path: target })
+        },
+        openPath: request => ok(request, { opened: true as const }),
+      }
+    })(),
+
     terminal: (() => {
       // A fixture terminal is a real enough shell for a panel to be developed
       // and tested against: it echoes what is typed, answers Enter with a
@@ -3302,6 +3331,7 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'terminal.close': return this.api.terminal.close(request, signal)
       case 'host.listWorkspaceEntries': return this.api.host.listWorkspaceEntries(request, signal)
       case 'host.readWorkspaceFile': return this.api.host.readWorkspaceFile(request, signal)
+      case 'host.writeWorkspaceFile': return this.api.host.writeWorkspaceFile(request, signal)
       case 'session.list': return this.api.sessions.list(request)
       case 'session.search': return this.api.sessions.search(request, signal)
       case 'session.create': return this.api.sessions.create(request)

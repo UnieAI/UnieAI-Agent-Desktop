@@ -46,6 +46,12 @@ export interface RpcErrorDetailsMap {
   'directory-create-failed': { path: string }
   'directory-picker-unavailable': { capability: string }
   'workspace-listing-unavailable': {}
+  /**
+   * The file changed since the editor read it — an agent working in the same
+   * tree, another editor, or a build. The write is refused rather than made to
+   * win, because the alternative discards someone's work silently.
+   */
+  'workspace-file-stale': { path: string }
   /** The deployment composes no operator-terminal service, so the panel has nothing to open. */
   'terminal-unavailable': {}
   /** The deployment turned the operator terminal off; the message says so. */

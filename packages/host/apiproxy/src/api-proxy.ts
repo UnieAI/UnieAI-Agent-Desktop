@@ -28,6 +28,7 @@ import { SessionQueryError, type SessionSearchCursor } from '@unieai/uad-session
 import { SubagentError } from '@unieai/uad-subagent'
 import type { SubagentListEntry as CatalogSubagentListEntry } from '@unieai/uad-subagent'
 import { isUserInvocable } from '@unieai/uad-skill'
+import { FsError, FsVersion } from '@unieai/uad-fs'
 import type { Workspace, WorkspaceRecord } from '@unieai/uad-workspace'
 // Value import: the error class is matched with instanceof so each failure a
 // person can act on keeps its own wire code. The type-only side also brings
@@ -3234,11 +3235,99 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           if (text.includes('\u0000')) {
             return ok(request, { root, path: target, size, reason: 'binary' as const })
           }
-          return ok(request, { root, path: target, size, text })
+          return ok(request, { root, path: target, size, version: info.version, text })
         } catch (error: unknown) {
           return err(request, {
             code: 'directory-unreadable',
             message: error instanceof Error ? error.message : String(error),
+            details: { path: target },
+          })
+        }
+      },
+
+      async writeWorkspaceFile(request, signal) {
+        const fs = ctx.get('fs')
+        if (fs === undefined) {
+          return err(request, {
+            code: 'workspace-listing-unavailable',
+            message: 'host.writeWorkspaceFile needs the fs service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        // The same fence as the read: `root` is one the host already
+        // registered, and `path` must land inside it.
+        const workspace = await ctx.workspaceRegistry.resolveByPath(request.payload.root)
+        if (workspace === undefined) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: `host.writeWorkspaceFile: ${request.payload.root} is not a registered workspace`,
+            details: { path: request.payload.root },
+          })
+        }
+        const root = resolvePath(request.payload.root)
+        const target = resolvePath(root, request.payload.path)
+        const inside = relative(root, target)
+        if (inside.startsWith('..') || isAbsolute(inside)) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: 'host.writeWorkspaceFile: path must resolve inside its workspace root',
+            details: { path: target },
+          })
+        }
+        // The same bound as the read, applied to what is being written. A
+        // viewer that could save without one would be a way to place an
+        // arbitrary amount of content through an editor.
+        if (Buffer.byteLength(request.payload.text, 'utf8') > workspaceFileMaxBytes) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: `host.writeWorkspaceFile: ${target} exceeds the deployment's file bound`,
+            details: { path: target },
+          })
+        }
+        try {
+          const resolved = await fs.resolve(target, { signal })
+          const info = await fs.stat(resolved, signal)
+          // Editing creates nothing: a viewer that could bring a file into
+          // existence would be a way to place content anywhere the host
+          // account can write, and that is not what editing means.
+          if (info === undefined || info.type !== 'file') {
+            return err(request, {
+              code: 'directory-unreadable',
+              message: `host.writeWorkspaceFile: ${target} is not a regular file`,
+              details: { path: target },
+            })
+          }
+          const outcome = await fs.writeText(
+            resolved, request.payload.text,
+            { kind: 'replaceIfVersion', version: FsVersion(request.payload.version) },
+            signal,
+            // The policy states the root this operation already proved: `root`
+            // is a registered workspace and `target` resolves inside it. The
+            // backend's own default is the CALLING SESSION's workspace, and
+            // this call belongs to no session — it is a person editing a file
+            // in a workspace they opened — so leaving the default in place
+            // refused every save with `file access denied`.
+            { mode: 'workspace-write', workspaceRoot: root },
+          )
+          return ok(request, { version: outcome.version })
+        } catch (error: unknown) {
+          // A refused version guard is the ordinary outcome of an editor that
+          // sat open while an agent worked, not a fault: it gets its own code
+          // so the editor can say what happened and offer to re-read.
+          const message = error instanceof Error ? error.message : String(error)
+          // The seam carries its reason on the error's own `code`, not in the
+          // prose: matching the message would break the moment someone
+          // rephrased it, and the phrasing is not a contract.
+          if (error instanceof FsError && error.code === 'FS_STALE_VERSION') {
+            return err(request, {
+              code: 'workspace-file-stale',
+              message: `host.writeWorkspaceFile: ${target} changed since it was read`,
+              details: { path: target },
+            })
+          }
+          return err(request, {
+            code: 'directory-unreadable',
+            message,
             details: { path: target },
           })
         }

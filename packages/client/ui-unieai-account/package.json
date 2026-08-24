@@ -52,24 +52,26 @@
     "@unieai/cordis": "workspace:^",
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
     "@unieai/uad-client-ui-settings": "workspace:^",
     "@unieai/uad-client-ui-sidebar": "workspace:^",
-    "@unieai/uad-invariants": "workspace:^",
-    "@unieai/uad-client-ui-theme": "workspace:^"
+    "@unieai/uad-client-ui-theme": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
   },
   "devDependencies": {
+    "@types/react": "~18.3.1",
     "@unieai/cordis": "workspace:^",
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
     "@unieai/uad-client-test-runtime": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
     "@unieai/uad-client-ui-primitives": "workspace:^",
     "@unieai/uad-client-ui-settings": "workspace:^",
     "@unieai/uad-client-ui-sidebar": "workspace:^",
     "@unieai/uad-client-ui-slots": "workspace:^",
+    "@unieai/uad-client-ui-theme": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
-    "@types/react": "~18.3.1",
-    "react": "^18.2.0",
-    "@unieai/uad-client-ui-theme": "workspace:^"
+    "react": "^18.2.0"
   },
   "files": [
     "lib/index.js",

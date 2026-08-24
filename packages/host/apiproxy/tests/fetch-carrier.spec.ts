@@ -162,6 +162,9 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
       async readWorkspaceFile(request) {
         return { rpcId: request.rpcId, result: { ok: true as const, value: { root: '/w', path: '/w/a', size: 0, text: '' } } }
       },
+      async writeWorkspaceFile(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { version: 'v1' } } }
+      },
       async openPath(request) {
         return { rpcId: request.rpcId, result: { ok: true, value: { opened: true as const } } }
       },

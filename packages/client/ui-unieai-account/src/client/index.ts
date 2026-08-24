@@ -43,6 +43,8 @@ import { ACCOUNT_GATEWAY_SERVICE } from '../account-contract.ts'
 import { AccountSource } from './account-source.ts'
 import { AccountSection } from './AccountSection.tsx'
 import type { AccountSectionInjected } from './AccountSection.tsx'
+import { SignInGate } from './SignInGate.tsx'
+import type { SignInGateInjected } from './SignInGate.tsx'
 import { UsageSection } from './UsageSection.tsx'
 import type { UsageSectionInjected } from './UsageSection.tsx'
 import { InviteSection } from './InviteSection.tsx'
@@ -143,6 +145,10 @@ export function apply(ctx: ClientContext): void {
     signOut: () => { source.signOut() },
     saveProfile: patch => source.saveProfile(patch),
   })
+  const gateInjected = (): SignInGateInjected => ({
+    hooks: { account: source },
+    signIn: () => { source.signIn() },
+  })
   const usageInjected = (): UsageSectionInjected => ({
     hooks: { account: source },
     signIn: () => { source.signIn() },
@@ -154,6 +160,20 @@ export function apply(ctx: ClientContext): void {
     // built once per entry, and a gateway can activate after it.
     sendInvite: email => source.sendInvite(email),
   })
+
+  // The sign-in gate takes the whole surface while nobody is signed in. It is
+  // a shell overlay rather than a settings step because it is not a step: it
+  // is the state of the application, and the ordinary interface behind it can
+  // answer nothing without an account.
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+    name: 'shell.overlay',
+    id: 'sign-in-gate',
+    // Above every other overlay: a surface that opens over the gate would be a
+    // second thing to dismiss before the one that has to happen first.
+    order: 1000,
+    locale: NS,
+    inject: gateInjected,
+  }, SignInGate))
 
   // One generator, so the three pages install and roll back together: a
   // composition holding two of them is a nav that lies about what it has.

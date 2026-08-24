@@ -365,8 +365,8 @@ describe('details inject API', () => {
     // details agree.
     expect(Object.keys(injected).sort())
       .toEqual([
-        'canOpenFileHere', 'closeDetails', 'listWorkspaceEntries',
-        'openFile', 'readWorkspaceFile', 'terminals', 'toggleDetailsMaximized',
+        'canOpenFileHere', 'closeDetails', 'listWorkspaceEntries', 'openFile',
+        'readWorkspaceFile', 'terminals', 'toggleDetailsMaximized', 'writeWorkspaceFile',
       ])
     injected.closeDetails()
     expect(b.layoutFake.closeDetails).toHaveBeenCalledTimes(1)

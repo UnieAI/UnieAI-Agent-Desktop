@@ -477,6 +477,7 @@ describe('DetailsPanel Output section', () => {
         closeDetails={vi.fn()}
         listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
         readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        writeWorkspaceFile={() => Promise.resolve('v1')}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
         terminals={{
@@ -654,13 +655,13 @@ describe('DetailsPanel Output section', () => {
     // The panel used to spend this state telling someone to go and click
     // something. It offers the menu instead — the same one `+` shows.
     const view = mount(snapshot(), null)
-    expect(view.getByText('产出')).toBeTruthy()
+    expect(view.getByText('审阅')).toBeTruthy()
     expect(view.getByText('文件')).toBeTruthy()
   })
 
   it('a step selection without a callId offers the same menu', () => {
     const view = mount(snapshot(), { turnSeq: 3, stepSeq: 1 })
-    expect(view.getByText('产出')).toBeTruthy()
+    expect(view.getByText('审阅')).toBeTruthy()
   })
 
   it('the close button reaches closeDetails', () => {
@@ -691,6 +692,7 @@ describe('DetailsPanel Output section', () => {
         closeDetails={closeDetails}
         listWorkspaceEntries={() => Promise.resolve({ root: '/w', path: '/w', entries: [], truncated: false })}
         readWorkspaceFile={() => Promise.resolve({ root: '/w', path: '/w/a', size: 0, text: '' })}
+        writeWorkspaceFile={() => Promise.resolve('v1')}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
         terminals={{

@@ -9,6 +9,7 @@ import type { z } from 'zod'
 import type { ApiProxy, HostFrame, MuxFrame } from '../api/index.ts'
 import type { RequestPayload, ResponseValue, RpcMethodMap } from '../api/rpc-map.ts'
 import type { ClientRequest, ClientResponse, RpcMessage, RpcReceipt, RpcRequest, RpcResponse, ServerRequest } from '../api/rpc.ts'
+import { hostWriteWorkspaceFileValueSchema } from '../api/host.schema.ts'
 import {
   terminalCloseValueSchema, terminalListValueSchema, terminalOpenValueSchema,
   terminalReplayValueSchema, terminalResizeValueSchema, terminalSignalValueSchema,
@@ -119,6 +120,7 @@ export interface IApiClient {
     createDirectory(payload: RequestPayload<'host.createDirectory'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.createDirectory'>>>
     listWorkspaceEntries(payload: RequestPayload<'host.listWorkspaceEntries'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.listWorkspaceEntries'>>>
     readWorkspaceFile(payload: RequestPayload<'host.readWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.readWorkspaceFile'>>>
+    writeWorkspaceFile(payload: RequestPayload<'host.writeWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.writeWorkspaceFile'>>>
     openPath(payload: RequestPayload<'host.openPath'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.openPath'>>>
   }
   terminal: {
@@ -188,6 +190,7 @@ export interface IApiClient {
  * mirror of the handler's request table; key coverage compiler-enforced against RpcMethodMap).
  */
 const UNARY_VALUE_SCHEMAS: { [K in keyof RpcMethodMap]: z.ZodType<Wire<ResponseValue<K>>> } = {
+  'host.writeWorkspaceFile': hostWriteWorkspaceFileValueSchema,
   'terminal.list': terminalListValueSchema,
   'terminal.open': terminalOpenValueSchema,
   'terminal.replay': terminalReplayValueSchema,
@@ -469,6 +472,7 @@ export abstract class AbstractApiClient implements IApiClient {
     createDirectory: (payload, signal) => this.callUnary('host.createDirectory', payload, signal),
     listWorkspaceEntries: (payload, signal) => this.callUnary('host.listWorkspaceEntries', payload, signal),
     readWorkspaceFile: (payload, signal) => this.callUnary('host.readWorkspaceFile', payload, signal),
+    writeWorkspaceFile: (payload, signal) => this.callUnary('host.writeWorkspaceFile', payload, signal),
     openPath: (payload, signal) => this.callUnary('host.openPath', payload, signal),
   }
 

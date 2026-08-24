@@ -18,7 +18,9 @@ import { shallowEqual } from '@unieai/uad-client-runtime/client'
 import type { ConversationSnapshot, RunningToolCall, ToolCallBlock, ToolResultNode } from '@unieai/uad-client-runtime/client'
 import type { DetailsSlotProps } from '../contract/slots.ts'
 import { findToolCall } from '../chat/tool-node-reader.ts'
-import { collectArtifacts, fileName, sameArtifacts, type SessionArtifact } from './artifacts.ts'
+import { fileName } from './artifacts.ts'
+import { collectReview, sameReview } from './review.ts'
+import { ReviewPanel } from './ReviewPanel.tsx'
 import { FileBrowser } from './FileBrowser.tsx'
 import { PANEL_ITEMS, PanelItemIcon, PanelMenu, type PanelItemId } from './PanelMenu.tsx'
 import { TerminalTab } from './TerminalTab.tsx'
@@ -73,53 +75,10 @@ function rawResultText(block: ToolCallBlock): string {
   return parts.join('\n')
 }
 
-/**
- * What this session produced, listed where the panel would otherwise say
- * "select a tool row".
- *
- * The panel's empty state was a instruction to go and click something. The
- * same column can answer "what came out of this conversation" instead, from
- * data it already has, and each row is the click it was asking for.
- * @param props - the artifacts and the row-selection callback.
- * @returns the list, or the original empty note when the session wrote nothing.
- */
-function Artifacts(
-  { rows, onSelect, t }: {
-    rows: readonly SessionArtifact[]
-    onSelect: (row: SessionArtifact) => void
-    t: DetailsPanelProps['t']
-  },
-) {
-  if (rows.length === 0) return <div className={css.empty}>{t('artifacts.empty')}</div>
-  return (
-    <section className={css.section}>
-      <div className={css.sectionLabel}>{t('artifacts.title')}</div>
-      <ul className={css.artifacts}>
-        {rows.map((row, index) => (
-          // The same path written twice is two acts, and the second may have
-          // failed, so rows are keyed by position rather than by path.
-          <li key={`${row.callId}:${String(index)}`}>
-            <button
-              type="button" className={css.artifact} data-state={row.state}
-              onClick={() => { onSelect(row) }}
-            >
-              <span className={css.artifactName}>
-                {fileName(row.path)}
-                {row.state === 'error' ? ` — ${t('artifacts.failed')}` : ''}
-                {row.state === 'running' ? ` — ${t('artifacts.writing')}` : ''}
-              </span>
-              <span className={css.artifactPath} title={row.path}>{row.path}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
 
 /** One open tab. `key` is stable so React keeps per-tab state across reorders. */
 type PanelTab =
-  | { key: string; kind: 'produced' }
+  | { key: string; kind: 'review' }
   | { key: string; kind: 'files' }
   | { key: string; kind: 'file'; path: string }
   | { key: string; kind: 'terminal'; title?: string; terminalId?: string | undefined }
@@ -155,6 +114,14 @@ function TabIcon({ kind }: { kind: PanelTab['kind'] }) {
       </svg>
     )
   }
+  if (kind === 'review') {
+    return (
+      <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden>
+        <rect x="2" y="2" width="10" height="10" rx="1.6" fill="none" stroke="currentColor" strokeWidth="1.1" />
+        <path d="M4.5 5.75h5M4.5 8.25h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+      </svg>
+    )
+  }
   if (kind === 'terminal') {
     return (
       <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden>
@@ -163,14 +130,6 @@ function TabIcon({ kind }: { kind: PanelTab['kind'] }) {
           d="M4 5.75 5.75 7 4 8.25M7.25 9h3"
           fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"
         />
-      </svg>
-    )
-  }
-  if (kind === 'produced') {
-    return (
-      <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden>
-        <rect x="2" y="2.5" width="10" height="9" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.1" />
-        <path d="M4.5 7h5M7 4.5v5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
       </svg>
     )
   }
@@ -188,12 +147,13 @@ function TabIcon({ kind }: { kind: PanelTab['kind'] }) {
 function tabFor(id: PanelItemId): PanelTab {
   if (id === 'files') return { key: 'files', kind: 'files' }
   if (id === 'terminal') return { key: 'terminal', kind: 'terminal' }
-  return { key: 'produced', kind: 'produced' }
+  return { key: 'review', kind: 'review' }
 }
 
 export function DetailsPanel({
   useSession, useSessions, sessionId, useStore, actions, renderSlot, closeDetails,
-  toggleDetailsMaximized, listWorkspaceEntries, readWorkspaceFile, openFile, canOpenFileHere,
+  toggleDetailsMaximized, listWorkspaceEntries, readWorkspaceFile, writeWorkspaceFile,
+  openFile, canOpenFileHere,
   terminals, t,
 }: DetailsPanelProps) {
   const [tabs, setTabs] = useState<PanelTab[]>([])
@@ -206,7 +166,7 @@ export function DetailsPanel({
   const material = useSession(
     s => (callId === undefined ? null : materialFor(s, callId)),
     (a, b) => shallowEqual(a, b))
-  const artifacts = useSession(collectArtifacts, sameArtifacts)
+  const review = useSession(collectReview, sameReview)
 
   /** Add a tab, or focus the one that is already showing that thing. */
   const open = (tab: PanelTab): void => {
@@ -252,8 +212,8 @@ export function DetailsPanel({
   const labelOf = (tab: PanelTab): string => {
     if (tab.kind === 'file') return fileName(tab.path)
     if (tab.kind === 'files') return t('panel.files')
+    if (tab.kind === 'review') return t('panel.review')
     if (tab.kind === 'terminal') return tab.title ?? t('panel.terminal')
-    if (tab.kind === 'produced') return t('panel.produced')
     return material?.name ?? selection?.toolName ?? t('details.title')
   }
 
@@ -348,45 +308,47 @@ export function DetailsPanel({
             <PanelMenu placement="panel" t={t} onOpen={(id) => { open(tabFor(id)) }} />
           </div>
         )
-        : active.kind === 'terminal'
-          ? sessionCwd === undefined
-            ? <div className={css.note}>{t('files.noWorkspace')}</div>
-            : (
-              // Keyed on the workspace: pointing the panel at a different
-              // workspace is a different shell, not the same one relocated.
-              <TerminalTab
-                key={sessionCwd} workspaceId={sessionCwd} cwd={sessionCwd}
-                terminals={terminals} t={t}
-                onNamed={(title) => {
-                  setTabs(current => current.map(one =>
-                    one.kind === 'terminal' ? { ...one, title } : one))
-                }}
-                onAttached={(terminalId) => {
-                  setTabs(current => current.map(one =>
-                    one.kind === 'terminal' ? { ...one, terminalId } : one))
-                }}
-              />
-            )
-          : active.kind === 'files' || active.kind === 'file'
+        : active.kind === 'review'
+          ? (
+            <ReviewPanel
+              review={review} t={t}
+              onSelect={(file) => {
+                actions.select({ turnSeq: file.turnSeq, callId: file.callId, toolName: file.tool })
+              }}
+              {...canOpenFileHere ? { onOpen: (path: string) => { void openFile(path) } } : {}}
+            />
+          )
+          : active.kind === 'terminal'
             ? sessionCwd === undefined
               ? <div className={css.note}>{t('files.noWorkspace')}</div>
               : (
-                <FileBrowser
-                  root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile} t={t}
-                  {...active.kind === 'file' ? { path: active.path } : {}}
-                  onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
-                  onOpenExternally={canOpenFileHere ? (path) => { void openFile(path) } : undefined}
+              // Keyed on the workspace: pointing the panel at a different
+              // workspace is a different shell, not the same one relocated.
+                <TerminalTab
+                  key={sessionCwd} workspaceId={sessionCwd} cwd={sessionCwd}
+                  terminals={terminals} t={t}
+                  onNamed={(title) => {
+                    setTabs(current => current.map(one =>
+                      one.kind === 'terminal' ? { ...one, title } : one))
+                  }}
+                  onAttached={(terminalId) => {
+                    setTabs(current => current.map(one =>
+                      one.kind === 'terminal' ? { ...one, terminalId } : one))
+                  }}
                 />
               )
-            : active.kind === 'produced'
-              ? (
-                <div className={css.body}>
-                  <Artifacts
-                    rows={artifacts} t={t}
-                    onSelect={(row) => { actions.select({ turnSeq: row.turnSeq, callId: row.callId, toolName: row.tool }) }}
+            : active.kind === 'files' || active.kind === 'file'
+              ? sessionCwd === undefined
+                ? <div className={css.note}>{t('files.noWorkspace')}</div>
+                : (
+                  <FileBrowser
+                    root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile}
+                    write={writeWorkspaceFile} t={t}
+                    {...active.kind === 'file' ? { path: active.path } : {}}
+                    onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
+                    onOpenExternally={canOpenFileHere ? (path) => { void openFile(path) } : undefined}
                   />
-                </div>
-              )
+                )
               : (
                 <div className={css.body}>
                   {material === null

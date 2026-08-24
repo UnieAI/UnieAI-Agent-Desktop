@@ -13,7 +13,7 @@ type PanelLabel = Parameters<DetailsSlotProps['t']>[0]
 import css from './PanelMenu.module.css'
 
 /** What one menu row opens. */
-export type PanelItemId = 'produced' | 'files' | 'terminal'
+export type PanelItemId = 'review' | 'files' | 'terminal'
 
 /** One row: what it opens, and how it is labelled. */
 interface PanelItem {
@@ -34,6 +34,12 @@ interface PanelItem {
  * The browser belongs here too and is absent until it exists: a row that opens
  * nothing teaches someone the menu is unreliable.
  *
+ * There is no "produced" row. It listed the files a session wrote as bare
+ * names; Review lists the same files WITH the change in each one, and carries
+ * the way into the originating call that was the produced list's only other
+ * job. Two rows for one question is a menu that makes the reader choose
+ * between them.
+ *
  * The terminal row is NOT withheld off loopback. `terminal.*` is pinned on the
  * Host, which is the fence; hiding the row here as well only meant that a
  * person reaching this app through a tunnel, a port forward, or `localhost`
@@ -42,7 +48,7 @@ interface PanelItem {
  * can act on; a row that is not there is not.
  */
 export const PANEL_ITEMS: readonly PanelItem[] = [
-  { id: 'produced', label: 'panel.produced' },
+  { id: 'review', label: 'panel.review' },
   { id: 'files', label: 'panel.files' },
   { id: 'terminal', label: 'panel.terminal' },
 ]
@@ -57,6 +63,14 @@ export const PANEL_ITEMS: readonly PanelItem[] = [
  * @returns its icon.
  */
 export function PanelItemIcon({ id }: { id: PanelItemId }) {
+  if (id === 'review') {
+    return (
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
+        <rect x="2.25" y="2.25" width="11.5" height="11.5" rx="2" fill="none" stroke="currentColor" strokeWidth="1.2" />
+        <path d="M5.25 6.5h5.5M5.25 9.5h3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      </svg>
+    )
+  }
   if (id === 'terminal') {
     return (
       <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
@@ -68,20 +82,12 @@ export function PanelItemIcon({ id }: { id: PanelItemId }) {
       </svg>
     )
   }
-  if (id === 'files') {
-    return (
-      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
-        <path
-          d="M1.75 4.25a1 1 0 0 1 1-1h3l1.5 1.5h5a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z"
-          fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
   return (
     <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
-      <rect x="2.25" y="2.75" width="11.5" height="10.5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M5 8h6M8 5v6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <path
+        d="M1.75 4.25a1 1 0 0 1 1-1h3l1.5 1.5h5a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z"
+        fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"
+      />
     </svg>
   )
 }

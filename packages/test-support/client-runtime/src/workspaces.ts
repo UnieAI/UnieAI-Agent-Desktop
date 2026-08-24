@@ -172,6 +172,12 @@ export class TestWorkspaces implements IWorkspaces {
     return { root, path, size: 0, text: '' }
   }
 
+  writeWorkspaceFile(_root: string, _path: string, _text: string, version: string): Promise<string> {
+    // A test double writes nothing: it hands back a token one step on, so a
+    // caller that saves twice is not refused by its own fixture.
+    return Promise.resolve(`${version}+`)
+  }
+
   async createDirectory(path: string, name: string): Promise<string> {
     this.calls.push({ method: 'createDirectory', args: [path, name] })
     const stub = this.stubs.get('createDirectory')

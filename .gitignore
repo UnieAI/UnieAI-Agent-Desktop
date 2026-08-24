@@ -26,6 +26,10 @@ tmp/
 .idea
 mise.toml
 dist-exe/
+# Release tarballs. `release:pack` writes 240 of them here; they are build
+# output the registry already holds, and 256 of them reached this repository's
+# history once because a wide `git add` did not know that.
+dist/
 python/sdk-runtime/src/deepseek_harness_runtime/runtime/dsh-jsonrpc-agent-*
 python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/
 python/**/__pycache__/

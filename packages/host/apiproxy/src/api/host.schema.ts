@@ -72,6 +72,19 @@ export const hostListWorkspaceEntriesValueSchema = z.object({
   truncated: z.boolean(),
 }) satisfies z.ZodType<Wire<ResponseValue<'host.listWorkspaceEntries'>>>
 
+/** host.writeWorkspaceFile request payload; `expected` is the text the editor started from. */
+export const hostWriteWorkspaceFileRequestSchema = z.object({
+  root: z.string(),
+  path: z.string(),
+  text: z.string(),
+  version: z.string(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.writeWorkspaceFile'>>>
+
+/** host.writeWorkspaceFile response value. */
+export const hostWriteWorkspaceFileValueSchema = z.object({
+  version: z.string(),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.writeWorkspaceFile'>>>
+
 /** host.readWorkspaceFile request payload. */
 export const hostReadWorkspaceFileRequestSchema = z.object({
   root: z.string(),
@@ -84,6 +97,7 @@ export const hostReadWorkspaceFileValueSchema = z.object({
   path: z.string(),
   text: z.string().optional(),
   size: z.number(),
+  version: z.string().optional(),
   reason: z.union([z.literal('too-large'), z.literal('binary')]).optional(),
 }) satisfies z.ZodType<Wire<ResponseValue<'host.readWorkspaceFile'>>>
 

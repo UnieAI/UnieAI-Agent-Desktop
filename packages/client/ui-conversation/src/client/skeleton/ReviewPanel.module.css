@@ -1,0 +1,148 @@
+/* The cards sit on the elevated module surface, so the bar beside them rebinds
+   to the l2 pair — one bound to the base surface would vanish into the card.
+   Quiet until the pointer arrives; see DetailsPanel.module.css for why
+   `scrollbar-width` stays unset. */
+.root {
+  --dsh-scrollbar-thumb: transparent;
+  --dsh-scrollbar-thumb-hover: transparent;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 10px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.root:hover {
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+/* What the whole session adds up to, above the files it adds up from. */
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 2px 2px;
+  font-size: 12px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.count {
+  flex: 1;
+  min-width: 0;
+}
+
+.added {
+  color: var(--dsw-alias-status-success, #3fb950);
+  font-variant-numeric: tabular-nums;
+}
+
+.removed {
+  color: var(--dsw-alias-status-error, #f85149);
+  font-variant-numeric: tabular-nums;
+}
+
+.file {
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* A failed mutation still shows its intended change; the border says it did
+   not land, because a diff card alone reads as applied. */
+.file[data-failed] {
+  border-color: var(--dsw-alias-status-error, #f85149);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--dsw-alias-bg-module-platform);
+}
+
+.fold {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.fold svg {
+  transition: transform 120ms ease;
+}
+
+.fold svg[data-open] {
+  transform: rotate(90deg);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--dsw-alias-label-primary);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button.name {
+  cursor: pointer;
+}
+
+button.name:hover {
+  text-decoration: underline;
+}
+
+.touches {
+  flex: none;
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary, var(--dsw-alias-label-secondary));
+}
+
+/* The counts double as the way into the call that made the change — the act is
+   what a reader wants when the numbers surprise them. */
+.stats {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.stats:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.diff {
+  border-top: 1px solid var(--dsw-alias-border-l2);
+}
+
+.empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 24px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  text-align: center;
+}

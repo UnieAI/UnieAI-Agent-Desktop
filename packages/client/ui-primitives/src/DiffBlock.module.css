@@ -39,7 +39,13 @@
    max-height is none and the auto overflow never engages, so the details
    panel keeps its full-height reading surface; a render site that must stay
    inside a bounded flow (the chat tool row) binds the property. */
+/* The `@@` bands sit on the elevated module surface, so the bar beside the
+   body rebinds to the l2 pair — one bound to the base surface would vanish
+   into them. */
 .body {
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+
   max-height: var(--dsl-diff-body-max-height, none);
   padding: 12px 14px;
   font: var(--dsw-font-markdown-code-block);
@@ -47,10 +53,59 @@
   overflow-y: auto;
 }
 
-/* No wrapping, no word-break: a diff is read by its indentation. */
+/* No wrapping, no word-break: a diff is read by its indentation. The row is a
+   grid so the two gutters and the marker hold one column each and the source
+   starts at the same x on every line — a diff whose text shifts by a digit is
+   unreadable the moment a file passes line 99. */
 .line {
+  display: grid;
+  grid-template-columns: var(--dsl-diff-gutter) var(--dsl-diff-gutter) 1ch 1fr;
   min-height: var(--dsl-diff-line-height);
   white-space: pre;
+}
+
+/* The tint is on the ROW, not the text: a full-width band is what makes the
+   shape of a change legible while scanning, and it keeps the source itself in
+   the ordinary reading colour instead of tinting code green. */
+.line.add {
+  background: var(--dsw-alias-state-success-bg, rgb(63 185 80 / 12%));
+}
+
+.line.del {
+  background: var(--dsw-alias-state-error-bg, rgb(248 81 73 / 12%));
+}
+
+/* Line numbers: dim, right-aligned, tabular so the columns do not jitter.
+   Blank on the side a row does not exist on. */
+.gutter {
+  padding-right: 10px;
+  color: var(--dsw-alias-label-tertiary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  user-select: none;
+}
+
+/* The `+`/`-`/space in its own column, so it never pushes the source across. */
+.marker {
+  user-select: none;
+}
+
+.line.add .marker {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.line.del .marker {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.text {
+  min-width: 0;
+}
+
+/* Width of one line-number column. Four digits and the padding covers the
+   files anyone reads in a panel; a longer one scrolls with the body. */
+.body {
+  --dsl-diff-gutter: 4ch;
 }
 
 /* A file header: the path in the primary tone, set apart by weight. The copy
@@ -63,30 +118,26 @@
   padding-right: 56px;
 }
 
-/* A same-file second hunk's separator (a scattered edit), in the dim tone. */
-.gap {
+/* The `@@ -a,b +c,d @@` line between discontiguous regions of one file: dim,
+   on its own band, because it is a coordinate rather than source. */
+.hunk {
+  padding: 2px 0;
+  background: var(--dsw-alias-bg-module-platform);
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* The diff's own meaning-carrying colors: removed on the error token, added on
-   the success token. A `- `/`+ ` prefix is drawn here so a copied line and the
-   shown line agree, and so the sign reads without relying on color alone. */
-.del::before {
-  content: '- ';
-  color: var(--dsw-alias-state-error-primary);
+/* Unchanged context reads as ordinary source; it is here to be looked past. */
+.context {
+  color: var(--dsw-alias-label-secondary);
 }
 
-.del {
-  color: var(--dsw-alias-state-error-primary);
-}
-
-.add::before {
-  content: '+ ';
-  color: var(--dsw-alias-state-success-primary);
-}
-
-.add {
-  color: var(--dsw-alias-state-success-primary);
+/* The source keeps the primary reading tone on both sides; the row's tint and
+   the marker column carry which side it is, so a change is legible to someone
+   who cannot tell the two tints apart. The marker is a real element rather
+   than a `::before`, so it occupies a grid column and cannot shift the text. */
+.line.add .text,
+.line.del .text {
+  color: var(--dsw-alias-label-primary);
 }
 
 .expand {

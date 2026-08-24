@@ -6,6 +6,7 @@
  * business errors are always 200 + ServerResponse.
  */
 
+import { hostWriteWorkspaceFileRequestSchema } from '../api/host.schema.ts'
 import {
   terminalCloseRequestSchema, terminalListRequestSchema, terminalOpenRequestSchema,
   terminalReplayRequestSchema, terminalResizeRequestSchema, terminalSignalRequestSchema,
@@ -117,6 +118,7 @@ const UNARY_ROUTES: UnaryRoutes = {
   'host.createDirectory': { schema: hostCreateDirectoryRequestSchema, invoke: (api, r) => api.host.createDirectory(r) },
   'host.listWorkspaceEntries': { schema: hostListWorkspaceEntriesRequestSchema, invoke: (api, r, signal) => api.host.listWorkspaceEntries(r, signal) },
   'host.readWorkspaceFile': { schema: hostReadWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.readWorkspaceFile(r, signal) },
+  'host.writeWorkspaceFile': { schema: hostWriteWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.writeWorkspaceFile(r, signal) },
   'host.openPath': { schema: hostOpenPathRequestSchema, invoke: (api, r, signal) => api.host.openPath(r, signal) },
   'terminal.list': { schema: terminalListRequestSchema, invoke: (api, r, signal) => api.terminal.list(r, signal) },
   'terminal.open': { schema: terminalOpenRequestSchema, invoke: (api, r, signal) => api.terminal.open(r, signal) },

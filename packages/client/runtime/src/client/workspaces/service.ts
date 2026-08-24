@@ -264,6 +264,28 @@ export class WorkspaceRuntime implements IWorkspaces {
   }
 
   /**
+   * Write one file inside a workspace, from a viewer that edited it.
+   *
+   * The same registered-root fence as the read, plus the filesystem's own
+   * atomic version guard: `version` is the token the read returned, and a file
+   * that has moved on since — an agent working in the same tree is the
+   * ordinary case — refuses the write instead of discarding that work.
+   * @param root - absolute path of a registered workspace.
+   * @param path - absolute file inside `root`; it must already exist.
+   * @param text - the full new content.
+   * @param version - the token {@link readWorkspaceFile} returned.
+   * @param signal - aborts the wire request and the Host's write.
+   * @returns the token the write produced, for the next save.
+   */
+  async writeWorkspaceFile(
+    root: string, path: string, text: string, version: string, signal?: AbortSignal,
+  ): Promise<string> {
+    const response = await this.api.host.writeWorkspaceFile({ root, path, text, version }, signal)
+    if (!response.result.ok) throw new DirectoryBrowseError(response.result.error)
+    return response.result.value.version
+  }
+
+  /**
    * Create one child directory through the Host's `browse` capability.
    * @param path - absolute existing parent directory.
    * @param name - single non-blank path segment.

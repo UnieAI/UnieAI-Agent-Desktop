@@ -38,6 +38,13 @@ export interface WorkspaceFile {
   /** Byte size as the filesystem reports it. */
   size: number
   /**
+   * Opaque freshness token of the file when it was read. A writer hands it
+   * back so the filesystem can refuse a write over a file that has moved on;
+   * absent when the content was withheld, which is a file nobody can edit
+   * from here anyway.
+   */
+  version?: string
+  /**
    * Why `text` is absent: `too-large` for a file over the deployment's bound,
    * `binary` for content that is not decodable text. Absent when `text` is
    * present.
@@ -156,13 +163,38 @@ export interface HostApi {
    * arbitrary file into a page would be a way to read anything the host
    * account can, one request at a time.
    *
-   * Read only. There is no write counterpart, and adding one is a separate
-   * decision with its own fence.
+   * See {@link writeWorkspaceFile} for the write counterpart and the extra
+   * conditions it carries.
    */
   readWorkspaceFile(
     request: RpcRequest<{ root: string; path: string }>,
     signal: AbortSignal,
   ): Promise<RpcResponse<WorkspaceFile>>
+
+  /**
+   * Write one file INSIDE a workspace, as text, from a viewer that edited it.
+   *
+   * The same registered-root fence as the read, and the same size bound
+   * applied to what is being written rather than to what is being sent back.
+   *
+   * IT REPLACES ONLY WHAT WAS READ. The request carries the `version` the read
+   * returned, and the filesystem's own atomic guard refuses the write when the
+   * file has moved on. An editor open beside an agent working in the same tree
+   * is the ordinary case here, not the exotic one — without that guard, saving
+   * a buffer opened two minutes ago would silently discard whatever the agent
+   * wrote in between, and the person would never learn it happened. The guard
+   * is the version rather than a content comparison because a comparison this
+   * layer performs has a window between the check and the write; the
+   * filesystem's does not.
+   *
+   * IT CREATES NOTHING. `path` must already exist inside the root. A viewer
+   * that could create files would be a way to place content anywhere the host
+   * account can write, and creating a file is not editing one.
+   */
+  writeWorkspaceFile(
+    request: RpcRequest<{ root: string; path: string; text: string; version: string }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<{ version: string }>>
 
   /**
    * Open a filesystem path with the operating system's default application

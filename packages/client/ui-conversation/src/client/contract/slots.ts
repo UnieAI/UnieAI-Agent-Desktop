@@ -854,6 +854,20 @@ export interface DetailsInjected {
    */
   readWorkspaceFile: (root: string, path: string, signal?: AbortSignal) => Promise<WorkspaceFile>
   /**
+   * Save one file inside the session's workspace, from the panel's editor.
+   *
+   * The same registered-root fence as the read, plus the filesystem's own
+   * atomic version guard: `version` is what the read returned, and a file an
+   * agent changed in the meantime refuses the save rather than losing that
+   * work. Injected like the read, so the panel stays a presenter.
+   * @param root - absolute path of the session's workspace.
+   * @param path - absolute file inside `root`; it must already exist.
+   * @param text - the full new content.
+   * @param version - the token the read returned.
+   * @returns the token the write produced.
+   */
+  writeWorkspaceFile: (root: string, path: string, text: string, version: string) => Promise<string>
+  /**
    * Hand one file to whatever this surface uses to show a file.
    * @param path - absolute host path, as the listing reported it.
    * @returns settles when the surface has taken it.

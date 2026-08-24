@@ -217,3 +217,78 @@
   line-height: 18px;
   color: var(--dsw-alias-label-tertiary);
 }
+
+/* The editor: one plain-text layer filling the viewer, with the save bar
+   pinned under it. No highlighting here — see FileBrowser.tsx for why two
+   layers is the wrong trade for a caret. */
+.editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.editorArea {
+  flex: 1;
+  min-height: 0;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-markdown-code-block);
+  resize: none;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+}
+
+.editorArea:focus {
+  outline: none;
+}
+
+.saveBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 6px 10px;
+  border-top: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-bg-module-platform);
+}
+
+.saveNote {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--dsw-alias-label-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A refused save is the one state that must not read as chrome: the person is
+   one click from overwriting work they cannot see. */
+.saveBar[data-state='stale'] .saveNote,
+.saveBar[data-state='failed'] .saveNote {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.saveAction {
+  flex: none;
+  padding: 4px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.saveAction:disabled {
+  color: var(--dsw-alias-label-tertiary);
+  cursor: default;
+}
+
+.saveAction:not(:disabled):hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}

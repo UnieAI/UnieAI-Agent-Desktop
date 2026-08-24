@@ -2552,6 +2552,9 @@ importers:
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
+      diff:
+        specifier: ^9.0.0
+        version: 9.0.0
       katex:
         specifier: ^0.16.47
         version: 0.16.47
@@ -3263,6 +3266,9 @@ importers:
       '@unieai/uad-client-test-runtime':
         specifier: workspace:^
         version: link:../../test-support/client-runtime
+      '@unieai/uad-client-ui-layout':
+        specifier: workspace:^
+        version: link:../ui-layout
       '@unieai/uad-client-ui-primitives':
         specifier: workspace:^
         version: link:../ui-primitives

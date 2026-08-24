@@ -17,7 +17,7 @@ import type { RunningToolCall, ToolResultNode } from '@unieai/uad-client-runtime
 import type { ToolCallView, ToolResultView } from '@unieai/uad-api-remotes/client'
 import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
 import { zh } from '@unieai/uad-client-ui-conversation/src/client/locales.ts'
-import { diffSummarySuffix } from '../src/client/tool/models/diff-card-model.ts'
+import { diffSummarySuffix } from '@unieai/uad-client-ui-conversation/client'
 import { FileMutationRow } from '../src/client/tool/toolviews/file-mutation-row.tsx'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
 
@@ -58,9 +58,14 @@ const toggleRow = (view: { container: HTMLElement }) => {
   fireEvent.click(view.container.querySelector('[data-expandable]')!)
 }
 
-/** The diff card's own line rows, by the class the +/- colors ride. */
+/**
+ * The diff card's changed rows, as their SOURCE text. The gutters and the
+ * `+`/`-` marker are chrome the primitive owns and pins itself; a transcript
+ * test asserts which lines changed, not how the columns are drawn.
+ */
 const lines = (view: { container: HTMLElement }, kind: 'add' | 'del') =>
-  [...view.container.querySelectorAll(`[data-diff] [class*="_${kind}_"]`)].map(node => node.textContent)
+  [...view.container.querySelectorAll(`[data-diff] [class*="_${kind}_"]`)]
+    .map(node => node.querySelector('[class*="_text_"]')?.textContent ?? '')
 
 describe('transcript diff row', () => {
   it('is collapsed by default and expands in place to the added and removed lines', () => {
@@ -70,26 +75,31 @@ describe('transcript diff row', () => {
     toggleRow(view)
     // Expanding does not navigate or open the panel — the card lands in the row.
     expect(view.container.querySelector('[data-diff]')).not.toBeNull()
-    expect(lines(view, 'del')).toEqual(['one', 'two'])
-    expect(lines(view, 'add')).toEqual(['one', 'two', 'three'])
+    // `one` and `two` are unchanged, so they read as context; the change is
+    // the appended line alone. The old card drew every line on both sides.
+    expect(lines(view, 'del')).toEqual([])
+    expect(lines(view, 'add')).toEqual(['three'])
     // Collapsing again restores the one-line row.
     toggleRow(view)
     expect(view.container.querySelector('[data-diff]')).toBeNull()
   })
 
   it('states the change size beside the file name while collapsed', () => {
+    // The counts are of CHANGED lines: this fixture appends one line to a
+    // two-line file, so it is +1 -0. It used to read +3 -2, because the card
+    // counted every line of both sides.
     const view = render(<FileMutationRow {...rowProps(settled())} />)
     // The file name is the summary; the counts are the suffix that survives
     // truncation, so a reader sizes the change without expanding.
     expect(view.getByRole('button', { name: 'notes/demo.txt' })).toBeTruthy()
-    expect(view.getByText('+3 -2')).toBeTruthy()
+    expect(view.getByText('+1 -0')).toBeTruthy()
   })
 
   it('keeps the collapsed counts and the card footer in agreement', () => {
     const view = render(<FileMutationRow {...rowProps(settled())} />)
     toggleRow(view)
-    expect(view.getByText('+3 -2')).toBeTruthy()
-    expect(view.getByText('└ +3 -2 · 1 file')).toBeTruthy()
+    expect(view.getByText('+1 -0')).toBeTruthy()
+    expect(view.getByText('└ +1 -0 · 1 file')).toBeTruthy()
   })
 
   it('reads as running and shows only the intended change, never a partial one', () => {
@@ -99,7 +109,7 @@ describe('transcript diff row', () => {
     expect(view.getByText('运行中')).toBeTruthy()
     toggleRow(view)
     // The call view carries the whole intended hunk; a half of it never renders.
-    expect(lines(view, 'add')).toEqual(['one', 'two', 'three'])
+    expect(lines(view, 'add')).toEqual(['three'])
   })
 
   it('shows no diff, no counts, and no expander when the call carries no view yet', () => {
