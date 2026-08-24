@@ -1,0 +1,19 @@
+/* The reading measure is the surface's — `PluginsPage.module.css` centres it,
+ * so every area shares one column edge. This area sets only its own rhythm. */
+
+.area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.note {
+  margin: 0;
+  max-width: 640px;
+  font-size: 13px;
+  line-height: 19.5px;
+  color: var(--dsw-alias-label-tertiary);
+}

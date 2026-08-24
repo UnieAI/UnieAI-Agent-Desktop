@@ -13,6 +13,21 @@ export type {
 } from './contract/slots.ts'
 export type { SidebarKey } from './locales.ts'
 
+declare module '@unieai/cordis' {
+  interface Events {
+    /**
+     * The sidebar sent the reader back to the conversation.
+     *
+     * Emitted on the ACT, not on the state it produces: starting a session
+     * while a blank one is already current changes nothing observable, so a
+     * surface covering the conversation cannot learn about it from the session
+     * store. Anything rendered over the shell listens here to get out of the
+     * way.
+     */
+    'sidebar/navigate': () => void
+  }
+}
+
 declare module '@unieai/uad-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** Sidebar shell controls copy. */
@@ -35,7 +50,10 @@ export function apply(ctx: ClientContext): void {
   const injectProps = (): SidebarRootInjected => ({
     // The shell's New Session button rides the runtime's shared action
     // (current Session Workspace, then recent Workspace).
-    startSession: (workspaceId) => { ctx.workspaces.startSession(workspaceId) },
+    startSession: (workspaceId) => {
+      ctx.workspaces.startSession(workspaceId)
+      ctx.emit('sidebar/navigate')
+    },
     toggleSidebar: () => { ctx.layout.toggleSidebar() },
   })
   ctx.effect(

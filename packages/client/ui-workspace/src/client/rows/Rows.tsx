@@ -3,9 +3,12 @@
  * all data and callbacks arrive via props. Hover swaps (folder->chevron,
  * time->ellipsis, action buttons) are CSS-only. Row ... menus are visual-only
  * except workspace Rename/Delete and session Rename/Fork/Archive; the session
- * and workspace hover cards are suppressed while a menu is open.
+ * and workspace hover cards are suppressed while a menu is open. The session
+ * menu also carries the `sidebar.workspaces.session.menu.action` occupants,
+ * rendered after those three rows.
  */
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import clsx from 'clsx'
 import {
   HoverCard, IconArchiveOutline20, IconBranchOutline16, IconEditOutline16,
@@ -14,7 +17,7 @@ import {
 } from '@unieai/uad-client-ui-primitives'
 import type { StateDotState } from '@unieai/uad-client-ui-primitives'
 import { abbreviateHomePath } from '@unieai/uad-client-runtime/client'
-import type { WorkspaceBrowserProps } from '../contract/slots.ts'
+import type { SessionRowMenuActionOwnerProps, WorkspaceBrowserProps } from '../contract/slots.ts'
 import type { GroupNode, SearchResultNode, SessionNode } from '../tree.ts'
 import { relativeTime } from '../tree.ts'
 import css from './Rows.module.css'
@@ -354,12 +357,13 @@ export function SearchResultItem({ result, currentId, onOpen, t }: {
  * @param props.onRename - open the session rename dialog (id + current title).
  * @param props.onFork - fork a session at its last completed turn.
  * @param props.onArchive - archive a session by id.
+ * @param props.renderMenuActions - render the row's overflow-menu hole; absent leaves the menu at its three built-in rows.
  * @param props.drag - optional draggable-row wiring.
  * @param props.flat - omit the empty status slot in the hierarchy-free flat list.
  * @param props.t - the browser root's locale seat.
  * @returns the session row.
  */
-export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork, onArchive, drag, flat = false, t }: {
+export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork, onArchive, renderMenuActions, drag, flat = false, t }: {
   node: SessionNode
   currentId: string | undefined
   now: number
@@ -370,6 +374,12 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
   onFork: (id: SessionNode['id']) => void
   /** Archive this session (row menu action; commits without a dialog). */
   onArchive: (id: SessionNode['id']) => void
+  /**
+   * Render the `sidebar.workspaces.session.menu.action` occupants for this
+   * row. Called on every render, so the returned rows mount with the open
+   * menu card and unmount with it.
+   */
+  renderMenuActions?: ((owner: SessionRowMenuActionOwnerProps) => ReactNode) | undefined
   /** Present only on draggable rows (workspace-group sessions outside search). */
   drag?: RowDragProps | undefined
   /** The row is rendered without a parent Workspace header. */
@@ -448,6 +458,10 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
             open={menuOpen}
             onClose={() => { setMenuOpen(false) }}
             items={sessionMenuItems}
+            extra={renderMenuActions?.({
+              sessionId: node.id,
+              closeMenu: () => { setMenuOpen(false) },
+            })}
             onSelect={(id) => {
               setMenuOpen(false)
               if (id === 'rename') onRename(node.id, row.title)

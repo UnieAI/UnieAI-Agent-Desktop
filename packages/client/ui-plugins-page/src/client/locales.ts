@@ -35,9 +35,10 @@ export const zh = {
   // MarketplacePlugins.breadcrumb
   'title': '插件',
   // MarketplacePlugins.discoveryHeroTitle
-  'intro': '让 UnieAI Agent 按你的方式运作',
+  'intro': '让 Rabi 按你的方式运作',
   // MarketplacePlugins.back
   'back': '返回',
+  'refresh': '重新读取',
   'mcp.title': 'Studio MCP',
   // MarketplacePlugins.connectorsHint
   'mcp.intro': '通过 Model Context Protocol (MCP) 连接的外部服务与工具。',
@@ -57,6 +58,25 @@ export const zh = {
   'mcp.unnamed': '未命名 MCP 服务器',
   'mcp.originUnset': '未提供来源地址',
   'mcp.toolsNone': '未报告任何工具',
+  // ── the first-party UnieAI Studio entry ──────────────────────────────────
+  'studio.name': 'UnieAI Studio',
+  'studio.iconAlt': 'UnieAI Studio 图标',
+  'studio.description': '绑定 UnieAI Studio 账号，把它的模型目录与工具带进对话。',
+  'studio.bound': '已绑定',
+  'studio.boundBody': '此账号已绑定 UnieAI Studio。以下工具可以在对话中直接调用。',
+  'studio.unbound': '此账号尚未绑定 UnieAI Studio。「绑定」会在浏览器中打开 UnieAI 网站的设置页面，绑定卡片就在「个人资料」那一栏。',
+  'studio.bind': '绑定',
+  'studio.loading': '正在读取绑定状态…',
+  'studio.signedOut': '登录 UnieAI 账号后，这里会显示 UnieAI Studio 的绑定状态。',
+  'studio.unsupported': '本部署尚未提供 MCP 路由，因此读不到 UnieAI Studio 的绑定状态。',
+  'studio.failed': '无法读取 UnieAI Studio 的绑定状态。',
+  // ── the skills destination ───────────────────────────────────────────────
+  'skills.title': '技能',
+  'skills.intro': '技能是随项目提供、用 /名称 调用的指令集。',
+  'skills.unsupported': '本版本没有账号级的技能目录。技能属于当前会话所在的项目：在输入框里键入 / 就能看到该会话可用的技能。',
+  // ── the settings destination ─────────────────────────────────────────────
+  'manage.title': '插件设置',
+  'manage.intro': '此账号连接的 MCP 服务器，以及本次构建载入并可配置的插件。',
   // ── the directory ───────────────────────────────────────────────────────
   'directory.loading': '正在读取插件目录…',
   'directory.unsupported': '本版本还无法读取插件目录。提供该路由的版本会在这里列出可安装的插件。',
@@ -67,15 +87,14 @@ export const zh = {
   'directory.filterAll': '全部',
   'directory.filterInstalled': '已安装',
   'directory.filterMore': '更多',
-  'tab.mcp': 'Studio MCP',
-  'tab.directory': '插件目录',
-  'tab.build': '本机运行',
   'directory.searchPlaceholder': '搜索插件',
+  'directory.installedTitle': '已安装',
   'directory.groupOther': '其他',
   'directory.empty': '目录中还没有插件。',
   'directory.noMatch': '没有符合的插件。',
   'directory.install': '安装',
   'directory.remove': '移除',
+  'directory.overflow': '更多操作',
   'directory.planNote': '当前方案不包含安装插件。',
 } satisfies Record<string, string>
 
@@ -89,9 +108,10 @@ export const zhTW = {
   // MarketplacePlugins.breadcrumb
   'title': '外掛程式',
   // MarketplacePlugins.discoveryHeroTitle
-  'intro': '讓 UnieAI Agent 按你的方式運作',
+  'intro': '讓 Rabi 按你的方式運作',
   // MarketplacePlugins.back
   'back': '返回',
+  'refresh': '重新讀取',
   'mcp.title': 'Studio MCP',
   // MarketplacePlugins.connectorsHint
   'mcp.intro': '透過 Model Context Protocol (MCP) 連接的外部服務與工具。',
@@ -111,6 +131,25 @@ export const zhTW = {
   'mcp.unnamed': '未命名 MCP 伺服器',
   'mcp.originUnset': '未提供來源位址',
   'mcp.toolsNone': '未回報任何工具',
+  // ── the first-party UnieAI Studio entry ──────────────────────────────────
+  'studio.name': 'UnieAI Studio',
+  'studio.iconAlt': 'UnieAI Studio 圖示',
+  'studio.description': '綁定 UnieAI Studio 帳號，把它的模型目錄與工具帶進對話。',
+  'studio.bound': '已綁定',
+  'studio.boundBody': '此帳號已綁定 UnieAI Studio。以下工具可以在對話中直接呼叫。',
+  'studio.unbound': '此帳號尚未綁定 UnieAI Studio。「綁定」會在瀏覽器開啟 UnieAI 網站的設定頁面，綁定卡片就在「個人資料」那一欄。',
+  'studio.bind': '綁定',
+  'studio.loading': '正在讀取綁定狀態…',
+  'studio.signedOut': '登入 UnieAI 帳號後，這裡會顯示 UnieAI Studio 的綁定狀態。',
+  'studio.unsupported': '本部署尚未提供 MCP 路由，因此讀不到 UnieAI Studio 的綁定狀態。',
+  'studio.failed': '無法讀取 UnieAI Studio 的綁定狀態。',
+  // ── the skills destination ───────────────────────────────────────────────
+  'skills.title': '技能',
+  'skills.intro': '技能是隨專案提供、用 /名稱 呼叫的指令集。',
+  'skills.unsupported': '本版本沒有帳號層級的技能目錄。技能屬於目前對話所在的專案：在輸入框裡輸入 / 就會看到該對話可用的技能。',
+  // ── the settings destination ─────────────────────────────────────────────
+  'manage.title': '外掛程式設定',
+  'manage.intro': '此帳號連接的 MCP 伺服器，以及這次建置載入並可設定的外掛程式。',
   // ── the directory ───────────────────────────────────────────────────────
   'directory.loading': '正在讀取外掛目錄…',
   'directory.unsupported': '本版本還無法讀取外掛目錄。提供該路由的版本會在這裡列出可安裝的外掛。',
@@ -121,16 +160,15 @@ export const zhTW = {
   'directory.filterAll': '全部',
   'directory.filterInstalled': '已安裝',
   'directory.filterMore': '更多',
-  'directory.searchPlaceholder': '搜尋外掛',
+  'directory.searchPlaceholder': '搜尋外掛程式',
+  'directory.installedTitle': '已安裝',
   'directory.groupOther': '其他',
   'directory.empty': '目錄中還沒有外掛。',
   'directory.noMatch': '沒有符合的外掛。',
   'directory.install': '安裝',
   'directory.remove': '移除',
-  'directory.planNote': '目前方案不包含安裝外掛。',  'tab.mcp': 'Studio MCP',
-  'tab.directory': '外掛目錄',
-  'tab.build': '本機執行',
-
+  'directory.overflow': '更多操作',
+  'directory.planNote': '目前方案不包含安裝外掛。',
 } satisfies Record<PluginsPageKey, string>
 
 /** Japanese dictionary. */
@@ -140,9 +178,10 @@ export const ja = {
   // MarketplacePlugins.breadcrumb
   'title': 'プラグイン',
   // MarketplacePlugins.discoveryHeroTitle
-  'intro': 'UnieAI Agent をあなた好みに',
+  'intro': 'Rabi をあなた好みに',
   // MarketplacePlugins.back
   'back': '戻る',
+  'refresh': '再読み込み',
   'mcp.title': 'Studio MCP',
   // MarketplacePlugins.connectorsHint
   'mcp.intro': 'Model Context Protocol (MCP) で接続される外部サービスとツールです。',
@@ -162,6 +201,25 @@ export const ja = {
   'mcp.unnamed': '名前のない MCP サーバー',
   'mcp.originUnset': 'オリジンが未提供',
   'mcp.toolsNone': 'ツールの報告はありません',
+  // ── the first-party UnieAI Studio entry ──────────────────────────────────
+  'studio.name': 'UnieAI Studio',
+  'studio.iconAlt': 'UnieAI Studio のアイコン',
+  'studio.description': 'UnieAI Studio アカウントと連携し、そのモデルカタログとツールを会話に取り込みます。',
+  'studio.bound': '連携済み',
+  'studio.boundBody': 'このアカウントは UnieAI Studio と連携済みです。以下のツールを会話からそのまま呼び出せます。',
+  'studio.unbound': 'このアカウントはまだ UnieAI Studio と連携していません。「連携」を押すと UnieAI サイトの設定ページがブラウザーで開きます。連携カードは「プロフィール」タブにあります。',
+  'studio.bind': '連携',
+  'studio.loading': '連携状態を読み込んでいます…',
+  'studio.signedOut': 'UnieAI アカウントにサインインすると、UnieAI Studio の連携状態が表示されます。',
+  'studio.unsupported': 'このデプロイはまだ MCP ルートを提供していないため、UnieAI Studio の連携状態を読み取れません。',
+  'studio.failed': 'UnieAI Studio の連携状態を読み取れませんでした。',
+  // ── the skills destination ───────────────────────────────────────────────
+  'skills.title': 'スキル',
+  'skills.intro': 'スキルはプロジェクトに付属し、/名前 で呼び出す手順書です。',
+  'skills.unsupported': 'このビルドにアカウント単位のスキルカタログはありません。スキルは現在のセッションのプロジェクトに属します。入力欄に / と入力すると、そのセッションで使えるスキルが表示されます。',
+  // ── the settings destination ─────────────────────────────────────────────
+  'manage.title': 'プラグイン設定',
+  'manage.intro': 'このアカウントが接続している MCP サーバーと、このビルドが読み込み設定できるプラグインです。',
   // ── the directory ───────────────────────────────────────────────────────
   'directory.loading': 'プラグインディレクトリを読み込み中…',
   'directory.unsupported': 'このビルドではプラグインディレクトリを読み込めません。対応するバージョンではインストール可能なプラグインがここに表示されます。',
@@ -172,15 +230,14 @@ export const ja = {
   'directory.filterAll': 'すべて',
   'directory.filterInstalled': 'インストール済み',
   'directory.filterMore': 'その他',
-  'tab.mcp': 'Studio MCP',
-  'tab.directory': 'プラグインディレクトリ',
-  'tab.build': 'このビルド',
   'directory.searchPlaceholder': 'プラグインを検索',
+  'directory.installedTitle': 'インストール済み',
   'directory.groupOther': 'その他',
   'directory.empty': 'ディレクトリにプラグインがまだありません。',
   'directory.noMatch': '該当するプラグインはありません。',
   'directory.install': 'インストール',
   'directory.remove': '削除',
+  'directory.overflow': 'その他の操作',
   'directory.planNote': '現在のプランにはプラグインのインストールが含まれていません。',
 } satisfies Record<PluginsPageKey, string>
 
@@ -191,9 +248,10 @@ export const en = {
   // MarketplacePlugins.breadcrumb
   'title': 'Plugins',
   // MarketplacePlugins.discoveryHeroTitle
-  'intro': 'Make UnieAI Agent work your way',
+  'intro': 'Make Rabi work your way',
   // MarketplacePlugins.back
   'back': 'Back',
+  'refresh': 'Read again',
   'mcp.title': 'Studio MCP',
   // MarketplacePlugins.connectorsHint
   'mcp.intro': 'External services and tools connected via the Model Context Protocol (MCP).',
@@ -213,6 +271,25 @@ export const en = {
   'mcp.unnamed': 'Unnamed MCP server',
   'mcp.originUnset': 'No origin reported',
   'mcp.toolsNone': 'No tools reported',
+  // ── the first-party UnieAI Studio entry ──────────────────────────────────
+  'studio.name': 'UnieAI Studio',
+  'studio.iconAlt': 'UnieAI Studio icon',
+  'studio.description': 'Bind a UnieAI Studio account to bring its model catalogue and tools into a conversation.',
+  'studio.bound': 'Bound',
+  'studio.boundBody': 'This account is bound to UnieAI Studio. The tools below can be called from a conversation.',
+  'studio.unbound': 'This account has not bound UnieAI Studio yet. Bind opens the UnieAI site’s settings page in a browser; the binding card is on its Profile tab.',
+  'studio.bind': 'Bind',
+  'studio.loading': 'Reading the binding…',
+  'studio.signedOut': 'Sign in to your UnieAI account to see whether UnieAI Studio is bound.',
+  'studio.unsupported': 'This deployment serves no MCP route, so the UnieAI Studio binding cannot be read.',
+  'studio.failed': 'The UnieAI Studio binding could not be read.',
+  // ── the skills destination ───────────────────────────────────────────────
+  'skills.title': 'Skills',
+  'skills.intro': 'Skills are instruction sets that ship with a project and are invoked as /name.',
+  'skills.unsupported': 'This build has no account-level skill catalogue. Skills belong to the project a session runs in: type / in the composer to see the ones that session can invoke.',
+  // ── the settings destination ─────────────────────────────────────────────
+  'manage.title': 'Plugin settings',
+  'manage.intro': 'The MCP servers this account has connected, and the plugins this build loads and can configure.',
   // ── the directory ───────────────────────────────────────────────────────
   'directory.loading': 'Reading the plugin directory…',
   'directory.unsupported': 'This build cannot read the plugin directory yet. A build that serves the route will list installable plugins here.',
@@ -223,14 +300,13 @@ export const en = {
   'directory.filterAll': 'All',
   'directory.filterInstalled': 'Installed',
   'directory.filterMore': 'More',
-  'tab.mcp': 'Studio MCP',
-  'tab.directory': 'Plugin directory',
-  'tab.build': 'This build',
   'directory.searchPlaceholder': 'Search plugins',
+  'directory.installedTitle': 'Installed',
   'directory.groupOther': 'Other',
   'directory.empty': 'The directory has no plugins yet.',
   'directory.noMatch': 'No plugins match.',
   'directory.install': 'Install',
   'directory.remove': 'Remove',
+  'directory.overflow': 'More actions',
   'directory.planNote': 'Your plan does not include installing plugins.',
 } satisfies Record<PluginsPageKey, string>

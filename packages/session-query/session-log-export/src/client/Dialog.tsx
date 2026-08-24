@@ -1,24 +1,37 @@
 import type { ObservableSnapshot, SessionId } from '@unieai/uad-client-runtime/client'
 import { Button, Modal } from '@unieai/uad-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
+// Type-only: pulls ui-layout's SlotMap merge (the 'shell.overlay' entry).
+import type {} from '@unieai/uad-client-ui-layout/client'
 import type { SessionLogDownloadState } from './controller.ts'
 import { NS } from './locales.ts'
 
-/** Browser operations and state injected into the Session Header contribution. */
-export interface SessionLogDownloadDialogInjected {
+/** Browser state and dismissal injected into the frame-wide dialog contribution. */
+export interface SessionLogDownloadOverlayInjected {
   hooks: { sessionLogDownload: ObservableSnapshot<SessionLogDownloadState> }
-  request: (sessionId: SessionId) => Promise<void>
   dismiss: (sessionId: SessionId) => void
 }
 
-export type SessionLogDownloadDialogProps =
-  PropsRuntime<'conversation.session.header.utilities'>
+/**
+ * Full overlay props: the frame's empty owner share plus the bound controller
+ * state, dismissal, and localized copy.
+ */
+export type SessionLogDownloadOverlayProps =
+  PropsRuntime<'shell.overlay'>
   & PropsLocale<typeof NS>
-  & InjectFace<SessionLogDownloadDialogInjected>
+  & InjectFace<SessionLogDownloadOverlayInjected>
+
+/** One Session's dialog share, composed by the overlay from its own props. */
+export type SessionLogDownloadDialogProps =
+  Pick<SessionLogDownloadOverlayProps, 'useSessionLogDownload' | 'dismiss' | 't'>
+  & {
+    /** Session whose download entry this dialog reports. */
+    sessionId: SessionId
+  }
 
 /**
- * Modal shared by the Session Header button and this browser's `/export` command.
- * @param props - Session runtime, bound controller state, actions, and localized copy.
+ * Modal reporting one Session's download outcome.
+ * @param props - Session id, bound controller state, dismissal, and localized copy.
  * @returns the modal portal contribution.
  */
 export function SessionLogDownloadDialog({
@@ -45,5 +58,34 @@ export function SessionLogDownloadDialog({
       closeLabel={t('dialog.close')}
       footer={<Button variant="primary" onClick={() => { dismiss(sessionId) }}>{t('dialog.close')}</Button>}
     />
+  )
+}
+
+/**
+ * Frame-wide seat for every Session's download dialog.
+ *
+ * The dialog cannot live where the gesture starts: the sidebar row's menu row
+ * unmounts the moment the menu closes, and `/export` runs with no Session
+ * surface open at all. `shell.overlay` outlives both, so one entry reports
+ * whichever Sessions currently have an open dialog.
+ * @param props - bound controller state, dismissal, and localized copy.
+ * @returns one dialog per Session with an open download entry.
+ */
+export function SessionLogDownloadOverlay(props: SessionLogDownloadOverlayProps) {
+  const bySession = props.useSessionLogDownload(state => state.bySession)
+  return (
+    <>
+      {Object.entries(bySession)
+        .filter(([, entry]) => entry?.open === true)
+        .map(([sessionId]) => (
+          <SessionLogDownloadDialog
+            key={sessionId}
+            sessionId={sessionId as SessionId}
+            useSessionLogDownload={props.useSessionLogDownload}
+            dismiss={props.dismiss}
+            t={props.t}
+          />
+        ))}
+    </>
   )
 }

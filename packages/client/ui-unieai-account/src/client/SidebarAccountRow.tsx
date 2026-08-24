@@ -1,6 +1,6 @@
 /**
  * The sidebar's account occupant — the left of the column's last row, and the
- * one place the person using UnieAI Agent appears. It shares that row box with
+ * one place the person using Rabi appears. It shares that row box with
  * the settings glyph, so the box belongs to the sidebar foot's identity seat
  * and this component contributes the mark, the name, and the menu they open.
  *

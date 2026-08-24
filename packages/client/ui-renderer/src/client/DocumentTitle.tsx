@@ -5,7 +5,7 @@ import { useEffect } from 'react'
  * `DSH_CLIENT_*` value, so this is what a developer's browser tab actually
  * says — it must be the product's name, not the harness's.
  */
-const DEFAULT_CLIENT_TITLE = 'UnieAI Agent'
+const DEFAULT_CLIENT_TITLE = 'Rabi'
 
 /** Props for the browser title projection. */
 export interface DocumentTitleProps {

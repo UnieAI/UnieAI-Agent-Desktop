@@ -20,7 +20,7 @@ import css from './PluginsNavRow.module.css'
  * @param props - composed slot props (contract in contract/slots.ts).
  * @returns the row button.
  */
-export function PluginsNavRow({ wide, t, usePage, open }: PluginsNavRowComponentProps) {
+export function PluginsNavRow({ wide, t, usePage, toggle }: PluginsNavRowComponentProps) {
   const current = usePage(state => state.open)
   const label = t('nav')
   return (
@@ -31,7 +31,7 @@ export function PluginsNavRow({ wide, t, usePage, open }: PluginsNavRowComponent
       title={wide ? undefined : label}
       aria-current={current ? 'page' : undefined}
       data-current={current ? 'true' : undefined}
-      onClick={open}
+      onClick={toggle}
     >
       <IconBlocksOutline16 className={css.icon} size={wide ? 15 : 18} />
       {wide && <span className={css.label}>{label}</span>}

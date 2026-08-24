@@ -42,7 +42,7 @@ const TO_SCOPE = '@unieai'
  * The CLI's own rename, which is not a scope swap.
  *
  * `@unieai/uad` is the name a person types (`npx @unieai/uad web`),
- * and this product is UnieAI Agent Desktop. Its siblings follow it so the whole
+ * and this product is Rabi Desktop. Its siblings follow it so the whole
  * scope reads as one product rather than a CLI called `uad` surrounded by
  * dependencies still called `uad`.
  */

@@ -89,7 +89,7 @@ describe('WelcomeNotice', () => {
   it('uses the exact owner copy in both GUI locales', () => {
     expect(WELCOME_NOTICE_COPY.en).toEqual({
       title: 'Developer Preview',
-      body: 'UnieAI Agent is in developer preview. Features and interfaces are still moving quickly, and compatibility-breaking changes are expected along the way.\n\nIt is built on open, composable plugin infrastructure: the model adapter, the tool registry, the session log, and the agent loop itself are all replaceable plugins. We welcome your feedback as we refine it.',
+      body: 'Rabi is in developer preview. Features and interfaces are still moving quickly, and compatibility-breaking changes are expected along the way.\n\nIt is built on open, composable plugin infrastructure: the model adapter, the tool registry, the session log, and the agent loop itself are all replaceable plugins. We welcome your feedback as we refine it.',
       continueLabel: 'Continue',
     })
     expect(en.welcomeBody).toBe(WELCOME_NOTICE_COPY.en.body)

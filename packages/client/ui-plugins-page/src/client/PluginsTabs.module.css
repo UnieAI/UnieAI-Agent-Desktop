@@ -1,27 +1,28 @@
-/* The page's tab strip, in a sheet of its own.
+/* The surface's chrome controls: the destination pills on the left of the top
+ * row, and the icon buttons on its right.
  *
- * Separate from `PluginsPage.module.css` because the chosen tab paints an
- * elevated surface and that sheet scrolls. `ui-theme`'s scrollbar-rebind
- * invariant reasons per FILE — CSS text cannot say which rule contains which —
- * so a pill and a scroll container in one sheet reads as "scrolls on an
- * elevated surface" and demands a thumb rebind the page must not make: what
- * scrolls here sits on `bg-base`, and rebinding its thumb to a surface it is
- * not on would be answering the gate rather than the question.
+ * Separate from `PluginsPage.module.css` because a chosen pill and a pressed
+ * gear paint an elevated surface, and that sheet scrolls. `ui-theme`'s
+ * scrollbar-rebind invariant reasons per FILE — CSS text cannot say which rule
+ * contains which — so a pill and a scroll container in one sheet reads as
+ * "scrolls on an elevated surface" and demands a thumb rebind this surface
+ * must not make: what scrolls here sits on `bg-base`, and rebinding its thumb
+ * to a surface it is not on would be answering the gate rather than the
+ * question.
  */
 
-/* The tab strip sits at the top of the reading column, under the proposition:
-   the three occupants are places, and this is how a reader moves between
-   them. Centred with the measure, because the proposition above it is. */
+/* Two small pills, left-aligned in the top row: the destinations a reader
+   browses. Configuration is not one of them — it is the gear on the other
+   side of the same row. */
 .tabs {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 4px;
-  padding-top: 20px;
+  min-width: 0;
 }
 
 .tab {
-  padding: 6px 14px;
+  padding: 5px 12px;
   border: none;
   border-radius: var(--dsw-radius-pill);
   background: transparent;
@@ -42,9 +43,9 @@
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
-/* The chosen tab takes the one fill that separates in BOTH palettes: every
-   bg-layer token resolves to the page's own white in light, which would make
-   the current place invisible exactly where a reader looks for it. */
+/* The chosen pill takes the one fill that separates in BOTH palettes: every
+   bg-layer token resolves to the surface's own white in light, which would
+   make the current place invisible exactly where a reader looks for it. */
 .tabActive {
   background: var(--dsw-alias-bg-module-platform);
   color: var(--dsw-alias-label-primary);
@@ -55,8 +56,45 @@
   outline-offset: -2px;
 }
 
+/* One icon control in the top-right row. Square hit area on the pill radius,
+   so re-reading, configuration and leaving read as one group. */
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: var(--dsw-radius-pill);
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
+}
+
+.action:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* The gear stays filled while its destination is the one showing: the pill
+   strip cannot mark it, so the control marks itself. */
+.actionActive {
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-primary);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: -2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tab {
+  .tab,
+  .action {
     transition: none;
   }
 }

@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest'
 const css = readFileSync(fileURLToPath(new URL('../src/client/AccountSection.module.css', import.meta.url)), 'utf8')
 const rowCss = readFileSync(fileURLToPath(new URL('../src/client/SidebarAccountRow.module.css', import.meta.url)), 'utf8')
 const heatCss = readFileSync(fileURLToPath(new URL('../src/client/ActivityHeatmap.module.css', import.meta.url)), 'utf8')
+const inviteCss = readFileSync(fileURLToPath(new URL('../src/client/InviteFriendDialog.module.css', import.meta.url)), 'utf8')
 // Every theme sheet, not just the platform tokens: radius, type, and font
 // variables are declared in siblings, and a gate reading one file would call
 // their names undeclared.
@@ -31,6 +32,11 @@ function heat(selector: string): string {
   return ruleOf(heatCss, selector, 'ActivityHeatmap.module.css')
 }
 
+/** The same, in the invite dialog's own sheet. */
+function invite(selector: string): string {
+  return ruleOf(inviteCss, selector, 'InviteFriendDialog.module.css')
+}
+
 function ruleOf(sheet: string, selector: string, name: string): string {
   const match = new RegExp(`^\\${selector} \\{([^}]*)\\}`, 'm').exec(sheet)
   if (match === null) throw new Error(`${name} has no \`${selector}\` rule`)
@@ -41,7 +47,7 @@ describe('AccountSection theme styles', () => {
   it('names only theme variables the token sheets define', () => {
     // Both sheets: the sidebar row paints from the same ladder, and an
     // undeclared name there fails exactly as silently.
-    const named = [...`${css}\n${rowCss}\n${heatCss}`.matchAll(/var\((--(?:dsw|dsh|ds)-[a-z0-9-]+)/g)]
+    const named = [...`${css}\n${rowCss}\n${heatCss}\n${inviteCss}`.matchAll(/var\((--(?:dsw|dsh|ds)-[a-z0-9-]+)/g)]
       .map(match => match[1])
     // The two scrollbar indirections are declared by the theme's scrollbar
     // sheet as the rebinding seam, and rebound — not declared — by a feature.
@@ -120,10 +126,43 @@ describe('AccountSection theme styles', () => {
   })
 
   it('closes every block, so no rule is swallowed by the one above it', () => {
-    for (const sheet of [css, rowCss, heatCss]) {
+    for (const sheet of [css, rowCss, heatCss, inviteCss]) {
       const bare = sheet.replace(/\/\*[\s\S]*?\*\//g, '')
       expect((bare.match(/\}/g) ?? []).length).toBe((bare.match(/\{/g) ?? []).length)
     }
+  })
+})
+
+describe('InviteFriendDialog theme styles', () => {
+  it('writes no literal colour, and paints the hero from the declared brand ramp', () => {
+    // The hero is the one fixed plate in this package: the same brand-blue
+    // band under both palettes, carrying a white tile. It resolves through the
+    // palette-invariant `--dsw-static-*` names, so the sheet still contains no
+    // literal colour a theme could not account for.
+    expect(inviteCss).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
+    expect(inviteCss).not.toMatch(/\b(?:rgb|rgba|hsl|hsla)\(/)
+    expect(invite('.hero')).toContain('var(--dsw-static-deepseek-50)')
+    expect(invite('.mark')).toContain('background: var(--dsw-static-neutral-00)')
+  })
+
+  it('leaves everything below the hero to the theme', () => {
+    // A fixed colour here would be a band that never inverts on a surface that
+    // must: the strip, the type, and the failure line all sit on the card.
+    const belowHero = inviteCss.slice(inviteCss.indexOf('.content'))
+    expect(belowHero).not.toContain('--dsw-static-')
+    expect(invite('.reward')).toContain('background: var(--dsw-alias-state-success-tertiary)')
+    expect(invite('.rewardIcon')).toContain('color: var(--dsw-alias-state-success-primary)')
+    expect(invite('.failure')).toContain('color: var(--dsw-alias-state-error-primary)')
+  })
+
+  it('takes the reference card geometry, and beats the Modal defaults it replaces', () => {
+    // A single class ties with Modal's own `.dialog`; which one wins would
+    // then depend on stylesheet order. Doubling the class settles it.
+    expect(inviteCss).toContain('.dialog.dialog {')
+    expect(inviteCss).toContain('.field.field {')
+    expect(invite('.dialog.dialog')).toContain('width: min(680px, 100%)')
+    expect(invite('.dialog.dialog')).toContain('border-radius: var(--dsw-radius-card)')
+    expect(invite('.field.field')).toContain('width: 100%')
   })
 })
 

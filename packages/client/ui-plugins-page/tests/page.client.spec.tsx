@@ -2,10 +2,11 @@
 /**
  * The Plugins page and its Studio MCP area as the user meets them.
  *
- * The postures that carry the design: a closed page renders nothing at all,
- * an open one is left by one gesture from anywhere on it, and the MCP area
- * says which of its four no-list states it is in — never an empty list in
- * place of a question it could not ask, and never a control it cannot honour.
+ * The postures that carry the design: a closed surface renders nothing at all,
+ * an open one shows one destination at a time and is left by one gesture from
+ * anywhere on it, and the MCP area says which of its four no-list states it is
+ * in — never an empty list in place of a question it could not ask, and never
+ * a control it cannot honour.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
@@ -30,20 +31,21 @@ const t = makeTranslate(zh, commonZh) as PluginsPageComponentProps['t']
 function renderPage(open: boolean) {
   const store = createSnapshotStore<PluginsPageState>({ open })
   const close = vi.fn()
+  const refresh = vi.fn()
   const renderSlot = vi.fn(() => <div data-testid="area">area</div>)
   render(<PluginsPage {...({
-    t, usePage: bindSnapshotSelector(store), close, renderSlot,
+    t, usePage: bindSnapshotSelector(store), close, refresh, renderSlot,
   } as unknown as PluginsPageComponentProps)} />)
-  return { close, renderSlot }
+  return { close, refresh, renderSlot }
 }
 
 function renderRow(open: boolean, wide = true) {
   const store = createSnapshotStore<PluginsPageState>({ open })
-  const openPage = vi.fn()
+  const toggle = vi.fn()
   render(<PluginsNavRow {...({
-    t, wide, usePage: bindSnapshotSelector(store), open: openPage,
+    t, wide, usePage: bindSnapshotSelector(store), toggle,
   } as unknown as PluginsNavRowComponentProps)} />)
-  return { openPage }
+  return { toggle }
 }
 
 function renderArea(state: StudioMcpState) {
@@ -61,41 +63,64 @@ const SERVER: StudioMcpRow = {
 }
 
 describe('the Plugins page', () => {
-  it('renders nothing while closed, so the frame below it is untouched', () => {
+  it('renders nothing while closed, so the main area below it is untouched', () => {
     const bench = renderPage(false)
     expect(document.querySelector('[data-plugins-page]')).toBeNull()
     expect(bench.renderSlot).not.toHaveBeenCalled()
   })
 
-  it('names itself by what it is for, and mounts whatever areas were registered', () => {
+  it('opens on the directory, names the place large, and mounts only that destination', () => {
     const bench = renderPage(true)
-    // The proposition is the heading, not the word "Plugins". A reader arriving
-    // by keyboard hears what the place is for; "Plugins" only repeats the
-    // sidebar row they pressed to get here, and it stays on the page as the
-    // small label beside the way back.
-    expect(screen.getByRole('heading', { level: 1, name: zh['intro'] })).toBeTruthy()
-    expect(screen.getByText(zh['title'])).toBeTruthy()
-    // One tab renders at a time, so the page asks for its entries by id.
-    expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: 'studio-mcp' })
-  })
-
-  it('shows one tab at a time and asks only for that tab’s areas', () => {
-    const bench = renderPage(true)
-    expect(screen.getByRole('tab', { name: zh['tab.mcp'], selected: true })).toBeTruthy()
-    expect(bench.renderSlot).not.toHaveBeenCalledWith('plugins.page.area', {}, { only: 'unieai-directory' })
-
-    fireEvent.click(screen.getByRole('tab', { name: zh['tab.directory'] }))
+    expect(screen.getByRole('heading', { level: 1, name: zh['title'] })).toBeTruthy()
+    expect(screen.getByText(zh['intro'])).toBeTruthy()
+    // One destination renders at a time, so the surface asks for its entries
+    // by id.
     expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: 'unieai-directory' })
-    expect(screen.getByRole('tab', { name: zh['tab.directory'], selected: true })).toBeTruthy()
+    expect(bench.renderSlot).not.toHaveBeenCalledWith('plugins.page.area', {}, { only: 'studio-mcp' })
   })
 
-  it('puts the Loader inventory and the deployment configuration under one tab', () => {
-    // Both answer "what does THIS build run"; two tabs on one subject would
-    // make a reader choose between them without a difference to choose on.
+  it('puts exactly the two browsable destinations on the pill strip', () => {
+    // Configuration is not something a reader browses, so it is the gear on
+    // the other side of the row rather than a third pill.
+    renderPage(true)
+    expect(screen.getAllByRole('tab').map(tab => tab.textContent))
+      .toEqual([zh['title'], zh['skills.title']])
+  })
+
+  it('moves to skills and asks only for that destination’s area', () => {
     const bench = renderPage(true)
-    fireEvent.click(screen.getByRole('tab', { name: zh['tab.build'] }))
-    expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: 'plugin-directory' })
-    expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: 'cordis-plugins' })
+    fireEvent.click(screen.getByRole('tab', { name: zh['skills.title'] }))
+    expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: 'skills' })
+    expect(screen.getByRole('tab', { name: zh['skills.title'], selected: true })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: zh['skills.title'] })).toBeTruthy()
+  })
+
+  it('puts the account servers, the Loader inventory and the configuration behind the gear', () => {
+    // All three answer "what does this install already consist of"; three
+    // pills on one subject would make a reader choose between them without a
+    // difference to choose on.
+    const bench = renderPage(true)
+    fireEvent.click(screen.getByRole('button', { name: zh['manage.title'] }))
+    for (const id of ['studio-mcp', 'plugin-directory', 'cordis-plugins']) {
+      expect(bench.renderSlot).toHaveBeenCalledWith('plugins.page.area', {}, { only: id })
+    }
+    expect(screen.getByRole('button', { name: zh['manage.title'] }).getAttribute('aria-pressed')).toBe('true')
+    // No pill can mark the gear's destination, so neither pill claims it.
+    expect(screen.queryByRole('tab', { selected: true })).toBeNull()
+  })
+
+  it('returns from the gear by pressing it again, so configuration is never a dead end', () => {
+    const bench = renderPage(true)
+    fireEvent.click(screen.getByRole('button', { name: zh['manage.title'] }))
+    fireEvent.click(screen.getByRole('button', { name: zh['manage.title'] }))
+    expect(screen.getByRole('tab', { name: zh['title'], selected: true })).toBeTruthy()
+    expect(bench.renderSlot).toHaveBeenLastCalledWith('plugins.page.area', {}, { only: 'unieai-directory' })
+  })
+
+  it('re-reads every source from one control in the chrome', () => {
+    const bench = renderPage(true)
+    fireEvent.click(screen.getByRole('button', { name: zh['refresh'] }))
+    expect(bench.refresh).toHaveBeenCalledTimes(1)
   })
 
   it('leaves by the header control', () => {
@@ -123,10 +148,10 @@ describe('the Plugins page', () => {
 })
 
 describe('the sidebar Plugins row', () => {
-  it('opens the page', () => {
+  it('toggles the surface, which is the way back while the column stays visible', () => {
     const bench = renderRow(false)
     fireEvent.click(screen.getByRole('button', { name: zh['nav'] }))
-    expect(bench.openPage).toHaveBeenCalledTimes(1)
+    expect(bench.toggle).toHaveBeenCalledTimes(1)
   })
 
   it('marks itself while the reader is standing on the page', () => {

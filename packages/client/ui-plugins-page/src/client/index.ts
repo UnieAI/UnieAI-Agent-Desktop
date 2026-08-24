@@ -1,6 +1,13 @@
 /**
- * Plugins page plugin, browser half: the standalone page behind the sidebar's
- * Plugins row, the row itself, and the Studio MCP area on the page.
+ * Plugins plugin, browser half: the main-area surface behind the sidebar's
+ * Plugins row, the row itself, and the UnieAI Studio entry, plugin directory,
+ * Studio MCP and skills areas on it.
+ *
+ * WHERE IT SITS. `shell.overlay` is the only additive root seat the frame
+ * documents, and it spans the whole app box; the surface offsets its left
+ * edge by ui-layout's `--dsh-shell-sidebar-width` so the navigation column
+ * stays visible and its Plugins row stays the marked one. A destination
+ * reached from the sidebar has to leave the sidebar standing.
  *
  * WHY A PAGE. The word "plugin" meant two different things in this product.
  * The reference web product's Plugins page is where an account's MCP servers
@@ -39,7 +46,9 @@ import { PluginsNavRow } from './PluginsNavRow.tsx'
 import { PluginsPageController } from './page-store.ts'
 import { DirectoryArea, type DirectoryAreaInjected } from './DirectoryArea.tsx'
 import { DirectorySource } from './directory-source.ts'
+import { SkillsArea, type SkillsAreaInjected } from './SkillsArea.tsx'
 import { StudioMcpArea, type StudioMcpAreaInjected } from './StudioMcpArea.tsx'
+import { StudioEntry, type StudioEntryInjected } from './StudioEntry.tsx'
 import { StudioMcpSource } from './studio-mcp-source.ts'
 import { en, ja, zh, zhTW } from './locales.ts'
 
@@ -47,8 +56,15 @@ export type {
   PluginsNavRowComponentProps, PluginsNavRowInjected, PluginsPageAreaOwnerProps,
   PluginsPageComponentProps, PluginsPageInjected,
 } from './contract/slots.ts'
+export type { SkillsAreaComponentProps, SkillsAreaInjected } from './SkillsArea.tsx'
 export type { StudioMcpAreaComponentProps, StudioMcpAreaInjected } from './StudioMcpArea.tsx'
+export type { StudioEntryComponentProps, StudioEntryInjected } from './StudioEntry.tsx'
+export type { StudioBinding } from './studio-entry.ts'
+export {
+  STUDIO_BINDING_URL, STUDIO_ICON, STUDIO_MCP_SERVER_ID, readStudioBinding,
+} from './studio-entry.ts'
 export type { PluginsPageState } from './page-store.ts'
+export type { PluginsViewId } from './PluginsPage.tsx'
 export { PluginsPageController } from './page-store.ts'
 export type {
   StudioMcpEnvironment, StudioMcpRow, StudioMcpState, StudioMcpTool,
@@ -71,8 +87,9 @@ const NS = 'plugins'
 const NAV_ORDER = 10
 
 /**
- * Overlay position of the page. High, because the page is a destination and
- * covers the frame — a badge or a toast registered later still paints over it.
+ * Overlay position of the surface. High, because it is a destination and
+ * covers the frame's main area — a badge or a toast registered later still
+ * paints over it.
  */
 const OVERLAY_ORDER = 100
 
@@ -95,16 +112,39 @@ export function apply(ctx: ClientContext): void {
   )
 
   const page = new PluginsPageController()
+
+  // The page is an overlay over the shell, and the sidebar keeps working
+  // underneath it: New chat and every session row take the reader back to the
+  // conversation while this surface stays up. Closing here is what makes the
+  // sidebar mean what it says.
+  //
+  // The signal is the sidebar's ACT, not the session state it produces:
+  // pressing New chat while a blank session is already current changes no
+  // observable state at all, so a listener on the session store would never
+  // fire for exactly the case that traps someone.
+  ctx.effect(
+    () => ctx.on('sidebar/navigate', () => {
+      if (page.store.getSnapshot().open) page.close()
+    }),
+    'ui-plugins-page: close when the sidebar navigates',
+  )
   const servers = new StudioMcpSource({ request: (path, init) => globalThis.fetch(path, init) })
   ctx.effect(() => () => { servers.dispose() }, 'ui-plugins-page: studio mcp source')
 
   const directory = new DirectorySource({ request: (path, init) => globalThis.fetch(path, init) })
   ctx.effect(() => () => { directory.dispose() }, 'ui-plugins-page: plugin directory source')
 
-  // The page declares the one hole everything on it arrives through. Its own
-  // apply registers the Studio MCP area below; ui-settings-plugin-inventory
-  // registers the plugin directory and ui-settings-plugins the cordis
-  // registry. The page imports none of them.
+  /** Re-read every source this package owns. */
+  const readAll = (): void => {
+    void servers.refresh()
+    void directory.refresh()
+  }
+
+  // The surface declares the one hole everything on it arrives through. Its
+  // own apply registers the plugin directory, the Studio MCP area and the
+  // skills area below; ui-settings-plugin-inventory registers the Loader
+  // inventory and ui-settings-plugins the cordis registry. The surface
+  // imports none of them.
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',
     id: 'plugins-page',
@@ -114,12 +154,14 @@ export function apply(ctx: ClientContext): void {
     inject: (): PluginsPageInjected => ({
       hooks: { page: page.store },
       close: () => { page.close() },
+      refresh: readAll,
     }),
   }, PluginsPage))
 
-  // The list is read when the page is opened rather than at boot: it belongs
-  // to an account that can change it elsewhere, and a desktop that asked at
-  // startup would show a stale answer for the rest of the document's life.
+  // The lists are read when the surface is opened rather than at boot: they
+  // belong to an account that can change them elsewhere, and a desktop that
+  // asked at startup would show a stale answer for the rest of the document's
+  // life. Leaving reads nothing: the next arrival is what re-asks.
   ctx.slots.inject('sidebar.nav.action', () => ctx.slots.register({
     name: 'sidebar.nav.action',
     id: 'plugins-page',
@@ -127,13 +169,32 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     inject: (): PluginsNavRowInjected => ({
       hooks: { page: page.store },
-      open: () => {
+      toggle: () => {
+        if (page.store.getSnapshot().open) {
+          page.close()
+          return
+        }
         page.open()
-        void servers.refresh()
-        void directory.refresh()
+        readAll()
       },
     }),
   }, PluginsNavRow))
+
+  // The one entry on this surface whose EXISTENCE is fixed rather than read.
+  // It stands above the catalogue on the same destination because it is this
+  // product's own integration and the catalogue is everyone else's; everything
+  // it displays still comes from the `servers` source below it, which is why
+  // it binds that source rather than a second reader (studio-entry.ts).
+  ctx.slots.inject('plugins.page.area', () => ctx.slots.register({
+    name: 'plugins.page.area',
+    id: 'unieai-studio',
+    order: -20,
+    locale: NS,
+    inject: (): StudioEntryInjected => ({
+      hooks: { servers },
+      refresh: () => { void servers.refresh() },
+    }),
+  }, StudioEntry))
 
   // Order below the MCP area: the directory is what a reader came to the page
   // for, and what they already have connected is context for it.
@@ -163,4 +224,17 @@ export function apply(ctx: ClientContext): void {
       refresh: () => { void servers.refresh() },
     }),
   }, StudioMcpArea))
+
+  // The skills destination's only occupant. It reads nothing, because nothing
+  // root-scoped reports skills (SkillsArea's module doc names the route and
+  // why it cannot answer here); the entry exists so the destination has a
+  // body and so a build that gains a catalogue replaces this id instead of
+  // editing the surface.
+  ctx.slots.inject('plugins.page.area', () => ctx.slots.register({
+    name: 'plugins.page.area',
+    id: 'skills',
+    order: 0,
+    locale: NS,
+    inject: (): SkillsAreaInjected => ({}),
+  }, SkillsArea))
 }

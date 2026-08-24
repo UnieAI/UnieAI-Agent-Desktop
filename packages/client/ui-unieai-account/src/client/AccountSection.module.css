@@ -459,15 +459,8 @@
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* Invite by email: the field takes the slack, Send keeps its own width. */
-.inviteForm {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.inviteField {
-  flex: 1 1 240px;
-  min-width: 0;
+/* Invite by email: the trigger for the compose dialog, which owns the field
+   and its Send (InviteFriendDialog.module.css). */
+.inviteOpen {
+  align-self: flex-start;
 }

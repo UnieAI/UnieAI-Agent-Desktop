@@ -4,11 +4,21 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useSyncExternalStore } from 'react'
 import type { SessionId } from '@unieai/uad-client-runtime/client'
 import { SessionLogDownloadController } from '../src/client/controller.ts'
-import { SessionLogDownloadDialog } from '../src/client/Dialog.tsx'
-import type { SessionLogDownloadDialogProps } from '../src/client/Dialog.tsx'
+import { SessionLogDownloadDialog, SessionLogDownloadOverlay } from '../src/client/Dialog.tsx'
+import type { SessionLogDownloadDialogProps, SessionLogDownloadOverlayProps } from '../src/client/Dialog.tsx'
 import { en } from '../src/client/locales.ts'
 
 const SID = 'session-export-dialog' as SessionId
+
+/** Bind one controller store as the selector hook the slot renderer would supply. */
+function bindDownloadState(controller: SessionLogDownloadController) {
+  return function useSessionLogDownload<T>(selector: (state: ReturnType<typeof controller.store.getSnapshot>) => T): T {
+    return useSyncExternalStore(
+      listener => controller.store.subscribe(listener),
+      () => selector(controller.store.getSnapshot()),
+    )
+  }
+}
 
 function bench(
   controller = new SessionLogDownloadController(
@@ -16,12 +26,7 @@ function bench(
   ),
 ) {
   const dismiss = vi.fn((sessionId: SessionId) => { controller.dismiss(sessionId) })
-  function useSessionLogDownload<T>(selector: (state: ReturnType<typeof controller.store.getSnapshot>) => T): T {
-    return useSyncExternalStore(
-      listener => controller.store.subscribe(listener),
-      () => selector(controller.store.getSnapshot()),
-    )
-  }
+  const useSessionLogDownload = bindDownloadState(controller)
   const t = (key: keyof typeof en): string => en[key]
   const props = { sessionId: SID, useSessionLogDownload, dismiss, t } as unknown as SessionLogDownloadDialogProps
   const view = render(<SessionLogDownloadDialog {...props} />)
@@ -29,6 +34,27 @@ function bench(
 }
 
 afterEach(cleanup)
+
+describe('SessionLogDownloadOverlay', () => {
+  it('reports the Session whose download is open, not the one a surface happens to show', async () => {
+    const controller = new SessionLogDownloadController(async () => new Response('zip'), vi.fn())
+    const dismiss = vi.fn((sessionId: SessionId) => { controller.dismiss(sessionId) })
+    const useSessionLogDownload = bindDownloadState(controller)
+    const props = {
+      useSessionLogDownload, dismiss, t: (key: keyof typeof en): string => en[key],
+    } as unknown as SessionLogDownloadOverlayProps
+    const view = render(<SessionLogDownloadOverlay {...props} />)
+    expect(view.queryByRole('dialog')).toBeNull()
+
+    const other = 'session-export-other' as SessionId
+    await controller.download(other)
+    expect(await view.findByRole('dialog', { name: 'Session download started' })).toBeTruthy()
+
+    fireEvent.click(view.getAllByRole('button', { name: 'Close' })[0]!)
+    await waitFor(() => { expect(dismiss).toHaveBeenCalledWith(other) })
+    await waitFor(() => { expect(view.queryByRole('dialog')).toBeNull() })
+  })
+})
 
 describe('SessionLogDownloadDialog', () => {
   it('shows a controller failure and closes it without reading Session history', async () => {

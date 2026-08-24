@@ -430,6 +430,42 @@ describe('workspace browser rows', () => {
   })
 
 
+  it('appends the session-row menu hole after the three built-in rows and hands it the row session', () => {
+    const node: SessionNode = {
+      id: sid('row-session'), title: 'Row', blank: false, running: false,
+      runningSubagentCount: 0, completed: false, updatedAt: 0,
+    }
+    const seen: { sessionId: SessionId }[] = []
+    render(<SessionNodeItem node={node} currentId={sid('other-session')} now={0} onOpen={vi.fn()}
+      onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()}
+      renderMenuActions={(owner) => {
+        seen.push({ sessionId: owner.sessionId })
+        return (
+          <button type="button" role="menuitem" onClick={() => { owner.closeMenu() }}>Extra row</button>
+        )
+      }}
+      t={t} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '会话“Row”的操作' }))
+    const rows = screen.getAllByRole('menuitem').map(item => item.textContent)
+    expect(rows).toEqual(['重命名', '分叉会话', '归档会话', 'Extra row'])
+    expect(seen.at(-1)?.sessionId).toBe(node.id)
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Extra row' }))
+    expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  it('leaves the menu at its three built-in rows with the hole unoccupied', () => {
+    const node: SessionNode = {
+      id: sid('bare'), title: 'Bare', blank: false, running: false,
+      runningSubagentCount: 0, completed: false, updatedAt: 0,
+    }
+    render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
+      onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} renderMenuActions={() => null} t={t} />)
+    fireEvent.click(screen.getByRole('button', { name: '会话“Bare”的操作' }))
+    expect(screen.getAllByRole('menuitem')).toHaveLength(3)
+  })
+
   it('shows the hover card after the dwell and suppresses it while the row menu is open', () => {
     vi.useFakeTimers()
     try {

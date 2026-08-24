@@ -1,89 +1,96 @@
 /**
- * The Plugins page: a frame-wide surface holding everything this product
- * calls a plugin.
+ * The Plugins surface: a view in the frame's MAIN AREA, beside the navigation
+ * column rather than over it.
  *
- * It is a page and not a settings section, and that is the whole change. The
- * word "plugin" had two meanings here — the account's MCP servers, which the
- * reference web product installs from its own Plugins page, and this
- * deployment's cordis registry, which the settings panel called Plugins and
- * which is developer-facing. One of them was reachable from a product-level
- * nav row and the other was not reachable at all. Both are areas on this page
- * now, stacked in `order` beside a read-only directory of everything the
- * Loader reports, and none of the three is what the word means on its own.
+ * WHY BESIDE. Plugins is a destination, and a destination the reader reached
+ * from the sidebar has to leave the sidebar standing: the row they pressed is
+ * what says where they are, and covering it takes that answer away along with
+ * every other place they might go next. The seat is still `shell.overlay` —
+ * the frame documents no other additive root surface — but the surface offsets
+ * itself by `--dsh-shell-sidebar-width`, the frame's own rendered column width
+ * (ui-layout's `SIDEBAR_WIDTH_PROPERTY`), so the column stays visible at every
+ * width, through a drag, and through the narrow-viewport auto-collapse.
  *
- * The page draws only its own chrome. What an area is, what it reads, and
- * whether it can do anything are the area's business: this component renders
- * `plugins.page.area` and has no import from either occupant.
+ * The page draws only its own chrome. What a destination shows, what it reads,
+ * and whether it can do anything are the registered areas' business: this
+ * component renders `plugins.page.area` and imports none of its occupants.
  *
- * The three occupants are TABS, not a stack. Each is a place of its own —
- * what the account can install, what it has connected, and what this build
- * loads — and stacking them made the page a scroll in which the directory's
- * 22 rows and the Loader's 128 sat end to end with nothing saying they were
- * different kinds of thing.
+ * THREE DESTINATIONS, TWO ON THE STRIP. The plugin directory and skills are
+ * places a reader browses, so they sit on the pill strip at the top left. The
+ * third — the account's MCP servers, the Loader's inventory, and this build's
+ * cordis configuration — is what the deployment IS rather than what can be
+ * added to it, so it hangs off the gear at the top right, where the reference
+ * design puts configuration. All three are one-at-a-time: stacking them made
+ * the surface a scroll in which a 22-row catalogue and the Loader's 128 sat
+ * end to end with nothing saying they were different kinds of thing.
  *
- * The tab table below names entry ids from other packages, which is the one
- * place this page knows its occupants. That coupling is deliberate and gated:
+ * The view table below names entry ids from other packages, which is the one
+ * place this surface knows its occupants. That coupling is deliberate:
  * `plugins.page.area` carries no per-entry label, so a generic strip would
- * have nothing to write on itself, and a test asserts the table covers every
- * id actually registered — an area added without a tab fails there rather
- * than disappearing from the page.
- *
- * Frame-wide rather than beside the sidebar: `shell.overlay` is the seat the
- * shell documents for a surface of one's own, and it spans the frame. The
- * page therefore carries its own way back (the header control, and Escape),
- * which is also why leaving it is a single gesture from anywhere on it.
+ * have nothing to write on itself.
  */
-import { useEffect, useId, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react'
 import clsx from 'clsx'
-import { IconChevronLeftOutline14 } from '@unieai/uad-client-ui-primitives'
+import {
+  IconCloseOutline16, IconRefreshOutline16, IconSettingsOutline16,
+} from '@unieai/uad-client-ui-primitives'
 import type { PluginsPageComponentProps } from './contract/slots.ts'
 import type { PluginsPageKey } from './locales.ts'
 import css from './PluginsPage.module.css'
-import tabCss from './PluginsTabs.module.css'
+import chrome from './PluginsTabs.module.css'
 
-/** Identifier of one tab on the page. */
-export type PluginsTabId = 'mcp' | 'directory' | 'build'
+/** Identifier of one destination on the surface. */
+export type PluginsViewId = 'directory' | 'skills' | 'manage'
 
 /**
- * The page's tabs, in the order they are read, and which registered areas each
- * one shows.
+ * The surface's destinations, and which registered areas each one shows.
  *
- * `entries` names ids owned by other packages. `PLUGINS_PAGE_TABS` is exported
- * so the test that guards the coupling can compare it against what those
- * packages actually register.
+ * `entries` names ids owned by other packages. `VIEWS` is exported so the test
+ * that guards the coupling can compare it against what those packages
+ * actually register.
  */
-export const TABS = [
-  { id: 'mcp', label: 'tab.mcp', entries: ['studio-mcp'] },
-  { id: 'directory', label: 'tab.directory', entries: ['unieai-directory'] },
-  // Two entries under one tab: the Loader's inventory and the deployment's
-  // plugin configuration are both about what THIS build runs, and splitting
-  // them would put two tabs on one subject.
-  // Not "plugins": this tab is what THIS build runs and how it is configured,
-  // and using that word beside a directory of installable plugins was the
-  // collision. The Loader's read-only tree is folded away inside it.
-  { id: 'build', label: 'tab.build', entries: ['plugin-directory', 'cordis-plugins'] },
+export const VIEWS = [
+  // The Studio entry stands above the catalogue: it is this product's own
+  // integration and the rest of the destination is everyone else's.
+  { id: 'directory', title: 'title', intro: 'intro', entries: ['unieai-studio', 'unieai-directory'] },
+  { id: 'skills', title: 'skills.title', intro: 'skills.intro', entries: ['skills'] },
+  // Three entries under one destination: the account's connected servers, the
+  // Loader's inventory, and the deployment's plugin configuration all answer
+  // "what does this install already consist of", and each draws its own
+  // heading, so they stack without a strip between them.
+  {
+    id: 'manage',
+    title: 'manage.title',
+    intro: 'manage.intro',
+    entries: ['studio-mcp', 'plugin-directory', 'cordis-plugins'],
+  },
 ] as const satisfies readonly {
-  id: PluginsTabId
-  label: PluginsPageKey
+  id: PluginsViewId
+  title: PluginsPageKey
+  intro: PluginsPageKey
   entries: readonly string[]
 }[]
 
+/** The destinations that appear as pill tabs; `manage` is reached by the gear. */
+export const TAB_VIEWS = ['directory', 'skills'] as const satisfies readonly PluginsViewId[]
+
 /**
- * Render the Plugins page, or nothing while it is closed.
+ * Render the Plugins view, or nothing while it is closed.
  * @param props - composed slot props (contract in contract/slots.ts).
- * @returns the page element tree, or null.
+ * @returns the view element tree, or null.
  */
-export function PluginsPage({ t, renderSlot, usePage, close }: PluginsPageComponentProps) {
+export function PluginsPage({ t, renderSlot, usePage, close, refresh }: PluginsPageComponentProps) {
   const open = usePage(state => state.open)
-  const [tab, setTab] = useState<PluginsTabId>(TABS[0].id)
-  const current = TABS.find(entry => entry.id === tab) ?? TABS[0]
+  const [view, setView] = useState<PluginsViewId>(VIEWS[0].id)
+  const current = VIEWS.find(entry => entry.id === view) ?? VIEWS[0]
   const headingId = useId()
   const surface = useRef<HTMLElement | null>(null)
 
-  // Escape leaves the page. Bound on the document rather than on the surface
-  // because the reader may be focused anywhere inside an area — a card's
-  // input, a tab strip — and the gesture means the same thing from all of
-  // them. Bound only while open, so a closed page listens for nothing.
+  // Escape leaves the surface. Bound on the document rather than on the
+  // surface because the reader may be focused anywhere inside an area — a
+  // card's input, a filter strip — and the gesture means the same thing from
+  // all of them. Bound only while open, so a closed surface listens for
+  // nothing.
   useEffect(() => {
     if (!open) return undefined
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -93,59 +100,92 @@ export function PluginsPage({ t, renderSlot, usePage, close }: PluginsPageCompon
     return () => { document.removeEventListener('keydown', onKeyDown) }
   }, [open, close])
 
-  // Opening moves focus onto the page. Without it a keyboard reader who
-  // pressed the sidebar row would still be standing in a column the page now
-  // covers, and their next Tab would walk hidden controls.
+  // Opening moves focus onto the surface. Without it a keyboard reader who
+  // pressed the sidebar row would still be standing in the conversation the
+  // surface now covers, and their next Tab would walk hidden controls.
   useEffect(() => {
     if (open) surface.current?.focus()
   }, [open])
+
+  // The gear is a toggle, not a fourth tab: pressing it a second time returns
+  // to the destination the reader came from rather than leaving them in
+  // configuration with no marked way back on the strip.
+  const toggleManage = useCallback(() => {
+    setView(previous => (previous === 'manage' ? VIEWS[0].id : 'manage'))
+  }, [])
 
   if (!open) return null
 
   return (
     <section
       ref={surface}
-      className={css.page}
+      className={css.view}
       aria-labelledby={headingId}
       tabIndex={-1}
       data-plugins-page
     >
-      <header className={css.header}>
-        {/* The way back sits in the frame's own corner, not on the reading
-            column: it belongs to the window, and a reader looking for it looks
-            at the edge of the screen rather than at the edge of the text. */}
-        <div className={css.crumbs}>
-          <button type="button" className={css.back} onClick={close}>
-            <IconChevronLeftOutline14 className={css.backIcon} size={14} />
-            {t('back')}
-          </button>
-          <span className={css.name}>{t('title')}</span>
+      <header className={css.bar}>
+        <div className={chrome.tabs} role="tablist">
+          {TAB_VIEWS.map((id) => {
+            const entry = VIEWS.find(candidate => candidate.id === id) ?? VIEWS[0]
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={view === id}
+                className={clsx(chrome.tab, view === id && chrome.tabActive)}
+                onClick={() => { setView(id) }}
+              >
+                {t(entry.title)}
+              </button>
+            )
+          })}
         </div>
-        <div className={css.measure}>
-          {/* The proposition names the page; the word "Plugins" above only
-              says where you are. Naming the section by the proposition is why
-              a reader arriving by keyboard hears what this place is for. */}
-          <h1 id={headingId} className={css.title}>{t('intro')}</h1>
+        <div className={css.actions}>
+          <button
+            type="button"
+            className={chrome.action}
+            aria-label={t('refresh')}
+            title={t('refresh')}
+            onClick={refresh}
+          >
+            <IconRefreshOutline16 size={16} />
+          </button>
+          <button
+            type="button"
+            className={clsx(chrome.action, view === 'manage' && chrome.actionActive)}
+            aria-label={t('manage.title')}
+            title={t('manage.title')}
+            aria-pressed={view === 'manage'}
+            onClick={toggleManage}
+          >
+            <IconSettingsOutline16 size={16} />
+          </button>
+          {/* The way back. The sidebar row is the other one — it marks itself
+              while the reader stands here — but a surface that covers the
+              conversation must carry a leave gesture of its own, because the
+              rows beside it switch sessions underneath rather than closing
+              this. */}
+          <button
+            type="button"
+            className={chrome.action}
+            aria-label={t('back')}
+            title={t('back')}
+            onClick={close}
+          >
+            <IconCloseOutline16 size={16} />
+          </button>
         </div>
       </header>
       <div className={css.scroll}>
         <div className={css.measure}>
-          <div className={tabCss.tabs} role="tablist">
-            {TABS.map(entry => (
-              <button
-                key={entry.id}
-                type="button"
-                role="tab"
-                aria-selected={tab === entry.id}
-                className={clsx(tabCss.tab, tab === entry.id && tabCss.tabActive)}
-                onClick={() => { setTab(entry.id) }}
-              >
-                {t(entry.label)}
-              </button>
-            ))}
-          </div>
+          <h1 id={headingId} className={css.title}>{t(current.title)}</h1>
+          <p className={css.subtitle}>{t(current.intro)}</p>
           <div className={css.column}>
-            {current.entries.map(id => renderSlot('plugins.page.area', {}, { only: id }))}
+            {current.entries.map(id => (
+              <Fragment key={id}>{renderSlot('plugins.page.area', {}, { only: id })}</Fragment>
+            ))}
           </div>
         </div>
       </div>

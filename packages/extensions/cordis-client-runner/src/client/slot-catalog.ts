@@ -562,7 +562,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.hero.workspace.directoryFlow\', () => ctx.slots.register(\n      { name: \'conversation.hero.workspace.directoryFlow\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-workspace/src/client/contract/slots.ts:57',
+    source: 'packages/client/ui-workspace/src/client/contract/slots.ts:80',
   },
   {
     key: 'conversation.input.attachments',
@@ -1086,7 +1086,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'conversation.session.header\' (client-ui-conversation), so it exists while that entry is mounted',
     occupants: [
-      'session-log-export SessionLogDownloadHeaderAction id \'session-log-download\'',
+      'client-ui-conversation DetailsToggle id \'details-toggle\'',
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'conversation.session.header.utilities\', () => ctx.slots.register(\n      { name: \'conversation.session.header.utilities\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
@@ -1178,8 +1178,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     key: 'plugins.page.area',
     kind: 'list',
     scope: 'root',
-    summary: 'One area stacked down the Plugins page, in `order`.',
-    doc: 'One area stacked down the Plugins page, in `order`. Declared by this\npackage\'s `shell.overlay` entry (declaring is claiming); this package\nregisters the Studio MCP area, `ui-settings-plugin-inventory` registers\nthe read-only plugin directory, and `ui-settings-plugins` registers the\ncordis plugin registry it used to register as a settings section.\n\nThe owner supplies nothing at all: an area draws its own heading,\nits own intro, and its own body, because the page has no opinion about\nwhat an area is. It is deliberately the same shape as\n`settings.section` in that respect, so a surface can move between the\ntwo without its component learning anything new.',
+    summary: 'One area on the Plugins surface, stacked in `order` within whichever destination lists its id.',
+    doc: 'One area on the Plugins surface, stacked in `order` within whichever\ndestination lists its id. Declared by this package\'s `shell.overlay`\nentry (declaring is claiming); this package registers the plugin\ndirectory, the Studio MCP area and the skills area,\n`ui-settings-plugin-inventory` registers the read-only Loader\ninventory, and `ui-settings-plugins` registers the cordis plugin\nregistry it used to register as a settings section.\n\nThe owner supplies nothing at all: an area draws its own heading,\nits own intro, and its own body, because the surface has no opinion\nabout what an area is. It is deliberately the same shape as\n`settings.section` in that respect, so a surface can move between the\ntwo without its component learning anything new.',
     registerOptions: [
       {
         name: 'id',
@@ -1201,7 +1201,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
       },
     ],
     ownerProps: [
-      '/** Owner share of a page area (the page supplies nothing). */\nexport interface PluginsPageAreaOwnerProps {\n  /** Marker field: area owner props are intentionally empty. */\n  children?: never\n}',
+      '/** Owner share of a surface area (the surface supplies nothing). */\nexport interface PluginsPageAreaOwnerProps {\n  /** Marker field: area owner props are intentionally empty. */\n  children?: never\n}',
     ],
     ownerPropsReferences: [],
     standardProps: [
@@ -1215,12 +1215,13 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     occupants: [
       'client-ui-plugins-page DirectoryArea id \'unieai-directory\'',
       'client-ui-plugins-page StudioMcpArea id \'studio-mcp\'',
+      'client-ui-plugins-page SkillsArea id \'skills\'',
       'client-ui-settings-plugin-inventory PluginDirectoryArea id \'plugin-directory\'',
       'client-ui-settings-plugins PluginsSettingsSection id \'cordis-plugins\'',
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'plugins.page.area\', () => ctx.slots.register(\n      { name: \'plugins.page.area\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-plugins-page/src/client/contract/slots.ts:44',
+    source: 'packages/client/ui-plugins-page/src/client/contract/slots.ts:51',
   },
   {
     key: 'root',
@@ -1605,7 +1606,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     kind: 'list',
     scope: 'root',
     summary: 'Frame-wide floating layer, above every column and outside their scroll containers.',
-    doc: 'Frame-wide floating layer, above every column and outside their scroll\ncontainers. Deliberately generic and unowned by any feature: a badge, a\ntoast stack or a status pill all belong here, and entries order among\nthemselves. The layer itself is click-through — entries opt back into\npointer events — so an occupant never blocks the app underneath.\n\nThis is the additive seat for a frame-wide surface of your own: a fresh\n`id` is added beside the shipped entries instead of replacing them.',
+    doc: 'Frame-wide floating layer, above every column and outside their scroll\ncontainers. Deliberately generic and unowned by any feature: a badge, a\ntoast stack or a status pill all belong here, and entries order among\nthemselves. The layer itself is click-through — entries opt back into\npointer events — so an occupant never blocks the app underneath.\n\nThis is the additive seat for a frame-wide surface of your own: a fresh\n`id` is added beside the shipped entries instead of replacing them.\n\nAn occupant that must leave the navigation column uncovered offsets\nitself by `--dsh-shell-sidebar-width`, the frame\'s rendered sidebar\nwidth (AppFrame\'s `SIDEBAR_WIDTH_PROPERTY`); the layer itself always\nspans the whole box.',
     registerOptions: [
       {
         name: 'id',
@@ -1638,10 +1639,11 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     declaredBy: 'an entry in \'root\' (client-ui-layout), so it exists while that entry is mounted',
     occupants: [
       'client-ui-plugins-page PluginsPage id \'plugins-page\'',
+      'session-log-export SessionLogDownloadOverlay id \'session-log-download\'',
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'shell.overlay\', () => ctx.slots.register(\n      { name: \'shell.overlay\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-layout/src/client/index.ts:83',
+    source: 'packages/client/ui-layout/src/client/index.ts:88',
   },
   {
     key: 'sidebar',
@@ -1917,7 +1919,54 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     ],
     replaceRisk: 'shadows-shipped-ui',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.workspaces.directoryFlow\', () => ctx.slots.register(\n      { name: \'sidebar.workspaces.directoryFlow\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
-    source: 'packages/client/ui-workspace/src/client/contract/slots.ts:59',
+    source: 'packages/client/ui-workspace/src/client/contract/slots.ts:82',
+  },
+  {
+    key: 'sidebar.workspaces.session.menu.action',
+    kind: 'list',
+    scope: 'root',
+    summary: 'Rows appended to a sidebar session row\'s overflow menu, after the region\'s own Rename / Fork / Archive.',
+    doc: 'Rows appended to a sidebar session row\'s overflow menu, after the\nregion\'s own Rename / Fork / Archive. Declared by this package\'s\nWorkspaceBrowser entry (declaring is claiming); each registration adds\none row per session row, ordered among occupants by `order`.\n\nThe entry renders inside the open menu card and unmounts when the menu\ncloses, so an occupant keeps nothing there that must outlive the\ngesture — a result dialog belongs in `shell.overlay`. Draw the row with\nui-primitives\' `MenuItemButton` (or `role="menuitem"` markup of your\nown) so it matches the rows above it, and call `closeMenu` when it acts.\n\nRoot scope with the session in the owner share: see\nSessionRowMenuActionOwnerProps. An empty hole leaves the menu at\nits three built-in rows.',
+    registerOptions: [
+      {
+        name: 'id',
+        requirement: 'required',
+        type: 'string',
+        doc: 'Your cell key. Use an id of your own: a fresh id is added beside the shipped entries, while reusing a shipped id puts you in THAT cell and replaces it. Owners that filter by id address you by it.',
+      },
+      {
+        name: 'order',
+        requirement: 'optional',
+        type: 'number',
+        doc: 'Position among the entries, ascending (default 0).',
+      },
+      {
+        name: 'label',
+        requirement: 'optional',
+        type: 'string | (() => string)',
+        doc: 'Display text where the owner projects one (nav rows, tabs). A thunk is re-read on every projection, so localized text follows the active locale without re-registering.',
+      },
+    ],
+    ownerProps: [
+      '/**\n * Owner share of one session row\'s overflow-menu hole: which session the row\n * stands for, and how to shut the menu the row\'s occupant sits in.\n *\n * `sessionId` is the ROW\'s session, never the open one. The slot is root\n * scope precisely so the framework cannot supply a `sessionId`: the session\n * kit binds the current selection, and every row except the selected one\n * would then act on the wrong session.\n */\nexport interface SessionRowMenuActionOwnerProps {\n  /** The session this row stands for. */\n  sessionId: SessionId\n  /** Close the row\'s overflow menu; an occupant calls it when its row acts. */\n  closeMenu: () => void\n}',
+    ],
+    ownerPropsReferences: [
+      'SessionId',
+    ],
+    standardProps: [
+      'useSessions: SnapshotSelectorHook<SessionListState>',
+      'useWorkspaces: SnapshotSelectorHook<import(\'./workspaces/service.ts\').WorkspaceListState>',
+    ],
+    keyDomain: '',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'sidebar.workspaces\' (client-ui-workspace), so it exists while that entry is mounted',
+    occupants: [
+      'session-log-export SessionLogDownloadRowAction id \'session-log-download\'',
+    ],
+    replaceRisk: 'none',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'sidebar.workspaces.session.menu.action\', () => ctx.slots.register(\n      { name: \'sidebar.workspaces.session.menu.action\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/client/ui-workspace/src/client/contract/slots.ts:99',
   },
   {
     key: 'tool.call.toolview',

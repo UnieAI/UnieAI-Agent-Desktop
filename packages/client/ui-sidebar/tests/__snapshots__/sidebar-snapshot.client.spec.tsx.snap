@@ -166,7 +166,7 @@ exports[`sidebar shell snapshots > renders the expanded column (wordmark, capsul
               <span
                 class="fallbackBrandName"
               >
-                UnieAI Agent
+                Rabi
               </span>
               <span
                 class="buildRevision"
@@ -323,7 +323,7 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
               <span
                 class="fallbackBrandName"
               >
-                UnieAI Agent
+                Rabi
               </span>
               <span
                 class="buildRevision"

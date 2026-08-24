@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-Web Session 日志下载控制，使用 `dsh-host-apiproxy` 拥有的 Host 流式 ZIP 端点。Host 半包注册 `/export`；浏览器半包在 Session Header 中提供 111×32 的 `Session log` 操作，以及一个供该按钮与斜杠命令共用的下载控制器和弹窗。ZIP 生成、原始 JSONL/zstd 读取、子 Session、附件、背压和 HTTP 错误语义仍由 [ApiProxy 下载实现](../../host/apiproxy/README.zh.md)负责。
+Web Session 日志下载控制，使用 `dsh-host-apiproxy` 拥有的 Host 流式 ZIP 端点。Host 半包注册 `/export`；浏览器半包在侧边栏每个会话行的溢出菜单中提供 `下载 Session 日志` 行，以及一个供该菜单行与斜杠命令共用的下载控制器和全框弹窗。ZIP 生成、原始 JSONL/zstd 读取、子 Session、附件、背压和 HTTP 错误语义仍由 [ApiProxy 下载实现](../../host/apiproxy/README.zh.md)负责。
 
 ## 命令约定
 
@@ -11,7 +11,7 @@ Web Session 日志下载控制，使用 `dsh-host-apiproxy` 拥有的 Host 流�
 | `/export` | 记录一组用户命令生命周期；提交命令的浏览器收到本地执行确认后，下载 `GET /api/session.export?sessionId=<id>&includeDescendants=true`。 |
 | `/export <path>` | 返回错误。浏览器下载通过浏览器的普通下载行为选择目标位置。 |
 
-该命令只由 Web bundle 挂载。只有 `/export` 返回成功时，本地 `command/executed` 确认才会在提交命令的浏览器中触发斜杠下载；其他标签页仍会渲染持久命令行，但不会重复执行浏览器副作用。Header 按钮直接调用同一个控制器。两种入口都会先发出 `HEAD` 预检，再把 GET URL 交给浏览器下载管理器，JavaScript 不会缓冲 ZIP；它们共用并发折叠、插件释放时取消预检、准备阶段错误处理、浏览器保存行为和同一个 Modal。
+该命令只由 Web bundle 挂载。只有 `/export` 返回成功时，本地 `command/executed` 确认才会在提交命令的浏览器中触发斜杠下载；其他标签页仍会渲染持久命令行，但不会重复执行浏览器副作用。菜单行直接调用同一个控制器，使用其菜单所属**行**的 session id，而不是当前打开的 Session。两种入口都会先发出 `HEAD` 预检，再把 GET URL 交给浏览器下载管理器，JavaScript 不会缓冲 ZIP；它们共用并发折叠、插件释放时取消预检、准备阶段错误处理、浏览器保存行为和同一个 Modal。
 
 Host 下载端点会在 `readRaw` 前 flush 活动的根 Session，因此斜杠命令触发的 ZIP 会包含启动下载的 `command/run` 与 `command/done` 事件对。冷持久化 Session 不需要 flush。
 
@@ -24,7 +24,14 @@ Host 下载端点会在 `readRaw` 前 flush 活动的根 Session，因此斜杠�
   name: '@unieai/uad-session-log-export'
 ```
 
-Web bundle 将本包与 `dsh-host-apiproxy`、`dsh-commands`、`dsh-client-ui-commands` 和 `dsh-client-ui-conversation` 一起挂载。本包把按钮和弹窗贡献到最右侧的 `conversation.session.header.utilities` 列表，与标题旁 `conversation.session.header.actions` 中的模式、Subagent 和 Task 配置项相互独立；Trajectory 不包含导出入口。
+Web bundle 将本包与 `dsh-host-apiproxy`、`dsh-commands`、`dsh-client-ui-commands`、`dsh-client-ui-layout` 和 `dsh-client-ui-workspace` 一起挂载。浏览器侧有两处注册：
+
+| Slot | 入口 | 为什么在这里 |
+|---|---|---|
+| `sidebar.workspaces.session.menu.action` | 菜单行 | 每个会话行一行，作用于该行的 Session；owner 份额携带 session id 和关闭菜单的回调 |
+| `shell.overlay` | 结果弹窗 | 菜单行随菜单卸载，而 `/export` 可能在没有任何 Session 界面打开时运行，因此弹窗需要一个比两者都长寿的席位 |
+
+Session Header 不再包含导出入口。
 
 ## 模型体验
 

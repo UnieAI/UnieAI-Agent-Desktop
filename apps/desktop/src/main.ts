@@ -42,7 +42,7 @@ function createWindow(): BrowserWindow {
     // A title the harness overwrites as soon as the page loads; it exists so a
     // window manager has something better than the executable name to show
     // during the moment before that.
-    title: 'UnieAI Agent',
+    title: 'Rabi',
     // Linux takes the icon from the window; macOS and Windows take it from the
     // packaged bundle, where naming one here would be ignored. Spread rather
     // than `undefined`, which `exactOptionalPropertyTypes` refuses.
@@ -67,7 +67,7 @@ function createWindow(): BrowserWindow {
 async function showFailure(window: BrowserWindow, error: HarnessStartError): Promise<void> {
   const escape = (text: string): string => text
     .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-  const page = `<!doctype html><meta charset="utf-8"><title>UnieAI Agent</title>
+  const page = `<!doctype html><meta charset="utf-8"><title>Rabi</title>
 <style>
   :root { color-scheme: dark }
   body { margin: 0; padding: 48px; background: #101010; color: #e8e8e8;
@@ -77,7 +77,7 @@ async function showFailure(window: BrowserWindow, error: HarnessStartError): Pro
   pre { margin: 0; padding: 16px; overflow: auto; max-height: 60vh; border-radius: 8px;
         background: #181818; color: #c8c8c8; font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace }
 </style>
-<h1>UnieAI Agent could not start</h1>
+<h1>Rabi could not start</h1>
 <p>${escape(error.message)}</p>
 <pre>${escape(error.output.trim() || 'The harness wrote nothing before it stopped.')}</pre>`
   await window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(page)}`)

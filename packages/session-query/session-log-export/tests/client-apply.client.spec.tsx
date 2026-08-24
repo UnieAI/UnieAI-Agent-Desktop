@@ -3,11 +3,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SlotRegistry } from '@unieai/uad-client-runtime/client'
 import type { SessionId } from '@unieai/uad-client-runtime/client'
 import { LocaleRuntime } from '@unieai/uad-client-locale/client'
-import type {} from '@unieai/uad-client-ui-conversation/client'
-import { SessionLogDownloadHeaderAction } from '../src/client/HeaderAction.tsx'
+import type {} from '@unieai/uad-client-ui-layout/client'
+import type {} from '@unieai/uad-client-ui-workspace/client'
+import { SessionLogDownloadOverlay } from '../src/client/Dialog.tsx'
+import { SessionLogDownloadRowAction } from '../src/client/RowMenuAction.tsx'
 import { apply, inject } from '../src/client/index.ts'
 
 const SID = 'session-export-apply' as SessionId
+const ROW_MENU = 'sidebar.workspaces.session.menu.action'
 
 afterEach(() => { vi.unstubAllGlobals() })
 
@@ -15,8 +18,9 @@ function declare(slots: SlotRegistry): () => void {
   return slots.register({
     name: 'root',
     children: {
-      'conversation.session.header.actions': { kind: 'list', scope: 'session' },
       'conversation.session.header.utilities': { kind: 'list', scope: 'session' },
+      'shell.overlay': { kind: 'list', scope: 'root' },
+      [ROW_MENU]: { kind: 'list', scope: 'root' },
     },
   } as never, () => null)
 }
@@ -33,23 +37,29 @@ async function bench() {
 }
 
 describe('session-log-download browser plugin', () => {
-  it('provides one controller and removes its Header contribution on disposal', async () => {
+  it('sits in the sidebar row menu and the frame overlay, and in no Session Header seat', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 500 })))
     const b = await bench()
     expect(inject).toEqual(['slots', 'locale'])
     expect(b.ctx.sessionLogDownload).toBeDefined()
-    expect(b.slots.entries('conversation.session.header.actions')).toHaveLength(0)
-    const entry = b.slots.entries('conversation.session.header.utilities')[0]
-    expect(entry?.component).toBe(SessionLogDownloadHeaderAction)
-    expect(entry?.options).toMatchObject({ id: 'session-log-download' })
-    const injected = (entry?.inject as unknown as () => import('../src/client/Dialog.tsx').SessionLogDownloadDialogInjected)()
-    await injected.request(SID)
+    expect(b.slots.entries('conversation.session.header.utilities')).toHaveLength(0)
+
+    const row = b.slots.entries(ROW_MENU)[0]
+    expect(row?.component).toBe(SessionLogDownloadRowAction)
+    expect(row?.options).toMatchObject({ id: 'session-log-download' })
+    const rowInjected = (row?.inject as unknown as () => import('../src/client/RowMenuAction.tsx').SessionLogDownloadRowActionInjected)()
+    await rowInjected.request(SID)
     expect(b.ctx.sessionLogDownload.store.getSnapshot().bySession[SID]?.status).toBe('error')
-    injected.dismiss(SID)
+
+    const overlay = b.slots.entries('shell.overlay')[0]
+    expect(overlay?.component).toBe(SessionLogDownloadOverlay)
+    const overlayInjected = (overlay?.inject as unknown as () => import('../src/client/Dialog.tsx').SessionLogDownloadOverlayInjected)()
+    overlayInjected.dismiss(SID)
     expect(b.ctx.sessionLogDownload.store.getSnapshot().bySession[SID]?.open).toBe(false)
 
     await b.fiber.dispose()
-    expect(b.slots.entries('conversation.session.header.utilities')).toHaveLength(0)
+    expect(b.slots.entries(ROW_MENU)).toHaveLength(0)
+    expect(b.slots.entries('shell.overlay')).toHaveLength(0)
   })
 
   it('downloads only for an export execution acknowledged by this browser client', async () => {
@@ -73,13 +83,13 @@ describe('session-log-download browser plugin', () => {
     await second.fiber.dispose()
   })
 
-  it('re-registers after the declaring Header slot collapses and returns', async () => {
+  it('re-registers after the declaring browsing region collapses and returns', async () => {
     const b = await bench()
     b.declaration()
-    expect(b.slots.entries('conversation.session.header.utilities')).toHaveLength(0)
+    expect(b.slots.entries(ROW_MENU)).toHaveLength(0)
     const redeclare = declare(b.slots)
     await Promise.resolve()
-    expect(b.slots.entries('conversation.session.header.utilities')[0]?.component).toBe(SessionLogDownloadHeaderAction)
+    expect(b.slots.entries(ROW_MENU)[0]?.component).toBe(SessionLogDownloadRowAction)
     redeclare()
     await b.fiber.dispose()
   })

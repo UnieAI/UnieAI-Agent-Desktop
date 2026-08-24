@@ -374,42 +374,34 @@ describe('Invite friends page', () => {
     vi.unstubAllGlobals()
   })
 
-  it('sends an invite by email and reports what the supplier said', async () => {
+  it('opens the compose dialog, which is where an address is typed', () => {
+    // The page carries the standing; the address and its Send live in the
+    // dialog, so the field exists nowhere else on this page.
+    setupInvite({ status: 'signed-in', account: ACCOUNT })
+    expect(screen.queryByLabelText(zh['invite.emailPlaceholder'])).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: zh['invite.compose'] }))
+    expect(screen.getByRole('dialog', { name: zh['invite.title'] })).toBeTruthy()
+    expect(screen.getByLabelText(zh['invite.emailPlaceholder'])).toBeTruthy()
+    // Nothing is sendable until an address is; invite-friend-dialog.client.spec.tsx
+    // owns the whole of that gate.
+    expect(screen.getByRole('button', { name: zh['invite.send'] }).hasAttribute('disabled')).toBe(true)
+  })
+
+  it('forwards the typed address to the gateway', async () => {
     const send = vi.fn(async () => ({ status: 'sent' as const }))
     const bench = setupInvite({ status: 'signed-in', account: ACCOUNT }, send)
-    const field = screen.getByLabelText(zh['invite.emailPlaceholder']) as HTMLInputElement
-    fireEvent.change(field, { target: { value: ' friend@example.com ' } })
-    fireEvent.click(screen.getByRole('button', { name: zh['invite.send'] }))
-
-    await waitFor(() => { expect(bench.sendInvite).toHaveBeenCalledWith('friend@example.com') })
-    await waitFor(() => { expect(screen.getByText(zh['invite.sentBody'])).toBeTruthy() })
-    // A sent invite clears the field; the address is no longer the user's to fix.
-    expect(field.value).toBe('')
-  })
-
-  it('says which refusal it was, and keeps the address that has to be corrected', async () => {
-    const send = vi.fn(async () => ({ status: 'refused' as const, reason: 'already-invited' as const }))
-    setupInvite({ status: 'signed-in', account: ACCOUNT }, send)
-    const field = screen.getByLabelText(zh['invite.emailPlaceholder']) as HTMLInputElement
-    fireEvent.change(field, { target: { value: 'friend@example.com' } })
-    fireEvent.click(screen.getByRole('button', { name: zh['invite.send'] }))
-
-    await waitFor(() => { expect(screen.getByText(zh['invite.errorAlreadyInvited'])).toBeTruthy() })
-    expect(field.value).toBe('friend@example.com')
-  })
-
-  it('admits a deployment that cannot send invites at all', async () => {
-    const send = vi.fn(async () => ({ status: 'unsupported' as const }))
-    setupInvite({ status: 'signed-in', account: ACCOUNT }, send)
+    fireEvent.click(screen.getByRole('button', { name: zh['invite.compose'] }))
     fireEvent.change(screen.getByLabelText(zh['invite.emailPlaceholder']), {
       target: { value: 'friend@example.com' },
     })
     fireEvent.click(screen.getByRole('button', { name: zh['invite.send'] }))
-    await waitFor(() => { expect(screen.getByText(zh['invite.unsupported'])).toBeTruthy() })
+    await waitFor(() => { expect(bench.sendInvite).toHaveBeenCalledWith('friend@example.com') })
   })
 
-  it('drops the compose field when the gateway offers no write', () => {
+  it('drops the compose trigger when the gateway offers no write', () => {
     setupInvite({ status: 'signed-in', account: ACCOUNT }, 'none')
+    expect(screen.queryByRole('button', { name: zh['invite.compose'] })).toBeNull()
     expect(screen.queryByLabelText(zh['invite.emailPlaceholder'])).toBeNull()
   })
 

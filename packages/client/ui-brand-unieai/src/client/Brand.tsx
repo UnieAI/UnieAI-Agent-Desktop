@@ -42,10 +42,10 @@ export function UnieAiBrandMark({ size, className }: UnieAiBrandMarkProps) {
 }
 
 /**
- * Render the UnieAI name. The product ships no wordmark artwork, so the name
+ * Render the product name. The product ships no wordmark artwork, so the name
  * is set in the product typeface rather than drawn.
- * @returns the UnieAI name.
+ * @returns the product name.
  */
 export function UnieAiBrandName() {
-  return <span className={css.name}>UnieAI</span>
+  return <span className={css.name}>Rabi</span>
 }

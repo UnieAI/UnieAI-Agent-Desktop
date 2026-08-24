@@ -58,7 +58,7 @@ export async function checkForUpdates(): Promise<void> {
     if (CAN_SELF_INSTALL) return
     void dialog.showMessageBox({
       type: 'info',
-      message: `UnieAI Agent ${info.version} is available`,
+      message: `Rabi ${info.version} is available`,
       detail: 'This build cannot install updates for itself, so the download page will open in your browser.',
       buttons: ['Open download page', 'Later'],
       defaultId: 0,
@@ -71,7 +71,7 @@ export async function checkForUpdates(): Promise<void> {
   auto.on('update-downloaded', (info: { version: string }) => {
     void dialog.showMessageBox({
       type: 'info',
-      message: `UnieAI Agent ${info.version} is ready`,
+      message: `Rabi ${info.version} is ready`,
       detail: 'Restart to finish installing. Your sessions are on disk and survive the restart.',
       buttons: ['Restart now', 'Later'],
       defaultId: 0,

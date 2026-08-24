@@ -6,35 +6,29 @@
  * single-use code — there is no standing personal invite link, so the card
  * shows none. What it shows is what the account has: the rate-limit resets its
  * invites have banked, how many invites it has sent, those invites when the
- * supplier lists them, and a field to send one more. Each listed invite
+ * supplier lists them, and the way to send one more. Each listed invite
  * carries its own link, which is the only link on this screen a friend can
  * actually open.
  *
- * The compose field exists only when the gateway can send. A supplier that
- * exposes reads alone leaves the card a read-only summary rather than a Send
- * button that cannot send.
+ * Composing lives in {@link InviteFriendDialog}, which this card opens. The
+ * trigger exists only when the gateway can send: a supplier that exposes reads
+ * alone leaves the card a read-only summary rather than a button that opens a
+ * dialog whose Send cannot send.
  */
 import { useEffect, useRef, useState } from 'react'
-import clsx from 'clsx'
 import type { Translate } from '@unieai/uad-client-ui-slots'
 import {
-  Button, IconCheckOutline16, IconCopyOutline16, Input, writeClipboard,
+  Button, IconCheckOutline16, IconCopyOutline16, writeClipboard,
 } from '@unieai/uad-client-ui-primitives'
 import type {
-  UnieAiInviteRefusal, UnieAiInviteResult, UnieAiInvites, UnieAiSentInvite,
+  UnieAiInviteResult, UnieAiInvites, UnieAiSentInvite,
 } from '../account-contract.ts'
+import { InviteFriendDialog } from './InviteFriendDialog.tsx'
 import type { AccountKey } from './locales.ts'
 import css from './AccountSection.module.css'
 
 /** How long the copied confirmation stays up. */
 const COPIED_MS = 1600
-
-/** The line each refusal prints, in the product's own words. */
-const REFUSAL_COPY: Readonly<Record<UnieAiInviteRefusal, AccountKey>> = {
-  'invalid-email': 'invite.errorInvalidEmail',
-  'self-invite': 'invite.errorSelfInvite',
-  'already-invited': 'invite.errorAlreadyInvited',
-}
 
 /** Props of the invite card. */
 export interface InviteCardProps {
@@ -65,7 +59,7 @@ export function InviteCard({ invites, t, sendInvite }: InviteCardProps) {
       {invites === undefined
         ? <p className={css.note}>{t('invite.empty')}</p>
         : <Standing invites={invites} t={t} />}
-      {sendInvite !== undefined && <InviteComposer t={t} sendInvite={sendInvite} />}
+      {sendInvite !== undefined && <InviteLauncher t={t} sendInvite={sendInvite} />}
     </section>
   )
 }
@@ -123,54 +117,23 @@ function SentRow({ invite, t }: { invite: UnieAiSentInvite; t: Translate<Account
   )
 }
 
-/** The address field and its Send, with whatever the last attempt established. */
-function InviteComposer({ t, sendInvite }: {
+/** The trigger that opens the compose dialog, and the dialog it opens. */
+function InviteLauncher({ t, sendInvite }: {
   t: Translate<AccountKey>
   sendInvite: (email: string) => Promise<UnieAiInviteResult>
 }) {
-  const [email, setEmail] = useState('')
-  const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<UnieAiInviteResult | undefined>(undefined)
-
-  const submit = async (): Promise<void> => {
-    if (email.trim() === '' || sending) return
-    setSending(true)
-    setResult(undefined)
-    const outcome = await sendInvite(email.trim())
-    setSending(false)
-    setResult(outcome)
-    // Only a sent invite clears the field: a refused address is the one the
-    // user has to correct, and clearing it would hide what was refused.
-    if (outcome.status === 'sent') setEmail('')
-  }
-
+  const [open, setOpen] = useState(false)
   return (
     <>
-      <form
-        className={css.inviteForm}
-        onSubmit={(event) => { event.preventDefault(); void submit() }}
-      >
-        <Input
-          className={clsx(css.inviteField)}
-          type="email"
-          value={email}
-          placeholder={t('invite.emailPlaceholder')}
-          disabled={sending}
-          aria-label={t('invite.emailPlaceholder')}
-          onChange={(event) => { setEmail(event.target.value) }}
-        />
-        <Button
-          variant="primary"
-          disabled={sending || email.trim() === ''}
-          onClick={() => { void submit() }}
-        >
-          {sending ? t('invite.sending') : t('invite.send')}
-        </Button>
-      </form>
-      {result?.status === 'sent' && <p className={css.note}>{t('invite.sentBody')}</p>}
-      {result?.status === 'refused' && <p className={css.failure}>{t(REFUSAL_COPY[result.reason])}</p>}
-      {result?.status === 'failed' && <p className={css.failure}>{t('invite.errorToast')}</p>}
-      {result?.status === 'unsupported' && <p className={css.failure}>{t('invite.unsupported')}</p>}
+      <Button variant="primary" className={css.inviteOpen} onClick={() => { setOpen(true) }}>
+        {t('invite.compose')}
+      </Button>
+      <InviteFriendDialog
+        open={open}
+        t={t}
+        sendInvite={sendInvite}
+        onClose={() => { setOpen(false) }}
+      />
     </>
   )
 }

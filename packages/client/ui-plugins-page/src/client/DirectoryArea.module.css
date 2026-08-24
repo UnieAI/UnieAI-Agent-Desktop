@@ -1,94 +1,34 @@
-/* The reading measure is the page's — `PluginsPage.module.css` centres it, so
- * every area on the page shares one column edge. This area sets only its own
- * internal rhythm. */
+/* The reading measure is the surface's — `PluginsPage.module.css` centres it,
+ * so every area shares one column edge. This area sets only its own internal
+ * rhythm.
+ *
+ * This sheet paints elevated fills (the mark tile, the chosen pill, the
+ * overflow menu) and must therefore contain no scroll container: ui-theme's
+ * scrollbar-rebind invariant reasons per file. Nothing here scrolls — the
+ * installed strip wraps instead. */
 
 .area {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 28px;
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
 }
 
-/* Filters left, search right, on one line — the reference's arrangement, and
-   the one that keeps both reachable without either owning a row of its own.
-   They wrap onto two lines rather than compressing the field to nothing. */
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.filters {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.pill {
-  flex: none;
-  padding: 5px 10px;
-  border: none;
-  border-radius: var(--dsw-radius-pill);
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary);
-  font-family: inherit;
-  font-size: 13px;
-  line-height: 18px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background-color 150ms var(--ds-ease-in-out),
-    color 150ms var(--ds-ease-in-out);
-}
-
-/* The More pill carries a chevron; it sits inside the pill's own padding so
-   the row's rhythm does not change when the control appears. */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.pillChevron {
-  flex: none;
-  opacity: 0.7;
-}
-
-.pill:hover {
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-
-/* The chosen pill takes a surface, not a hue: `bg-module-platform` is the one
-   fill that separates from the page in BOTH palettes — the layer tokens all
-   resolve to the same white in light, which would make the choice invisible
-   exactly where it matters most. */
-.pillActive {
-  background: var(--dsw-alias-bg-module-platform);
-  color: var(--dsw-alias-label-primary);
-}
-
-.pill:focus-visible {
-  outline: 2px solid var(--dsw-alias-border-l4);
-  outline-offset: -2px;
-}
-
+/* The field runs the full measure. A directory is searched before it is
+   browsed, so it is the first thing under the title and the widest control on
+   the area. */
 .search {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 0 1 220px;
-  min-width: 0;
+  gap: 8px;
   box-sizing: border-box;
-  padding: 5px 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 16px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: var(--dsw-radius-control);
+  border-radius: var(--dsw-radius-pill);
   color: var(--dsw-alias-label-tertiary);
 }
 
@@ -107,8 +47,8 @@
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font-family: inherit;
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 .searchInput:focus {
@@ -117,6 +57,38 @@
 
 .searchInput::placeholder {
   color: var(--dsw-alias-label-tertiary);
+}
+
+/* What the account already has. A strip of marks, not rows: the reader
+   recognises their own plugins by the tile, and the catalogue below is where
+   anything is read. */
+.installed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Wraps rather than scrolls: a horizontal scroller here would put a second
+   scrollbar inside a surface that already has one, and this sheet cannot own a
+   scroll container (see the sheet header). */
+.tiles {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tile {
+  display: inline-flex;
+  flex: none;
 }
 
 /* A category is a heading with a rule under it. The rule is the separation —
@@ -154,9 +126,9 @@
 }
 
 /* No card. The reference draws none, and a fill per row would put 22 boxes on
-   a page whose job is to be read down. What the row does take is a hover fill,
-   because it carries a control and a reader needs to see which row they are
-   about to act on — pulled out into the column gap so the text keeps its
+   a surface whose job is to be read down. What the row does take is a hover
+   fill, because it carries a control and a reader needs to see which row they
+   are about to act on — pulled out into the column gap so the text keeps its
    place while the fill covers the whole row. */
 .row {
   display: flex;
@@ -188,6 +160,13 @@
   background: var(--dsw-alias-bg-module-platform);
 }
 
+/* The installed strip's tile. Larger than a row's, because the strip has no
+   name beside it: the mark is the whole of what identifies the plugin there. */
+.markLarge {
+  width: 44px;
+  height: 44px;
+}
+
 .markInitials {
   color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
@@ -205,9 +184,9 @@
 }
 
 .rowName {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 19px;
+  line-height: 22px;
   color: var(--dsw-alias-label-primary);
   text-transform: capitalize;
 }
@@ -224,7 +203,102 @@
   text-overflow: ellipsis;
 }
 
-.action {
+/* The filter segment. It stands where the reference puts a public/personal
+   pair; the catalogue reports no such distinction, so what stands here is what
+   it can answer. */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--dsw-radius-pill);
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms var(--ds-ease-in-out),
+    color 150ms var(--ds-ease-in-out);
+}
+
+.pillChevron {
+  flex: none;
+  opacity: 0.7;
+}
+
+.pill:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* The chosen pill takes a surface, not a hue: `bg-module-platform` is the one
+   fill that separates from the surface in BOTH palettes — the layer tokens all
+   resolve to the same white in light, which would make the choice invisible
+   exactly where it matters most. */
+.pillActive {
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-primary);
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: -2px;
+}
+
+/* The install control reads as its verb. A filled pill, because it is the one
+   thing a row asks the reader to decide. */
+.install {
+  flex: none;
+  padding: 5px 14px;
+  border: none;
+  border-radius: var(--dsw-radius-pill);
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms var(--ds-ease-in-out);
+}
+
+.install:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.install:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 1px;
+}
+
+.install:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* An installed row's actions fold behind an overflow: removal standing open on
+   every row a reader already chose is an invitation to undo them. */
+.overflow {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+
+.more {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -233,26 +307,64 @@
   height: 28px;
   border: none;
   border-radius: var(--dsw-radius-pill);
-  background: var(--dsw-alias-bg-module-platform);
-  color: var(--dsw-alias-label-secondary);
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
   transition:
     background-color 150ms var(--ds-ease-in-out),
     color 150ms var(--ds-ease-in-out);
 }
 
-.action:hover:not(:disabled) {
+.more:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }
 
-.action:focus-visible {
+.more:focus-visible {
   outline: 2px solid var(--dsw-alias-border-l4);
   outline-offset: 1px;
 }
 
-.action:disabled {
+.more:disabled {
   cursor: default;
   opacity: 0.5;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  padding: 4px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-specific-menu);
+}
+
+.menuItem {
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 19.5px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.menuItem:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: -2px;
 }
 
 .note {
@@ -282,7 +394,8 @@
 @media (prefers-reduced-motion: reduce) {
   .pill,
   .row,
-  .action {
+  .install,
+  .more {
     transition: none;
   }
 }

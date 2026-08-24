@@ -1,116 +1,56 @@
-/* The page covers the frame it is registered into: `shell.overlay` spans the
- * whole app box, so the surface paints the base background rather than
- * floating over a blurred one — it is a place, not a dialog. */
+/* The surface covers the frame's MAIN AREA, not the frame.
+ *
+ * `shell.overlay` spans the whole app box, so the left inset is what keeps the
+ * navigation column visible: `--dsh-shell-sidebar-width` is the frame's own
+ * rendered column width, published by ui-layout's AppFrame, and it already
+ * accounts for a drag, a collapse, and the narrow-viewport auto-collapse. The
+ * surface paints the base background because it is a place, not a dialog.
+ *
+ * No elevated surface is painted in THIS sheet: `.scroll` is a scroll
+ * container, and ui-theme's scrollbar invariant reasons per file — a rule
+ * painting `bg-module-platform` here would read as "scrolls on an elevated
+ * surface" and demand a thumb rebind this surface must not make. The chrome
+ * that does take a fill lives in `PluginsTabs.module.css`. */
 
-.page {
+.view {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--dsh-shell-sidebar-width);
   display: flex;
   flex-direction: column;
   min-width: 0;
   background: var(--dsw-alias-bg-base);
   color: var(--dsw-alias-label-primary);
+  /* The frame eases its tracks on the deepsuite sider curve; the left edge
+     rides the same one, so the surface and the column it sits beside move
+     together instead of the surface snapping ahead of the sidebar. */
+  transition: left var(--ds-transition-duration-slow) var(--ds-ease-in-out);
 }
 
-.page:focus-visible {
+.view:focus-visible {
   outline: none;
 }
 
-/* The rule spans the frame; what it separates does not. The header band and
-   the areas below share ONE reading measure, centred, so a heading and the
-   card under it line up on the same left edge — the reference page centres
-   its body the same way. */
-.header {
-  flex: none;
-  box-sizing: border-box;
-  padding: 20px 32px 16px;
-  border-bottom: 1px solid var(--dsw-alias-border-l2);
-}
-
-/* A centred measure, not the full frame. The page is a directory: the reader
-   comes to choose, and a row is a name over a sentence. Set across a 1400px
-   frame those sentences are scanned rather than read, and the eye loses the
-   column between one row and the next. The frame stays full width — Plugins is
-   a destination, not a dialog — while what is ON it keeps the same 720px
-   column the settings sheets use, so a reader moving between them does not
-   change reading width.
-
-   Centred HERE rather than in each area, so every occupant lines up: an area
-   that centred itself while its neighbour did not would read as a mistake. */
-.measure {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-/* The way back sits above the title, the way a breadcrumb does: it is the
-   page's parent, not one of its actions. */
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px 3px 4px;
-  border: none;
-  border-radius: var(--dsw-radius-control);
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary);
-  font-family: inherit;
-  font-size: 13px;
-  line-height: 19.5px;
-  cursor: pointer;
-  transition:
-    background-color 150ms var(--ds-ease-in-out),
-    color 150ms var(--ds-ease-in-out);
-}
-
-.back:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-primary);
-}
-
-.back:focus-visible {
-  outline: 2px solid var(--dsw-alias-border-l4);
-  outline-offset: -2px;
-}
-
-.backIcon {
-  flex: none;
-}
-
-/* The way back and the page's name share one row in the frame's top-left
-   corner — outside the reading measure on purpose. They belong to the window,
-   the way the reference keeps its section tabs in the window chrome; the
-   proposition below is centred against the measure, not against them. */
-.crumbs {
+/* The window's own row: destinations on the left, the controls that act on
+   the whole surface on the right. It is outside the reading measure on
+   purpose — it belongs to the surface, the way the reference keeps its tabs
+   and its gear in the chrome rather than on the text column. */
+.bar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  width: 100%;
+  justify-content: space-between;
+  gap: 12px;
+  flex: none;
+  box-sizing: border-box;
+  padding: 12px 20px;
 }
 
-/* Same line box as the control beside it: the button carries 3px of padding,
-   so a bare span sat 3px high of it on the row. */
-.name {
-  padding: 3px 0;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 19.5px;
-  color: var(--dsw-alias-label-tertiary);
-}
-
-/* The proposition. It is the only line of its size on the page: what this
-   place is for, said once. */
-.title {
-  margin: 10px 0 6px;
-  align-self: center;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 30px;
-  text-align: center;
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .scroll {
@@ -122,6 +62,40 @@
   overflow-x: hidden;
 }
 
+/* A centred measure, not the full frame. The surface is a directory: the
+   reader comes to choose, and a row is a name over a sentence. Set across a
+   1400px main area those sentences are scanned rather than read, and the eye
+   loses the column between one row and the next.
+
+   Centred HERE rather than in each area, so every occupant lines up: an area
+   that centred itself while its neighbour did not would read as a mistake. */
+.measure {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* The name of the place, said once and said large. The reference sets it at
+   the top of the reading column rather than in the chrome, which is why the
+   pill strip above carries the short label and this carries the full one. */
+.title {
+  margin: 20px 0 0;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 44px;
+}
+
+/* One line under the title: what this destination is for. */
+.subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
 /* One rhythm for every area, so two areas from two packages stack alike. */
 .column {
   display: flex;
@@ -131,9 +105,8 @@
   padding: 28px 0 64px;
 }
 
-
 @media (prefers-reduced-motion: reduce) {
-  .back {
+  .view {
     transition: none;
   }
 }

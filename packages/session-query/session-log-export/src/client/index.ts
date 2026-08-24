@@ -1,12 +1,16 @@
-/** Browser plugin owning Session export download state and its shared modal. */
+/**
+ * Browser plugin owning Session export download state, its sidebar row menu
+ * entry, and the frame-wide modal both that entry and `/export` report through.
+ */
 
 import type { ClientContext, SessionId } from '@unieai/uad-client-runtime/client'
 import type {} from '@unieai/uad-client-locale/client'
 import type {} from '@unieai/uad-client-ui-commands/client'
-import type {} from '@unieai/uad-client-ui-conversation/client'
 import { SessionLogDownloadController } from './controller.ts'
-import type { SessionLogDownloadDialogInjected } from './Dialog.tsx'
-import { SessionLogDownloadHeaderAction } from './HeaderAction.tsx'
+import type { SessionLogDownloadOverlayInjected } from './Dialog.tsx'
+import { SessionLogDownloadOverlay } from './Dialog.tsx'
+import type { SessionLogDownloadRowActionInjected } from './RowMenuAction.tsx'
+import { SessionLogDownloadRowAction } from './RowMenuAction.tsx'
 import { en, ja, NS, zh, zhTW, type SessionLogDownloadKey } from './locales.ts'
 
 declare module '@unieai/cordis' {
@@ -26,7 +30,8 @@ export type { SessionLogDownloadEntry, SessionLogDownloadState } from './control
 export const inject = ['slots', 'locale']
 
 /**
- * Provide the download controller and mount its modal into the Session Header.
+ * Provide the download controller, add its row to every sidebar session row's
+ * overflow menu, and mount the result modal on the frame-wide overlay.
  * @param ctx - browser context carrying slots and locale services.
  */
 export function apply(ctx: ClientContext): void {
@@ -37,16 +42,30 @@ export function apply(ctx: ClientContext): void {
   ctx.on('command/executed', (sessionId, commandName, result) => {
     if (commandName === 'export' && result.kind === 'success') void controller.download(sessionId)
   })
-  ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({
-    name: 'conversation.session.header.utilities',
+  // The row acts on the session its menu belongs to, which the owner share
+  // carries; the browsing region never claims it is the open one.
+  ctx.slots.inject('sidebar.workspaces.session.menu.action', () => ctx.slots.register({
+    name: 'sidebar.workspaces.session.menu.action',
     id: 'session-log-download',
     locale: NS,
-    inject: (): SessionLogDownloadDialogInjected => ({
-      hooks: { sessionLogDownload: controller.store },
+    inject: (): SessionLogDownloadRowActionInjected => ({
       request: (sessionId: SessionId) => controller.download(sessionId),
+    }),
+  }, SessionLogDownloadRowAction))
+  // The dialog outlives both entry paths: the menu row unmounts with its menu,
+  // and `/export` can run with no Session surface open.
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+    name: 'shell.overlay',
+    id: 'session-log-download',
+    locale: NS,
+    inject: (): SessionLogDownloadOverlayInjected => ({
+      hooks: { sessionLogDownload: controller.store },
       dismiss: (sessionId: SessionId) => { controller.dismiss(sessionId) },
     }),
-  }, SessionLogDownloadHeaderAction))
+  }, SessionLogDownloadOverlay))
 }
 
-export type { SessionLogDownloadDialogInjected, SessionLogDownloadDialogProps } from './Dialog.tsx'
+export type {
+  SessionLogDownloadDialogProps, SessionLogDownloadOverlayInjected, SessionLogDownloadOverlayProps,
+} from './Dialog.tsx'
+export type { SessionLogDownloadRowActionInjected, SessionLogDownloadRowActionProps } from './RowMenuAction.tsx'

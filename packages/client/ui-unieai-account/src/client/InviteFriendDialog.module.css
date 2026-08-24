@@ -1,0 +1,158 @@
+/* The Invite-a-friend modal: a 680px card whose top third is a brand-blue
+ * hero, then the reward strip, the centred title and description, the address
+ * field, and one pill Send.
+ *
+ * The hero is the only fixed plate in this package. It is the same band in
+ * both palettes by design — a coloured plate carrying a white tile, which a
+ * theme-flipping alias would invert into a dark band under a white tile — so
+ * it names the palette-invariant `--dsw-static-deepseek-*` steps, which carry
+ * UnieAI brand blue (ui-theme/src/styles/design-platform.css declares the ramp
+ * and says so), together with `--dsw-static-neutral-00` for the tile. Those
+ * names resolve to the same value in both palettes; no literal colour appears
+ * in this sheet.
+ *
+ * Everything below the hero is theme-owned: the reward strip is the
+ * `state-success-*` family, type is `label-*`, and the radii come from the
+ * shared scale.
+ */
+
+/* Doubled class beats Modal's own .dialog regardless of stylesheet order. */
+.dialog.dialog {
+  width: min(680px, 100%);
+  border-radius: var(--dsw-radius-card);
+  padding: 0;
+  gap: 0;
+}
+
+/* Hero band: the card's top third at the 680px width, with the close control
+   inside it because the card has no header row to carry one. */
+.hero {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 176px;
+  background: linear-gradient(
+    160deg,
+    var(--dsw-static-deepseek-50) 0%,
+    var(--dsw-static-deepseek-200) 100%
+  );
+}
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--dsw-radius-card);
+  background: var(--dsw-static-neutral-00);
+  color: var(--dsw-static-deepseek-500);
+}
+
+/* Fixed foreground, for the same reason the band is fixed: the glyph sits on
+   brand blue in both palettes, so a theme-flipping ink would vanish in one. */
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  cursor: pointer;
+  color: var(--dsw-static-deepseek-600);
+}
+
+.close:hover {
+  background: var(--dsw-static-deepseek-100);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 32px 32px;
+}
+
+/* Reward strip: what one invite earns, in the state family that already means
+   "granted" in this product. */
+.reward {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-state-success-tertiary);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.rewardIcon {
+  flex: none;
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.title {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 22px;
+  line-height: 30px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Two lines at the card's width; the measure is what keeps it two rather than
+   one long line the eye has to track back across. */
+.description {
+  margin: 0 auto;
+  max-width: 46ch;
+  text-align: center;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+}
+
+/* Doubled class beats the Input primitive's own .wrap geometry. */
+.field.field {
+  display: flex;
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: var(--dsw-radius-control);
+}
+
+.send {
+  align-self: center;
+  min-width: 168px;
+}
+
+.note {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.failure {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-error-primary);
+}

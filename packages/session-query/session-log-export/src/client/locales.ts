@@ -1,8 +1,9 @@
-/** Locale namespace owned by Session export browser feedback. */
+/** Locale namespace owned by the Session export menu row and its browser feedback. */
 export const NS = 'session-log-download'
 
 /** Simplified-Chinese Session export strings. */
 export const zh = {
+  'menu.download': '下载 Session 日志',
   'dialog.preparingTitle': '正在导出 Session',
   'dialog.preparingDescription': '正在准备包含当前 Session、子 Session 和附件的 ZIP 文件。',
   'dialog.successTitle': 'Session 导出已开始下载',
@@ -14,6 +15,7 @@ export const zh = {
 
 /** English Session export strings. */
 export const en: Record<keyof typeof zh, string> = {
+  'menu.download': 'Download session log',
   'dialog.preparingTitle': 'Exporting Session',
   'dialog.preparingDescription': 'Preparing a ZIP containing this Session, its sub-Sessions, and attachments.',
   'dialog.successTitle': 'Session download started',
@@ -28,6 +30,7 @@ export type SessionLogDownloadKey = keyof typeof zh
 
 /** Traditional-Chinese Session export strings. */
 export const zhTW: Record<SessionLogDownloadKey, string> = {
+  'menu.download': '下載 Session 日誌',
   'dialog.preparingTitle': '正在匯出 Session',
   'dialog.preparingDescription': '正在準備包含目前 Session、子 Session 與附件的 ZIP 檔案。',
   'dialog.successTitle': 'Session 匯出已開始下載',
@@ -39,6 +42,7 @@ export const zhTW: Record<SessionLogDownloadKey, string> = {
 
 /** Japanese Session export strings. */
 export const ja: Record<SessionLogDownloadKey, string> = {
+  'menu.download': 'Session ログをダウンロード',
   'dialog.preparingTitle': 'Session をエクスポート中',
   'dialog.preparingDescription': 'この Session、そのサブ Session、添付ファイルを含む ZIP を準備しています。',
   'dialog.successTitle': 'Session のダウンロードを開始しました',

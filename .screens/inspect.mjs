@@ -1,0 +1,27 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } })
+page.on('console', m => { if (m.type()==='error') console.log('CONSOLE_ERROR:', m.text()) })
+page.on('pageerror', e => console.log('PAGEERROR:', e.message))
+await page.goto('http://127.0.0.1:3080/', { waitUntil: 'load', timeout: 30000 })
+await new Promise(r => setTimeout(r, 3000))
+// Full body text
+console.log('=== BODY TEXT ===')
+console.log((await page.textContent('body'))?.slice(0, 3000))
+console.log('=== ASIDE / regions ===')
+const aside = await page.locator('aside').count()
+const nav = await page.locator('nav').count()
+console.log('aside count:', aside, 'nav count:', nav)
+// tree roles
+console.log('=== TREE ===')
+const trees = await page.locator('[role="tree"]').count()
+console.log('tree role count:', trees)
+const treeTexts = await page.locator('[role="tree"]').allTextContents()
+treeTexts.forEach((t,i)=>console.log('tree'+i+':', JSON.stringify(t)))
+// any element containing "尚無" or "No sessions"
+const empty = await page.locator('text=尚無').count()
+console.log('尚無 count:', empty)
+const empty2 = await page.locator('text=No sessions').count()
+console.log('No sessions count:', empty2)
+await browser.close()
+console.log('done')

@@ -144,7 +144,7 @@ export function renderLoginPage(productUrl: string): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Sign in · UnieAI Agent</title>
+<title>Sign in · Rabi</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <style>${STYLE}</style>
 </head>
@@ -153,7 +153,7 @@ export function renderLoginPage(productUrl: string): string {
   <div class="group">
     <div class="head">
       <div class="mark">${MARK}</div>
-      <h1>UnieAI Agent</h1>
+      <h1>Rabi</h1>
       <p class="description" id="lede">Sign in with your UnieAI account to continue.</p>
     </div>
 

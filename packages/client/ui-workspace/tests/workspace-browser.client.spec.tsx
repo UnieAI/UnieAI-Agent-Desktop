@@ -358,6 +358,23 @@ describe('WorkspaceBrowser', () => {
     expect(screen.queryByText('gone-s')).toBeNull()
   })
 
+  it('dispatches the session-row menu hole with the row session, not the open one', () => {
+    const dispatched: { key: string; sessionId: SessionId }[] = []
+    mount({
+      useSessions: hook(sessionState([summary('open-s', 2), summary('row-s', 1)], { current: sid('open-s') })),
+      useWorkspaces: hook(workspaceState([workspace('alpha', ['open-s', 'row-s'])])),
+      renderSlot: ((key: string, owner: { sessionId?: SessionId; open?: boolean }) => {
+        if (key !== 'sidebar.workspaces.session.menu.action') return owner.open === true ? <div data-testid="directory-flow" /> : null
+        if (owner.sessionId !== undefined) dispatched.push({ key, sessionId: owner.sessionId })
+        return <button type="button" role="menuitem">Download</button>
+      }) as never,
+    })
+    // The group holding the open session is already expanded.
+    fireEvent.click(screen.getByRole('button', { name: '会话“row-s”的操作' }))
+    expect(screen.getByRole('menuitem', { name: 'Download' })).toBeTruthy()
+    expect(dispatched.at(-1)).toEqual({ key: 'sidebar.workspaces.session.menu.action', sessionId: sid('row-s') })
+  })
+
   it('logs and keeps the tree when the archive call rejects', async () => {
     const rejection = new Error('archive exploded')
     const archiveSession = vi.fn(async () => { throw rejection })

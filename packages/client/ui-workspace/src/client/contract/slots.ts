@@ -21,6 +21,13 @@
  * Two holes exist because the two menu surfaces are independent slot entries
  * and a hole has exactly one declaring entry — they carry the same owner
  * contract and the same occupant.
+ *
+ * The WorkspaceBrowser entry declares one further hole,
+ * `sidebar.workspaces.session.menu.action` (`list` kind): extra rows in a
+ * session row's overflow menu, beneath the region's own Rename / Fork /
+ * Archive. The region keeps those three — they drive browser-owned dialogs and
+ * region state — and hands an occupant only the row's session and a way to
+ * close the menu.
  */
 import type { HostDescriptionSource } from '@unieai/uad-client-connection/client'
 import type { HostObservable, PropsHooks, PropsLocale, PropsRenderSlots, PropsRuntime, PropsStore } from '@unieai/uad-client-ui-slots'
@@ -51,12 +58,45 @@ export interface DirectoryFlowOwnerProps {
   onError: (message: string) => void
 }
 
+/**
+ * Owner share of one session row's overflow-menu hole: which session the row
+ * stands for, and how to shut the menu the row's occupant sits in.
+ *
+ * `sessionId` is the ROW's session, never the open one. The slot is root
+ * scope precisely so the framework cannot supply a `sessionId`: the session
+ * kit binds the current selection, and every row except the selected one
+ * would then act on the wrong session.
+ */
+export interface SessionRowMenuActionOwnerProps {
+  /** The session this row stands for. */
+  sessionId: SessionId
+  /** Close the row's overflow menu; an occupant calls it when its row acts. */
+  closeMenu: () => void
+}
+
 declare module '@unieai/uad-client-ui-slots' {
   interface SlotMap {
     /** Directory-flow hole under the conversation empty-state picker (declared by the WorkspacePicker entry). */
     'conversation.hero.workspace.directoryFlow': { kind: 'single'; scope: 'root'; owner: DirectoryFlowOwnerProps }
     /** Directory-flow hole under the sidebar browsing region (declared by the WorkspaceBrowser entry). */
     'sidebar.workspaces.directoryFlow': { kind: 'single'; scope: 'root'; owner: DirectoryFlowOwnerProps }
+    /**
+     * Rows appended to a sidebar session row's overflow menu, after the
+     * region's own Rename / Fork / Archive. Declared by this package's
+     * WorkspaceBrowser entry (declaring is claiming); each registration adds
+     * one row per session row, ordered among occupants by `order`.
+     *
+     * The entry renders inside the open menu card and unmounts when the menu
+     * closes, so an occupant keeps nothing there that must outlive the
+     * gesture — a result dialog belongs in `shell.overlay`. Draw the row with
+     * ui-primitives' `MenuItemButton` (or `role="menuitem"` markup of your
+     * own) so it matches the rows above it, and call `closeMenu` when it acts.
+     *
+     * Root scope with the session in the owner share: see
+     * {@link SessionRowMenuActionOwnerProps}. An empty hole leaves the menu at
+     * its three built-in rows.
+     */
+    'sidebar.workspaces.session.menu.action': { kind: 'list'; scope: 'root'; owner: SessionRowMenuActionOwnerProps }
   }
 }
 
@@ -142,7 +182,7 @@ export type WorkspaceBrowserInjected = {
 /** Full browser props: shell owner share + viewing store + injected actions + the locale seat. */
 export type WorkspaceBrowserProps =
   PropsRuntime<'sidebar.workspaces'>
-  & PropsRenderSlots<'sidebar.workspaces.directoryFlow'>
+  & PropsRenderSlots<'sidebar.workspaces.directoryFlow' | 'sidebar.workspaces.session.menu.action'>
   & PropsStore<ReturnType<typeof createWorkspaceViewStore>>
   & Omit<WorkspaceBrowserInjected, 'hooks'>
   & PropsHooks<WorkspaceBrowserInjected['hooks']>

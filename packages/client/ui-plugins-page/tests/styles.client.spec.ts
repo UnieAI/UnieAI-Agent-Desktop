@@ -1,5 +1,5 @@
 /**
- * Plugins page stylesheet contract, asserted against the CSS text on disk.
+ * Plugins surface stylesheet contract, asserted against the CSS text on disk.
  *
  * A `--dsw-*` name the theme does not declare fails silently: the browser
  * takes the `var()` fallback, so the sheet still renders and only one palette
@@ -10,7 +10,20 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-const SHEETS = ['PluginsPage', 'PluginsNavRow', 'StudioMcpArea', 'DirectoryArea'] as const
+const SHEETS = [
+  'PluginsPage', 'PluginsTabs', 'PluginsNavRow', 'StudioMcpArea', 'StudioEntry', 'DirectoryArea',
+  'SkillsArea',
+] as const
+
+/**
+ * Custom properties the FRAME publishes, not the theme.
+ *
+ * `--dsh-shell-sidebar-width` is ui-layout's `SIDEBAR_WIDTH_PROPERTY`, set as
+ * an inline style on the frame element and inherited from there; no token
+ * sheet declares it, and it must not, because its value is geometry that
+ * changes on every drag.
+ */
+const FRAME_PUBLISHED = ['--dsh-shell-sidebar-width']
 
 const sheet = (name: string): string =>
   readFileSync(fileURLToPath(new URL(`../src/client/${name}.module.css`, import.meta.url)), 'utf8')
@@ -36,7 +49,9 @@ function block(name: typeof SHEETS[number], selector: string): string {
 describe('Plugins page theme styles', () => {
   it('names only theme variables the token sheets define', () => {
     const named = [...all.matchAll(/var\((--(?:dsw|dsh|ds)-[a-z0-9-]+)/g)].map(match => match[1])
-    const undeclared = [...new Set(named)].filter(name => !tokens.includes(`  ${String(name)}:`))
+    const undeclared = [...new Set(named)]
+      .filter(name => !FRAME_PUBLISHED.includes(String(name)))
+      .filter(name => !tokens.includes(`  ${String(name)}:`))
     expect(undeclared).toEqual([])
   })
 
@@ -57,21 +72,67 @@ describe('Plugins page theme styles', () => {
     expect(all).not.toContain('--dsw-alias-brand')
   })
 
-  it('paints the page on the base surface, because it is a place and not a dialog', () => {
-    expect(block('PluginsPage', '.page')).toContain('background: var(--dsw-alias-bg-base)')
-    expect(block('PluginsPage', '.page')).toContain('position: absolute')
+  it('paints the surface on the base surface, because it is a place and not a dialog', () => {
+    expect(block('PluginsPage', '.view')).toContain('background: var(--dsw-alias-bg-base)')
+    expect(block('PluginsPage', '.view')).toContain('position: absolute')
   })
 
-  it('centres one reading measure that the header band and every area share', () => {
-    // The page became a directory: a row is a name over a one-line description,
-    // and those descriptions set across a 1400px frame are scanned rather than
-    // read. The measure is asserted HERE, on the page, and not in an area,
-    // because an area that centred itself while its neighbour ran full width
-    // would put two column edges on one page.
+  it('leaves the navigation column uncovered by offsetting to the frame’s own column width', () => {
+    // This is the whole main-area change. `shell.overlay` spans the frame, so
+    // an inset of 0 here would cover the sidebar and take away both the row
+    // that says where the reader is and every place they might go next.
+    const view = block('PluginsPage', '.view')
+    expect(view).toContain('left: var(--dsh-shell-sidebar-width)')
+    expect(view).not.toContain('inset: 0')
+    for (const side of ['top: 0', 'right: 0', 'bottom: 0']) expect(view).toContain(side)
+  })
+
+  it('centres one reading measure that the title and every area share', () => {
+    // The surface is a directory: a row is a name over a one-line description,
+    // and those descriptions set across a 1400px main area are scanned rather
+    // than read. The measure is asserted HERE, on the surface, and not in an
+    // area, because an area that centred itself while its neighbour ran full
+    // width would put two column edges on one surface.
     const measure = block('PluginsPage', '.measure')
     expect(measure).toContain('width: 100%')
-    expect(measure).toContain('max-width: 720px')
+    expect(measure).toContain('max-width: 980px')
     expect(measure).toContain('margin: 0 auto')
+  })
+
+  it('keeps every elevated fill out of the sheet that scrolls', () => {
+    // ui-theme's scrollbar-rebind invariant reasons per FILE: a chosen pill
+    // and a scroll container in one sheet reads as "scrolls on an elevated
+    // surface" and demands a thumb rebind this surface must not make.
+    const bare = (name: typeof SHEETS[number]): string => css[name].replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(bare('PluginsPage')).toContain('overflow-y: auto')
+    expect(bare('PluginsPage')).not.toContain('bg-module-platform')
+    expect(bare('PluginsTabs')).not.toMatch(/overflow[-a-z]*:\s*(?:auto|scroll)/)
+  })
+
+  it('marks the chosen destination and the pressed gear with the one fill both palettes show', () => {
+    expect(block('PluginsTabs', '.tabActive')).toContain('background: var(--dsw-alias-bg-module-platform)')
+    expect(block('PluginsTabs', '.actionActive')).toContain('background: var(--dsw-alias-bg-module-platform)')
+  })
+
+  it('runs the search field the full measure, which is what puts it first', () => {
+    const search = block('DirectoryArea', '.search')
+    expect(search).toContain('width: 100%')
+    expect(search).toContain('border-radius: var(--dsw-radius-pill)')
+  })
+
+  it('gives the installed strip a tile large enough to identify a plugin without a name', () => {
+    const large = block('DirectoryArea', '.markLarge')
+    expect(large).toContain('width: 44px')
+    expect(large).toContain('height: 44px')
+  })
+
+  it('wraps the installed strip instead of scrolling it', () => {
+    // A horizontal scroller would put a second scrollbar inside a surface that
+    // already has one, and this sheet paints elevated fills, so a scroll
+    // container in it would demand a thumb rebind.
+    expect(block('DirectoryArea', '.tiles')).toContain('flex-wrap: wrap')
+    expect(css['DirectoryArea'].replace(/\/\*[\s\S]*?\*\//g, ''))
+      .not.toMatch(/overflow[-a-z]*:\s*(?:auto|scroll)/)
   })
 
   it('leaves the directory area to inherit that measure rather than set its own', () => {
@@ -86,10 +147,11 @@ describe('Plugins page theme styles', () => {
     expect(block('DirectoryArea', '.pillActive')).toContain('background: var(--dsw-alias-bg-module-platform)')
     expect(block('DirectoryArea', '.pillActive')).not.toContain('bg-layer-')
     expect(block('DirectoryArea', '.mark')).not.toContain('bg-layer-')
+    expect(block('DirectoryArea', '.install')).toContain('background: var(--dsw-alias-bg-module-platform)')
   })
 
   it('keeps every directory radius on the shared scale', () => {
-    for (const selector of ['.pill', '.search', '.mark', '.action', '.retry']) {
+    for (const selector of ['.pill', '.search', '.mark', '.install', '.more', '.menu', '.retry']) {
       const rule = block('DirectoryArea', selector)
       const radius = /border-radius:\s*([^;]+);/u.exec(rule)?.[1]
       if (radius !== undefined) expect(radius).toMatch(/var\(--dsw-radius-/u)
@@ -143,6 +205,41 @@ describe('Plugins page theme styles', () => {
     expect(row).toContain('gap: 10px')
     expect(row).toContain('line-height: 19.5px')
     expect(block('PluginsNavRow', '.rail')).toContain('width: 36px')
+  })
+
+  it('draws the Studio mark as pixel art rather than a smoothed downscale', () => {
+    // The source is 162x162 pixel art rendered into a 40px tile. Every default
+    // smoothing filter turns its one-pixel edges into grey fringes at that
+    // size, which is the whole reason the rule is asserted rather than left to
+    // the browser default.
+    const mark = block('StudioEntry', '.mark')
+    expect(mark).toContain('image-rendering: pixelated')
+    expect(mark).toContain('width: 40px')
+    expect(mark).toContain('height: 40px')
+  })
+
+  it('states the bound entry in the success colour and in words', () => {
+    // A dot beside the word would say the same thing twice, and the word is
+    // what survives a reader who cannot separate the two hues.
+    expect(block('StudioEntry', '.connected'))
+      .toContain('color: var(--dsw-alias-state-success-primary)')
+  })
+
+  it('gives the bind action the catalogue’s own install pill', () => {
+    // Same decision, same column position, so it must not read as a different
+    // kind of control from the row below it.
+    const bind = block('StudioEntry', '.bind')
+    expect(bind).toContain('background: var(--dsw-alias-bg-module-platform)')
+    expect(bind).toContain('border-radius: var(--dsw-radius-pill)')
+    expect(bind).toContain('text-decoration: none')
+  })
+
+  it('wraps the Studio tool strip instead of scrolling it', () => {
+    // This sheet paints elevated fills, so a scroll container in it would
+    // demand the thumb rebind ui-theme's invariant reasons about per file.
+    expect(block('StudioEntry', '.tools')).toContain('flex-wrap: wrap')
+    expect(css['StudioEntry'].replace(/\/\*[\s\S]*?\*\//g, ''))
+      .not.toMatch(/overflow[-a-z]*:\s*(?:auto|scroll)/)
   })
 
   it('honours reduced motion wherever it eases something', () => {

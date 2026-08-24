@@ -26,7 +26,8 @@
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
     "@unieai/uad-client-ui-commands": "workspace:^",
-    "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
+    "@unieai/uad-client-ui-workspace": "workspace:^",
     "@unieai/uad-commands": "workspace:^",
     "@unieai/uad-invariants": "workspace:^"
   },
@@ -37,9 +38,10 @@
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
     "@unieai/uad-client-ui-commands": "workspace:^",
-    "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
     "@unieai/uad-client-ui-primitives": "workspace:^",
     "@unieai/uad-client-ui-slots": "workspace:^",
+    "@unieai/uad-client-ui-workspace": "workspace:^",
     "@unieai/uad-commands": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-session": "workspace:^",
@@ -52,7 +54,8 @@
         "@unieai/uad-client-locale",
         "@unieai/uad-client-runtime",
         "@unieai/uad-client-ui-commands",
-        "@unieai/uad-client-ui-conversation"
+        "@unieai/uad-client-ui-layout",
+        "@unieai/uad-client-ui-workspace"
       ],
       "platform": "web"
     }

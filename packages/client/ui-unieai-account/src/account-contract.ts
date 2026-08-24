@@ -1,6 +1,6 @@
 /**
  * The desktop account seam. Everything the Account settings section draws
- * about the person using UnieAI Agent arrives through these types, and no
+ * about the person using Rabi arrives through these types, and no
  * other module in this package knows where the values came from.
  *
  * The supplier is a desktop BFF on the UnieAI web product, reached by a host

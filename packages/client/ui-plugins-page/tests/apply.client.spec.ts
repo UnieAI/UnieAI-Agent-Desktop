@@ -1,9 +1,10 @@
 /**
  * ui-plugins-page browser half on a real SlotRegistry: dictionaries ride the
- * locale service, the page waits for the frame's overlay layer and the sidebar
- * nav list, the page hole opens for the areas that fill it, the nav row and
- * the page share one open state, the MCP list is read when the page is opened
- * rather than at boot, and teardown empties every slot (HMR safety).
+ * locale service, the surface waits for the frame's overlay layer and the
+ * sidebar nav list, the surface hole opens for the areas that fill it, the nav
+ * row and the surface share one open state and one toggle, the MCP list is
+ * read when the surface is opened rather than at boot, and teardown empties
+ * every slot (HMR safety).
  *
  * The lane has no jsdom `window`, so a fresh LocaleRuntime opens on the
  * English fallback; the bench switches locale explicitly where it asserts copy.
@@ -16,8 +17,9 @@ import InvariantRegistry from '@unieai/uad-invariants'
 import * as PageInvariant from '@unieai/uad-client-ui-plugins-page/invariant'
 import { apply as nodeApply } from '../src/index.ts'
 import { apply, inject } from '../src/client/index.ts'
-import { PluginsPage } from '../src/client/PluginsPage.tsx'
+import { PluginsPage, TAB_VIEWS, VIEWS } from '../src/client/PluginsPage.tsx'
 import { PluginsNavRow } from '../src/client/PluginsNavRow.tsx'
+import { SkillsArea } from '../src/client/SkillsArea.tsx'
 import { StudioMcpArea } from '../src/client/StudioMcpArea.tsx'
 import type { PluginsNavRowInjected, PluginsPageInjected } from '../src/client/contract/slots.ts'
 import type { StudioMcpAreaInjected } from '../src/client/StudioMcpArea.tsx'
@@ -79,6 +81,28 @@ describe('ui-plugins-page browser apply', () => {
     expect(() => { nodeApply() }).not.toThrow()
   })
 
+  it('gives every area this package registers exactly one destination', async () => {
+    // `plugins.page.area` carries no per-entry label, so the destination table
+    // in PluginsPage names entry ids directly. An area registered without a
+    // destination would simply never render; this is the gate that fails
+    // instead.
+    hostRoute({ status: 'signed-out' })
+    const b = await bench()
+    declareShell(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const listed = VIEWS.flatMap(view => [...view.entries])
+    expect(new Set(listed).size).toBe(listed.length)
+    for (const entry of b.slots.entries(AREA)) {
+      expect(listed, `area '${String(entry.options.id)}' has no destination`)
+        .toContain(entry.options.id)
+    }
+  })
+
+  it('keeps configuration off the pill strip, where only browsable places stand', () => {
+    expect([...TAB_VIEWS]).toEqual(['directory', 'skills'])
+    expect(VIEWS.map(view => view.id)).toContain('manage')
+  })
+
   it('registers the invariant companion under the package name', async () => {
     const ctx = new Context()
     await ctx.plugin(InvariantRegistry, { enabled: true })
@@ -136,11 +160,48 @@ describe('ui-plugins-page browser apply', () => {
     const page = (entryOf(b.slots, OVERLAY, 'plugins-page')!.inject as unknown as () => PluginsPageInjected)()
 
     expect(page.hooks.page.getSnapshot()).toEqual({ open: false })
-    row.open()
+    row.toggle()
     expect(page.hooks.page.getSnapshot()).toEqual({ open: true })
     expect(row.hooks.page.getSnapshot()).toEqual({ open: true })
     page.close()
     expect(row.hooks.page.getSnapshot()).toEqual({ open: false })
+  })
+
+  it('leaves by the same row that arrived, because the column stays visible', async () => {
+    // The surface covers the main area only, so the row the reader pressed is
+    // still under their pointer: pressing the place you are standing in is how
+    // you leave it.
+    hostRoute({ status: 'signed-out' })
+    const b = await bench()
+    declareShell(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const row = (entryOf(b.slots, NAV, 'plugins-page')!.inject as unknown as () => PluginsNavRowInjected)()
+
+    row.toggle()
+    expect(row.hooks.page.getSnapshot()).toEqual({ open: true })
+    row.toggle()
+    expect(row.hooks.page.getSnapshot()).toEqual({ open: false })
+  })
+
+  it('registers the skills area, which reads nothing because nothing root-scoped reports skills', async () => {
+    hostRoute({ status: 'signed-out' })
+    const b = await bench()
+    declareShell(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const entry = entryOf(b.slots, AREA, 'skills')
+    expect(entry?.component).toBe(SkillsArea)
+    expect((entry!.inject as unknown as () => object)()).toEqual({})
+  })
+
+  it('gives the surface chrome one re-read that covers every source it owns', async () => {
+    const sent = hostRoute({ status: 'signed-out' })
+    const b = await bench()
+    declareShell(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const page = (entryOf(b.slots, OVERLAY, 'plugins-page')!.inject as unknown as () => PluginsPageInjected)()
+
+    page.refresh()
+    expect(sent.map(one => one.path)).toEqual(['/auth/mcp', '/auth/plugins'])
   })
 
   it('reads the gate route when the page opens, not at boot', async () => {
@@ -154,9 +215,9 @@ describe('ui-plugins-page browser apply', () => {
     expect(sent).toHaveLength(0)
 
     const row = (entryOf(b.slots, NAV, 'plugins-page')!.inject as unknown as () => PluginsNavRowInjected)()
-    row.open()
-    // Both of the page's own reads fire on the same gesture: the directory the
-    // reader came to browse, and what they already have connected.
+    row.toggle()
+    // Both of the surface's own reads fire on the same gesture: the directory
+    // the reader came to browse, and what they already have connected.
     expect(sent.map(one => one.path)).toEqual(['/auth/mcp', '/auth/plugins'])
 
     const area = (entryOf(b.slots, AREA, 'studio-mcp')!.inject as unknown as () => StudioMcpAreaInjected)()

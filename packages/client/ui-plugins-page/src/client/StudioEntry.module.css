@@ -1,0 +1,190 @@
+/* The reading measure is the surface's — `PluginsPage.module.css` centres it,
+ * so every area shares one column edge. This area sets only its own rhythm.
+ *
+ * This sheet paints an elevated fill (the mark tile, the bind pill) and must
+ * therefore contain no scroll container: ui-theme's scrollbar-rebind invariant
+ * reasons per file. Nothing here scrolls — the tool strip wraps. */
+
+.area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+}
+
+/* The entry's head reads as one directory row — same mark, name and one-line
+   description as the catalogue rows below it — so a first-party integration
+   does not arrive as a differently shaped object on the same page. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Pixel art. `pixelated` is the whole reason this rule exists: the source is
+   162x162 and every smoothing filter turns its edges into grey fringes at tile
+   size. The tile fill matches the catalogue mark so the two read as one kind
+   of object. */
+.mark {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-bg-module-platform);
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nameLine {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Connected is stated in words, in the success colour, with no dot: a dot
+   beside a word says the same thing twice, and the word survives a reader who
+   cannot separate the two hues. */
+.connected {
+  flex: none;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.description {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The bind action takes the catalogue's install pill, because it is the same
+   decision in the same column position. */
+.bind {
+  flex: none;
+  padding: 5px 14px;
+  border-radius: var(--dsw-radius-pill);
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 150ms var(--ds-ease-in-out);
+}
+
+.bind:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.bind:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 1px;
+}
+
+.retry {
+  flex: none;
+  padding: 5px 14px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-pill);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 150ms var(--ds-ease-in-out);
+}
+
+.retry:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.retry:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 1px;
+}
+
+.note {
+  margin: 0;
+  padding-left: 54px;
+  max-width: 640px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.failure {
+  margin: 0;
+  padding-left: 54px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.gives {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The tools the link supplies, as names on one wrapping strip rather than as
+   cards: the entry answers "is this connected and what does it give", and the
+   card grid for the same catalogue is already drawn by the Studio MCP area on
+   the configuration destination. */
+.tools {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0 0 0 54px;
+  min-width: 0;
+}
+
+.tool {
+  min-width: 0;
+  padding: 3px 8px;
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+  font-family: var(--ds-font-family-code);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bind,
+  .retry {
+    transition: none;
+  }
+}

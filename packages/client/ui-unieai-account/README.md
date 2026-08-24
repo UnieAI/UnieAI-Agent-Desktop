@@ -94,9 +94,23 @@ The supplier does not exist yet: it will be a desktop BFF added to the UnieAI we
 
 ## Invites
 
-The product's referral model is one row per invited address, each with its own single-use code. There is no standing personal invite link, so the card offers none: what it shows is the rate-limit resets the account has banked, how many invites it has sent, those invites when the supplier lists them — each with its own link and a control that copies it — and a field that sends one more. Each part is drawn only where the supplier reported it, so an account whose referral call failed shows the parts that arrived rather than a zero balance nobody reported.
+The product's referral model is one row per invited address, each with its own single-use code. There is no standing personal invite link, so the card offers none: what it shows is the rate-limit resets the account has banked, how many invites it has sent, those invites when the supplier lists them — each with its own link and a control that copies it — and the trigger that opens the compose dialog. Each part is drawn only where the supplier reported it, so an account whose referral call failed shows the parts that arrived rather than a zero balance nobody reported.
 
 Credits are **visible but not spendable here**. The product grants a banked reset against the account; the desktop surface exposes no redeem route, and the card therefore reports the balance without offering to spend it.
+
+### The compose dialog
+
+Composing one invite is a modal, not a row on the page: a hero band, what an invite earns, the page's own title and description, one address field, and one Send. It is the reference design's frame, filled with what this product actually has.
+
+Three parts of that frame have no data behind them, and each is answered rather than faked:
+
+- **No invite link and no code.** The write is `POST /api/desktop/invite`, which takes an address; the single-use code it mints belongs to that invitation, not to the account. A personal link or code on this screen would be invented, so the dialog shows neither — the links that do exist are the sent invites' own, listed on the page behind it.
+- **The reward strip states the rate, not a number of points.** `invite.reward` is the referral terms this dictionary already carries. No field of `UnieAiInvites` reports a reward RATE — `credits` is the balance already banked, which is a different fact and is reported on the page — so nothing in the strip is computed from the account.
+- **No eligibility link.** The account contract carries no terms URL, so there is nothing for one to open.
+
+Send stays disabled until the field holds a plausible address (a local part, `@`, a dotted domain). That is a formatting pre-check, not a second copy of the product's rule: which addresses are acceptable, and which are the account's own, stay the supplier's verdict and come back as `invalid-email`, `self-invite` or `already-invited`.
+
+The hero is the one fixed plate in this package. It is the same brand-blue band under both palettes, carrying a white tile, so it paints from the palette-invariant `--dsw-static-deepseek-*` ramp (which carries UnieAI brand blue) rather than an alias that would invert it into a dark band under a white tile. Everything below the hero is theme-owned. The tile draws the invite's own subject rather than the reference's product mark: the mark is a brand-slot occupant owned by `ui-brand-unieai`, which this package must not value-import, and a settings section renders no slots to reach it through.
 
 ## Styling
 
@@ -117,6 +131,7 @@ None; this package neither assembles nor sends a provider request.
 - **An avatar cannot be removed, only replaced** — the reference form offers no remove control either, so neither does this one. The seam under it can express a clear (`image: null` on the wire), and a remove button would be the only consumer of it.
 - **Only three refusals have words** — `name-required`, `avatar-format` and `avatar-payload` render as the reference form's own lines; any other refusal, and any supplier that identifies none, still shows the general *update failed, please try again*.
 - **The crop needs a canvas** — a document that grants no 2D drawing context cannot produce the square, and the dialog reports a failed avatar rather than storing the uncropped original.
+- **The invite dialog's hero carries no product mark** — the mark lives in `ui-brand-unieai` as a `sidebar.brand.mark` occupant, and a settings section has no slot seat to render it through, so the tile draws the invite's subject instead. A brand seat reachable from a settings page is what would close this.
 - **Banked resets cannot be spent from here** — the card reports the balance because the account has one; the product exposes no redeem route to the desktop, so there is nothing for a button to call.
 - **The heatmap's five ramp steps are this sheet's own numbers** — the design platform names no five-step neutral ramp, so the percentages that mix ink into the empty cell's surface were chosen to keep five steps distinguishable in both palettes and are not a token anyone else can reuse.
 - **The heatmap has no cell keyboard path** — a cell's day and token count live in its `title`, exactly as in the reference, so they are reachable by pointer and not by tab. The five totals above the grid carry the same year as text, and the month ruler under it is `aria-hidden` because it is a ruler; a focus order over 371 cells was not worth the tab stops.
