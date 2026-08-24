@@ -6,7 +6,7 @@
  * the concrete class. Widening this interface is the explicit act of
  * widening what features may do to the workspaces domain.
  */
-import type { DirectoryListing, SessionId, WorkspaceId, WorkspaceView } from '@unieai/uad-api-remotes/client'
+import type { DirectoryListing, WorkspaceFile, WorkspaceListing, SessionId, WorkspaceId, WorkspaceView } from '@unieai/uad-api-remotes/client'
 import type { WorkspaceListState } from '../workspaces/service.ts'
 import type { ObservableSnapshot } from './store.ts'
 
@@ -46,6 +46,32 @@ export interface IWorkspaces {
    * @returns the level's listing with breadcrumb ancestry.
    */
   listDirectory(path?: string, signal?: AbortSignal): Promise<DirectoryListing>
+  /**
+   * List one directory level INSIDE a workspace, for a view showing the files
+   * a session works on.
+   *
+   * Not `listDirectory` with a filter: that one serves the picker and reaches
+   * anywhere the Host account can read, because picking a workspace means
+   * reaching one you have not opened. This one is bounded to a root the Host
+   * already registered, and names only — no argument here can ask for content.
+   * @param root - absolute path of a registered workspace.
+   * @param path - absolute directory inside `root`; absent lists the root.
+   * @param signal - aborts the wire request and the Host's scan.
+   * @returns the level's entries, directories first then files.
+   */
+  listWorkspaceEntries(root: string, path?: string, signal?: AbortSignal): Promise<WorkspaceListing>
+  /**
+   * Read one file inside a workspace, as text, for a viewer.
+   *
+   * Bounded twice: the same registered-root fence as
+   * {@link listWorkspaceEntries}, and a size the deployment sets. A file past
+   * that size, or one that is not text, comes back with `reason` and no `text`.
+   * @param root - absolute path of a registered workspace.
+   * @param path - absolute file inside `root`.
+   * @param signal - aborts the wire request and the Host's read.
+   * @returns the file's text, or why it was withheld.
+   */
+  readWorkspaceFile(root: string, path: string, signal?: AbortSignal): Promise<WorkspaceFile>
   /**
    * Create one child directory through the Host's `browse` capability.
    * @param path - absolute existing parent directory.

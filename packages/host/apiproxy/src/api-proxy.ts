@@ -6,7 +6,11 @@
 import { randomUUID } from 'node:crypto'
 import { mkdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { dirname } from 'node:path'
+import { dirname, isAbsolute, relative, resolve as resolvePath } from 'node:path'
+// Type-only: the optional fs service's Context merge and its listing entry.
+import type {} from '@unieai/uad-fs'
+import type { FsDirEntry } from '@unieai/uad-fs'
+import type { WorkspaceEntry } from './api/host.ts'
 import { z as zod } from 'zod'
 import type { Context } from '@unieai/cordis'
 import { installModelSelection } from '@unieai/uad-agent'
@@ -121,6 +125,25 @@ const SESSION_SEARCH_PROVIDER_CALL_LIMIT = 100
 const COLD_SUMMARY_BATCH_SIZE = 16
 /** Default maximum artifact size eligible for one cold blankness read. */
 export const DEFAULT_COLD_BLANK_PROBE_MAX_BYTES = 1024
+
+/**
+ * Children one workspace listing reports before it reports truncation.
+ *
+ * A directory in a real repository can hold tens of thousands of entries, and
+ * every one of them would cross the wire and become a row. The bound keeps one
+ * expansion answerable; a level that exceeds it says so rather than pretending
+ * it was complete.
+ */
+export const DEFAULT_WORKSPACE_LISTING_MAX_ENTRIES = 1000
+
+/**
+ * Bytes one workspace file read will carry into a page.
+ *
+ * A viewer is not a transfer mechanism. Past this bound the read reports the
+ * size and withholds the text, so a large file is a thing the viewer declines
+ * to show rather than a request that hangs a browser tab.
+ */
+export const DEFAULT_WORKSPACE_FILE_MAX_BYTES = 1_000_000
 
 /** Conversation message event types (the pagination counting unit). */
 const MESSAGE_TYPES = new Set(['user/message', 'assistant/message'])
@@ -615,6 +638,8 @@ export interface ApiProxyDefaults {
   sessionExportCompressionLevel?: SessionLogCompressionLevel
   /** Maximum artifact size eligible for one cold blankness read. */
   coldBlankProbeMaxBytes?: number
+  workspaceListingMaxEntries?: number
+  workspaceFileMaxBytes?: number
   /**
    * Whether handing a path to the native opener can work at all — the
    * `hasDocument` capability the preset roster reports, and the switch
@@ -1064,6 +1089,9 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
     ?? DEFAULT_SESSION_LOG_COMPRESSION_LEVEL
   const coldBlankProbeMaxBytes = defaults.coldBlankProbeMaxBytes
     ?? DEFAULT_COLD_BLANK_PROBE_MAX_BYTES
+  const workspaceListingMaxEntries = defaults.workspaceListingMaxEntries
+    ?? DEFAULT_WORKSPACE_LISTING_MAX_ENTRIES
+  const workspaceFileMaxBytes = defaults.workspaceFileMaxBytes ?? DEFAULT_WORKSPACE_FILE_MAX_BYTES
   /** The seed model each create/resume declares; re-read so it never goes stale. */
   const agentOptions = (): AgentOptions => {
     const { provider, model } = defaults.defaultModelSelection()
@@ -2918,6 +2946,126 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           return ok(request, { path: await capability.createDirectory(request.payload.path, request.payload.name) })
         } catch (error: unknown) {
           return err(request, directoryError(error))
+        }
+      },
+
+      async listWorkspaceEntries(request, signal) {
+        // Optional service: a composition without a filesystem cannot answer,
+        // and saying so is better than a listing that is silently always empty.
+        const fs = ctx.get('fs')
+        if (fs === undefined) {
+          return err(request, {
+            code: 'workspace-listing-unavailable',
+            message: 'host.listWorkspaceEntries needs the fs service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        // The fence: `root` is not a path the caller chose, it is one the host
+        // already registered. A page that names anything else gets nothing.
+        const workspace = await ctx.workspaceRegistry.resolveByPath(request.payload.root)
+        if (workspace === undefined) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: `host.listWorkspaceEntries: ${request.payload.root} is not a registered workspace`,
+            details: { path: request.payload.root },
+          })
+        }
+        const root = resolvePath(request.payload.root)
+        const target = resolvePath(root, request.payload.path ?? root)
+        // `relative` answers containment without a string prefix test, which
+        // would accept a sibling whose name merely starts with the root's.
+        const inside = relative(root, target)
+        if (inside.startsWith('..') || isAbsolute(inside)) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: 'host.listWorkspaceEntries: path must resolve inside its workspace root',
+            details: { path: target },
+          })
+        }
+        try {
+          const resolved = await fs.resolve(target, { signal })
+          const children = await fs.listDir(resolved, signal)
+          const bounded = children.slice(0, workspaceListingMaxEntries)
+          const entries = bounded
+            .map((child: FsDirEntry) => ({
+              name: child.name,
+              path: child.target.displayPath,
+              kind: child.type,
+              ...(child.size === undefined ? {} : { size: child.size }),
+            }))
+            // Directories first, then files: a tree read top-down is the
+            // reason to show a directory at all.
+            .sort((left: WorkspaceEntry, right: WorkspaceEntry) => left.kind === right.kind
+              ? left.name.localeCompare(right.name)
+              : left.kind === 'directory' ? -1 : 1)
+          return ok(request, {
+            root, path: target, entries, truncated: children.length > bounded.length,
+          })
+        } catch (error: unknown) {
+          return err(request, {
+            code: 'directory-unreadable',
+            message: error instanceof Error ? error.message : String(error),
+            details: { path: target },
+          })
+        }
+      },
+
+      async readWorkspaceFile(request, signal) {
+        const fs = ctx.get('fs')
+        if (fs === undefined) {
+          return err(request, {
+            code: 'workspace-listing-unavailable',
+            message: 'host.readWorkspaceFile needs the fs service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        const workspace = await ctx.workspaceRegistry.resolveByPath(request.payload.root)
+        if (workspace === undefined) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: `host.readWorkspaceFile: ${request.payload.root} is not a registered workspace`,
+            details: { path: request.payload.root },
+          })
+        }
+        const root = resolvePath(request.payload.root)
+        const target = resolvePath(root, request.payload.path)
+        const inside = relative(root, target)
+        if (inside.startsWith('..') || isAbsolute(inside)) {
+          return err(request, {
+            code: 'workspace-invalid-path',
+            message: 'host.readWorkspaceFile: path must resolve inside its workspace root',
+            details: { path: target },
+          })
+        }
+        try {
+          const resolved = await fs.resolve(target, { signal })
+          const info = await fs.stat(resolved, signal)
+          if (info === undefined || info.type !== 'file') {
+            return err(request, {
+              code: 'directory-unreadable',
+              message: `host.readWorkspaceFile: ${target} is not a regular file`,
+              details: { path: target },
+            })
+          }
+          const size = info.size ?? 0
+          // Size is checked BEFORE the read: the bound exists to keep the bytes
+          // off the wire, and reading first to measure would defeat it.
+          if (size > workspaceFileMaxBytes) {
+            return ok(request, { root, path: target, size, reason: 'too-large' as const })
+          }
+          const text = await fs.readText(resolved, signal)
+          // A NUL byte is the cheap, decisive signal that this is not text; a
+          // viewer handed binary renders replacement characters and nothing else.
+          if (text.includes('\u0000')) {
+            return ok(request, { root, path: target, size, reason: 'binary' as const })
+          }
+          return ok(request, { root, path: target, size, text })
+        } catch (error: unknown) {
+          return err(request, {
+            code: 'directory-unreadable',
+            message: error instanceof Error ? error.message : String(error),
+            details: { path: target },
+          })
         }
       },
 

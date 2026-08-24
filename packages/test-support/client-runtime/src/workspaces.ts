@@ -1,5 +1,6 @@
 /** Test-owned workspaces face: the renderer standard-kit observable plus recorded actions. */
 import { createSnapshotStore } from '@unieai/uad-client-runtime/client'
+import type { WorkspaceFile, WorkspaceListing } from '@unieai/uad-api-remotes/client'
 import type {
   DirectoryListing, IWorkspaces, SessionId, SnapshotStore, WorkspaceId, WorkspaceListState, WorkspaceView,
 } from '@unieai/uad-client-runtime/client'
@@ -143,6 +144,34 @@ export class TestWorkspaces implements IWorkspaces {
    * @param name - single path segment.
    * @returns the created directory's absolute path.
    */
+  /**
+   * Record a bounded workspace listing and answer from a stub when one is set.
+   * @param root - the workspace root the caller named.
+   * @param path - the level inside it; absent means the root.
+   * @param signal - forwarded like the production face forwards it.
+   * @returns the stubbed listing, or an empty level.
+   */
+  async listWorkspaceEntries(root: string, path?: string, signal?: AbortSignal): Promise<WorkspaceListing> {
+    this.calls.push({ method: 'listWorkspaceEntries', args: [root, path, signal] })
+    const stub = this.stubs.get('listWorkspaceEntries')
+    if (stub !== undefined) return await (stub(root, path, signal) as Promise<WorkspaceListing>)
+    return { root, path: path ?? root, entries: [], truncated: false }
+  }
+
+  /**
+   * Record a bounded file read and answer from a stub when one is set.
+   * @param root - the workspace root the caller named.
+   * @param path - the file inside it.
+   * @param signal - forwarded like the production face forwards it.
+   * @returns the stubbed file, or empty text.
+   */
+  async readWorkspaceFile(root: string, path: string, signal?: AbortSignal): Promise<WorkspaceFile> {
+    this.calls.push({ method: 'readWorkspaceFile', args: [root, path, signal] })
+    const stub = this.stubs.get('readWorkspaceFile')
+    if (stub !== undefined) return await (stub(root, path, signal) as Promise<WorkspaceFile>)
+    return { root, path, size: 0, text: '' }
+  }
+
   async createDirectory(path: string, name: string): Promise<string> {
     this.calls.push({ method: 'createDirectory', args: [path, name] })
     const stub = this.stubs.get('createDirectory')

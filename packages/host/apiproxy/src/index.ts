@@ -16,7 +16,10 @@ import { Context, Service } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import type {} from '@unieai/uad-agent-default-model'
 import type { ApiProxy } from './api/index.ts'
-import { createApiProxy, DEFAULT_COLD_BLANK_PROBE_MAX_BYTES } from './api-proxy.ts'
+import {
+  createApiProxy, DEFAULT_COLD_BLANK_PROBE_MAX_BYTES, DEFAULT_WORKSPACE_FILE_MAX_BYTES,
+  DEFAULT_WORKSPACE_LISTING_MAX_ENTRIES,
+} from './api-proxy.ts'
 import {
   DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
   type SessionLogCompressionLevel,
@@ -59,6 +62,10 @@ export interface Config {
    * @default 1024
    */
   coldBlankProbeMaxBytes?: number
+  /** Children one workspace listing reports before reporting truncation. */
+  workspaceListingMaxEntries?: number
+  /** Bytes one workspace file read will carry into a page. */
+  workspaceFileMaxBytes?: number
 }
 
 /**
@@ -77,6 +84,8 @@ export class ApiProxyService extends Service implements ApiProxy {
     sessionExportCompressionLevel: z.number().step(1).min(0).max(9)
       .default(DEFAULT_SESSION_LOG_COMPRESSION_LEVEL) as z<SessionLogCompressionLevel>,
     coldBlankProbeMaxBytes: z.natural().default(DEFAULT_COLD_BLANK_PROBE_MAX_BYTES),
+    workspaceListingMaxEntries: z.natural().min(1).default(DEFAULT_WORKSPACE_LISTING_MAX_ENTRIES),
+    workspaceFileMaxBytes: z.natural().min(1).default(DEFAULT_WORKSPACE_FILE_MAX_BYTES),
   })
 
   readonly sessions: ApiProxy['sessions']
@@ -103,6 +112,12 @@ export class ApiProxyService extends Service implements ApiProxy {
       ...(config.sessionExportCompressionLevel === undefined
         ? {}
         : { sessionExportCompressionLevel: config.sessionExportCompressionLevel }),
+      ...(config.workspaceFileMaxBytes === undefined
+        ? {}
+        : { workspaceFileMaxBytes: config.workspaceFileMaxBytes }),
+      ...(config.workspaceListingMaxEntries === undefined
+        ? {}
+        : { workspaceListingMaxEntries: config.workspaceListingMaxEntries }),
       ...(config.coldBlankProbeMaxBytes === undefined
         ? {}
         : { coldBlankProbeMaxBytes: config.coldBlankProbeMaxBytes }),

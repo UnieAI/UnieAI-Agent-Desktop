@@ -3,7 +3,7 @@
 import type { Context } from '@unieai/cordis'
 import type {
   DirectoryListing, IApiClient, RpcError,
-  SessionId, WorkspaceId, WorkspaceView,
+  SessionId, WorkspaceFile, WorkspaceId, WorkspaceListing, WorkspaceView,
 } from '@unieai/uad-api-remotes/client'
 import type { SnapshotStore } from '../contract/store.ts'
 import { createSnapshotStore } from '../contract/store.ts'
@@ -222,6 +222,43 @@ export class WorkspaceRuntime implements IWorkspaces {
    */
   async listDirectory(path?: string, signal?: AbortSignal): Promise<DirectoryListing> {
     const response = await this.api.host.listDirectory(path === undefined ? {} : { path }, signal)
+    if (!response.result.ok) throw new DirectoryBrowseError(response.result.error)
+    return response.result.value
+  }
+
+  /**
+   * List one directory level INSIDE a workspace, for a view showing the files
+   * a session works on.
+   *
+   * Not `listDirectory` with a filter: that one serves the picker and reaches
+   * anywhere the Host account can read, because picking a workspace means
+   * reaching one you have not opened. This one is bounded to a root the Host
+   * already registered, and names only — no argument here can ask for content.
+   * @param root - absolute path of a registered workspace.
+   * @param path - absolute directory inside `root`; absent lists the root.
+   * @param signal - aborts the wire request and the Host's scan.
+   * @returns the level's entries, directories first then files.
+   */
+  async listWorkspaceEntries(root: string, path?: string, signal?: AbortSignal): Promise<WorkspaceListing> {
+    const response = await this.api.host.listWorkspaceEntries(
+      path === undefined ? { root } : { root, path }, signal)
+    if (!response.result.ok) throw new DirectoryBrowseError(response.result.error)
+    return response.result.value
+  }
+
+  /**
+   * Read one file inside a workspace, as text, for a viewer.
+   *
+   * Bounded twice: the same registered-root fence as
+   * {@link listWorkspaceEntries}, and a size the deployment sets. A file past
+   * that size, or one that is not text, comes back with `reason` and no `text`.
+   * @param root - absolute path of a registered workspace.
+   * @param path - absolute file inside `root`.
+   * @param signal - aborts the wire request and the Host's read.
+   * @returns the file's text, or why it was withheld.
+   */
+  async readWorkspaceFile(root: string, path: string, signal?: AbortSignal): Promise<WorkspaceFile> {
+    const response = await this.api.host.readWorkspaceFile({ root, path }, signal)
     if (!response.result.ok) throw new DirectoryBrowseError(response.result.error)
     return response.result.value
   }

@@ -156,6 +156,12 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
       async createDirectory(request) {
         return { rpcId: request.rpcId, result: { ok: true, value: { path: '/w/new' } } }
       },
+      async listWorkspaceEntries(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { root: '/w', path: '/w', entries: [], truncated: false } } }
+      },
+      async readWorkspaceFile(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { root: '/w', path: '/w/a', size: 0, text: '' } } }
+      },
       async openPath(request) {
         return { rpcId: request.rpcId, result: { ok: true, value: { opened: true as const } } }
       },

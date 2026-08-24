@@ -177,6 +177,8 @@
       "@unieai/uad-host-apiproxy/*": ["./packages/host/apiproxy/src/*"],
       "@unieai/uad-host-webserver": ["./packages/host/webserver/src"],
       "@unieai/uad-unieai-web-gate": ["./packages/unieai/web-gate/src"],
+      "@unieai/uad-mcp-servers": ["./packages/mcp/mcp-servers/src"],
+      "@unieai/uad-mcp-servers/invariant": ["./packages/mcp/mcp-servers/src/invariant.ts"],
       "@unieai/uad-unieai-mcp-supervisor": ["./packages/unieai/mcp-supervisor/src"],
       "@unieai/uad-unieai-mcp-supervisor/invariant": ["./packages/unieai/mcp-supervisor/src/invariant.ts"],
       "@unieai/uad-host-frontend-static": ["./packages/host/frontend-static/src"],

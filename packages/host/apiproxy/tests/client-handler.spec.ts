@@ -76,6 +76,8 @@ function scriptedApi(overrides: {
       }),
       pickDirectory: r => ok(r, { path: null }),
       listDirectory: r => ok(r, { path: '/t', home: '/t', crumbs: [], entries: [], truncated: false }),
+      listWorkspaceEntries: r => ok(r, { root: '/t', path: '/t', entries: [], truncated: false }),
+      readWorkspaceFile: r => ok(r, { root: '/t', path: '/t/a', size: 0, text: '' }),
       createDirectory: r => ok(r, { path: '/t/new' }),
       openPath: r => ok(r, { opened: true as const }),
       ...overrides.host,

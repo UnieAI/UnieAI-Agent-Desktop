@@ -50,6 +50,43 @@ export const hostListDirectoryValueSchema = z.object({
   truncated: z.boolean(),
 }) satisfies z.ZodType<Wire<ResponseValue<'host.listDirectory'>>>
 
+/** One child of a listed workspace directory. */
+const workspaceEntrySchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  kind: z.union([z.literal('file'), z.literal('directory'), z.literal('other')]),
+  size: z.number().optional(),
+})
+
+/** host.listWorkspaceEntries request payload; an absent path lists the root itself. */
+export const hostListWorkspaceEntriesRequestSchema = z.object({
+  root: z.string(),
+  path: z.string().optional(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.listWorkspaceEntries'>>>
+
+/** host.listWorkspaceEntries response value. */
+export const hostListWorkspaceEntriesValueSchema = z.object({
+  root: z.string(),
+  path: z.string(),
+  entries: z.array(workspaceEntrySchema),
+  truncated: z.boolean(),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.listWorkspaceEntries'>>>
+
+/** host.readWorkspaceFile request payload. */
+export const hostReadWorkspaceFileRequestSchema = z.object({
+  root: z.string(),
+  path: z.string(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.readWorkspaceFile'>>>
+
+/** host.readWorkspaceFile response value. */
+export const hostReadWorkspaceFileValueSchema = z.object({
+  root: z.string(),
+  path: z.string(),
+  text: z.string().optional(),
+  size: z.number(),
+  reason: z.union([z.literal('too-large'), z.literal('binary')]).optional(),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.readWorkspaceFile'>>>
+
 /** host.createDirectory request payload: name must be one plain path segment. */
 export const hostCreateDirectoryRequestSchema = z.object({
   path: z.string(),

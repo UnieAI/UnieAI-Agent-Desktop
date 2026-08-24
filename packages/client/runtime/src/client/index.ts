@@ -64,7 +64,8 @@ export type { SubagentAddress, JobView } from '@unieai/uad-client-connection/cli
 export type { WorkspaceListPhase } from './workspaces/manager.ts'
 export type { WorkspaceListState } from './workspaces/service.ts'
 export type {
-  DirectoryEntry, DirectoryListing, WorkspaceId, WorkspaceView,
+  DirectoryEntry, DirectoryListing, WorkspaceEntry, WorkspaceFile, WorkspaceId, WorkspaceListing,
+  WorkspaceView,
 } from '@unieai/uad-client-connection/client'
 // Runtime owns the snapshot store; ui-renderer only binds it to React.
 export { createSnapshotStore, defineStore, shallowEqual } from './contract/store.ts'

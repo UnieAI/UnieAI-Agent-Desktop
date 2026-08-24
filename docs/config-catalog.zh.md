@@ -822,6 +822,10 @@ export interface Config {
    * @default 1024
    */
   coldBlankProbeMaxBytes?: number
+  /** Children one workspace listing reports before reporting truncation. */
+  workspaceListingMaxEntries?: number
+  /** Bytes one workspace file read will carry into a page. */
+  workspaceFileMaxBytes?: number
 }
 ```
 
@@ -1480,6 +1484,26 @@ export interface ReconnectConfig {
 ```
 
 Source: [`packages/mcp/mcp-client/src/index.ts:98`](../packages/mcp/mcp-client/src/index.ts)
+
+<a id="unieaiuad-mcp-servers"></a>
+
+## `@unieai/uad-mcp-servers`
+
+```ts config-catalog
+/** Deployment configuration. */
+export interface Config {
+  /**
+   * Per-tool-call timeout handed to every mounted server.
+   *
+   * One value for the whole list rather than one per row: a person adding a
+   * server is answering "where is it", and a timeout is a deployment's
+   * judgement about its own machine, not part of the address.
+   */
+  toolCallTimeoutMs: number
+}
+```
+
+Source: [`packages/mcp/mcp-servers/src/index.ts:46`](../packages/mcp/mcp-servers/src/index.ts)
 
 <a id="unieaiuad-message-feedback"></a>
 
@@ -2432,7 +2456,7 @@ Source: [`packages/e2b/subprocess-e2b/src/index.ts:25`](../packages/e2b/subproce
 ```ts config-catalog
 /** Plugin config: the deployment-authored fragment of the system prompt (see {@link Config.persona} for its contract). */
 export interface Config {
-  /** Include the fixed DeepSeek Harness identity before the deployment persona (default true). */
+  /** Include the fixed Rabi identity before the deployment persona (default true). */
   includeHarnessIdentity?: boolean
   /** Include dynamic runtime-context snapshots in model history (default true). */
   includeRuntimeContext?: boolean
@@ -3487,3 +3511,4 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 - `@unieai/uad-typert-generator` ([`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts))
 - `@unieai/uad-typert-protocol` ([`packages/typert/protocol/src/index.ts`](../packages/typert/protocol/src/index.ts))
 - `@unieai/uad-typert-registry` ([`packages/typert/registry/src/index.ts`](../packages/typert/registry/src/index.ts))
+- `@unieai/uad-upstream-names` ([`packages/util/upstream-names/src/index.ts`](../packages/util/upstream-names/src/index.ts))
