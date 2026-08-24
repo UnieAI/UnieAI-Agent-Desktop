@@ -16,7 +16,7 @@ Handlers return `success` or `error` plus optional UI text. A successful handler
 
 ## Composition
 
-The shipped `uad` base mounts this service and the Web client dispatches through it. UI-less demo spines and ACP automation do not provide a command adapter. Custom interactive compositions and command producers mount `@unieai/uad-commands` explicitly.
+The shipped `rabi` base mounts this service and the Web client dispatches through it. UI-less demo spines and ACP automation do not provide a command adapter. Custom interactive compositions and command producers mount `@unieai/uad-commands` explicitly.
 
 ## Model Experience
 

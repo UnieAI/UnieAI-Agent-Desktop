@@ -34,7 +34,7 @@ const DEPENDENCY_SECTIONS = [
   'peerDependencies',
 ] as const
 const RELEASE_MANIFEST_NAME = 'manifest.json'
-const RELEASE_ENTRY_PACKAGE = '@unieai/uad'
+const RELEASE_ENTRY_PACKAGE = '@unieai/rabi'
 const LATEST_DIST_TAG = 'latest'
 const POSIX_WEB_PROBE = String.raw`
 import errno, os, pty, select, signal, sys, time
@@ -62,7 +62,7 @@ while time.monotonic() < deadline:
             output.extend(chunk)
 
     snapshot = bytes(output)
-    if not termination_sent and b"uad web: http://127.0.0.1:" in snapshot:
+    if not termination_sent and b"rabi web: http://127.0.0.1:" in snapshot:
         ready_seen = True
         os.kill(pid, signal.SIGTERM)
         termination_sent = True
@@ -77,11 +77,11 @@ if status is None:
     _, status = os.waitpid(pid, 0)
 sys.stdout.buffer.write(output)
 if not ready_seen:
-    sys.stderr.write("installed uad web did not reach its ready URL\n")
+    sys.stderr.write("installed rabi web did not reach its ready URL\n")
     sys.exit(124)
 actual_exit = os.waitstatus_to_exitcode(status)
 if actual_exit != 0:
-    sys.stderr.write(f"installed uad web exited {actual_exit}, expected 0\n")
+    sys.stderr.write(f"installed rabi web exited {actual_exit}, expected 0\n")
     sys.exit(125)
 `
 
@@ -454,7 +454,7 @@ class InstalledBundleSmoke {
         `--registry=${this.bundle.manifest.registry}`,
       ], consumerRoot, npmClientEnvironment())
 
-      const bin = resolve(consumerRoot, 'node_modules/@unieai/uad/lib/bin.js')
+      const bin = resolve(consumerRoot, 'node_modules/@unieai/rabi/lib/bin.js')
       assertPathWithin(consumerRoot, bin, 'installed dsh bin')
       const environment = installedArtifactEnvironment(consumerRoot)
       const version = this.runner.capture(
@@ -465,7 +465,7 @@ class InstalledBundleSmoke {
       )
       if (version !== this.bundle.manifest.version) {
         throw new Error(
-          `installed uad --version returned ${JSON.stringify(version)}; `
+          `installed rabi --version returned ${JSON.stringify(version)}; `
           + `expected ${this.bundle.manifest.version}`,
         )
       }

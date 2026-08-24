@@ -1,4 +1,4 @@
-// TCP bridge: 172.17.0.1:3080 (docker0 gateway) -> 127.0.0.1:3080 (uad web).
+// TCP bridge: 172.17.0.1:3080 (docker0 gateway) -> 127.0.0.1:3080 (rabi web).
 //
 // dsh's webserver accepts only 127.0.0.1 or 0.0.0.0 as its bind host, and the
 // CLI hard-blocks 0.0.0.0 ("it would expose remote code execution to the

@@ -48,7 +48,7 @@ export const zh = {
   active: '已挂载',
   failed: '挂载失败',
   unloading: '卸载中',
-  note: '本目录只负责列出。安装插件请使用 uad plugin --profile web add <包名>；启用或停用请改写该 profile 的 cordis.patch.yml。',
+  note: '本目录只负责列出。安装插件请使用 rabi plugin --profile web add <包名>；启用或停用请改写该 profile 的 cordis.patch.yml。',
 } satisfies Record<string, string>
 
 /** Plugin directory locale key union. */
@@ -74,7 +74,7 @@ export const zhTW = {
   active: '已掛載',
   failed: '掛載失敗',
   unloading: '卸載中',
-  note: '本目錄只負責列出。安裝外掛程式請使用 uad plugin --profile web add <套件名>；啟用或停用請改寫該 profile 的 cordis.patch.yml。',
+  note: '本目錄只負責列出。安裝外掛程式請使用 rabi plugin --profile web add <套件名>；啟用或停用請改寫該 profile 的 cordis.patch.yml。',
 } satisfies Record<PluginInventoryLocaleKey, string>
 
 /** Japanese dictionary. */
@@ -99,7 +99,7 @@ export const ja = {
   active: 'マウント済み',
   failed: 'マウント失敗',
   unloading: 'アンロード中',
-  note: 'このカタログは一覧するだけです。プラグインの追加は uad plugin --profile web add <パッケージ名>、有効・無効の切り替えはプロファイルの cordis.patch.yml で行います。',
+  note: 'このカタログは一覧するだけです。プラグインの追加は rabi plugin --profile web add <パッケージ名>、有効・無効の切り替えはプロファイルの cordis.patch.yml で行います。',
 } satisfies Record<PluginInventoryLocaleKey, string>
 
 /** English dictionary checked against the Chinese key set. */
@@ -124,5 +124,5 @@ export const en = {
   active: 'Mounted',
   failed: 'Mount failed',
   unloading: 'Unloading',
-  note: 'This catalogue only lists. Add a plugin to the profile with uad plugin --profile web add <package>, and turn one on or off in that profile’s cordis.patch.yml.',
+  note: 'This catalogue only lists. Add a plugin to the profile with rabi plugin --profile web add <package>, and turn one on or off in that profile’s cordis.patch.yml.',
 } satisfies Record<PluginInventoryLocaleKey, string>

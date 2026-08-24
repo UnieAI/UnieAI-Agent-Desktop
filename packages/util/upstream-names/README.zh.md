@@ -22,7 +22,7 @@
 | `legacyNameFor(name)` | 产品包所响应的上游名称；其他 scope 返回 `undefined`。 |
 | `productNameFor(name)` | 响应某个上游名称的产品包；其他 scope 返回 `undefined`。 |
 | `UPSTREAM_SCOPE` / `UPSTREAM_PREFIX` | `@deepseek-ai` / `dsh`。 |
-| `PRODUCT_SCOPE` / `PRODUCT_PREFIX` | `@unieai` / `uad`。 |
+| `PRODUCT_SCOPE` / `PRODUCT_PREFIX` | `@unieai` / `rabi`。 |
 
 两个函数互为精确的逆运算，并由一项往返测试断言。三条分支覆盖所有名称：无前缀的产品包（`@unieai/uad` ⟷ `@deepseek-ai/dsh`）、带前缀的 harness 包（`@unieai/uad-tools` ⟷ `@deepseek-ai/dsh-tools`），以及内置的框架包——它们不带前缀，只改变 scope（`@unieai/cordis` ⟷ `@deepseek-ai/cordis`）。
 

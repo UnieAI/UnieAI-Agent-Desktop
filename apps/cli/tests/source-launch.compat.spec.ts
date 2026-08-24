@@ -4,12 +4,12 @@ import { execa } from 'execa'
 import { describe, expect, it } from 'vitest'
 
 /**
- * Keyless smoke for SOURCE `uad` execution: run `apps/cli/src/bin.ts`
+ * Keyless smoke for SOURCE `rabi` execution: run `apps/cli/src/bin.ts`
  * with the exact production runtime vector (`node --import tsx/esm`, the
- * vector the root `uad` script invokes directly) and assert the
+ * vector the root `rabi` script invokes directly) and assert the
  * required-config diagnostic. The Node compatibility matrix runs this
  * WHOLE file, so a Node release changing module hooks or TypeScript handling
- * breaks this gate instead of every developer's `pnpm uad`; the built-bin
+ * breaks this gate instead of every developer's `pnpm rabi`; the built-bin
  * suite covers the published `lib/` entry, not this source chain.
  */
 

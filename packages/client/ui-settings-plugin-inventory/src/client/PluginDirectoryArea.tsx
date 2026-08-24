@@ -4,7 +4,7 @@
  * IT LISTS. IT DOES NOT INSTALL, ENABLE, DISABLE OR REMOVE, and it draws no
  * control that would suggest it could. `pluginInventory.list()` is the only
  * plugin RPC that exists on this deployment; installing is a CLI command
- * (`uad plugin --profile web add <spec>`, a pnpm forwarder) and enablement is
+ * (`rabi plugin --profile web add <spec>`, a pnpm forwarder) and enablement is
  * a line in the profile's `cordis.patch.yml`. The reference directory's `+`
  * and `✓` would therefore fail on press, every time, so the trailing column
  * carries a runtime status DOT instead — a mark, not a button — and the

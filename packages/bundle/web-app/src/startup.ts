@@ -1,5 +1,5 @@
 /**
- * The web app's command-line provider: it parses the `uad --profile web` flag
+ * The web app's command-line provider: it parses the `rabi --profile web` flag
  * family (`--host`, `--port`, `--trusted-host`, `--no-open`) and its `--help`
  * text, then provides the immutable values as {@link WEB_STARTUP_SERVICE}.
  * Ordinary rows inject that service before reading it from lazy config.
@@ -45,7 +45,7 @@ interface WebOptions {
  */
 function webCommand(): Command {
   return new Command()
-    .name('uad --profile web')
+    .name('rabi --profile web')
     .description('Serve the DeepSeek Harness browser UI.')
     .helpOption('-h, --help', 'show this help')
     .option('--host <host>', 'bind host')
@@ -54,9 +54,9 @@ function webCommand(): Command {
     .option('--trusted-host <authority...>', 'extra authority the /api browser-trust fence accepts (host or host:port; repeatable)')
     .addHelpText('after', `
 Examples:
-  uad --profile web                          serve on the composed host and port
-  uad --profile web --no-open                serve without opening a browser
-  uad --profile web --port 8080              serve on another port
+  rabi --profile web                          serve on the composed host and port
+  rabi --profile web --no-open                serve without opening a browser
+  rabi --profile web --port 8080              serve on another port
 `)
 }
 

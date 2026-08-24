@@ -10,8 +10,8 @@ describe('naming the same package in both vocabularies', () => {
   })
 
   it('maps the bare product package', () => {
-    expect(legacyNameFor('@unieai/uad')).toBe('@deepseek-ai/dsh')
-    expect(productNameFor('@deepseek-ai/dsh')).toBe('@unieai/uad')
+    expect(legacyNameFor('@unieai/rabi')).toBe('@deepseek-ai/dsh')
+    expect(productNameFor('@deepseek-ai/dsh')).toBe('@unieai/rabi')
   })
 
   it('maps vendored framework packages, which carry no prefix', () => {
@@ -31,7 +31,7 @@ describe('naming the same package in both vocabularies', () => {
 
   it('round-trips, so the two directions cannot disagree', () => {
     for (const name of [
-      '@unieai/uad', '@unieai/uad-tools', '@unieai/uad-client-ui-slots',
+      '@unieai/rabi', '@unieai/uad-tools', '@unieai/uad-client-ui-slots',
       '@unieai/cordis', '@unieai/schemastery', '@unieai/cordis-plugin-hmr',
     ]) {
       expect(productNameFor(legacyNameFor(name) ?? '')).toBe(name)

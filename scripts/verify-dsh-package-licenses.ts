@@ -7,7 +7,15 @@ import { globSync, readFileSync } from 'node:fs'
 import { resolve, sep } from 'node:path'
 
 const ROOT = resolve(import.meta.dirname, '..')
-const DSH_PACKAGE_NAME = /^@unieai\/uad(?:-|$)/
+/**
+ * Repository-owned package names.
+ *
+ * Two spellings, not one prefix: the library packages carry the `uad-` prefix
+ * they were first published under, while the CLI a person installs took the
+ * product's own name. A matcher written as one prefix silently stopped
+ * checking the CLI when that rename happened.
+ */
+const DSH_PACKAGE_NAME = /^@unieai\/(?:uad-|rabi$)/
 
 /** Result of checking every DSH package reachable through the root workspace list. */
 export interface DshPackageLicenseReport {

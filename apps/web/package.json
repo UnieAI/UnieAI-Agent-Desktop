@@ -1,6 +1,6 @@
 {
   "name": "@unieai/uad-web-frontend",
-  "description": "Web application entry: vite build over the @unieai/uad-client-web shell library; dist/ served by apps/cli's uad web",
+  "description": "Web application entry: vite build over the @unieai/uad-client-web shell library; dist/ served by apps/cli's rabi web",
   "version": "0.1.2",
   "publishConfig": {
     "access": "public"

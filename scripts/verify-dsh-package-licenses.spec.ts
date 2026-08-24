@@ -28,9 +28,9 @@ function createWorkspace(): string {
 }
 
 describe('DSH package license gate', () => {
-  it('checks root, unhyphenated CLI, and dsh-prefixed package names while ignoring other families', () => {
+  it('checks root, the named CLI, and prefixed package names while ignoring other families', () => {
     const root = createWorkspace()
-    writeManifest(root, 'apps/cli/package.json', { name: '@unieai/uad', license: 'MIT' })
+    writeManifest(root, 'apps/cli/package.json', { name: '@unieai/rabi', license: 'MIT' })
     writeManifest(root, 'packages/core/agent/package.json', {
       name: '@unieai/uad-agent',
       license: 'BSD-3-Clause',

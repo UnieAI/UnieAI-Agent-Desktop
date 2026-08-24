@@ -22,7 +22,7 @@ Stating the rule twice would let the two drift, and a drift here surfaces as an 
 | `legacyNameFor(name)` | The upstream name a product package answers to, or `undefined` for another scope. |
 | `productNameFor(name)` | The product package that answers to an upstream name, or `undefined` for another scope. |
 | `UPSTREAM_SCOPE` / `UPSTREAM_PREFIX` | `@deepseek-ai` / `dsh`. |
-| `PRODUCT_SCOPE` / `PRODUCT_PREFIX` | `@unieai` / `uad`. |
+| `PRODUCT_SCOPE` / `PRODUCT_PREFIX` | `@unieai` / `rabi`. |
 
 The two functions are exact inverses, asserted by a round-trip test. Three arms cover every name: the bare product package (`@unieai/uad` ⟷ `@deepseek-ai/dsh`), the prefixed harness packages (`@unieai/uad-tools` ⟷ `@deepseek-ai/dsh-tools`), and the vendored framework packages, which carry no prefix and change only their scope (`@unieai/cordis` ⟷ `@deepseek-ai/cordis`).
 

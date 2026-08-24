@@ -1,11 +1,10 @@
 /**
- * Rename the command this CLI installs, from `dsh` to `uad`, and undo it with
- * `--reverse`.
+ * Rename the command this CLI installs: `--from <old> --to <new>`, or
+ * `--reverse` to swap the pair back.
  *
- * The package is `@unieai/uad`, so `npm i -g` installing a command called `dsh`
- * is a name nobody chose reading a name nobody typed. This changes the `bin`
- * key, the diagnostic prefix the harness prints, and every invocation in the
- * documentation.
+ * A command name is what a person types, so it should be the product's name and
+ * nothing else. This changes the `bin` key, the diagnostic prefix the harness
+ * prints, and every invocation in the documentation.
  *
  * WHAT IT DELIBERATELY DOES NOT TOUCH, because these are not the command:
  *
@@ -64,30 +63,29 @@ const TEXT_EXTENSIONS = ['.ts', '.tsx', '.js', '.mjs', '.cjs', '.json', '.md', '
  * backtick — or on what precedes it, so the bare word inside `DSH_HOME`,
  * `~/.dsh`, `dsh.bundle` and `--dsh-scrollbar-thumb` is never a candidate.
  */
-const FORMS: readonly (readonly [RegExp, string])[] = [
-  // `"bin": { "dsh": … }`
-  [/(^\s*")dsh("\s*:\s*"[^"]*bin\.js")/gmu, '$1uad$2'],
-  // Subcommands and flags: `dsh web`, `dsh plugin add`, `dsh --profile x`.
-  [/\bdsh (web|plugin|--profile|--patch|--dump-config|--dump-default-config|--help|--version)\b/gu, 'uad $1'],
-  // Package-manager passthroughs: `pnpm dsh …`, `npm run dsh`.
-  [/\b(pnpm|npm run|yarn) dsh\b/gu, '$1 uad'],
-  // The word alone in code voice: `` `dsh` ``.
-  [/`dsh`/gu, '`uad`'],
-  // The diagnostic prefix constant.
-  [/(const NAME = ')dsh(')/gu, '$1uad$2'],
-  // A shell prompt line in documentation: `$ dsh …`.
-  [/(^\s*\$ )dsh\b/gmu, '$1uad'],
-] as const
-
-/** The same forms, reversed. */
-const REVERSED: readonly (readonly [RegExp, string])[] = [
-  [/(^\s*")uad("\s*:\s*"[^"]*bin\.js")/gmu, '$1dsh$2'],
-  [/\buad (web|plugin|--profile|--patch|--dump-config|--dump-default-config|--help|--version)\b/gu, 'dsh $1'],
-  [/\b(pnpm|npm run|yarn) uad\b/gu, '$1 dsh'],
-  [/`uad`/gu, '`dsh`'],
-  [/(const NAME = ')uad(')/gu, '$1dsh$2'],
-  [/(^\s*\$ )uad\b/gmu, '$1dsh'],
-] as const
+/**
+ * Build the forms in which `name` is the command being run.
+ * @param from - the command name to rewrite.
+ * @param to - the command name to write.
+ * @returns pattern/replacement pairs.
+ */
+function formsFor(from: string, to: string): readonly (readonly [RegExp, string])[] {
+  const word = from.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`)
+  return [
+    // `"bin": { "<from>": … }` and the workspace's own script row.
+    [new RegExp(String.raw`(^\s*")${word}("\s*:\s*"[^"]*bin\.(js|ts)")`, 'gmu'), `$1${to}$2`],
+    // Subcommands and flags: `<from> web`, `<from> plugin add`, `<from> --profile x`.
+    [new RegExp(String.raw`\b${word} (web|plugin|--profile|--patch|--dump-config|--dump-default-config|--help|--version)\b`, 'gu'), `${to} $1`],
+    // Package-manager passthroughs: `pnpm <from> …`, `npm run <from>`.
+    [new RegExp(String.raw`\b(pnpm|npm run|yarn) ${word}\b`, 'gu'), `$1 ${to}`],
+    // The word alone in code voice.
+    [new RegExp('`' + word + '`', 'gu'), `\`${to}\``],
+    // The diagnostic prefix constant.
+    [new RegExp(String.raw`(const NAME = ')${word}(')`, 'gu'), `$1${to}$2`],
+    // A shell prompt line in documentation.
+    [new RegExp(String.raw`(^\s*\$ )${word}\b`, 'gmu'), `$1${to}`],
+  ] as const
+}
 
 /**
  * Rewrite one file's text.
@@ -123,8 +121,20 @@ function files(): string[] {
     .filter(file => TEXT_EXTENSIONS.some(extension => file.endsWith(extension)))
 }
 
-const { values } = parseArgs({ options: { check: { type: 'boolean' }, reverse: { type: 'boolean' } } })
-const forms = values.reverse === true ? REVERSED : FORMS
+const { values } = parseArgs({
+  options: {
+    check: { type: 'boolean' },
+    reverse: { type: 'boolean' },
+    from: { type: 'string' },
+    to: { type: 'string' },
+  },
+})
+if (values.from === undefined || values.to === undefined) {
+  throw new Error('usage: rename-cli-command.ts --from <old> --to <new> [--check] [--reverse]')
+}
+const forms = values.reverse === true
+  ? formsFor(values.to, values.from)
+  : formsFor(values.from, values.to)
 
 let changedFiles = 0
 let changedForms = 0

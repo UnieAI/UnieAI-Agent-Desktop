@@ -25,10 +25,10 @@ git clone https://github.com/UnieAI/UnieAI-Agent-Desktop.git
 cd UnieAI-Agent-Desktop
 pnpm install
 pnpm run build
-pnpm uad web
+pnpm rabi web
 ```
 
-`pnpm uad web` prints the URL it bound and opens a browser. Pass `--no-open` to keep it in the terminal, and `--port <n>` to choose the port instead of the default 3080.
+`pnpm rabi web` prints the URL it bound and opens a browser. Pass `--no-open` to keep it in the terminal, and `--port <n>` to choose the port instead of the default 3080.
 
 Sign in from the account row at the bottom of the sidebar. It runs a device-code flow: the desktop shows a code, you approve it in the web product, and the desktop holds the session from then on.
 
@@ -70,7 +70,7 @@ Leave it `[]` in your own patch to let the first account that signs in claim the
 
 ## The desktop app
 
-`apps/desktop` is an Electron window over a harness it starts itself. It adds no product behaviour: it starts `uad web` on an OS-assigned loopback port, waits for the URL line that server prints, and loads it.
+`apps/desktop` is an Electron window over a harness it starts itself. It adds no product behaviour: it starts `rabi web` on an OS-assigned loopback port, waits for the URL line that server prints, and loads it.
 
 ```sh
 pnpm --filter @unieai/uad-desktop run start

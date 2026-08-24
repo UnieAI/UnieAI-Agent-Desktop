@@ -1,5 +1,5 @@
 {
-  "name": "@unieai/uad",
+  "name": "@unieai/rabi",
   "description": "dsh CLI: profile boot, plugin management, and the browser UI alias",
   "version": "0.1.2",
   "publishConfig": {
@@ -12,7 +12,7 @@
   },
   "type": "module",
   "bin": {
-    "uad": "lib/bin.js"
+    "rabi": "lib/bin.js"
   },
   "files": [
     "lib/*.js",

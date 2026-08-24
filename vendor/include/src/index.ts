@@ -17,7 +17,7 @@ const JsExpr = new yaml.Type('tag:yaml.org,2002:js', {
 /**
  * The entry-list YAML dialect: `!!js` scalars round-trip as expression nodes
  * the Loader evaluates at entry activation. Exported so config tooling
- * (`uad --dump-config`) parses and prints exactly the dialect this include
+ * (`rabi --dump-config`) parses and prints exactly the dialect this include
  * mounts.
  */
 export const entryListSchema = yaml.JSON_SCHEMA.extend(JsExpr)
@@ -43,7 +43,7 @@ function retryableWriteError(error: unknown): boolean {
 /**
  * Apply patch lists to an entry list — THE patch semantics of this include,
  * shared by mounting (`applyPatches`) and offline config tooling
- * (`uad --dump-config`) so a dump can never drift from what boots. The input
+ * (`rabi --dump-config`) so a dump can never drift from what boots. The input
  * is never mutated and the result is always detached from it (even with no
  * patches): patching or mounting shared entry objects would bake earlier
  * values into the cached parse, so repeated application (config hot-reloads)

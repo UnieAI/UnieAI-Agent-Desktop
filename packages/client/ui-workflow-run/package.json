@@ -1,6 +1,6 @@
 {
   "name": "@unieai/uad-client-ui-workflow-run",
-  "description": "Durable workflow-run Conversation Node and nested member disclosure for uad web",
+  "description": "Durable workflow-run Conversation Node and nested member disclosure for rabi web",
   "version": "0.1.2",
   "publishConfig": {
     "access": "public"

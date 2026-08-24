@@ -32,20 +32,37 @@ export const PRODUCT_SCOPE = '@unieai'
 export const PRODUCT_PREFIX = 'uad'
 
 /**
+ * The bare product package — the one a person installs and runs.
+ *
+ * Separate from {@link PRODUCT_PREFIX} because the command took the product's
+ * own name while the library packages kept the `uad-` prefix they were first
+ * published under. Nobody types a library's name, and renaming those would
+ * burn a registry name each to change nothing a user can see.
+ */
+export const PRODUCT_ENTRY = 'rabi'
+
+/** The bare upstream package, which shares its prefix's spelling. */
+export const UPSTREAM_ENTRY = UPSTREAM_PREFIX
+
+/**
  * Rewrite one scoped name between the two vocabularies.
  * @param name - the name to rewrite.
  * @param fromScope - scope the name is expected to carry.
  * @param fromPrefix - prefix inside that scope.
+ * @param fromEntry - bare package name inside that scope.
  * @param toScope - scope to rewrite to.
  * @param toPrefix - prefix inside the target scope.
+ * @param toEntry - bare package name inside the target scope.
  * @returns the rewritten name, or undefined when the name is from another scope.
  */
 function rescope(
-  name: string, fromScope: string, fromPrefix: string, toScope: string, toPrefix: string,
+  name: string,
+  fromScope: string, fromPrefix: string, fromEntry: string,
+  toScope: string, toPrefix: string, toEntry: string,
 ): string | undefined {
   if (!name.startsWith(`${fromScope}/`)) return undefined
   const bare = name.slice(fromScope.length + 1)
-  if (bare === fromPrefix) return `${toScope}/${toPrefix}`
+  if (bare === fromEntry) return `${toScope}/${toEntry}`
   if (bare.startsWith(`${fromPrefix}-`)) return `${toScope}/${toPrefix}-${bare.slice(fromPrefix.length + 1)}`
   // Vendored framework packages (`cordis`, `schemastery`) keep their bare name
   // across the scope change and carry neither prefix.
@@ -58,7 +75,7 @@ function rescope(
  * @returns the upstream name, or undefined when the package is from another scope.
  */
 export function legacyNameFor(name: string): string | undefined {
-  return rescope(name, PRODUCT_SCOPE, PRODUCT_PREFIX, UPSTREAM_SCOPE, UPSTREAM_PREFIX)
+  return rescope(name, PRODUCT_SCOPE, PRODUCT_PREFIX, PRODUCT_ENTRY, UPSTREAM_SCOPE, UPSTREAM_PREFIX, UPSTREAM_ENTRY)
 }
 
 /**
@@ -70,5 +87,5 @@ export function legacyNameFor(name: string): string | undefined {
  * @returns this product's name, or undefined when the name is from another scope.
  */
 export function productNameFor(name: string): string | undefined {
-  return rescope(name, UPSTREAM_SCOPE, UPSTREAM_PREFIX, PRODUCT_SCOPE, PRODUCT_PREFIX)
+  return rescope(name, UPSTREAM_SCOPE, UPSTREAM_PREFIX, UPSTREAM_ENTRY, PRODUCT_SCOPE, PRODUCT_PREFIX, PRODUCT_ENTRY)
 }

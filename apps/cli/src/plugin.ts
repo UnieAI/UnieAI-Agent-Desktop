@@ -1,5 +1,5 @@
 /**
- * `uad plugin --profile <name> <args...>` — profile plugin management as a
+ * `rabi plugin --profile <name> <args...>` — profile plugin management as a
  * thin pnpm forwarder: initialize the profile on first use, run
  * `pnpm <args...>` in the profile directory, then reconcile the
  * `dsh.profile.bundles` layer list against the installed state (a dependency
@@ -7,7 +7,7 @@
  * removed or bundle-less dependency leaves it). Reconciling by installed
  * state, not by dependency diff, means `update` activates a package that
  * gained its `dsh.bundle` declaration in a newer version.
- * @module @unieai/uad/plugin
+ * @module @unieai/rabi/plugin
  */
 
 import { spawnSync } from 'node:child_process'
@@ -25,7 +25,7 @@ import {
 } from '@unieai/uad-app-boot'
 import { INSTALL_ANCHOR } from './profile-boot.ts'
 
-const NAME = 'uad'
+const NAME = 'rabi'
 
 /**
  * Whether a resolved dependency exports a profile patch, i.e. is a bundle.
@@ -98,7 +98,7 @@ function reconcilePlugins(before: ProfileManifest, profileDir: string): void {
  * specs, registry names, and every other pnpm argument pass through
  * untouched.
  * @param argument - one pnpm argument, verbatim from argv.
- * @param cwd - the directory `uad` was invoked from.
+ * @param cwd - the directory `rabi` was invoked from.
  * @returns the argument with a relative path spec anchored to `cwd`.
  */
 function anchorPathSpec(argument: string, cwd: string): string {
@@ -112,7 +112,7 @@ function anchorPathSpec(argument: string, cwd: string): string {
 }
 
 /**
- * Run one `uad plugin` invocation: init if needed, forward to pnpm, reconcile.
+ * Run one `rabi plugin` invocation: init if needed, forward to pnpm, reconcile.
  * @param profile - the profile name.
  * @param args - pnpm arguments with relative path specs anchored to the invoking directory.
  * @returns the pnpm exit code.

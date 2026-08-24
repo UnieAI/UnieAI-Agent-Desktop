@@ -2,13 +2,13 @@
  * Starting the harness this window talks to, and knowing when it is ready.
  *
  * The desktop app is a window over a local server, not a reimplementation of
- * one: it starts the same `uad web` the terminal starts and loads the URL that
+ * one: it starts the same `rabi web` the terminal starts and loads the URL that
  * server reports. So the shell's job is narrow — start it, learn its address,
  * and take it down again — and every product behaviour stays in the harness
  * where the rest of this repository already tests it.
  *
- * READINESS IS THE URL LINE, NOT A TIMER. `uad web` prints
- * `uad web: http://127.0.0.1:<port>` only after the Loader has settled, and
+ * READINESS IS THE URL LINE, NOT A TIMER. `rabi web` prints
+ * `rabi web: http://127.0.0.1:<port>` only after the Loader has settled, and
  * that line exists to be watched: `packages/bundle/web-app/src/index.ts`
  * documents it as the signal supervisors wait for before they call in. A shell
  * that instead slept and hoped would show an error page whenever a machine was
@@ -17,7 +17,7 @@
  *
  * THE PORT IS THE OS'S CHOICE. `--port 0` binds an ephemeral loopback port and
  * the URL line reports the one that was actually taken. A fixed port would
- * collide with a developer already running `uad web`, and picking a number at
+ * collide with a developer already running `rabi web`, and picking a number at
  * random in this process would only move the collision somewhere less visible.
  *
  * THE HOME DIRECTORY IS THE APP'S OWN. `DSH_HOME` decides where profiles,
@@ -30,7 +30,7 @@ import { utilityProcess, type UtilityProcess } from 'electron'
 import { createRequire } from 'node:module'
 
 /** How the harness announces the address it actually bound. */
-const URL_LINE = /^uad web: (http:\/\/\S+)/mu
+const URL_LINE = /^rabi web: (http:\/\/\S+)/mu
 
 /**
  * How long to wait for that line before giving up.
@@ -77,13 +77,13 @@ export interface HarnessEnvironment {
 
 /**
  * Resolve the harness CLI entry inside this app.
- * @returns absolute path of `uad`'s built bin.
+ * @returns absolute path of `rabi`'s built bin.
  */
 export function resolveHarnessEntry(): string {
   const require = createRequire(import.meta.url)
-  // The bin, not a package export: `@unieai/uad` publishes `lib/*.js` and
+  // The bin, not a package export: `@unieai/rabi` publishes `lib/*.js` and
   // declares no `exports` map, so the bin path is the only stable entry.
-  return require.resolve('@unieai/uad/lib/bin.js')
+  return require.resolve('@unieai/rabi/lib/bin.js')
 }
 
 /**

@@ -8,15 +8,15 @@ An Electron window over a harness this app starts and owns. It is UnieAI Agent a
 
 The web GUI already is the product. What a desktop build adds is not features but reach: something a person installs, keeps in a dock, and launches without remembering a command or a port.
 
-So this package deliberately holds no product behaviour. It starts `uad web`, waits for the address that server reports, and loads it. Everything a person then does is the same code the rest of this repository tests — a shell that grew its own features would be a second product with nothing behind it.
+So this package deliberately holds no product behaviour. It starts `rabi web`, waits for the address that server reports, and loads it. Everything a person then does is the same code the rest of this repository tests — a shell that grew its own features would be a second product with nothing behind it.
 
 ## How it starts the harness
 
 Three choices carry most of the design.
 
-**Readiness is the URL line, not a timer.** `uad web` prints `uad web: http://127.0.0.1:<port>` only after the Loader settles, and [`packages/bundle/web-app`](../../packages/bundle/web-app/README.md) documents that line as the signal supervisors wait on. A shell that slept and hoped would show an error page on a slow machine and a blank window on a broken one.
+**Readiness is the URL line, not a timer.** `rabi web` prints `rabi web: http://127.0.0.1:<port>` only after the Loader settles, and [`packages/bundle/web-app`](../../packages/bundle/web-app/README.md) documents that line as the signal supervisors wait on. A shell that slept and hoped would show an error page on a slow machine and a blank window on a broken one.
 
-**The port is the OS's choice.** `--port 0` binds an ephemeral loopback port and the URL line reports the one taken. A fixed port collides with a developer already running `uad web`; picking a random number here would only move that collision somewhere less visible.
+**The port is the OS's choice.** `--port 0` binds an ephemeral loopback port and the URL line reports the one taken. A fixed port collides with a developer already running `rabi web`; picking a random number here would only move that collision somewhere less visible.
 
 **The home directory is the app's own.** `DSH_HOME` points at the packaged app's data directory, so an installed copy and a checkout never write into each other's profiles, credentials or sessions.
 

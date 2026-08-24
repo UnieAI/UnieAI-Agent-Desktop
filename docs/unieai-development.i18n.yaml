@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/unieai-development.md
-unieai-development.md: bae5006823b5c018d1b0f75085ca23fbeae3267f
-unieai-development.zh.md: 9957b4e898bdc1b6ea7256c2a08788c39faa591d
+unieai-development.md: ce7237ff897591ee4f7d7779db96a703dbbe9745
+unieai-development.zh.md: fec9a14e339f181dda30ac3aed03a1f38403ab7f

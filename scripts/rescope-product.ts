@@ -6,13 +6,13 @@
  * scope belongs to DeepSeek. Publishing under it is not merely impolite, it is
  * impossible: npm refuses a scope the publisher does not own. So a fork that
  * wants a registry at all has to be renamed, and it has to be renamed whole —
- * `uad` resolves a profile's bundles by package name at first run, so a CLI
+ * `rabi` resolves a profile's bundles by package name at first run, so a CLI
  * published alone would fetch names that are not there.
  *
  * WHY THE MATCH IS SAFE. Unlike the vendored rescope this is modelled on, every
  * name rewritten here begins with `@unieai/`, a string that means exactly
- * one thing in this repository. There is no `uad` ambiguity to navigate: the
- * `--dsh-*` CSS variables, the `DSH_HOME` environment variable, the `uad web`
+ * one thing in this repository. There is no `rabi` ambiguity to navigate: the
+ * `--dsh-*` CSS variables, the `DSH_HOME` environment variable, the `rabi web`
  * command and the `dsh.bundle` manifest key are all left alone because none of
  * them carries the scope. What the delimiters below add is protection against a
  * PREFIX match — `@unieai/uad` must not rewrite inside
@@ -41,10 +41,10 @@ const TO_SCOPE = '@unieai'
 /**
  * The CLI's own rename, which is not a scope swap.
  *
- * `@unieai/uad` is the name a person types (`npx @unieai/uad web`),
+ * `@unieai/uad` is the name a person types (`npx @unieai/rabi web`),
  * and this product is Rabi Desktop. Its siblings follow it so the whole
- * scope reads as one product rather than a CLI called `uad` surrounded by
- * dependencies still called `uad`.
+ * scope reads as one product rather than a CLI called `rabi` surrounded by
+ * dependencies still called `rabi`.
  */
 const FROM_PREFIX = 'dsh'
 

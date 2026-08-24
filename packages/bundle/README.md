@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Profile bundles: npm packages whose manifest declares `"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }`, making them installable patch layers for `uad --profile` compositions ([profile contract](../boot/app-boot/README.md#profiles)). A bundle's substance is its patch list; some also ship runtime glue plugins their patch mounts.
+Profile bundles: npm packages whose manifest declares `"dsh": { "bundle": { "patch": "./cordis.patch.yml" } }`, making them installable patch layers for `rabi --profile` compositions ([profile contract](../boot/app-boot/README.md#profiles)). A bundle's substance is its patch list; some also ship runtime glue plugins their patch mounts.
 
 The manifest declaration, not this directory, defines Bundle identity. Domain packages can carry their own optional Profile layer; the [Codex and Claude Code subagent packages](../subagent/README.md) are directly installable examples.
 
@@ -12,4 +12,4 @@ The manifest declaration, not this directory, defines Bundle identity. Domain pa
 | [`web-app/`](web-app/README.md) | Browser surface: web patch layer + runtime glue plugin | mounts rows |
 | [`headless/`](headless/README.md) | Direct one-shot task mode over base, with no Host or Web layer | mounts `headless-runner` |
 
-In-box bundles resolve from the dsh installation; out-of-tree bundles install into a profile through `uad plugin --profile <name> add <package>`.
+In-box bundles resolve from the dsh installation; out-of-tree bundles install into a profile through `rabi plugin --profile <name> add <package>`.

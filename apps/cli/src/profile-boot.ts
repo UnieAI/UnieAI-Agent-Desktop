@@ -1,5 +1,5 @@
 /**
- * Shared profile boot for every `uad` surface: resolve the profile, stack its
+ * Shared profile boot for every `rabi` surface: resolve the profile, stack its
  * patch layers (bundle layers in `dsh.profile.bundles` order, the profile's
  * own `cordis.patch.yml`, `--patch` overlays, the telemetry switch), mount the
  * tree over the profile's empty root config, keep the profile patch layer
@@ -8,7 +8,7 @@
  * App flags are not the launcher's business: the invocation's inner arguments
  * are provided to the tree through `ctx.cmdlineArgs`, where any injected app
  * plugin may read the same immutable snapshot.
- * @module @unieai/uad/profile-boot
+ * @module @unieai/rabi/profile-boot
  */
 
 import { writeFileSync } from 'node:fs'
@@ -38,7 +38,7 @@ import { DSH_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@uni
 import { provideCmdline } from '@unieai/uad-cmdline'
 import { createProcessShutdown, type ProcessShutdown } from './process-shutdown.ts'
 
-const NAME = 'uad'
+const NAME = 'rabi'
 
 /**
  * The home-level user patch layer (`$DSH_HOME/cordis.patch.yml`), applied

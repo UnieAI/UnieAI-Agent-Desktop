@@ -1,7 +1,7 @@
 /**
  * The three independent publish sequences this repository releases from
  * (`packages/` + `apps/`, `vendor/`, and `native/`) and the two this module
- * owns: `uad` and `vendor`. Each family carries its own version baseline, tag
+ * owns: `rabi` and `vendor`. Each family carries its own version baseline, tag
  * naming, and publish set, so releasing one never republishes another
  * ([rationale](../../.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
  *
@@ -356,7 +356,7 @@ class DshFamily extends ReleaseFamily {
     validateTarballPayload(files, member.name)
   }
 
-  readonly installedEntry = { packageName: '@unieai/uad', binPath: 'lib/bin.js' }
+  readonly installedEntry = { packageName: '@unieai/rabi', binPath: 'lib/bin.js' }
 }
 
 /** `vendor/*`: every package keeps its own version line, so every package has its own tag. */

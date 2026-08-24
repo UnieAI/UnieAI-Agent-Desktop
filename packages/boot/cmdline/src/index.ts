@@ -21,7 +21,7 @@ import type { Context } from '@unieai/cordis'
 
 /**
  * The invocation's inner arguments: everything after the launcher's own flags,
- * verbatim and in argv order. `uad --profile tui --resume abc` yields
+ * verbatim and in argv order. `rabi --profile tui --resume abc` yields
  * `['--resume', 'abc']`.
  */
 export interface CmdlineArgs {

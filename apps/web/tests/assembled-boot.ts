@@ -81,7 +81,7 @@ function resolveClientExport(packagePath: string, pkg: ClientPackageManifest): s
   return resolve(dirname(packagePath), relative)
 }
 
-/** Derive the assembled browser graph from the same bundle patches and package declarations as `uad web`. */
+/** Derive the assembled browser graph from the same bundle patches and package declarations as `rabi web`. */
 function loadAssembledPlugins(): readonly AssembledPlugin[] {
   const entries = appBoot.composeEntries(BUNDLE_LAYERS.map(layer =>
     appBoot.loadOverlayPatches('assembled boot', layer.patch)))

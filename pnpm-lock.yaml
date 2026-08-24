@@ -358,7 +358,7 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@unieai/uad':
+      '@unieai/rabi':
         specifier: workspace:^
         version: link:../cli
       electron-updater:

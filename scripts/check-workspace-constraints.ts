@@ -57,7 +57,7 @@ const releaseMemberDirectory = /^(?:packages\/(?!experimental\/)[^/]+\/[^/]+|app
 
 const localArtifactDirs = new Set(['node_modules'])
 const appPackageFiles: Readonly<Record<string, readonly string[]>> = {
-  '@unieai/uad': ['lib/*.js', 'config'],
+  '@unieai/rabi': ['lib/*.js', 'config'],
   // The Web build emits sourcemaps for browser debugging; publishing them is
   // what the payload policy forbids, so the bundle ships without them.
   '@unieai/uad-web-frontend': ['dist', '!dist/**/*.map'],
