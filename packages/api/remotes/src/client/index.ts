@@ -44,7 +44,7 @@ export type {
   RpcRequest, RpcResponse, RpcResult, SessionId, SessionModels, SessionSearchItem,
   SessionSummary, SettingsNamespaceView, SettingsPathOpView, SkillEntry, StreamChunk,
   SubagentAddress, SubagentCatalog, JobView, ToolCallView, ToolEventView, ToolResultView,
-  WorkspaceId, WorkspaceView,
+  WorkspaceEntry, WorkspaceFile, WorkspaceId, WorkspaceListing, WorkspaceView,
 } from '@unieai/uad-client-connection/client'
 export type {} from '@unieai/uad-api-gateway/client'
 export type {} from '@unieai/uad-cordis-host-runner/remote'

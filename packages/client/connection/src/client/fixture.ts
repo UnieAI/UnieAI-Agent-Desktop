@@ -2639,6 +2639,28 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
           truncated: false,
         })
       },
+      readWorkspaceFile: request => ok(request, {
+        root: request.payload.root, path: request.payload.path, size: 0, text: '',
+      }),
+
+      listWorkspaceEntries: (request) => {
+        const target = request.payload.path ?? request.payload.root
+        const children = childrenOf(target)
+        if (children === undefined) {
+          return err(request, { code: 'directory-unreadable', message: `cannot list ${target}: not in the fixture tree`, details: { path: target } })
+        }
+        return ok(request, {
+          root: request.payload.root,
+          path: target,
+          entries: [...children].sort((a, b) => a.localeCompare(b)).map(name => ({
+            name,
+            path: target === '/' ? `/${name}` : `${target}/${name}`,
+            kind: 'directory' as const,
+          })),
+          truncated: false,
+        })
+      },
+
       createDirectory: (request) => {
         const parent = request.payload.path
         const children = childrenOf(parent)
@@ -3175,6 +3197,8 @@ export class FixtureApiClient extends AbstractApiClient {
     signal: AbortSignal,
   ): Promise<RpcResponse<unknown>> {
     switch (method) {
+      case 'host.listWorkspaceEntries': return this.api.host.listWorkspaceEntries(request as never, signal)
+      case 'host.readWorkspaceFile': return this.api.host.readWorkspaceFile(request as never, signal)
       case 'session.list': return this.api.sessions.list(request)
       case 'session.search': return this.api.sessions.search(request, signal)
       case 'session.create': return this.api.sessions.create(request)

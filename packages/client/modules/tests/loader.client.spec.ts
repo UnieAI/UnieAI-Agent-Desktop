@@ -225,6 +225,35 @@ describe('require resolution', () => {
     await expect(b.loader.import('a', '', {})).rejects.toThrow('require("ghost") missed the module table')
   })
 
+  it('require answers an upstream specifier from the seed', async () => {
+    // A plugin published for the upstream harness externalizes the names that
+    // harness publishes; every one of them was renamed in this product.
+    const cordis = { marker: 'cordis' }
+    const b = bench([row('a')], {
+      a: req => ({ dep: req('@deepseek-ai/cordis') }),
+    }, { seed: { '@unieai/cordis': cordis } })
+    const exports = await b.loader.import('a', '', {})
+    expect((exports as { dep: unknown }).dep).toBe(cordis)
+  })
+
+  it('require answers an upstream specifier from a registered package row', async () => {
+    const b = bench([row('a'), row('@unieai/uad-client-runtime')], {
+      a: req => ({ dep: req('@deepseek-ai/dsh-client-runtime') }),
+      '@unieai/uad-client-runtime': () => ({ marker: 'runtime' }),
+    })
+    await b.loader.prefetch('@unieai/uad-client-runtime')
+    const exports = await b.loader.import('a', '', {})
+    expect((exports as { dep: { marker: string } }).dep.marker).toBe('runtime')
+  })
+
+  it('an upstream specifier whose product package is absent is still loud', async () => {
+    // The rename is structural, so a mapped name is a candidate to try, never
+    // proof the package exists.
+    const b = bench([row('a')], { a: req => ({ dep: req('@deepseek-ai/dsh-nonexistent') }) })
+    await expect(b.loader.import('a', '', {}))
+      .rejects.toThrow('require("@deepseek-ai/dsh-nonexistent") missed the module table')
+  })
+
   it('a require cycle is fatal', async () => {
     const b = bench([row('a'), row('b')], {
       a: req => ({ dep: req('b') }),

@@ -4,7 +4,10 @@
  * empty-root composition, and the installation module-fallback healing.
  */
 
-import { lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+  existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -268,5 +271,102 @@ describe('healProfilesModuleFallback', () => {
     healProfilesModuleFallback(anchor, home) // second healer sees the correct link
     const fallback = join(home, 'profiles', 'node_modules')
     expect(lstatSync(join(fallback, 'dsh-app')).isSymbolicLink()).toBe(true)
+  })
+
+  it('answers to the upstream name of every product-scoped package', () => {
+    // A plugin published for the upstream harness names its peers
+    // `@deepseek-ai/dsh-*`; nothing else about it is incompatible.
+    const anchor = stageInstallation({ '@unieai/uad-tools': {}, 'plain-lib': {} })
+    const home = tmp()
+    healProfilesModuleFallback(anchor, home)
+    const forwarder = join(home, 'profiles', 'node_modules', '@deepseek-ai', 'dsh-tools')
+    expect(readFileSync(join(forwarder, 'index.js'), 'utf8')).toBe('export * from "@unieai/uad-tools"\n')
+    // A real directory, not a symlink: under Electron's --preserve-symlinks a
+    // symlink alias would load a second copy of the package.
+    expect(lstatSync(forwarder).isSymbolicLink()).toBe(false)
+  })
+
+  it('leaves a package from another scope unaliased', () => {
+    const anchor = stageInstallation({ 'plain-lib': {} })
+    const home = tmp()
+    healProfilesModuleFallback(anchor, home)
+    expect(existsSync(join(home, 'profiles', 'node_modules', '@deepseek-ai'))).toBe(false)
+  })
+
+  it('rewrites nothing on a second heal', () => {
+    const anchor = stageInstallation({ '@unieai/uad-tools': {} })
+    const home = tmp()
+    healProfilesModuleFallback(anchor, home)
+    const file = join(home, 'profiles', 'node_modules', '@deepseek-ai', 'dsh-tools', 'index.js')
+    const before = statSync(file).mtimeMs
+    healProfilesModuleFallback(anchor, home)
+    // Healing runs at every launch; churning mtimes would defeat any watcher
+    // downstream of the fallback.
+    expect(statSync(file).mtimeMs).toBe(before)
+  })
+
+  it('carries a default export through, and survives a package with no declarations', () => {
+    const anchor = stageInstallation({ '@unieai/uad-service': {}, '@unieai/uad-unbuilt': {} })
+    const modules = join(anchor, '..', 'node_modules')
+    // A service package default-exports its class; a function plugin does not,
+    // and `export *` alone would drop the class.
+    const service = join(modules, '@unieai/uad-service')
+    writeFileSync(join(service, 'package.json'), JSON.stringify({
+      name: '@unieai/uad-service', version: '0.0.0',
+      exports: { '.': { types: './lib/index.d.ts', default: './lib/index.js' } },
+    }))
+    mkdirSync(join(service, 'lib'), { recursive: true })
+    writeFileSync(join(service, 'lib', 'index.d.ts'), 'export default class Service {}\n')
+    // Declarations that were never built: the subpath still forwards its names.
+    // A subpath given as a bare path states no declarations at all.
+    writeFileSync(join(modules, '@unieai/uad-unbuilt', 'package.json'), JSON.stringify({
+      name: '@unieai/uad-unbuilt', version: '0.0.0',
+      exports: { '.': { types: './lib/types/index.d.ts', default: './lib/index.js' }, './raw': './lib/raw.js' },
+    }))
+    const home = tmp()
+    healProfilesModuleFallback(anchor, home)
+    const fallback = join(home, 'profiles', 'node_modules', '@deepseek-ai')
+    expect(readFileSync(join(fallback, 'dsh-service', 'index.js'), 'utf8'))
+      .toContain('export { default } from "@unieai/uad-service"')
+    expect(readFileSync(join(fallback, 'dsh-unbuilt', 'index.js'), 'utf8'))
+      .toBe('export * from "@unieai/uad-unbuilt"\n')
+    expect(readFileSync(join(fallback, 'dsh-unbuilt', 'raw.js'), 'utf8'))
+      .toBe('export * from "@unieai/uad-unbuilt/raw"\n')
+  })
+
+  it('clears a dangling link left at an upstream name by an earlier heal', () => {
+    // A link whose package vanished is invisible to resolution but fatal to
+    // mkdir, which fails ENOENT rather than seeing a directory. Healing must
+    // not abort the whole boot over one stale link nobody can reach.
+    const anchor = stageInstallation({ '@unieai/uad-tools': {} })
+    const home = tmp()
+    const legacy = join(home, 'profiles', 'node_modules', '@deepseek-ai')
+    mkdirSync(legacy, { recursive: true })
+    symlinkSync(join(tmp(), 'vanished'), join(legacy, 'dsh-tools'), 'junction')
+    healProfilesModuleFallback(anchor, home)
+    expect(readFileSync(join(legacy, 'dsh-tools', 'index.js'), 'utf8'))
+      .toBe('export * from "@unieai/uad-tools"\n')
+  })
+
+  it('leaves an upstream name to the upstream package that is actually installed', () => {
+    // Both names reach the fallback: `@deepseek-ai/dsh-tools` because the app
+    // depends on it, and `@unieai/uad-tools` because it is ours. The real
+    // dependency keeps the name; a forwarder would swap it for an alias of a
+    // different package.
+    const anchor = stageInstallation({ '@unieai/uad-tools': {}, '@deepseek-ai/dsh-tools': {} })
+    const home = tmp()
+    healProfilesModuleFallback(anchor, home)
+    const claimed = join(home, 'profiles', 'node_modules', '@deepseek-ai', 'dsh-tools')
+    expect(lstatSync(claimed).isSymbolicLink()).toBe(true)
+    expect(existsSync(join(claimed, 'index.js'))).toBe(false)
+  })
+
+  it('refuses to overwrite a package someone installed at the upstream name', () => {
+    const anchor = stageInstallation({ '@unieai/uad-tools': {} })
+    const home = tmp()
+    const installed = join(home, 'profiles', 'node_modules', '@deepseek-ai', 'dsh-tools')
+    mkdirSync(installed, { recursive: true })
+    writeFileSync(join(installed, 'package.json'), JSON.stringify({ name: '@deepseek-ai/dsh-tools' }))
+    expect(() => { healProfilesModuleFallback(anchor, home) }).toThrow('is an installed package')
   })
 })

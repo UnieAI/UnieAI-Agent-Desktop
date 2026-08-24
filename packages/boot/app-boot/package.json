@@ -32,7 +32,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "js-yaml": "^4.2.0"
+    "js-yaml": "^4.2.0",
+    "@unieai/uad-upstream-names": "workspace:^"
   },
   "peerDependencies": {
     "@unieai/cordis-plugin-group": "workspace:^",

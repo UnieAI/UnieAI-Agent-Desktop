@@ -4,6 +4,7 @@
  * documented on the public interfaces in `./manifest.ts`; this file owns the
  * state tables and the load/materialize machinery.
  */
+import { productNameFor } from '@unieai/uad-upstream-names'
 import { stripClientSuffix } from './manifest.ts'
 import type {
   BootManifest, BootModuleRow, ClientBundleRegistration, ClientModuleLoader, ClientModuleRecord,
@@ -179,6 +180,17 @@ export class ClientModuleSystem implements ClientModuleLoader {
       const record = this.loadCache.get(id)
       if (record !== undefined) return record.exports
       if (this.factories.has(id)) return this.materialize(id).exports
+      // A plugin published for the upstream harness externalizes the names that
+      // harness publishes; this product renamed every one of them. The request
+      // is answered under the product name rather than rejected, and a specifier
+      // that matches neither still fails loud below.
+      const renamed = productNameFor(id)
+      if (renamed !== undefined) {
+        if (this.seed.has(renamed)) return this.seed.get(renamed)
+        const renamedRecord = this.loadCache.get(renamed)
+        if (renamedRecord !== undefined) return renamedRecord.exports
+        if (this.factories.has(renamed)) return this.materialize(renamed).exports
+      }
       throw new Error(
         `client-modules: require("${spec}") missed the module table — not a platform seed word, not a materialized module, `
         + 'and no registered package factory (a build-time externals drift, or a dynamic dependency that did not arrive)',

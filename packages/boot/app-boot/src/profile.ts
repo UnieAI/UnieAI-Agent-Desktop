@@ -31,6 +31,11 @@ import type { EntryOptions } from '@unieai/cordis-plugin-loader'
 import { applyEntryPatches, type PatchOptions } from '@unieai/cordis-plugin-include'
 import { resolveDshHome } from '@unieai/uad-home-paths'
 import { loadOverlayPatches } from './index.ts'
+import { legacyNameFor } from '@unieai/uad-upstream-names'
+import {
+  declaresDefaultExport, FORWARDER_MARKER, forwarderFiles, forwardable,
+  type ForwardedSubpath,
+} from './legacy-alias.ts'
 
 /** Directory under the Harness home holding every profile. */
 export const PROFILES_DIR = 'profiles'
@@ -251,6 +256,98 @@ export function healProfilesModuleFallback(installAnchor: string, home: string =
     const link = join(modulesDir, packageName)
     mkdirSync(dirname(link), { recursive: true })
     ensureSymlink(link, target)
+  }
+  // Forwarders are written after every link, so a legacy name that a real
+  // package in the closure already claims is visible here and left alone.
+  for (const [packageName, target] of links) {
+    ensureLegacyForwarder(modulesDir, packageName, target, links)
+  }
+}
+
+/**
+ * Whether the module a subpath resolves to has a default export.
+ *
+ * Read from the subpath's type declaration rather than by importing it:
+ * healing runs at every launch, and importing each package to inspect its
+ * namespace would execute plugin top-level code before the Loader decides
+ * anything should load.
+ * @param targetDir - the target package's real directory.
+ * @param condition - the exports-map value for the subpath.
+ * @returns true when the declaration states a default export.
+ */
+function subpathHasDefault(targetDir: string, condition: unknown): boolean {
+  const types = typeof condition === 'object' && condition !== null
+    ? (condition as { types?: unknown }).types
+    : undefined
+  if (typeof types !== 'string') return false
+  try {
+    return declaresDefaultExport(readFileSync(join(targetDir, types), 'utf8'))
+  } catch {
+    // An unbuilt package has no declarations to read. Reporting no default is
+    // the conservative answer: `export *` still forwards every named export,
+    // and the Loader's `exports.default ?? exports` falls through to those.
+    return false
+  }
+}
+
+/**
+ * Write the forwarder package that answers to `packageName`'s upstream name.
+ *
+ * Idempotent: a file already holding the intended text is left alone, so the
+ * per-launch heal does not churn mtimes. A directory that is not a generated
+ * forwarder is never overwritten — that is someone's installed package, and
+ * silently replacing it would be the one failure this whole mechanism exists
+ * to avoid.
+ * @param modulesDir - the flat fallback directory.
+ * @param packageName - the product package name.
+ * @param targetDir - that package's real directory.
+ * @param claimed - every package name the fallback links, so a legacy name an
+ * installed package already answers to is never taken from it.
+ */
+function ensureLegacyForwarder(
+  modulesDir: string, packageName: string, targetDir: string, claimed: ReadonlyMap<string, string>,
+): void {
+  const legacyName = legacyNameFor(packageName)
+  if (legacyName === undefined) return
+  // The upstream package is genuinely installed and linked under its own name.
+  // It, not an alias for our rename of it, is what this installation depends
+  // on, and shadowing it would swap a real dependency for a forwarder.
+  if (claimed.has(legacyName)) return
+  const manifest = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf8')) as {
+    exports?: Record<string, unknown>
+  }
+  const entries = Object.entries(manifest.exports ?? { '.': {} })
+  const subpaths: ForwardedSubpath[] = entries
+    .filter(([subpath]) => forwardable(subpath))
+    .map(([subpath, condition]) => ({ subpath, hasDefault: subpathHasDefault(targetDir, condition) }))
+  const dir = join(modulesDir, legacyName)
+  // An earlier heal may have linked this name for a package that has since
+  // vanished. Such a link is dangling — invisible to resolution, and fatal to
+  // `mkdirSync`, which fails ENOENT rather than seeing a directory. Clear it:
+  // a link the closure no longer claims has no owner left to protect.
+  let existing
+  try {
+    existing = lstatSync(dir)
+  } catch {
+    // Nothing there, which is the ordinary first-run case.
+    existing = undefined
+  }
+  if (existing?.isSymbolicLink() === true) unlinkSync(dir)
+  const manifestPath = join(dir, 'package.json')
+  if (existsSync(manifestPath)) {
+    const existing = JSON.parse(readFileSync(manifestPath, 'utf8')) as Record<string, unknown>
+    if (existing[FORWARDER_MARKER] !== true) {
+      throw new Error(
+        `dsh: ${dir} is an installed package, not a generated forwarder; `
+        + `remove it so dsh can map ${legacyName} onto ${packageName}`,
+      )
+    }
+  }
+  mkdirSync(dir, { recursive: true })
+  for (const [file, contents] of forwarderFiles(legacyName, packageName, subpaths)) {
+    const path = join(dir, file)
+    if (existsSync(path) && readFileSync(path, 'utf8') === contents) continue
+    writeFileSync(path, contents)
   }
 }
 

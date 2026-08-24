@@ -146,6 +146,10 @@ export class FakeApiClient implements IApiClient {
     pickDirectory: payload => this.record('host.pickDirectory', payload, this.onPickDirectory(payload)),
     listDirectory: payload => this.record('host.listDirectory', payload, this.onListDirectory(payload)),
     createDirectory: payload => this.record('host.createDirectory', payload, this.onCreateDirectory(payload)),
+    listWorkspaceEntries: payload => this.record('host.listWorkspaceEntries', payload,
+      Promise.resolve({ rpcId: RpcId('fake'), result: { ok: true as const, value: { root: '/w', path: '/w', entries: [], truncated: false } } })),
+    readWorkspaceFile: payload => this.record('host.readWorkspaceFile', payload,
+      Promise.resolve({ rpcId: RpcId('fake'), result: { ok: true as const, value: { root: '/w', path: '/w/a', size: 0, text: '' } } })),
     openPath: payload => this.record('host.openPath', payload, this.onOpenPath(payload)),
   }
 
