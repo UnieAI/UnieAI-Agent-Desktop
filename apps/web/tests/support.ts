@@ -106,7 +106,7 @@ export async function connectFreshWorkspaceZh(page: Page, root: string, name = '
   await pathInput.fill(join(root, name))
   await pathInput.press('Enter')
   await dialog.getByRole('button', { name: '打开', exact: true }).click()
-  await page.locator('textarea:enabled[placeholder="描述你想要构建的内容"]')
+  await page.locator('textarea:enabled[placeholder="什么都能做…"]')
     .waitFor({ timeout: 15_000 })
 }
 

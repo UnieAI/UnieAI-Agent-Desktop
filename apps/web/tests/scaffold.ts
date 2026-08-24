@@ -77,11 +77,11 @@ import { REPO_ROOT, requireDist } from './support.ts'
 // } from '@unieai/uad-client-ui-settings-models'
 export const WELCOME_NOTICE_SETTINGS_NAMESPACE = 'ui-onboarding'
 export const WELCOME_NOTICE_ACK_FIELD = 'welcomeNoticeVersion'
-export const WELCOME_NOTICE_VERSION = '2026-08-13.1'
+export const WELCOME_NOTICE_VERSION = '2026-08-22.unieai.1'
 export const WELCOME_NOTICE_COPY = {
   zh: {
-    title: '内测声明',
-    body: 'DeepSeek Harness 目前的 0.1 版本仍处在面向 Harness 开发者进行测试的阶段，还有许多地方需要持续改进和打磨，希望听取广大开发者的反馈建议。预计 DeepSeek Harness 的核心插件以及基础 API 都会在接下来的一段时间内快速迭代、持续演化。\n\n我们期待与全球开发者一起，在开源、开放、可复用、可组合的基础设施之上，共同探索智能上限。欢迎全球 Harness 开发者加入 DSH 插件生态。',
+    title: '开发者预览',
+    body: 'Rabi 目前处于开发者预览阶段，功能与接口都会持续快速演进，过程中可能出现不兼容的变更。\n\n它构建在开源、可组合的插件式基础设施之上：模型、工具、会话记录乃至智能体循环本身都是可替换的插件。欢迎在使用中提出反馈，与我们一起把它打磨得更好。',
     continueLabel: '继续',
   },
 } as const

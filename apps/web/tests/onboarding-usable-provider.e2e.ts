@@ -1,9 +1,11 @@
-// Keyless browser e2e: a user who configures some OTHER provider is not asked
-// for the official DeepSeek key again, and the first-run setup card is a card
-// they can close. The shipped DeepSeek adapter stays mounted without a
-// credential throughout, so the only thing that ends onboarding here is the
-// pi-ai route the user configures through the real wire. Zero model calls:
-// configuration is pure settings/credentials/llm-domain traffic.
+// Keyless browser e2e: the Models page's first-run setup card is a card the
+// user can close, and it stops offering itself once some OTHER provider can
+// serve requests. Rabi asks for no key at startup — the account supplies the
+// models — so this posture lives entirely on the page. The shipped DeepSeek
+// adapter stays mounted without a credential throughout, so the only thing
+// that settles the page here is the pi-ai route the user configures through
+// the real wire. Zero model calls: configuration is pure
+// settings/credentials/llm-domain traffic.
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
@@ -19,9 +21,8 @@ import { ZH_BROWSER_LOCALE, saveFailureShot } from './support.ts'
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/onboarding-usable-provider', import.meta.url))
 const DISMISSED_EXPECTED = join(SNAPSHOT_DIR, 'dismissed.expected.md')
 const MODE = webSnapshotMode()
-const CREDENTIAL_STEP = '添加一个 API Key 开始使用'
 
-describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-run onboarding', () => {
+describe.skipIf(MODE === 'record')('web e2e: another usable provider settles the Models first-run card', () => {
   let scaffold: WebScaffold
   let browser: Browser
   let page: Page
@@ -44,16 +45,14 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
 
   it('closes the setup card without discarding the add card beside it', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-onboarding-setup-card-cancel'))
-    const credentialStep = page.getByRole('dialog', { name: CREDENTIAL_STEP })
-    await credentialStep.waitFor({ timeout: 15_000 })
-    await credentialStep.getByRole('button', { name: '稍后配置' }).click()
-    await credentialStep.waitFor({ state: 'detached', timeout: 15_000 })
+    // Nothing takes the screen over on a keyless first run: the app is
+    // interactive immediately and the setup card waits inside Settings.
+    expect(await page.locator('#root').evaluate(root => (root as HTMLElement).inert)).toBe(false)
+    expect(await page.getByRole('dialog').count()).toBe(0)
 
     await page.getByRole('button', { name: '设置', exact: true }).click()
     const settings = page.getByRole('dialog', { name: '设置' })
     await settings.waitFor({ timeout: 10_000 })
-    // The onboarding step no longer navigates into Settings on dismissal, so
-    // enter the Models section explicitly before exercising its normal cards.
     await settings.getByRole('button', { name: '模型' }).click()
     const setupKey = settings.getByRole('textbox', { name: 'API 密钥', exact: true })
     await setupKey.waitFor({ timeout: 10_000 })
@@ -85,7 +84,7 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
-  it('stops prompting for DeepSeek once the other provider can serve requests', async () => {
+  it('stops offering the DeepSeek setup card once the other provider can serve requests', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-onboarding-other-provider'))
     const settings = page.getByRole('dialog', { name: '设置' })
     await settings.getByRole('textbox', { name: 'API 密钥', exact: true }).fill('sk-e2e-minimax')
@@ -103,16 +102,12 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     await page.reload({ waitUntil: 'load' })
     acknowledgeReloadConnectionLoss(tripwire, warningsBefore)
     await page.waitForSelector('[class*="frame"]', { timeout: 15_000 })
-    // The regression: the step read only the official route's credential, so a
-    // fully configured user was taken over on every blank session.
-    await expect.poll(
-      async () => page.getByRole('dialog', { name: CREDENTIAL_STEP }).count(),
-      { timeout: 10_000 },
-    ).toBe(0)
     expect(await page.locator('#root').evaluate(root => (root as HTMLElement).inert)).toBe(false)
 
-    // The Models page agrees: DeepSeek stays a row rather than reopening its
-    // setup card over a user who already has somewhere to send a request.
+    // The regression this pins: the posture read only the official route's
+    // credential, so a fully configured user met the setup card again. DeepSeek
+    // stays a row rather than reopening its card over a user who already has
+    // somewhere to send a request.
     await page.getByRole('button', { name: '设置', exact: true }).click()
     await settings.waitFor({ timeout: 10_000 })
     await settings.getByRole('button', { name: '模型' }).click()
