@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-ui-unieai-providers",
   "description": "UnieAI API Provider settings section: the account's cloud providers, mirrored from the web product and added back to it",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publishConfig": {
     "access": "public"
   },
