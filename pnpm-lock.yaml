@@ -129,6 +129,9 @@ importers:
       '@unieai/cordis':
         specifier: workspace:^
         version: link:../../vendor/cordis
+      '@unieai/cordis-plugin-group':
+        specifier: workspace:^
+        version: link:../../vendor/group
       '@unieai/cordis-plugin-hmr':
         specifier: workspace:^
         version: link:../../vendor/hmr
@@ -361,6 +364,60 @@ importers:
       '@unieai/rabi':
         specifier: workspace:^
         version: link:../cli
+      '@unieai/uad-anonymous-user-id':
+        specifier: workspace:^
+        version: link:../../packages/identity/anonymous-user-id
+      '@unieai/uad-atomic-write':
+        specifier: workspace:^
+        version: link:../../packages/util/atomic-write
+      '@unieai/uad-authorization':
+        specifier: workspace:^
+        version: link:../../packages/credentials/authorization
+      '@unieai/uad-bash-local':
+        specifier: workspace:^
+        version: link:../../packages/shell/bash-local
+      '@unieai/uad-code-runtime':
+        specifier: workspace:^
+        version: link:../../packages/code-runtime/code-runtime
+      '@unieai/uad-compaction':
+        specifier: workspace:^
+        version: link:../../packages/compaction/compaction
+      '@unieai/uad-fs':
+        specifier: workspace:^
+        version: link:../../packages/fs/fs
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../packages/runtime-diagnostics/invariants
+      '@unieai/uad-output-retention':
+        specifier: workspace:^
+        version: link:../../packages/util/output-retention
+      '@unieai/uad-sandbox':
+        specifier: workspace:^
+        version: link:../../packages/sandbox/sandbox
+      '@unieai/uad-scope':
+        specifier: workspace:^
+        version: link:../../packages/core/scope
+      '@unieai/uad-session-telemetry':
+        specifier: workspace:^
+        version: link:../../packages/session/session-telemetry
+      '@unieai/uad-session-title-llm':
+        specifier: workspace:^
+        version: link:../../packages/session/session-title-llm
+      '@unieai/uad-shell':
+        specifier: workspace:^
+        version: link:../../packages/shell/shell
+      '@unieai/uad-spill':
+        specifier: workspace:^
+        version: link:../../packages/spill/spill
+      '@unieai/uad-subagent-in-process-driver':
+        specifier: workspace:^
+        version: link:../../packages/subagent/subagent-in-process-driver
+      '@unieai/uad-timeout':
+        specifier: workspace:^
+        version: link:../../packages/util/timeout
+      '@unieai/uad-workflow':
+        specifier: workspace:^
+        version: link:../../packages/workflow/workflow
       electron-updater:
         specifier: ^6.8.9
         version: 6.8.9
@@ -775,6 +832,14 @@ importers:
         specifier: workspace:*
         version: link:../packages/workflow/workflow-worker-thread
 
+  native/chromium/packages/darwin-arm64: {}
+
+  native/chromium/packages/darwin-x64: {}
+
+  native/chromium/packages/linux-x64: {}
+
+  native/chromium/packages/win32-x64: {}
+
   native/landlock-run:
     devDependencies:
       '@types/node':
@@ -1042,6 +1107,19 @@ importers:
       '@unieai/uad-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+    optionalDependencies:
+      '@unieai/rabi-chromium-darwin-arm64':
+        specifier: workspace:^
+        version: link:../../../native/chromium/packages/darwin-arm64
+      '@unieai/rabi-chromium-darwin-x64':
+        specifier: workspace:^
+        version: link:../../../native/chromium/packages/darwin-x64
+      '@unieai/rabi-chromium-linux-x64':
+        specifier: workspace:^
+        version: link:../../../native/chromium/packages/linux-x64
+      '@unieai/rabi-chromium-win32-x64':
+        specifier: workspace:^
+        version: link:../../../native/chromium/packages/win32-x64
 
   packages/bundle/base:
     dependencies:

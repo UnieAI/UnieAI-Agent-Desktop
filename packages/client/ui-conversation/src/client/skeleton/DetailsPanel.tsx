@@ -390,7 +390,8 @@ export function DetailsPanel({
                       write={writeWorkspaceFile} t={t}
                       {...active.kind === 'file' ? { path: active.path } : {}}
                       onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
-                      onOpenExternally={canOpenFileHere ? (path) => { void openFile(path) } : undefined}
+                      onOpenExternally={(path) => { void openFile(path) }}
+                      canOpenExternally={canOpenFileHere}
                     />
                   )
                 : (

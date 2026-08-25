@@ -4,7 +4,7 @@
  */
 
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 /**
  * Environment variable naming a browser explicitly.
@@ -73,6 +73,22 @@ export interface ChromeProbe {
    * @returns its entries, or an empty list when it cannot be read.
    */
   list(path: string): readonly string[]
+  /**
+   * Locate one carried-browser package's manifest.
+   *
+   * Part of the probe rather than a bare `require.resolve` so a test can say
+   * which platform payloads are installed. A machine that has none is the
+   * ordinary case, not a fault.
+   * @param specifier - the package's `chromium.json` specifier.
+   * @returns absolute path of the manifest, or undefined when absent.
+   */
+  manifest(specifier: string): string | undefined
+  /**
+   * Read one carried-browser manifest.
+   * @param path - absolute path the probe just resolved.
+   * @returns its parsed contents, or undefined when unreadable.
+   */
+  readManifest(path: string): { executable?: unknown } | undefined
 }
 
 /**
@@ -80,18 +96,52 @@ export interface ChromeProbe {
  * @param env - environment to read {@link CHROME_PATH_VARIABLE} from.
  * @param platform - `process.platform`.
  * @param probe - filesystem probe.
+ * @param arch - `process.arch`; only the carried payload is chosen by it.
  * @returns the executable path, or undefined when this machine has none.
  */
 export function resolveChrome(
   env: Record<string, string | undefined>,
   platform: string,
   probe: ChromeProbe,
+  arch: string = process.arch,
 ): string | undefined {
   const named = env[CHROME_PATH_VARIABLE]
   if (named !== undefined && named !== '' && probe.exists(named)) return named
+  const carried = carriedChrome(platform, arch, probe)
+  if (carried !== undefined) return carried
   const known = (WELL_KNOWN[platform] ?? []).find(candidate => probe.exists(candidate))
   if (known !== undefined) return known
   return playwrightChrome(env, probe)
+}
+
+/**
+ * The browser this install carries, if the platform package is present.
+ *
+ * Ranked ABOVE the machine's own Chrome and below `RABI_CHROME`. That ordering
+ * is the point of carrying one: the carried build is pinned, so every install
+ * that has it renders the same page the same way and a bug report names a
+ * version everyone can reproduce. Someone who wants their own browser still
+ * has the environment variable, which is unconditional.
+ *
+ * Absent is ordinary, not an error: the platform packages are
+ * `optionalDependencies` gated by `os`/`cpu`, so an unlisted platform installs
+ * none of them and falls through to the search below.
+ * @param platform - `process.platform`.
+ * @param arch - `process.arch`.
+ * @param probe - filesystem probe.
+ * @returns the carried executable's path, or undefined.
+ */
+function carriedChrome(platform: string, arch: string, probe: ChromeProbe): string | undefined {
+  // The manifest, not the browser: a package's own `chromium.json` is the only
+  // file whose path is stable across the four payload layouts (a macOS .app
+  // bundle and a Linux directory share nothing), and it names the executable
+  // inside its own directory.
+  const manifestPath = probe.manifest(`@unieai/rabi-chromium-${platform}-${arch}/chromium.json`)
+  if (manifestPath === undefined) return undefined
+  const manifest = probe.readManifest(manifestPath)
+  if (typeof manifest?.executable !== 'string') return undefined
+  const executable = join(dirname(manifestPath), 'browser', manifest.executable)
+  return probe.exists(executable) ? executable : undefined
 }
 
 /**

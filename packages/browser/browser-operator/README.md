@@ -14,7 +14,13 @@ That inversion also decides the geometry. The Host is told the panel's own pixel
 
 `open` launches a fresh Chrome with `--remote-debugging-port=0` and a throwaway `--user-data-dir` under the system temp directory. Attaching to a browser the reader is already using was the other option and is worse in every direction: `Page.bringToFront` and `Page.navigate` would move their windows and their tabs around underneath them, a screencast would broadcast whatever else they had open, and closing the panel would have to decide which of their tabs it was allowed to end. A separate profile also means the operator browser starts signed out — which is honest about what it is, rather than quietly inheriting a logged-in session nobody chose to lend it.
 
-Chrome is found from `RABI_CHROME` first, then the platform's well-known install paths, then the Playwright browser cache (newest first). Nothing is downloaded: a package that fetches a browser during a call is a package that fails on a metered connection halfway through opening a tab.
+## The browser it carries
+
+The install brings its own Chrome. `@unieai/uad-browser-operator` declares four payload packages — `@unieai/rabi-chromium-{darwin-arm64,darwin-x64,linux-x64,win32-x64}` — as `optionalDependencies`, and their `os`/`cpu` fields mean npm installs exactly the one this machine can run and skips the other three. An unlisted platform installs none of them and still installs cleanly.
+
+The payload is the Chromium project's own snapshot build, BSD-3-Clause — deliberately NOT Chrome for Testing, which is a Google-branded build carrying the proprietary Widevine CDM under Chrome's Terms of Service and is not ours to redistribute. Carrying one rather than downloading one is what makes a report reproducible: the revision is pinned in `native/chromium/chromium-version.json`, so a bug someone reports names a build the next person can fetch. It is also why nothing is fetched during a call — a package that downloads a browser while someone is opening a tab is a package that fails on a metered connection, half way.
+
+Resolution order: `RABI_CHROME` first and unconditionally, then the carried payload, then the platform's well-known install paths, then the Playwright browser cache (newest first). The carried build outranks the machine's own Chrome for the reproducibility reason above; `RABI_CHROME` outranks everything, because an operator who names a browser has a reason.
 
 ## Contract
 
@@ -42,4 +48,4 @@ None; this package assembles and sends nothing.
 - Frames are JPEG, so a page of small text is softer than the same page in a real window. `frameQuality` trades that against how fast the stream keeps up.
 - Chrome runs headless, and a small number of sites behave differently there. Nothing detects or works around that.
 - One browser is one page. Tabs a site opens with `target=_blank` attach nowhere and are not shown.
-- Chrome is found, never downloaded. A machine with none gets `NO_CHROME` and a message naming `RABI_CHROME`.
+- A machine outside the four carried platforms (Linux arm64, 32-bit Windows, and the rest) falls back to searching for its own Chrome; one that has none gets `NO_CHROME` and a message naming `RABI_CHROME`.

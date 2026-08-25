@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-An Electron window over a harness this app starts and owns. It is UnieAI Agent as an installable application rather than a URL in a browser.
+An Electron window over a harness this app starts and owns. It is Rabi as an installable application rather than a URL in a browser.
 
 ## Why it exists
 

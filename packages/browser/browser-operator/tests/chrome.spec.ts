@@ -6,10 +6,25 @@ import { endpointFrom } from '../src/cdp.ts'
 /**
  * @param present - absolute paths that exist.
  * @param dirs - directory listings, keyed by path.
+ * @param carried - carried-browser manifests, keyed by package specifier.
  * @returns a probe answering only for those.
  */
-function probe(present: string[], dirs: Record<string, string[]> = {}): ChromeProbe {
-  return { exists: path => present.includes(path), list: path => dirs[path] ?? [] }
+function probe(
+  present: string[],
+  dirs: Record<string, string[]> = {},
+  carried: Record<string, { path: string; executable?: unknown }> = {},
+): ChromeProbe {
+  return {
+    exists: path => present.includes(path),
+    list: path => dirs[path] ?? [],
+    // Default: this machine carries no browser, which is what every test about
+    // the SEARCH order needs — a carried one outranks everything it searches.
+    manifest: specifier => carried[specifier]?.path,
+    readManifest: (path) => {
+      const found = Object.values(carried).find(one => one.path === path)
+      return found === undefined ? undefined : { executable: found.executable }
+    },
+  }
 }
 
 describe('resolveChrome', () => {
@@ -33,6 +48,55 @@ describe('resolveChrome', () => {
       .toBe('/usr/bin/google-chrome')
     expect(resolveChrome({}, 'linux', probe(['/usr/bin/microsoft-edge', '/usr/bin/chromium'])))
       .toBe('/usr/bin/chromium')
+  })
+
+  it('takes the browser this install carries over the one the machine happens to have', () => {
+    // The point of carrying one is that every install renders the same page the
+    // same way: a pinned build outranks whatever version is on the machine, so a
+    // bug report names a browser everyone else can reproduce with.
+    const chosen = resolveChrome({}, 'linux',
+      probe(
+        ['/usr/bin/google-chrome', '/node_modules/@unieai/rabi-chromium-linux-x64/browser/chrome-linux64/chrome'],
+        {},
+        {
+          '@unieai/rabi-chromium-linux-x64/chromium.json': {
+            path: '/node_modules/@unieai/rabi-chromium-linux-x64/chromium.json',
+            executable: 'chrome-linux64/chrome',
+          },
+        }),
+      'x64')
+    expect(chosen).toBe('/node_modules/@unieai/rabi-chromium-linux-x64/browser/chrome-linux64/chrome')
+  })
+
+  it('still lets a deployment name its own browser over the carried one', () => {
+    const chosen = resolveChrome({ [CHROME_PATH_VARIABLE]: '/opt/my-chrome' }, 'linux',
+      probe(
+        ['/opt/my-chrome', '/node_modules/@unieai/rabi-chromium-linux-x64/browser/chrome-linux64/chrome'],
+        {},
+        {
+          '@unieai/rabi-chromium-linux-x64/chromium.json': {
+            path: '/node_modules/@unieai/rabi-chromium-linux-x64/chromium.json',
+            executable: 'chrome-linux64/chrome',
+          },
+        }),
+      'x64')
+    expect(chosen).toBe('/opt/my-chrome')
+  })
+
+  it('searches on when the carried package is absent, or its payload is not', () => {
+    // Absent is the ordinary case on an unlisted platform: npm installs none of
+    // the four rather than failing, so this must fall through, not throw.
+    expect(resolveChrome({}, 'linux', probe(['/usr/bin/google-chrome']), 'x64'))
+      .toBe('/usr/bin/google-chrome')
+    // Manifest present, browser missing: a half-extracted install.
+    expect(resolveChrome({}, 'linux',
+      probe(['/usr/bin/google-chrome'], {}, {
+        '@unieai/rabi-chromium-linux-x64/chromium.json': {
+          path: '/node_modules/@unieai/rabi-chromium-linux-x64/chromium.json',
+          executable: 'chrome-linux64/chrome',
+        },
+      }), 'x64'))
+      .toBe('/usr/bin/google-chrome')
   })
 
   it('knows where each platform keeps one', () => {

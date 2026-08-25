@@ -123,7 +123,12 @@
   cursor: pointer;
 }
 
-.external:hover {
+.external:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.external:not(:disabled):hover {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-primary);
 }

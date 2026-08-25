@@ -10,7 +10,11 @@ import { describe, expect, it } from 'vitest'
 import { OperatorBrowserService } from '../src/index.ts'
 import type { ChromeProbe } from '../src/chrome.ts'
 
-const NO_CHROME: ChromeProbe = { exists: () => false, list: () => [] }
+const NO_CHROME: ChromeProbe = {
+  exists: () => false, list: () => [],
+  // Nothing carried either: this is the machine with no browser at all.
+  manifest: () => undefined, readManifest: () => undefined,
+}
 
 /**
  * @param config - overrides for the plugin config.

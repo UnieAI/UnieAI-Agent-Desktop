@@ -43,3 +43,15 @@ apps/web/dist/
 worktrees/
 .agents/worktrees/
 .typert-*/
+
+# The carried browser's payload: ~390MB per platform, downloaded by
+# native/chromium/scripts/fetch-chromium.mjs and republished as the four
+# per-platform npm packages. The pin (chromium-version.json) is tracked; the
+# browser it names is not.
+native/chromium/packages/*/browser/
+native/chromium/packages/*/chromium.json
+native/chromium/packages/*/LICENSE
+
+# Electron packaging output: an unpacked app plus its installers, hundreds of
+# megabytes rebuilt by `pnpm --filter @unieai/uad-desktop run package:*`.
+apps/desktop/release/

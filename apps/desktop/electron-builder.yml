@@ -4,8 +4,8 @@
 # workspace; `asarUnpack` keeps the harness and its native dependencies outside
 # the archive, because a native module cannot be loaded from inside an asar and
 # the harness spawns processes that need real paths on disk.
-appId: com.unieai.agent
-productName: UnieAI Agent
+appId: com.unieai.rabi
+productName: Rabi
 copyright: UnieAI
 
 directories:
@@ -41,6 +41,15 @@ win:
       arch:
         - x64
         - arm64
+
+# Linux is the one platform that does NOT take its executable name from
+# `productName`: macOS builds `Rabi.app` and Windows builds `Rabi.exe` from it,
+# while electron-builder's Linux packager falls back to the sanitized PACKAGE
+# name — which for a scoped package comes out as `@unieaiuad-desktop`. Saying it
+# here is what makes the binary `rabi` on all three.
+linux:
+  executableName: rabi
+  category: Development
 
 nsis:
   oneClick: false

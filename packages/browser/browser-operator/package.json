@@ -43,5 +43,11 @@
     "@types/ws": "^8.18.1",
     "@unieai/cordis": "workspace:^",
     "@unieai/uad-invariants": "workspace:^"
+  },
+  "optionalDependencies": {
+    "@unieai/rabi-chromium-darwin-arm64": "workspace:^",
+    "@unieai/rabi-chromium-darwin-x64": "workspace:^",
+    "@unieai/rabi-chromium-linux-x64": "workspace:^",
+    "@unieai/rabi-chromium-win32-x64": "workspace:^"
   }
 }

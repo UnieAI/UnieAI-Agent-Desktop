@@ -875,13 +875,16 @@ export interface DetailsInjected {
    */
   openFile: (path: string) => Promise<void>
   /**
-   * Whether opening a file would land somewhere this viewer can see.
+   * Whether opening a file would land on the machine the reader is at.
    *
    * `openFile` reaches the operating system of the HOST, not of the browser.
-   * Served over loopback those are one machine and the file opens in front of
-   * the reader; served to another machine it opens on someone else's desktop,
-   * silently. The control is withheld rather than shipped as an action whose
-   * effect the presser cannot observe.
+   * Over loopback those are one machine; served elsewhere the file opens on
+   * someone else's desktop, silently.
+   *
+   * The control is NOT withheld when this is false — `terminal-operator`
+   * records why: a reader on a tunnel, a port forward, or `localhost` rather
+   * than `127.0.0.1` then finds the affordance missing with nothing to read.
+   * It is disabled and states the reason instead.
    */
   canOpenFileHere: boolean
   /**

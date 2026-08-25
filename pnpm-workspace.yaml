@@ -5,6 +5,10 @@ packages:
   # its native build and publication scripts under native/landlock-run.
   - native/landlock-run
   - native/landlock-run/packages/*
+  # The carried browser: four per-platform payload packages holding one pinned
+  # Chrome for Testing build. No entry package of its own — the consumer is
+  # `packages/browser/browser-operator`, which resolves them by name.
+  - native/chromium/packages/*
   # Product assemblies over the package tier; apps/cli owns the `rabi` bin.
   - apps/*
   - website

@@ -23,9 +23,10 @@
  */
 
 import { spawn, type ChildProcess } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { accessSync, chmodSync, constants, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { Context, Service } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import { CdpConnection, endpointFrom } from './cdp.ts'
@@ -172,6 +173,7 @@ export class OperatorBrowserService extends Service {
     const chrome = this.config.chromePath !== undefined && this.config.chromePath !== ''
       ? this.config.chromePath
       : resolveChrome(this.env, process.platform, this.probe)
+    this.repairCarriedModes()
     if (chrome === undefined) {
       throw new OperatorBrowserError('NO_CHROME', 'no Chrome, Chromium or Edge found; set RABI_CHROME to name one')
     }
@@ -449,6 +451,67 @@ export class OperatorBrowserService extends Service {
   }
 
   /**
+   * Put the executable bit back on the carried browser.
+   *
+   * npm normalises file modes on extract — only what a package declares in
+   * `bin` keeps `+x` — so every binary in a payload package arrives 0644 and
+   * `spawn` answers EACCES. The payload is otherwise correct, and repairing the
+   * modes is cheaper for everyone than republishing several hundred megabytes
+   * per platform.
+   *
+   * Guarded by the pinned executable's own mode, so this walks the payload once
+   * per install rather than once per open. Every regular file gets the bit
+   * rather than a list of names: Chromium's launchable pieces are the browser,
+   * its crashpad handler, its sandbox helper, its wrapper script and — on macOS
+   * — nine more inside the .app's `MacOS`, `Helpers` and `Libraries`
+   * directories, and a list that missed one would fail only on the platform
+   * nobody tested. The bit on a `.pak` is inert.
+   *
+   * Failure is swallowed: a read-only or root-owned install cannot be repaired
+   * here, and the spawn that follows reports that far more precisely than a
+   * chmod's errno would.
+   */
+  private repairCarriedModes(): void {
+    try {
+      const manifestPath = this.probe.manifest(
+        `@unieai/rabi-chromium-${process.platform}-${process.arch}/chromium.json`,
+      )
+      if (manifestPath === undefined) return
+      const manifest = this.probe.readManifest(manifestPath)
+      if (typeof manifest?.executable !== 'string') return
+      const payload = join(dirname(manifestPath), 'browser')
+      accessSync(join(payload, manifest.executable), constants.X_OK)
+    } catch {
+      // Either there is no carried payload, or its executable is not runnable
+      // yet. The second case is the one to repair; the first returned above.
+      this.chmodPayload()
+    }
+  }
+
+  /** Walk the carried payload and make every regular file executable. */
+  private chmodPayload(): void {
+    const manifestPath = this.probe.manifest(
+      `@unieai/rabi-chromium-${process.platform}-${process.arch}/chromium.json`,
+    )
+    if (manifestPath === undefined) return
+    const payload = join(dirname(manifestPath), 'browser')
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name)
+        // Symlinks are followed by neither branch: a macOS framework's links
+        // point at files this walk reaches by their real path anyway.
+        if (entry.isDirectory()) walk(path)
+        else if (entry.isFile()) chmodSync(path, 0o755)
+      }
+    }
+    try {
+      walk(payload)
+    } catch {
+      // Partially repaired is still better than not; spawn reports the rest.
+    }
+  }
+
+  /**
    * @param browserId - the browser to look up.
    * @returns its record.
    */
@@ -545,6 +608,25 @@ export const FILESYSTEM_CHROME_PROBE: ChromeProbe = {
       return readdirSync(path)
     } catch {
       return []
+    }
+  },
+  manifest(specifier: string): string | undefined {
+    try {
+      // `require.resolve` throws for a package that is not installed, which for
+      // an optional platform payload is the ordinary case: npm installs the one
+      // matching `os`/`cpu` and skips the other three.
+      return createRequire(import.meta.url).resolve(specifier)
+    } catch {
+      return undefined
+    }
+  },
+  readManifest(path: string): { executable?: unknown } | undefined {
+    try {
+      return JSON.parse(readFileSync(path, 'utf8')) as { executable?: unknown }
+    } catch {
+      // A half-extracted install falls through to the search rather than
+      // taking the call down with it.
+      return undefined
     }
   },
 }

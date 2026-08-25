@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-一個 Electron 視窗，罩在這個 app 自己啟動並持有的 harness 上。它是「可安裝的應用程式」形態的 UnieAI Agent，而不是瀏覽器裡的一個網址。
+一個 Electron 視窗，罩在這個 app 自己啟動並持有的 harness 上。它是「可安裝的應用程式」形態的 Rabi，而不是瀏覽器裡的一個網址。
 
 ## 為什麼要有它
 

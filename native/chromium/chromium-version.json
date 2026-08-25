@@ -1,0 +1,58 @@
+{
+  "comment": "The open-source Chromium build each platform package carries. NOT Chrome for Testing: that is a Google-branded build shipping the proprietary Widevine CDM under Google Chrome's Terms of Service, which is not ours to redistribute. These are the Chromium project's own snapshot builds \u2014 BSD-3-Clause, no Widevine, no Google branding.",
+  "revisionsDiffer": "Each platform pins its OWN revision, and they are not equal. Chromium uploads snapshots per platform at whichever commit positions its builders happened to finish, so a position built for all four is rare \u2014 the four LAST_CHANGE values here span about sixty commits. Pinning one shared number would mean pinning an old one, or none at all. What a bug report needs is a build the next person can fetch, and a per-platform revision names one exactly.",
+  "source": "https://commondatastorage.googleapis.com/chromium-browser-snapshots",
+  "platforms": {
+    "linux-x64": {
+      "channel": "Linux_x64",
+      "revision": "1685233",
+      "url": "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/1685233/chrome-linux.zip",
+      "executable": "chrome-linux/chrome"
+    },
+    "darwin-x64": {
+      "channel": "Mac",
+      "revision": "1685233",
+      "url": "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/1685233/chrome-mac.zip",
+      "executable": "chrome-mac/Chromium.app/Contents/MacOS/Chromium"
+    },
+    "darwin-arm64": {
+      "channel": "Mac_Arm",
+      "revision": "1685241",
+      "url": "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac_Arm/1685241/chrome-mac.zip",
+      "executable": "chrome-mac/Chromium.app/Contents/MacOS/Chromium"
+    },
+    "win32-x64": {
+      "channel": "Win_x64",
+      "revision": "1685180",
+      "url": "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/1685180/chrome-win.zip",
+      "executable": "chrome-win/chrome.exe"
+    }
+  },
+  "locales": {
+    "why": "npm's registry refuses a tarball this size: 186MB published and 199MB came back 413 Payload Too Large, and Chromium's full locale set is 50MB of that. What those .pak files carry is CHROMIUM'S OWN UI text \u2014 error pages, context menus, print dialogs. A screencast panel shows the PAGE, whose language comes from the site, so the only thing a reader ever sees from these is an interstitial like \"This site can't be reached\". Keeping the languages this product is actually used in, and letting the rest fall back to en-US, buys the headroom the registry needs.",
+    "keep": [
+      "en-US",
+      "en-GB",
+      "zh-CN",
+      "zh-TW",
+      "ja",
+      "ko",
+      "es",
+      "es-419",
+      "fr",
+      "de",
+      "pt-BR",
+      "pt-PT",
+      "ru",
+      "it",
+      "nl",
+      "pl",
+      "tr",
+      "vi",
+      "th",
+      "id",
+      "ar",
+      "hi"
+    ]
+  }
+}

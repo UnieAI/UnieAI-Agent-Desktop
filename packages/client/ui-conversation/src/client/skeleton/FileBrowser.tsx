@@ -55,11 +55,13 @@ export interface FileBrowserProps {
   write?: ((root: string, path: string, text: string, version: string) => Promise<string>) | undefined
   /** Open a file, which the container turns into its own tab. */
   onOpen: (path: string) => void
+  /** Hand the path to the operating system's editor. */
+  onOpenExternally: (path: string) => void
   /**
-   * Hand the path to the operating system's editor, or undefined when that
-   * would open it on a machine this reader is not sitting at.
+   * Whether that editor is on the machine the reader is at. False disables the
+   * control and states why; it does not remove it.
    */
-  onOpenExternally?: ((path: string) => void) | undefined
+  canOpenExternally: boolean
   t: DetailsSlotProps['t']
 }
 
@@ -74,7 +76,9 @@ function crumbsOf(root: string, path: string): string[] {
   return [fileName(root), ...inside.split(/[\\/]/u).filter(part => part !== '')]
 }
 
-export function FileBrowser({ root, path, list, read, write, onOpen, onOpenExternally, t }: FileBrowserProps) {
+export function FileBrowser({
+  root, path, list, read, write, onOpen, onOpenExternally, canOpenExternally, t,
+}: FileBrowserProps) {
   const [filter, setFilter] = useState('')
   // The tree is the way to the next file, so it stays open by default; a
   // reader who wants the code wide can put it away and it stays away.
@@ -191,9 +195,12 @@ export function FileBrowser({ root, path, list, read, write, onOpen, onOpenExter
             ))}
           </div>
           <div className={css.crumbActions}>
-            {path !== undefined && onOpenExternally !== undefined && (
+            {path !== undefined && (
               <button
-                type="button" className={css.external} onClick={() => { onOpenExternally(path) }}
+                type="button" className={css.external}
+                disabled={!canOpenExternally}
+                title={t(canOpenExternally ? 'panel.openExternally' : 'panel.openElsewhere')}
+                onClick={() => { onOpenExternally(path) }}
               >
                 {t('panel.openExternally')}
               </button>

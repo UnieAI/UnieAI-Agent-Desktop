@@ -14,7 +14,13 @@
 
 `open` 会以 `--remote-debugging-port=0` 和一个临时目录下的一次性 `--user-data-dir` 启动全新的 Chrome。接管读者正在使用的浏览器是另一个选项，而且在每个方向上都更糟：`Page.bringToFront` 和 `Page.navigate` 会在他们脚下挪动窗口和标签页，截屏推流会把他们开着的其他东西一并广播出去，而关闭面板还得决定自己有权结束他们的哪些标签页。独立的 profile 也意味着操作员浏览器是登出状态启动的——这对它的身份是诚实的，而不是悄悄继承一个没人打算出借的登录态。
 
-Chrome 的查找顺序是 `RABI_CHROME`、平台的常见安装路径、Playwright 的浏览器缓存（新的优先）。不下载任何东西：在调用过程中现抓浏览器的包，会在计量网络上打开标签页打开到一半时失败。
+## 它自己带的浏览器
+
+安装时就把 Chrome 一起带进来。`@unieai/uad-browser-operator` 把四个载荷包——`@unieai/rabi-chromium-{darwin-arm64,darwin-x64,linux-x64,win32-x64}`——声明为 `optionalDependencies`，它们的 `os`／`cpu` 字段使 npm 只装这台机器跑得动的那一个，其余三个跳过。不在清单上的平台一个都不装，而且照样装得成功。
+
+载荷是 Chromium 项目自己的 snapshot 建置，BSD-3-Clause——刻意不用 Chrome for Testing，那是 Google 品牌的建置，带着专有的 Widevine CDM、依据 Chrome 的服务条款，不是我们能转散布的。带着而不是现抓，是为了让回报可以重现：revision 钉死在 `native/chromium/chromium-version.json`，别人回报的 bug 指名的那个 build 下一个人拿得到。这也正是为什么调用过程中什么都不抓——在有人正要开标签页时才去下载浏览器的包，会在计量网络上下到一半失败。
+
+查找顺序：`RABI_CHROME` 第一且无条件，接着是自带的载荷，然后是平台的常见安装路径，最后是 Playwright 的浏览器缓存（新的优先）。自带的 build 排在机器自己的 Chrome 之前，理由就是上面的可重现性；`RABI_CHROME` 排在所有东西之前，因为会去指名浏览器的操作者有他的理由。
 
 ## 契约
 
@@ -42,4 +48,4 @@ None; this package assembles and sends nothing.
 - 帧是 JPEG，所以满是小字的页面会比真实窗口里的同一页更糊。`frameQuality` 用画质换推流跟得上的速度。
 - Chrome 以无头模式运行，少数站点在那里的行为不同。这里不检测也不绕开这一点。
 - 一个浏览器就是一个页面。站点用 `target=_blank` 打开的标签页不会连上任何地方，也不会被显示。
-- Chrome 只查找，不下载。机器上没有的话会拿到 `NO_CHROME`，消息里点名 `RABI_CHROME`。
+- 不在那四个平台清单上的机器（Linux arm64、32 位 Windows 等）不带浏览器，退回查找机器自己的 Chrome；一个都找不到时拿到 `NO_CHROME`，消息里点名 `RABI_CHROME`。
