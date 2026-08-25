@@ -372,6 +372,25 @@ export function apply(ctx: Context, config: Config): void {
     return ownerUserId === userId
   }
 
+  /**
+   * Release a claim the first sign-in took, once nobody is signed in.
+   *
+   * A claim exists so a machine serves ONE account, not so it serves one
+   * account forever. Signing out is a person saying they are done with this
+   * machine, and leaving the claim standing after it meant the next sign-in —
+   * theirs, on another account — was refused with "already claimed by another
+   * account", which names a stranger for what was in fact their own previous
+   * session. Nothing in the product could clear it; only restarting the Host
+   * could, because the claim is a variable in this process.
+   *
+   * A CONFIGURED allowlist is not a claim and is never released: a deployment
+   * that names its accounts means them, and no browser action should widen it.
+   */
+  const releaseClaim = (): void => {
+    if (config.allowedUserIds.length > 0) return
+    ownerUserId = undefined
+  }
+
   const currentSession = (req: IncomingMessage): GateSession | undefined => {
     const presented = readCookie(req, COOKIE)
     if (presented === undefined) return undefined
@@ -939,7 +958,12 @@ export function apply(ctx: Context, config: Config): void {
       // and keeps the gathered parts, which describe the account rather than
       // the browser that asked for them.
       announceSession()
-      if (hostSession() === undefined) warmup.forget()
+      if (hostSession() === undefined) {
+        warmup.forget()
+        // The same "last session" test the comment above draws: while another
+        // browser is still signed in, the machine is still that account's.
+        releaseClaim()
+      }
       res.setHeader('set-cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`)
       json(res, 200, { status: 'signed-out' })
     },
