@@ -54,6 +54,14 @@ allowBuilds:
   node-addon-require-builtin: false
   # JSONL durability calls MoveFileExW with write-through publication on Windows.
   koffi: true
+  # Squirrel.Windows installer support, which electron-builder pulls in as an
+  # optional dependency on the platforms that can produce Windows installers.
+  # Its install script fetches the Squirrel binaries; this app builds the `nsis`
+  # target (apps/desktop/electron-builder.yml), so they are never used. Denied
+  # rather than allowed: install then succeeds without the download, and the
+  # desktop build cannot silently start depending on an installer format nobody
+  # chose. Allow it if a Squirrel target is ever added.
+  electron-winstaller: false
   # The Python runtime deploy includes the reviewed workspace postinstall that
   # restores the executable bit on node-pty's macOS spawn helper.
   '@unieai/uad-subprocess-local@file:packages/subprocess/subprocess-local': true
