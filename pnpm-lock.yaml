@@ -1024,6 +1024,25 @@ importers:
         specifier: ^15.0.0
         version: 15.0.0
 
+  packages/browser/browser-operator:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      ws:
+        specifier: ^8.21.0
+        version: 8.21.0
+    devDependencies:
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+
   packages/bundle/base:
     dependencies:
       '@unieai/cordis-plugin-hmr':
@@ -1316,6 +1335,9 @@ importers:
       '@unieai/uad-app-boot':
         specifier: workspace:^
         version: link:../../boot/app-boot
+      '@unieai/uad-browser-operator':
+        specifier: workspace:^
+        version: link:../../browser/browser-operator
       '@unieai/uad-client-connection':
         specifier: workspace:^
         version: link:../../client/connection
@@ -5364,6 +5386,9 @@ importers:
       '@unieai/uad-agent-presets':
         specifier: workspace:^
         version: link:../../preset/agent-presets
+      '@unieai/uad-browser-operator':
+        specifier: workspace:^
+        version: link:../../browser/browser-operator
       '@unieai/uad-cordis-host-runner':
         specifier: workspace:^
         version: link:../../extensions/cordis-host-runner

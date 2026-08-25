@@ -1,6 +1,6 @@
 {
-  "name": "@unieai/uad-loader-smoke",
-  "description": "Shared subprocess and direct-agent harness for keyless real-Loader example smoke tests",
+  "name": "@unieai/uad-browser-operator",
+  "description": "The browser a person drives: a real Chromium on the host, streamed into the panel over the DevTools Protocol",
   "version": "0.1.4",
   "publishConfig": {
     "access": "public"
@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
-    "directory": "packages/test-support/loader-smoke"
+    "directory": "packages/browser/browser-operator"
   },
   "type": "module",
   "main": "lib/index.js",
@@ -31,22 +31,17 @@
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
-  "dependencies": {
-    "execa": "^10.0.0",
-    "tsx": "^4.22.4"
-  },
   "peerDependencies": {
-    "@unieai/uad-agent": "workspace:^",
-    "@unieai/uad-invariants": "workspace:^",
-    "@unieai/uad-llm": "workspace:^",
-    "@unieai/uad-session": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
+  },
+  "dependencies": {
+    "@unieai/schemastery": "workspace:^",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
-    "@unieai/uad-agent": "workspace:^",
-    "@unieai/uad-invariants": "workspace:^",
-    "@unieai/uad-llm": "workspace:^",
-    "@unieai/uad-session": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@types/ws": "^8.18.1",
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
   }
 }
