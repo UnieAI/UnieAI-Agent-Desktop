@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-unieai-web-gate",
   "description": "Browser sign-in gate: the /auth routes, the server-rendered sign-in page, and the WebServer request guard behind them",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",

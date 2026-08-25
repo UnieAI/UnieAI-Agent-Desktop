@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-ui-settings-notifications",
   "description": "Notifications settings section: per-device task-completion desktop notifications and the completion sound picker",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publishConfig": {
     "access": "public"
   },
