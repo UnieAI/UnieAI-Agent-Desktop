@@ -76,6 +76,7 @@ if (import.meta.main) {
   errors.push(...validateAppResolution())
   errors.push(...validateSourcePlaneResolution())
   errors.push(...validatePresetPlaneSeparation())
+  errors.push(...validateNoShippedAccountPin())
   errors.push(...validateClientHalvesDeclared())
 
   if (errors.length > 0) {
@@ -153,6 +154,53 @@ function validatePresetPlaneSeparation(): string[] {
       problems.push(
         `${file}: row "${id}" is also active in the host composition; `
         + 'a row belongs to exactly one plane',
+      )
+    }
+  }
+  return problems
+}
+
+/**
+ * Refuse an account allowlist compiled into a shipped bundle.
+ *
+ * `allowedUserIds` names who may sign a machine in. Naming anyone in a bundle
+ * everybody installs makes the package admit those accounts and no others: one
+ * id shipped this way meant every other customer installed the product and
+ * could not sign in at all, and neither restarting nor upgrading helped,
+ * because an allowlist is configuration rather than the in-memory claim it
+ * overrides. Nothing in the diff said "account" — it was a UUID in a YAML
+ * value — which is why this is a gate rather than a comment.
+ *
+ * A DEPLOYMENT that must fence its accounts still can, and should: it states
+ * them in its own patch layer, which is where a fact about one machine belongs.
+ * Empty here leaves `claimFirstLogin`, so the person who installs the package
+ * owns their own copy.
+ * @returns one diagnostic per shipped bundle pinning an account.
+ */
+function validateNoShippedAccountPin(): string[] {
+  const problems: string[] = []
+  // A patch layer's rows sit at the top level AND inside `insert:` lists; the
+  // gate that only read the top level passed the very pin it exists to catch.
+  const rows = (entries: unknown[]): Record<string, unknown>[] => {
+    const found: Record<string, unknown>[] = []
+    for (const entry of entries) {
+      if (!isRecord(entry)) continue
+      found.push(entry)
+      const inserted = entry['insert']
+      if (isUnknownArray(inserted)) found.push(...rows(inserted))
+    }
+    return found
+  }
+  for (const file of globSync('packages/bundle/*/cordis.patch.yml', { cwd: root })) {
+    for (const entry of rows(loadEntries(file))) {
+      const config = entry['config']
+      if (!isRecord(config)) continue
+      const allowed = config['allowedUserIds']
+      if (!isUnknownArray(allowed) || allowed.length === 0) continue
+      problems.push(
+        `${file}: row "${String(entry['id'])}" pins allowedUserIds; a shipped bundle admits `
+        + 'every install, so naming accounts here locks out everyone else. State them in the '
+        + "deployment's own patch layer instead.",
       )
     }
   }

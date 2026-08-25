@@ -16,6 +16,8 @@ The two products are deliberately separate. Copilot is a SaaS; this desktop is a
 
 This host runs one agent holding `bash` and the filesystem tools, so admitting every valid account would hand arbitrary code execution to anyone who can register with the product. Identity alone therefore does not admit: the first account to complete a sign-in claims the instance and later accounts are refused, unless `allowedUserIds` names them explicitly. There is deliberately no mode in which any account passes.
 
+An allowlist belongs to a DEPLOYMENT, never to the shipped bundle: naming accounts in a package everybody installs makes it admit those accounts and no others, so every other install can sign nobody in — and neither restarting nor upgrading helps, because an allowlist is configuration rather than the in-memory claim it overrides. `verify-cordis-config` refuses one in `packages/bundle/*/cordis.patch.yml` for that reason; a shared instance states its accounts in its own patch layer.
+
 A claim is released when the LAST session signs out, and only then — while another browser is still signed in, the machine is still that account's. A claim exists so a machine serves one account, not so it serves one account forever: signing out is a person saying they are done with this machine, and a claim that outlived it refused their own next sign-in as "another account", with nothing short of restarting the Host able to clear it. A configured `allowedUserIds` is not a claim and is never released — a deployment that names its accounts means them, and no browser action widens it.
 
 ## The startup route

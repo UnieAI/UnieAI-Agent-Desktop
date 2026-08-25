@@ -270,13 +270,22 @@
       config:
         productUrl: 'https://agent.unieai.com'
         enforce: true
-        # Pinned rather than left to claimFirstLogin. The claim lives in
-        # memory, so a host restart forgot it and whoever signed in next took
-        # the machine — which is a race, not an access decision. This host runs
-        # an agent holding bash and the filesystem tools, so who owns it is
-        # worth stating outright.
-        allowedUserIds:
-          - '871b8c05-151b-4003-b48d-83cc3d2a6445'
+        # No allowlist here, so the first account to sign in claims this
+        # machine and keeps it until it signs out. A pinned id used to sit
+        # here, which made the shipped package admit exactly ONE account —
+        # every other customer installed it and could not sign in at all, and
+        # no restart or upgrade helped, because an allowlist is configuration
+        # rather than the in-memory claim.
+        #
+        # The objection that first-login-wins is "a race, not an access
+        # decision" is true of a machine OTHERS CAN REACH, and false of this
+        # one: the package serves 127.0.0.1, so the only person who can race
+        # for the claim is the person at the keyboard. A shared deployment is
+        # the case that needs the fence, and it states its own accounts in its
+        # own patch layer — which is where a deployment fact belongs, rather
+        # than compiled into the package everyone installs.
+        allowedUserIds: []
+        claimFirstLogin: true
 
     # The account's MCP servers, mounted from the gate above. The product mints
     # a bearer per server that is good for about an hour, so this row re-reads
