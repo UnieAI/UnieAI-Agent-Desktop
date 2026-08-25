@@ -154,6 +154,18 @@ export async function startHarness(environment: HarnessEnvironment): Promise<Run
     child.stderr?.on('data', (chunk: Buffer | string) => { output += String(chunk) })
 
     child.on('exit', (code) => {
+      if (settled) {
+        // AFTER the URL line, and therefore invisible until now: `finish` runs
+        // once, so a harness that bound its port and then died left the window
+        // pointing at a socket nobody answers and said nothing about it. The
+        // buffered output is the only account of why, and this is the last
+        // moment anything can print it.
+        process.stderr.write(
+          `dsh-desktop: the harness exited (${String(code)}) AFTER reporting its address; `
+          + `the window will have failed to load.\n${output}\n`,
+        )
+        return
+      }
       finish(() => {
         reject(new HarnessStartError(`the harness stopped before it was ready (exit ${String(code)})`, output))
       })

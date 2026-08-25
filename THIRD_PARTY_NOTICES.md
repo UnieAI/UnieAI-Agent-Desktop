@@ -36,8 +36,21 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`@anthropic-ai/sdk`](https://github.com/anthropics/anthropic-sdk-typescript) | MIT |
 | [`@babel/code-frame`](https://github.com/babel/babel) | MIT |
 | [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) | MIT |
+| [`@img/sharp-darwin-arm64`](https://github.com/lovell/sharp) | Apache-2.0 |
+| [`@img/sharp-darwin-x64`](https://github.com/lovell/sharp) | Apache-2.0 |
+| [`@img/sharp-libvips-darwin-arm64`](https://github.com/lovell/sharp-libvips) | LGPL-3.0-or-later |
+| [`@img/sharp-libvips-darwin-x64`](https://github.com/lovell/sharp-libvips) | LGPL-3.0-or-later |
+| [`@img/sharp-libvips-linux-x64`](https://github.com/lovell/sharp-libvips) | LGPL-3.0-or-later |
+| [`@img/sharp-linux-x64`](https://github.com/lovell/sharp) | Apache-2.0 |
+| [`@img/sharp-win32-arm64`](https://github.com/lovell/sharp) | Apache-2.0 |
+| [`@img/sharp-win32-x64`](https://github.com/lovell/sharp) | Apache-2.0 |
 | [`@joplin/turndown-plugin-gfm`](https://github.com/laurent22/joplin-turndown-plugin-gfm) | MIT |
 | [`@jridgewell/gen-mapping`](https://github.com/jridgewell/sourcemaps) | MIT |
+| [`@koromix/koffi-darwin-arm64`](https://github.com/Koromix/koffi) | MIT |
+| [`@koromix/koffi-darwin-x64`](https://github.com/Koromix/koffi) | MIT |
+| [`@koromix/koffi-linux-x64`](https://github.com/Koromix/koffi) | MIT |
+| [`@koromix/koffi-win32-arm64`](https://github.com/Koromix/koffi) | MIT |
+| [`@koromix/koffi-win32-x64`](https://github.com/Koromix/koffi) | MIT |
 | [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) | MIT |
 | [`@openai/codex`](https://github.com/openai/codex) | Apache-2.0 |
 | [`@opentelemetry/api`](https://github.com/open-telemetry/opentelemetry-js) | Apache-2.0 |
@@ -51,6 +64,11 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`@tanstack/react-virtual`](https://github.com/TanStack/virtual) | MIT |
 | [`@types/mdast`](https://github.com/DefinitelyTyped/DefinitelyTyped) | MIT |
 | [`@vscode/ripgrep`](https://github.com/microsoft/vscode-ripgrep) | MIT |
+| [`@vscode/ripgrep-darwin-arm64`](https://github.com/microsoft/vscode-ripgrep) | MIT |
+| [`@vscode/ripgrep-darwin-x64`](https://github.com/microsoft/vscode-ripgrep) | MIT |
+| [`@vscode/ripgrep-linux-x64`](https://github.com/microsoft/vscode-ripgrep) | MIT |
+| [`@vscode/ripgrep-win32-arm64`](https://github.com/microsoft/vscode-ripgrep) | MIT |
+| [`@vscode/ripgrep-win32-x64`](https://github.com/microsoft/vscode-ripgrep) | MIT |
 | [`@xterm/addon-fit`](https://github.com/xtermjs/xterm.js/tree/master/addons/addon-fit) | MIT |
 | [`@xterm/xterm`](https://github.com/xtermjs/xterm.js) | MIT |
 | [`anser`](https://github.com/IonicaBizau/anser) | MIT |
@@ -79,6 +97,11 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`micromark-util-symbol`](https://github.com/micromark/micromark/tree/main/packages/micromark-util-symbol) | MIT |
 | [`micromark-util-types`](https://github.com/micromark/micromark/tree/main/packages/micromark-util-types) | MIT |
 | [`node-addon-require-builtin`](https://www.npmjs.com/package/node-addon-require-builtin) | MIT |
+| [`node-addon-require-builtin-darwin-arm64`](https://www.npmjs.com/package/node-addon-require-builtin) | MIT |
+| [`node-addon-require-builtin-darwin-x64`](https://www.npmjs.com/package/node-addon-require-builtin) | MIT |
+| [`node-addon-require-builtin-linux-x64-gnu`](https://www.npmjs.com/package/node-addon-require-builtin) | MIT |
+| [`node-addon-require-builtin-win32-arm64-msvc`](https://www.npmjs.com/package/node-addon-require-builtin) | MIT |
+| [`node-addon-require-builtin-win32-x64-msvc`](https://www.npmjs.com/package/node-addon-require-builtin) | MIT |
 | [`node-pty`](https://github.com/microsoft/node-pty) | MIT |
 | [`open`](https://github.com/sindresorhus/open) | MIT |
 | [`picomatch`](https://github.com/micromatch/picomatch) | MIT |
@@ -95,6 +118,21 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`yaml`](https://github.com/eemeli/yaml) | ISC |
 | [`zod`](https://github.com/colinhacks/zod) | MIT |
 | [`zustand`](https://github.com/pmndrs/zustand) | MIT |
+
+## Copyleft runtime libraries
+
+These ship with the harness under a **copyleft** licence rather than a permissive one, and are listed separately so that is not lost in the table above.
+
+| Package | License |
+| --- | --- |
+| [`@img/sharp-libvips-darwin-arm64`](https://github.com/lovell/sharp-libvips) | LGPL-3.0-or-later |
+| [`@img/sharp-libvips-darwin-x64`](https://github.com/lovell/sharp-libvips) | LGPL-3.0-or-later |
+| [`@img/sharp-libvips-linux-x64`](https://github.com/lovell/sharp-libvips) | LGPL-3.0-or-later |
+
+`libvips` is the image-processing library `sharp` is a binding to. It is distributed as a **separate shared library** (`libvips-cpp.so` and its per-platform equivalents) that the binding loads dynamically, not as code compiled into any artifact of this project — so it may be replaced with another build of the same library without rebuilding anything here, which is the freedom LGPL-3.0 exists to preserve.
+
+Its complete source, and the build scripts that produce these binaries, are published at [github.com/lovell/sharp-libvips](https://github.com/lovell/sharp-libvips); libvips itself is at [github.com/libvips/libvips](https://github.com/libvips/libvips). The licence text is [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html), and a copy travels inside each payload package.
+
 
 pnpm applies local patches to the following packages at install time, so shipped artifacts carry modified copies; each patch file is the complete record of the modification:
 

@@ -280,7 +280,26 @@ export async function runProfile(options: RunProfileOptions): Promise<{ ctx: Con
         if (ctx.get('timer') === undefined) {
           await ctx.loader.create({ name: '@unieai/cordis-plugin-timer' })
         }
-        await ctx.loader.create({ name: '@unieai/cordis-plugin-hmr', config: { root: [] } })
+        try {
+          await ctx.loader.create({ name: '@unieai/cordis-plugin-hmr', config: { root: [] } })
+        } catch (error: unknown) {
+          // HMR reaches Node's internal module loader, which needs
+          // `--expose-internals` or the `node-addon-require-builtin` addon.
+          // The DESKTOP shell has neither in effect: Electron's utility process
+          // does not honour the flag its `execArgv` passes, and the addon is
+          // built for Node's ABI and will not load inside Electron. Watching the
+          // patch layer is a convenience for someone editing `cordis.patch.yml`
+          // while the app runs; a packaged app has no such editor and must not
+          // refuse to start over it. Reported, never silent — the comment above
+          // is right that a silent skip would hide a broken contract — but the
+          // surface keeps booting.
+          process.stderr.write(
+            `${NAME}: live patch-layer reload is off (${
+              error instanceof Error ? error.message : String(error)
+            }); edits to cordis.patch.yml need a restart.\n`,
+          )
+          return { ctx, shutdown }
+        }
       }
       await watchUserPatches(ctx, {
         binName: NAME,

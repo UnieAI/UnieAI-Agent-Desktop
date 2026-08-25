@@ -23,6 +23,15 @@ files:
 asarUnpack:
   - node_modules/@unieai/**
   - node_modules/koffi/**
+  # Every other native payload, for the same reason and one more: a SHARED
+  # LIBRARY cannot be dlopen'd from inside an asar at all. sharp's binding
+  # loads `libvips-cpp.so` by path, and leaving that file in the archive is
+  # what produced `ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open
+  # shared object file` from a package whose node_modules contained it.
+  - node_modules/@img/**
+  - node_modules/@koromix/**
+  - node_modules/@vscode/ripgrep*/**
+  - node_modules/node-addon-require-builtin*/**
 
 mac:
   target:

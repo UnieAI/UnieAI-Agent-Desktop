@@ -62,6 +62,41 @@ export function isOwnerAuthorizedRuntime(name: string): boolean {
 }
 
 /**
+ * Copyleft runtime dependencies whose distribution terms have been reviewed,
+ * with the finding that let them ship. Reviewing one is a decision about how
+ * this project distributes someone else's code; recording it here is what
+ * keeps that decision readable, and the notice below is what discharges it.
+ *
+ * An entry does NOT reclassify the license as permissive. Everything here is
+ * still rendered in its own section of the notices, named with its real terms.
+ */
+const REVIEWED_COPYLEFT_RUNTIME: Record<string, string> = {
+  // libvips is what `sharp` is a binding to, and every platform payload of it
+  // carries the same terms. It reaches an install as a SEPARATE shared library
+  // (`libvips-cpp.so.8.18.3` and its per-platform equivalents) that the binding
+  // loads dynamically — `ldd` on the `.node` names the file — so the condition
+  // LGPL-3.0 attaches to combined works is met the way the licence intends: the
+  // library is replaceable without rebuilding anything of ours.
+  //
+  // It has shipped since the first release, through `@unieai/uad-attachment-local`
+  // → `sharp` → this payload, and was invisible to this gate only because npm
+  // installs it as `sharp`'s own platform-gated optional dependency and nothing
+  // declared it. Pinning the desktop closure is what surfaced it.
+  '@img/sharp-libvips-darwin-arm64': 'dynamically loaded by sharp; see the LGPL note below',
+  '@img/sharp-libvips-darwin-x64': 'dynamically loaded by sharp; see the LGPL note below',
+  '@img/sharp-libvips-linux-x64': 'dynamically loaded by sharp; see the LGPL note below',
+}
+
+/**
+ * Whether a non-permissive runtime license has a recorded review.
+ * @param name - exact npm package identity.
+ * @returns true when {@link REVIEWED_COPYLEFT_RUNTIME} records one.
+ */
+export function isReviewedCopyleftRuntime(name: string): boolean {
+  return Object.hasOwn(REVIEWED_COPYLEFT_RUNTIME, name)
+}
+
+/**
  * Metadata overrides where the installed manifest is wrong or unreachable.
  * Each entry documents why the store cannot answer.
  */
@@ -75,6 +110,35 @@ const OVERRIDES: Record<string, { license?: string; repo?: string }> = {
   '@modelcontextprotocol/server-filesystem': { license: 'MIT / Apache-2.0', repo: 'https://github.com/modelcontextprotocol/servers' },
   // No repository field in the published manifest.
   'node-addon-require-builtin': { repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+
+  // Per-platform native payloads the DESKTOP closure pins so electron-builder
+  // collects them: npm installs only the pair matching the build machine, so on
+  // every other platform the store cannot answer for the rest. The terms are
+  // the parent project's — read off the sibling that IS installed here — and a
+  // payload package never carries different ones from its own family.
+  '@img/sharp-darwin-arm64': { license: 'Apache-2.0', repo: 'https://github.com/lovell/sharp' },
+  '@img/sharp-darwin-x64': { license: 'Apache-2.0', repo: 'https://github.com/lovell/sharp' },
+  '@img/sharp-linux-x64': { license: 'Apache-2.0', repo: 'https://github.com/lovell/sharp' },
+  '@img/sharp-win32-x64': { license: 'Apache-2.0', repo: 'https://github.com/lovell/sharp' },
+  '@img/sharp-win32-arm64': { license: 'Apache-2.0', repo: 'https://github.com/lovell/sharp' },
+  '@img/sharp-libvips-darwin-arm64': { license: 'LGPL-3.0-or-later', repo: 'https://github.com/lovell/sharp-libvips' },
+  '@img/sharp-libvips-darwin-x64': { license: 'LGPL-3.0-or-later', repo: 'https://github.com/lovell/sharp-libvips' },
+  '@img/sharp-libvips-linux-x64': { license: 'LGPL-3.0-or-later', repo: 'https://github.com/lovell/sharp-libvips' },
+  '@koromix/koffi-darwin-arm64': { license: 'MIT', repo: 'https://github.com/Koromix/koffi' },
+  '@koromix/koffi-darwin-x64': { license: 'MIT', repo: 'https://github.com/Koromix/koffi' },
+  '@koromix/koffi-linux-x64': { license: 'MIT', repo: 'https://github.com/Koromix/koffi' },
+  '@koromix/koffi-win32-x64': { license: 'MIT', repo: 'https://github.com/Koromix/koffi' },
+  '@koromix/koffi-win32-arm64': { license: 'MIT', repo: 'https://github.com/Koromix/koffi' },
+  '@vscode/ripgrep-darwin-arm64': { license: 'MIT', repo: 'https://github.com/microsoft/vscode-ripgrep' },
+  '@vscode/ripgrep-darwin-x64': { license: 'MIT', repo: 'https://github.com/microsoft/vscode-ripgrep' },
+  '@vscode/ripgrep-linux-x64': { license: 'MIT', repo: 'https://github.com/microsoft/vscode-ripgrep' },
+  '@vscode/ripgrep-win32-x64': { license: 'MIT', repo: 'https://github.com/microsoft/vscode-ripgrep' },
+  '@vscode/ripgrep-win32-arm64': { license: 'MIT', repo: 'https://github.com/microsoft/vscode-ripgrep' },
+  'node-addon-require-builtin-darwin-arm64': { license: 'MIT', repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+  'node-addon-require-builtin-darwin-x64': { license: 'MIT', repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+  'node-addon-require-builtin-linux-x64-gnu': { license: 'MIT', repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+  'node-addon-require-builtin-win32-x64-msvc': { license: 'MIT', repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+  'node-addon-require-builtin-win32-arm64-msvc': { license: 'MIT', repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
 }
 
 /**
@@ -629,6 +693,32 @@ function renderNonPermissiveNote(deps: ExternalDep[]): string {
   return `\n${subject} ${named.length === 1 ? 'runs' : 'run'} only as development tooling; their code is not linked into or distributed with any DeepSeek Harness artifact.\n`
 }
 
+/**
+ * Render the LGPL notice for the reviewed copyleft runtime payloads.
+ *
+ * This section is the obligation, not a footnote about it: LGPL-3.0 asks a
+ * distributor to say the library is there, say which terms it is under, and
+ * point at where its source can be had. Rendering it from the same list the
+ * gate consults is what keeps the notice from drifting away from what actually
+ * ships.
+ * @param deps - the reviewed copyleft runtime dependencies actually present.
+ * @returns the section, or an empty string when there are none.
+ */
+function renderCopyleftRuntime(deps: ExternalDep[]): string {
+  if (deps.length === 0) return ''
+  return `
+## Copyleft runtime libraries
+
+These ship with the harness under a **copyleft** licence rather than a permissive one, and are listed separately so that is not lost in the table above.
+
+${renderNpmTable(deps)}
+
+\`libvips\` is the image-processing library \`sharp\` is a binding to. It is distributed as a **separate shared library** (\`libvips-cpp.so\` and its per-platform equivalents) that the binding loads dynamically, not as code compiled into any artifact of this project — so it may be replaced with another build of the same library without rebuilding anything here, which is the freedom LGPL-3.0 exists to preserve.
+
+Its complete source, and the build scripts that produce these binaries, are published at [github.com/lovell/sharp-libvips](https://github.com/lovell/sharp-libvips); libvips itself is at [github.com/libvips/libvips](https://github.com/libvips/libvips). The licence text is [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html), and a copy travels inside each payload package.
+`
+}
+
 /** Render one npm dependency table. */
 function renderNpmTable(deps: ExternalDep[]): string {
   const lines = ['| Package | License |', '| --- | --- |']
@@ -676,9 +766,13 @@ export function render(): string {
   const nonPermissiveDev = devDeps.filter(dep => !isPermissive(dep.license))
   // A copyleft license reaching a shipped surface is a distribution decision,
   // not a rendering detail; the notices cannot quietly absorb it.
+  const reviewedCopyleft = runtimeDeps.filter(dep =>
+    !isPermissive(dep.license) && isReviewedCopyleftRuntime(dep.name),
+  )
   const nonPermissiveRuntime = runtimeDeps.filter(dep =>
     !isPermissive(dep.license)
-    && !isOwnerAuthorizedRuntime(dep.name),
+    && !isOwnerAuthorizedRuntime(dep.name)
+    && !isReviewedCopyleftRuntime(dep.name),
   )
   if (nonPermissiveRuntime.length > 0) {
     throw new Error(`gen-third-party-notices: runtime ${nonPermissiveRuntime.map(dep => `${dep.name} (${dep.license})`).join(', ')} is not a permissive license; review the distribution terms and record the decision before regenerating.`)
@@ -709,6 +803,7 @@ ${vendored.map(row => `| \`${row.npmName}\` | \`${row.upstreamName}\` | [${row.u
 External packages that a workspace package resolves at runtime. The tier covers every plugin a user can mount from \`cordis.yml\` — not only what the \`dsh\` CLI, Web UI, and Python SDK runtime load by default.
 
 ${renderNpmTable(runtimeDeps)}
+${renderCopyleftRuntime(reviewedCopyleft)}
 
 pnpm applies local patches to the following packages at install time, so shipped artifacts carry modified copies; each patch file is the complete record of the modification:
 
