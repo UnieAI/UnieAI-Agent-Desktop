@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-unieai-mcp-supervisor",
   "description": "Mounts one mcp-client instance per MCP server the signed-in UnieAI account grants, and re-mounts before each grant expires",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publishConfig": {
     "access": "public"
   },

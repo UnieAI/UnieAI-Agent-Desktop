@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-browser-operator",
   "description": "The browser a person drives: a real Chromium on the host, streamed into the panel over the DevTools Protocol",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publishConfig": {
     "access": "public"
   },
