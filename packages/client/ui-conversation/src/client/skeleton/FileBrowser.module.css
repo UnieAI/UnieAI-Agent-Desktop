@@ -154,10 +154,23 @@
   color: var(--dsw-alias-label-primary);
 }
 
+/* A flex COLUMN, not a plain block. The editor inside asks for `flex: 1` to
+   fill the panel, which a block parent silently ignores — the textarea then
+   collapsed to its intrinsic height and the file view stopped reaching the
+   bottom of the column. */
 .viewer {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   overflow: auto;
+}
+
+/* The read view is a table, and a flex child table would stretch to the
+   column's height and stripe its background over empty space below the last
+   line. Aligning it to the start keeps it exactly as tall as its content. */
+.viewer > .code {
+  align-self: flex-start;
 }
 
 /* A table, not a <pre>: the gutter must not scroll away horizontally with the

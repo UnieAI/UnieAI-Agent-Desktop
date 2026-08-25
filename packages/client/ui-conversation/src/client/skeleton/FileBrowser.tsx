@@ -88,6 +88,11 @@ export function FileBrowser({
   // typed, and the read's own text is what a save is measured against.
   const [draft, setDraft] = useState<string | undefined>(undefined)
   const [save, setSave] = useState<SaveState>({ status: 'clean' })
+  // Reading is what this surface is for, so it opens in the highlighted,
+  // line-numbered view and editing is asked for. An always-on textarea replaced
+  // that view outright, which cost the highlighting and the numbers on every
+  // file anyone merely wanted to LOOK at.
+  const [editing, setEditing] = useState(false)
   const controller = useRef<AbortController>(new AbortController())
 
   useEffect(() => {
@@ -101,6 +106,7 @@ export function FileBrowser({
         // A fresh read is a fresh buffer: keeping the old draft would show
         // one file's edits over another file's content.
         setDraft(file.text)
+        setEditing(false)
         setSave({ status: 'clean' })
       },
       (error: unknown) => {
@@ -195,6 +201,15 @@ export function FileBrowser({
             ))}
           </div>
           <div className={css.crumbActions}>
+            {editable && !editing && (
+              <button
+                type="button" className={css.external}
+                title={t('files.edit')}
+                onClick={() => { setEditing(true) }}
+              >
+                {t('files.edit')}
+              </button>
+            )}
             {path !== undefined && (
               <button
                 type="button" className={css.external}
@@ -245,7 +260,7 @@ export function FileBrowser({
                       // The Host withheld it; saying which bound was hit beats an
                       // empty viewer that reads as an empty file.
                       ? <div className={css.note}>{t(content.file.reason === 'binary' ? 'files.binary' : 'files.tooLarge')}</div>
-                      : editable
+                      : editable && editing
                         ? (
                           <div className={css.editor}>
                             {/* One layer, not two. A highlighted view under a
@@ -287,6 +302,19 @@ export function FileBrowser({
                                   {t('files.reread')}
                                 </button>
                               )}
+                              <button
+                                type="button" className={css.saveAction}
+                                onClick={() => {
+                                  // Back to reading, and back to what was read:
+                                  // a draft kept across the switch would show
+                                  // edits the highlighted view cannot render.
+                                  setDraft(ready.text)
+                                  setSave({ status: 'clean' })
+                                  setEditing(false)
+                                }}
+                              >
+                                {t('files.done')}
+                              </button>
                               <button
                                 type="button" className={css.saveAction}
                                 disabled={save.status !== 'dirty'}
