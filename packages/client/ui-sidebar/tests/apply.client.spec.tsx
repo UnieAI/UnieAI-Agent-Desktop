@@ -20,6 +20,15 @@ async function bench(declare = true) {
     close: vi.fn(),
     subscribe: vi.fn(() => () => {}),
   })
+  ctx.provide('panelBrowsers', {
+    open: vi.fn(),
+    navigate: vi.fn(),
+    pointer: vi.fn(),
+    key: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   ctx.provide('sessions', sessions as never)
   ctx.provide('workspaces', workspaces as never)
   ctx.provide('locale', new LocaleRuntime(ctx))

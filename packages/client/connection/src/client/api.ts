@@ -11,6 +11,7 @@ export type {
   DirectoryEntry, DirectoryListing, WorkspaceEntry, WorkspaceFile, WorkspaceListing,
   ResponseValue, WorkspaceApi, WorkspaceId, WorkspaceView,
   TerminalApi, TerminalOpened, TerminalSignalName, TerminalView,
+  BrowserApi, BrowserOpened, BrowserView,
   SkillsApi, SkillEntry,
   ModelCatalogFailure, ModelCatalogModel, ModelProviderGroup, ModelReasoning,
   ModelReasoningEffort, ModelSelection, QueueAction, QueuedInboxItem, SessionModels,

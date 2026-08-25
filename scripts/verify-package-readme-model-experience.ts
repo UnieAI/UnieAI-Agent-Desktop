@@ -60,6 +60,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/client/unieai-account-gateway': { kind: 'none', reason: 'Reads an account snapshot from the host for a settings surface; the quota labels it holds are UI copy, and nothing here reaches a model request.' },
   'packages/client/unieai-bootstrap': { kind: 'none', reason: 'Reads one startup answer from the host for browser surfaces; it narrows no part of it and nothing here reaches a model request.' },
   'packages/terminal/terminal-operator': { kind: 'none', reason: 'The terminal a person drives. It registers no tool and contributes nothing to any prompt; a session opened here is invisible to the model, which reaches PTYs only through dsh-tool-terminal over ctx.terminals.' },
+  'packages/browser/browser-operator': { kind: 'none', reason: 'The browser a person drives. It registers no tool and contributes nothing to any prompt; the browser opened here is invisible to the model, which reaches the web only through dsh-tool-web over ctx.web.' },
   'packages/typert/registry': { kind: 'none', reason: 'Runtime type registry; consumers (cordis_inspect, wire faces, gates) own any model-visible projection of registry contents.' },
   'packages/typert/loader': { kind: 'none', reason: 'Loader integration only registers generated artifacts; consumers own any model-visible projection.' },
   'packages/e2b/e2b': { kind: 'none', reason: 'The shared remote-runtime owner registers no model context; provider adapters and consumers own rendered effects.' },

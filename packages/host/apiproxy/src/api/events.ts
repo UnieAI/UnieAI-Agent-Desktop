@@ -17,6 +17,7 @@ import type { RpcError, RpcId, RpcRequest } from './rpc.ts'
 import type { JobView } from './jobs.ts'
 import type { WorkspaceView } from './workspace.ts'
 import type { TerminalView } from './terminal.ts'
+import type { BrowserView } from './browser.ts'
 
 // Client-side consumers take the render-intent vocabulary from the contract;
 // dsh-tools remains its owner.
@@ -164,6 +165,17 @@ export type HostFrame =
    * browser have to converge on one authoritative list.
    */
   | { type: 'terminal/changed'; terminals: TerminalView[] }
+  /**
+   * One repaint of an operator browser's page, as a base64 JPEG.
+   *
+   * A page repaints whenever it likes, so this rides the stream rather than a
+   * return value; workspace-scoped for the same reason a terminal is, and
+   * delivered only to a loopback connection because `browser.*` is pinned
+   * there and a frame is a picture of what that browser can reach.
+   */
+  | { type: 'browser/frame'; browserId: string; data: string }
+  /** The complete set of operator browsers after any change or navigation. */
+  | { type: 'browser/changed'; browsers: BrowserView[] }
   /**
    * One allowlisted host cordis event forwarded verbatim. The allowlist is
    * owned by `@unieai/uad-api-remotes` (`API_REMOTE_FORWARDED_EVENTS`),

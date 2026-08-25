@@ -8,6 +8,7 @@ import type {
 import type {
   CommandNode, CompactionSummaryNode, ConversationSnapshot, ConversationTurnDataMap,
   ObservableSnapshot, PendingInteraction, PendingWait, SessionId, ToolCallBlock,
+  BrowserKey, BrowserPointer, BrowserView,
   TerminalView, TurnLocation, WorkspaceFile, WorkspaceId, WorkspaceListing,
 } from '@unieai/uad-client-runtime/client'
 import type { MarkdownFileMentions } from '@unieai/uad-client-ui-primitives'
@@ -949,6 +950,93 @@ export interface DetailsInjected {
     subscribe: (terminalId: string, sink: {
       output: (chunk: string) => void
       exited: (exitCode: number | undefined) => void
+    }) => () => void
+  }
+  /**
+   * The browser a person drives, for the panel's browser tab.
+   *
+   * Injected for the same reasons the terminal is, and shaped the same way:
+   * every gesture is a call, and the pixels come back the other direction as
+   * a subscription, because a page repaints when it likes rather than when it
+   * is asked to.
+   */
+  browsers: {
+    /**
+     * The live browser already running for one workspace, if any.
+     *
+     * Reopening the panel must REATTACH, for the terminal's reason: a browser
+     * outlives its panel, and a tab that always opened a new one would strand
+     * a real Chrome process with no surface able to reach or close it.
+     * @param workspaceId - the workspace to look in.
+     * @returns the newest live browser there, or undefined.
+     */
+    adopt: (workspaceId: string) => string | undefined
+    /**
+     * The last frame this client saw, for painting before the next repaint.
+     * @param browserId - the browser to look up.
+     * @returns base64 JPEG, or undefined before the first repaint.
+     */
+    lastFrame: (browserId: string) => string | undefined
+    /**
+     * Re-read one browser and its most recent frame.
+     * @param browserId - the browser to reattach to.
+     * @returns the browser and the frame the Host last produced.
+     */
+    replay: (browserId: string) => Promise<{ browser: BrowserView; frame?: string }>
+    /**
+     * Open a browser on one address.
+     * @param workspaceId - workspace the browser belongs to.
+     * @param url - the address; `http` and `https` only.
+     * @param width - viewport width the panel measures.
+     * @param height - viewport height the panel measures.
+     * @returns the browser and its first frame when one was ready.
+     */
+    open: (workspaceId: string, url: string, width: number, height: number) =>
+    Promise<{ browser: BrowserView; frame?: string }>
+    /**
+     * Point a browser at another address.
+     * @param browserId - the browser to navigate.
+     * @param url - the address; `http` and `https` only.
+     * @returns settles once the Host has taken it.
+     */
+    navigate: (browserId: string, url: string) => Promise<void>
+    /**
+     * Forward a pointer gesture, in the page's own coordinates.
+     * @param browserId - the browser to point at.
+     * @param gesture - the gesture.
+     * @returns settles once the Host has taken it.
+     */
+    pointer: (browserId: string, gesture: BrowserPointer) => Promise<void>
+    /**
+     * Forward a keyboard gesture.
+     * @param browserId - the browser to type into.
+     * @param gesture - the gesture.
+     * @returns settles once the Host has taken it.
+     */
+    key: (browserId: string, gesture: BrowserKey) => Promise<void>
+    /**
+     * Tell the page its viewport changed.
+     * @param browserId - the browser to resize.
+     * @param width - viewport width.
+     * @param height - viewport height.
+     * @returns settles once the Host has taken it.
+     */
+    resize: (browserId: string, width: number, height: number) => Promise<void>
+    /**
+     * End a browser and forget it.
+     * @param browserId - the browser to close.
+     * @returns settles once the Host has ended it.
+     */
+    close: (browserId: string) => Promise<void>
+    /**
+     * Receive one browser's repaints while this renderer is mounted.
+     * @param browserId - the browser to follow.
+     * @param sink - where its frames go.
+     * @returns disposer that removes exactly this subscription.
+     */
+    subscribe: (browserId: string, sink: {
+      frame: (data: string) => void
+      changed: (view: BrowserView) => void
     }) => () => void
   }
 }

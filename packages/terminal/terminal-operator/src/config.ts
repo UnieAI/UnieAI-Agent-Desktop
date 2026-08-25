@@ -1,7 +1,5 @@
 /** Validated configuration for the operator terminal. */
 
-import z from '@unieai/schemastery'
-
 /** Public plugin configuration. */
 export interface Config {
   /**
@@ -24,15 +22,6 @@ export interface Config {
 
 /** Configuration after Schemastery defaults. */
 export type ResolvedConfig = Required<Omit<Config, 'shellPath'>> & Pick<Config, 'shellPath'>
-
-/** Schemastery config exposed by the plugin. */
-export const Config: z<Config> = z.object({
-  enabled: z.boolean().default(true),
-  shellPath: z.string().required(false),
-  scrollbackMaxBytes: z.number().default(1024 * 1024),
-  maxTerminalsPerWorkspace: z.number().default(4),
-  disposeGraceMs: z.number().default(3_000),
-})
 
 /**
  * Assert every effective numeric config field is a positive safe integer.

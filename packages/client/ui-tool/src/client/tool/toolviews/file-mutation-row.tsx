@@ -9,10 +9,10 @@
 // section, its first line in the collapsed summary.
 
 import type { Context } from '@unieai/cordis'
-import { IconEditOutline16 } from '@unieai/uad-client-ui-primitives'
+import { IconEditOutline16, diffCardModel } from '@unieai/uad-client-ui-primitives'
 import type { PropsLocale } from '@unieai/uad-client-ui-slots'
 import type { ToolCallViewProps } from '../../contract/slots.ts'
-import { diffCardModel, diffSummarySuffix } from '@unieai/uad-client-ui-conversation/client'
+import { diffSummarySuffix } from '../diff-summary.ts'
 import { toolRowModel } from '../models/tool-call-model.ts'
 import { ToolRow } from '../components/ToolRow.tsx'
 import { CONVERSATION_NS as NS } from '../../locale.ts'

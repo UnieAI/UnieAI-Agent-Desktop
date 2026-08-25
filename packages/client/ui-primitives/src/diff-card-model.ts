@@ -5,12 +5,46 @@
  * that pair into what {@link DiffBlock} draws. Both conversation render sites
  * (the chat tool row's expanded body and the details panel's Output section)
  * call this, so the hunks they show are derived once.
+ *
+ * It lives in the PRIMITIVES package, beside the block it feeds, because both
+ * packages that render a diff need it and neither may import the other: the
+ * client bundle purity gate forbids cross-plugin value imports, and this
+ * package is one of the few that is statically linked into the shell and
+ * therefore importable from everywhere.
  * @module
  */
-import { diffStats } from '@unieai/uad-client-ui-primitives'
-import type { DiffBlockProps, DiffHunk, DiffStats } from '@unieai/uad-client-ui-primitives'
-import type { TranslateNS } from '@unieai/uad-client-ui-slots'
-import type { ToolCallBlock } from '@unieai/uad-client-runtime/client'
+import { diffStats } from './DiffBlock.tsx'
+import type { DiffBlockProps, DiffHunk, DiffStats } from './DiffBlock.tsx'
+
+/**
+ * One render-intent view, as much of it as this derivation reads.
+ *
+ * Structural rather than the runtime's own `ToolCallView`/`ToolResultView`:
+ * this package is the presentational layer both conversation surfaces build
+ * on, and importing a conversation type here would point the dependency the
+ * wrong way. The fields named are the only ones read, and a view carrying
+ * more is still assignable.
+ */
+interface DiffCardView {
+  readonly card?: string | undefined
+  readonly diffs?: unknown
+}
+
+/**
+ * What a diff card is derived from: a snapshot-cached tool-call block.
+ *
+ * `kind` is present only on a SETTLED call, which is what the derivation
+ * discriminates on — the same `'kind' in block` test the conversation's own
+ * readers use, stated here without naming their types.
+ */
+export interface DiffCardSource {
+  readonly kind?: unknown
+  // `null` as well as absent: the snapshot caches spell "this call carried no
+  // render intent" as null, and a structural type that only allowed undefined
+  // would refuse the very blocks this derivation exists to read.
+  readonly callView?: DiffCardView | null | undefined
+  readonly resultView?: DiffCardView | null | undefined
+}
 
 /**
  * Diff-body lines the chat row shows before collapsing the middle — half the
@@ -87,10 +121,10 @@ function narrowDiffs(diffs: unknown): DiffHunk[] | null {
  * deliberately dropped. The row supplies its own title (`Edit`/`Write · path`
  * from the args), which outranks the view's `title`. A tool that names its own
  * diff header therefore does not surface that text on the Web row.
- * @param block - RunningToolCall or ToolResultNode off the snapshot caches.
+ * @param block - a running call or a settled result off the snapshot caches.
  * @returns the diff-card props, or null for the generic path.
  */
-export function diffCardModel(block: ToolCallBlock): DiffCardModel | null {
+export function diffCardModel(block: DiffCardSource): DiffCardModel | null {
   if (!('kind' in block)) {
     // Running: the call view may carry the intended diff; the result is absent.
     const call = block.callView?.card === 'diff' ? block.callView : null
@@ -116,7 +150,3 @@ export function diffCardModel(block: ToolCallBlock): DiffCardModel | null {
  * @param t - the render site's conversation locale seat.
  * @returns the summary suffix text, or null when there is nothing to state.
  */
-export function diffSummarySuffix(diff: DiffCardModel | null, t: TranslateNS<'conversation'>): string | null {
-  if (diff === null) return null
-  return t('row.diffStat', { added: diff.stats.added, removed: diff.stats.removed })
-}

@@ -207,6 +207,7 @@
     { "path": "./packages/terminal/terminal" },
     { "path": "./packages/terminal/terminal-bash" },
     { "path": "./packages/terminal/terminal-operator" },
+    { "path": "./packages/browser/browser-operator" },
     { "path": "./packages/shell/tool-bash-persistent" },
     { "path": "./packages/shell/tool-pwsh-persistent" },
     { "path": "./packages/terminal/tool-terminal" },

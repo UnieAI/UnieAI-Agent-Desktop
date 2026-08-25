@@ -18,8 +18,9 @@
 import { accessSync, constants } from 'node:fs'
 import { hostname as osHostname } from 'node:os'
 import { Context, Service } from '@unieai/cordis'
+import z from '@unieai/schemastery'
 import type { SubprocessTerminalHandle } from '@unieai/uad-subprocess'
-import { Config, validateConfig, type ResolvedConfig } from './config.ts'
+import { validateConfig, type Config, type ResolvedConfig } from './config.ts'
 import { Scrollback } from './scrollback.ts'
 import { operatorTerminalEnv, operatorTerminalTitle, resolveOperatorShell } from './shell.ts'
 import {
@@ -30,8 +31,8 @@ import {
   type OperatorTerminalView,
 } from './types.ts'
 
-export { Config, validateConfig } from './config.ts'
-export type { ResolvedConfig } from './config.ts'
+export { validateConfig } from './config.ts'
+export type { Config, ResolvedConfig } from './config.ts'
 export { Scrollback } from './scrollback.ts'
 export { operatorTerminalEnv, operatorTerminalTitle, resolveOperatorShell } from './shell.ts'
 export {
@@ -97,7 +98,17 @@ export interface ShellProbe {
  */
 export class OperatorTerminalService extends Service {
   static inject = ['subprocess']
-  static Config = Config
+  // The schema is written HERE rather than imported from config.ts: the config
+  // catalog gate walks this expression statically, and an imported identifier
+  // is a name it cannot follow. The `Config` interface and its range checks
+  // stay next door.
+  static Config: z<Config> = z.object({
+    enabled: z.boolean().default(true),
+    shellPath: z.string().required(false),
+    scrollbackMaxBytes: z.number().default(1024 * 1024),
+    maxTerminalsPerWorkspace: z.number().default(4),
+    disposeGraceMs: z.number().default(3_000),
+  })
 
   private readonly terminals = new Map<OperatorTerminalId, TerminalRecord>()
   private readonly config: ResolvedConfig

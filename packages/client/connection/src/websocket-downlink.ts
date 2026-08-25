@@ -80,23 +80,24 @@ export class WebSocketDownlinks {
    * @param req - the upgrade request.
    * @param socket - the upgraded socket.
    * @param head - the upgrade head bytes.
-   * @param options - `terminals` carries whether this peer may see
-   *   operator-terminal frames. `terminal.*` is loopback-pinned because it
-   *   runs commands as the host account; a trusted remote browser that cannot
-   *   OPEN a terminal must not READ one either, and this stream is the only
-   *   other place a terminal's bytes leave the Host. The carrier decides it
-   *   because the carrier is the layer that knows who the peer is — a payload
-   *   field would be the client asserting its own privilege.
+   * @param options - `operator` carries whether this peer may see operator
+   *   frames — the terminal's bytes and the browser's screencast. `terminal.*`
+   *   and `browser.*` are loopback-pinned because they drive the host account's
+   *   own machine; a trusted remote browser that cannot OPEN one must not READ
+   *   one either, and this stream is the only other place those pixels and
+   *   bytes leave the Host. The carrier decides it because the carrier is the
+   *   layer that knows who the peer is — a payload field would be the client
+   *   asserting its own privilege.
    */
   handleHost(
     req: IncomingMessage,
     socket: Duplex,
     head: Buffer,
-    options: { terminals: boolean },
+    options: { operator: boolean },
   ): void {
     this.upgrade(req, socket, head, (signal) => {
       const frames = this.api.events.host({ rpcId: RpcId(randomUUID()), payload: {} }, signal)
-      return options.terminals ? frames : withoutTerminalFrames(frames)
+      return options.operator ? frames : withoutOperatorFrames(frames)
     })
   }
 
@@ -172,20 +173,21 @@ export function rejectWebSocketUpgrade(socket: Duplex): void {
 }
 
 /**
- * Drop every operator-terminal frame from a host stream.
+ * Drop every operator frame — terminal and browser — from a host stream.
  *
  * Filtering rather than never subscribing keeps ONE stream implementation on
  * the Host: the alternative — a second host() variant that omits the
  * subscriptions — would be a second thing to keep correct, and the frames it
  * omitted would be decided in a file that cannot see the peer.
  * @param frames - the unfiltered host stream.
- * @returns the same stream without `terminal/*` frames.
+ * @returns the same stream without `terminal/*` or `browser/*` frames.
  */
-async function* withoutTerminalFrames(
+async function* withoutOperatorFrames(
   frames: AsyncIterable<RpcRequest<HostFrame>>,
 ): AsyncIterable<RpcRequest<HostFrame>> {
   for await (const frame of frames) {
     if (frame.payload.type.startsWith('terminal/')) continue
+    if (frame.payload.type.startsWith('browser/')) continue
     yield frame
   }
 }

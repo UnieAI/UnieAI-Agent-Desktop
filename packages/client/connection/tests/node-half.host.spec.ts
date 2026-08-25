@@ -183,6 +183,14 @@ describe('connection node half', () => {
       // reconnaissance, and copy/remove/openDocument manage the roster and
       // drive the host desktop.
       'agentPreset.read', 'agentPreset.copy', 'agentPreset.openDocument', 'agentPreset.remove',
+      // The two operator surfaces. Both drive the host account's own machine —
+      // one runs commands as it, the other browses as it — and READING is
+      // pinned alongside opening, because a replay is the shell's output and a
+      // screenshot of whatever page that browser is signed in to.
+      'terminal.list', 'terminal.open', 'terminal.replay', 'terminal.write',
+      'terminal.resize', 'terminal.signal', 'terminal.close',
+      'browser.list', 'browser.open', 'browser.replay', 'browser.navigate',
+      'browser.pointer', 'browser.key', 'browser.resize', 'browser.close',
     ]) {
       const denied = fakeResponse()
       await routes[0]!.handler(

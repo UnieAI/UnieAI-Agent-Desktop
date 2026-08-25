@@ -144,6 +144,8 @@ flowchart LR
   svc_terminals["ctx.terminals<br/>Persistent PTY session registry"]
   pkg_terminal_operator["terminal-operator"]
   svc_operatorTerminals["ctx.operatorTerminals<br/>Operator terminal registry"]
+  pkg_browser_operator["browser-operator"]
+  svc_operatorBrowsers["ctx.operatorBrowsers<br/>Operator browser registry"]
   pkg_sandbox["sandbox"]
   svc_sandbox["ctx.sandbox<br/>Process-sandbox seam"]
   pkg_sandbox_local["sandbox-local"]
@@ -223,6 +225,7 @@ flowchart LR
   pkg_authorization --> svc_authorization
   pkg_bash_local --> svc_shell
   pkg_bash_sandbox --> svc_shell
+  pkg_browser_operator --> svc_operatorBrowsers
   pkg_code_runtime --> svc_codeRuntime
   pkg_code_runtime_worker --> svc_codeRuntime
   pkg_commands --> svc_commands
@@ -352,6 +355,7 @@ flowchart LR
   svc_llm --> pkg_agent_loop
   svc_llm --> pkg_compaction_basic
   svc_lsp --> pkg_tool_lsp
+  svc_operatorBrowsers --> pkg_host_apiproxy
   svc_operatorTerminals --> pkg_host_apiproxy
   svc_sandbox --> pkg_bash_sandbox
   svc_sandbox --> pkg_terminal_bash
@@ -479,6 +483,7 @@ flowchart LR
 | `ctx.shellEnv` | `core` | [`shell-env`](../packages/shell/shell-env) | - | [`tool-bash`](../packages/shell/tool-bash), [`tool-pwsh`](../packages/shell/tool-pwsh) | - | Plugins declare effect-scoped DSH_* facts; each shell tool collects one trusted snapshot per execution and its executor rebuilds the namespace. |
 | `ctx.terminals` | `seam` | [`terminal`](../packages/terminal/terminal) | [`terminal-bash`](../packages/terminal/terminal-bash) | [`tool-terminal`](../packages/terminal/tool-terminal) | - | The registry owns exact-Agent session identity and cleanup; backends own terminal mechanics, while tool-terminal exposes the owner-scoped model tools. |
 | `ctx.operatorTerminals` | `core` | [`terminal-operator`](../packages/terminal/terminal-operator) | - | [`host-apiproxy`](../packages/host/apiproxy) | - | The terminal a PERSON drives: workspace-scoped interactive shells over ctx.subprocess.spawnTerminal, streamed as host frames and loopback-pinned. Deliberately not ctx.terminals — that one fences to an Agent, is read by polling, and runs a profile-free shell. |
+| `ctx.operatorBrowsers` | `core` | [`browser-operator`](../packages/browser/browser-operator) | - | [`host-apiproxy`](../packages/host/apiproxy) | - | The browser a PERSON drives: a real Chrome the Host launches, driven over CDP, its repaints streamed as host frames and loopback-pinned. Deliberately not ctx.web — that one is the model's search/fetch capability and reaches no browser at all. |
 | `ctx.sandbox` | `seam` | [`sandbox`](../packages/sandbox/sandbox) | [`sandbox-local`](../packages/sandbox/sandbox-local) | [`bash-sandbox`](../packages/shell/bash-sandbox), [`terminal-bash`](../packages/terminal/terminal-bash) | - | Consumers hand over the exact argv they are about to spawn; same-world backends wrap it under a per-call policy and report enforcement. |
 | `ctx.sandboxPolicy` | `core` | [`sandbox-policy`](../packages/sandbox/sandbox-policy) | - | [`bash-sandbox`](../packages/shell/bash-sandbox), [`fs-sandbox`](../packages/fs/fs-sandbox), [`terminal-bash`](../packages/terminal/terminal-bash) | - | The one home for the deployment default mode + workspace root; only the sandboxed executor and provider read the service (the tool layers use the pure `sandbox/mode` fold it also exports). Both enforcing families read it so bash and fs cannot confine to different roots. |
 | `ctx.approval` | `seam` | `approval` | [`acp`](../packages/acp/acp) | [`tools`](../packages/core/tools), [`tool-bash`](../packages/shell/tool-bash) | - | One-shot permission decisions dispatched over the `approval/request` waterfall; answerers are listeners (the ACP bridge for its own agents), absence fails closed to `unavailable`. |

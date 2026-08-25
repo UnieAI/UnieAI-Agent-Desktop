@@ -1,0 +1,102 @@
+/* The page fills its tab; the address bar sits above it and never scrolls. */
+.root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--dsw-specific-sidebar-fill);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--dsw-line-1);
+}
+
+.address {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--dsw-line-1);
+  border-radius: 6px;
+  background: var(--dsw-fill-1);
+  color: var(--dsw-text-1);
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.address:focus {
+  outline: none;
+  border-color: var(--dsw-line-2);
+}
+
+.go {
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--dsw-line-1);
+  border-radius: 6px;
+  background: var(--dsw-fill-1);
+  color: var(--dsw-text-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.go:hover {
+  color: var(--dsw-text-1);
+}
+
+/*
+ * The viewport is focusable so the page can be typed into: a screencast is an
+ * image, and an image takes no keystrokes. `tabindex` is what makes the
+ * surface a keyboard target at all.
+ */
+.surface {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--dsw-fill-1);
+}
+
+.surface:focus {
+  outline: none;
+}
+
+/*
+ * The frame is painted at the box's own size. The Host is told the same size,
+ * so the picture is 1:1 with the page and a click lands where it looks like it
+ * lands; the object-fit is a guard for the moment between a resize and the
+ * first repaint at the new size, not a scaling strategy.
+ */
+.frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: top left;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.failure {
+  padding: 10px 12px;
+  color: var(--dsw-text-2);
+  font-size: 12px;
+  border-bottom: 1px solid var(--dsw-line-1);
+}
+
+.pending {
+  padding: 10px 12px;
+  color: var(--dsw-text-3);
+  font-size: 12px;
+}
+
+.footer {
+  padding: 6px 12px;
+  color: var(--dsw-text-3);
+  font-size: 11px;
+  border-top: 1px solid var(--dsw-line-1);
+}

@@ -68,6 +68,15 @@ async function bench() {
     close: vi.fn(),
     subscribe: vi.fn(() => () => {}),
   })
+  runtime.provide('panelBrowsers', {
+    open: vi.fn(),
+    navigate: vi.fn(),
+    pointer: vi.fn(),
+    key: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   runtime.provide('locale', locale)
   runtime.slots.installLocale(locale)
@@ -360,12 +369,12 @@ describe('details inject API', () => {
     const b = await bench()
     const entry = b.entryOf('details')
     const injected = (entry.inject as unknown as () => DetailsInjected)()
-    // Layout close, plus what the file view and the terminal need. Selection
-    // is deliberately absent: it rides the shared store so conversation and
-    // details agree.
+    // Layout close, plus what the file view and the two operator surfaces
+    // need. Selection is deliberately absent: it rides the shared store so
+    // conversation and details agree.
     expect(Object.keys(injected).sort())
       .toEqual([
-        'canOpenFileHere', 'closeDetails', 'listWorkspaceEntries', 'openFile',
+        'browsers', 'canOpenFileHere', 'closeDetails', 'listWorkspaceEntries', 'openFile',
         'readWorkspaceFile', 'terminals', 'toggleDetailsMaximized', 'writeWorkspaceFile',
       ])
     injected.closeDetails()

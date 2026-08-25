@@ -17,7 +17,7 @@ import type { ToolCallView, ToolResultView } from '@unieai/uad-api-remotes/clien
 import type { SelectionTarget } from '@unieai/uad-client-ui-conversation/client'
 import { makeTranslate } from '@unieai/uad-client-test-runtime'
 import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
-import { CHAT_DIFF_MAX_LINES, diffCardModel } from '@unieai/uad-client-ui-conversation/client'
+import { CHAT_DIFF_MAX_LINES, diffCardModel } from '@unieai/uad-client-ui-primitives'
 import { createChatStore } from '@unieai/uad-client-ui-conversation/src/client/stores.ts'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
 import { DetailsPanel } from '@unieai/uad-client-ui-conversation/src/client/skeleton/DetailsPanel.tsx'
@@ -353,6 +353,28 @@ describe('DetailsPanel diff Output section', () => {
         writeWorkspaceFile={() => Promise.resolve('v1')}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
+        browsers={{
+          adopt: () => undefined,
+          lastFrame: () => undefined,
+          replay: () => Promise.resolve({
+            browser: {
+              browserId: 'b1', workspaceId: 'w1', url: 'https://example.org/',
+              title: 'example', width: 800, height: 600, live: true,
+            },
+          }),
+          open: () => Promise.resolve({
+            browser: {
+              browserId: 'b1', workspaceId: 'w1', url: 'https://example.org/',
+              title: 'example', width: 800, height: 600, live: true,
+            },
+          }),
+          navigate: () => Promise.resolve(),
+          pointer: () => Promise.resolve(),
+          key: () => Promise.resolve(),
+          resize: () => Promise.resolve(),
+          close: () => Promise.resolve(),
+          subscribe: () => () => {},
+        }}
         terminals={{
           adopt: () => undefined,
           replay: () => Promise.resolve({

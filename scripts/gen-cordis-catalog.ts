@@ -88,6 +88,7 @@ export const SERVICE_PAGE: Record<string, string> = {
   planMode: 'plan.md',
   terminals: 'terminal.md',
   operatorTerminals: 'terminal.md',
+  operatorBrowsers: 'operator-browser.md',
   sandbox: 'sandbox.md',
   sandboxPolicy: 'sandbox.md',
   sessionPersistence: 'persistence.md',
@@ -166,6 +167,7 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
   theme: 'client-side interface-typed browser service — packages/client/ui-theme/README.md owns the API',
   workspaces: 'client-side interface-typed browser service — packages/client/runtime/README.md owns the API',
   panelTerminals: 'client-side browser service for the terminal panel — packages/client/runtime/README.md owns the API; the Host service it talks to (ctx.operatorTerminals) is the catalogued one',
+  panelBrowsers: 'client-side browser service for the browser panel — packages/client/runtime/README.md owns the API; the Host service it talks to (ctx.operatorBrowsers) is the catalogued one',
   settingsPanel: 'client-side interface-typed browser service — packages/client/ui-settings/README.md owns the API',
   unieaiAccount: 'client-side interface-typed browser service — packages/client/unieai-account-gateway/README.md owns the API',
   unieaiBootstrap: 'client-side interface-typed browser service — packages/client/unieai-bootstrap/README.md owns the API',
@@ -183,6 +185,7 @@ export const EVENT_SCOPE_PAGE: Record<string, string> = {
   // The terminal a person drives; documented beside the model-facing PTY
   // stack it deliberately does not share a registry with.
   'operator-terminal': 'terminal.md',
+  'operator-browser': 'operator-browser.md',
   // Emitted by the sign-in gate when the account it acts for changes; same
   // page as the service that emits it.
   'unieai-gate': 'web-server.md',
@@ -580,6 +583,11 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   OperatorTerminalOpenSpec: 'what opening a terminal a PERSON drives requires is owned by packages/terminal/terminal-operator/README.md',
   OperatorTerminalSignal: 'the signals the GUI may deliver to a terminal a PERSON drives are owned by packages/terminal/terminal-operator/README.md',
   OperatorTerminalView: 'the view of a terminal a PERSON drives is owned by packages/terminal/terminal-operator/README.md; its browser-facing twin TerminalView is the wire-documented one',
+  OperatorBrowserId: 'the id of a browser a PERSON drives is owned by packages/browser/browser-operator/README.md; the model-facing web tools have no browser registry at all, and these are deliberately separate surfaces',
+  OperatorBrowserView: 'the view of a browser a PERSON drives is owned by packages/browser/browser-operator/README.md; its browser-facing twin BrowserView is the wire-documented one',
+  OperatorBrowserOpenSpec: 'what opening a browser a PERSON drives requires is owned by packages/browser/browser-operator/README.md',
+  OperatorBrowserPointer: 'the pointer gestures the GUI may forward to a browser a PERSON drives are owned by packages/browser/browser-operator/README.md',
+  OperatorBrowserKey: 'the keyboard gestures the GUI may forward to a browser a PERSON drives are owned by packages/browser/browser-operator/README.md',
   AgentPreset: 'discovered preset record is owned by packages/preset/agent-presets/README.md',
   PresetMetadata: 'preset display text is owned by packages/preset/agent-presets/README.md',
   BashEnvContributor: 'service-local extension type is owned by packages/shell/tool-bash/src/index.ts',

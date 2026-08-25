@@ -52,7 +52,7 @@ declare module '@unieai/uad-client-ui-slots' {
 /** Services required by the conversation plugin. */
 export const inject = [
   'slots', 'layout', 'sessions', 'workspaces', 'locale', 'connection', 'remote', 'settingsScope',
-  'conversationEvents', 'conversationViews', 'panelTerminals',
+  'conversationEvents', 'conversationViews', 'panelTerminals', 'panelBrowsers',
 ]
 
 // Static no-session sources for the composer-bar hooks compartment: module
@@ -490,6 +490,18 @@ export function apply(ctx: Context): void {
         resize: (terminalId, cols, rows) => ctx.panelTerminals.resize(terminalId, cols, rows),
         close: terminalId => ctx.panelTerminals.close(terminalId),
         subscribe: (terminalId, sink) => ctx.panelTerminals.subscribe(terminalId, sink),
+      },
+      browsers: {
+        adopt: workspaceId => ctx.panelBrowsers.liveIn(workspaceId),
+        lastFrame: browserId => ctx.panelBrowsers.lastFrame(browserId),
+        replay: browserId => ctx.panelBrowsers.replay(browserId),
+        open: (workspaceId, url, width, height) => ctx.panelBrowsers.open(workspaceId, url, width, height),
+        navigate: (browserId, url) => ctx.panelBrowsers.navigate(browserId, url),
+        pointer: (browserId, gesture) => ctx.panelBrowsers.pointer(browserId, gesture),
+        key: (browserId, gesture) => ctx.panelBrowsers.key(browserId, gesture),
+        resize: (browserId, width, height) => ctx.panelBrowsers.resize(browserId, width, height),
+        close: browserId => ctx.panelBrowsers.close(browserId),
+        subscribe: (browserId, sink) => ctx.panelBrowsers.subscribe(browserId, sink),
       },
     }),
   }, DetailsPanel)

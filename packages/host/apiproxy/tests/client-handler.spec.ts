@@ -85,6 +85,64 @@ function scriptedApi(overrides: {
       openPath: r => ok(r, { opened: true as const }),
       ...overrides.host,
     },
+    browser: {
+      async list(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: { browsers: [] } } }
+      },
+      async open(request) {
+        return {
+          rpcId: request.rpcId,
+          result: {
+            ok: true,
+            value: {
+              browser: {
+                browserId: 'b1',
+                workspaceId: request.payload.workspaceId,
+                url: request.payload.url,
+                title: 'example',
+                width: request.payload.width,
+                height: request.payload.height,
+                live: true,
+              },
+            },
+          },
+        }
+      },
+      async replay(request) {
+        return {
+          rpcId: request.rpcId,
+          result: {
+            ok: true,
+            value: {
+              browser: {
+                browserId: request.payload.browserId,
+                workspaceId: 'w1',
+                url: 'https://example.org/',
+                title: 'example',
+                width: 800,
+                height: 600,
+                live: true,
+              },
+            },
+          },
+        }
+      },
+      async navigate(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async pointer(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async key(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async resize(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+      async close(request) {
+        return { rpcId: request.rpcId, result: { ok: true, value: {} } }
+      },
+    },
     terminal: {
       async list(request) {
         return { rpcId: request.rpcId, result: { ok: true, value: { terminals: [] } } }

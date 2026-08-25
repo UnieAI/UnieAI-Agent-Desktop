@@ -106,6 +106,9 @@
     },
     {
       "path": "../../terminal/terminal-operator"
+    },
+    {
+      "path": "../../browser/browser-operator"
     }
   ]
 }

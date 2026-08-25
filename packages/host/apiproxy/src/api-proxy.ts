@@ -34,6 +34,12 @@ import type { Workspace, WorkspaceRecord } from '@unieai/uad-workspace'
 // person can act on keeps its own wire code. The type-only side also brings
 // the `ctx.operatorTerminals` Context augmentation into this program.
 import {
+  OperatorBrowserError,
+  type OperatorBrowserId,
+  type OperatorBrowserService,
+  type OperatorBrowserView,
+} from '@unieai/uad-browser-operator'
+import {
   OperatorTerminalError,
   type OperatorTerminalId,
   type OperatorTerminalService,
@@ -57,6 +63,7 @@ import type {
   QueuedInboxItem, SessionSummary, SettingsNamespaceView, SubagentAddress, JobView, ToolEventView,
   WorkspaceId, WorkspaceView,
   TerminalView,
+  BrowserView,
 } from './api/index.ts'
 import {
   DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
@@ -634,6 +641,42 @@ function directoryError(error: unknown): RpcError {
 function terminalView(terminal: OperatorTerminalView): TerminalView {
   const { exitCode, ...rest } = terminal
   return { ...rest, ...exitCode === undefined ? {} : { exitCode } }
+}
+
+/**
+ * Project one operator browser onto its wire shape.
+ * @param browser - the service's own view.
+ * @returns the wire view.
+ */
+function browserView(browser: OperatorBrowserView): BrowserView {
+  return { ...browser }
+}
+
+/**
+ * Map an operator-browser failure onto the wire error vocabulary.
+ *
+ * Written out rather than derived from the code string, so a new service code
+ * fails this file's typecheck instead of silently producing an error code no
+ * client knows.
+ * @param method - wire method name, for the message prefix.
+ * @param error - whatever the service threw.
+ * @param browserId - the browser the call named, for the codes that carry it.
+ * @param url - the address the call named, for the codes that carry it.
+ * @returns the wire error to return.
+ */
+function browserError(method: string, error: unknown, browserId = '', url = ''): RpcError {
+  if (error instanceof OperatorBrowserError) {
+    const message = `${method}: ${error.message}`
+    switch (error.code) {
+      case 'DISABLED': return { code: 'browser-disabled', message, details: {} }
+      case 'NO_BROWSER': return { code: 'browser-no-browser', message, details: { browserId } }
+      case 'NO_CHROME': return { code: 'browser-no-chrome', message, details: {} }
+      case 'TOO_MANY_BROWSERS': return { code: 'browser-too-many-browsers', message, details: {} }
+      case 'CLOSED': return { code: 'browser-closed', message, details: { browserId } }
+      case 'BLOCKED_URL': return { code: 'browser-blocked-url', message, details: { url } }
+    }
+  }
+  return { code: 'internal', message: error instanceof Error ? error.message : String(error), details: {} }
 }
 
 /**
@@ -2041,6 +2084,39 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
    * @param run - the operation itself.
    * @returns the wire response.
    */
+  /**
+   * Run one operator-browser operation that returns nothing, mapping an absent
+   * service and a service failure onto the wire vocabulary.
+   * @param request - the request being answered, for the response envelope.
+   * @param method - wire method name, for the message prefix.
+   * @param browserId - the browser the call named, for the codes that carry it.
+   * @param run - the operation itself.
+   * @param url - the address the call named, for the codes that carry it.
+   * @returns the wire response.
+   */
+  const browserOperation = async <P>(
+    request: RpcRequest<P>,
+    method: string,
+    browserId: string,
+    run: (browsers: OperatorBrowserService) => Promise<void>,
+    url = '',
+  ): Promise<RpcResponse<{}>> => {
+    const browsers = ctx.get('operatorBrowsers')
+    if (browsers === undefined) {
+      return err(request, {
+        code: 'browser-unavailable',
+        message: `${method} needs the operatorBrowsers service, which this deployment does not compose`,
+        details: {},
+      })
+    }
+    try {
+      await run(browsers)
+      return ok(request, {})
+    } catch (error: unknown) {
+      return err(request, browserError(method, error, browserId, url))
+    }
+  }
+
   const terminalOperation = async <P>(
     request: RpcRequest<P>,
     method: string,
@@ -2824,6 +2900,99 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           }))
         }
         return Promise.resolve(ok(request, { accepted: true as const }))
+      },
+    },
+
+    browser: {
+      list(request) {
+        const browsers = ctx.get('operatorBrowsers')
+        if (browsers === undefined) return Promise.resolve(ok(request, { browsers: [] }))
+        return Promise.resolve(ok(request, { browsers: browsers.list().map(browserView) }))
+      },
+
+      async open(request, signal) {
+        const browsers = ctx.get('operatorBrowsers')
+        if (browsers === undefined) {
+          return err(request, {
+            code: 'browser-unavailable',
+            message: 'browser.open needs the operatorBrowsers service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        signal.throwIfAborted()
+        try {
+          const browser = await browsers.open({
+            workspaceId: request.payload.workspaceId,
+            url: request.payload.url,
+            width: request.payload.width,
+            height: request.payload.height,
+          })
+          const frame = browsers.lastFrame(browser.browserId)
+          return ok(request, {
+            browser: browserView(browser),
+            ...frame === undefined ? {} : { frame },
+          })
+        } catch (error: unknown) {
+          return err(request, browserError('browser.open', error, '', request.payload.url))
+        }
+      },
+
+      replay(request) {
+        const browsers = ctx.get('operatorBrowsers')
+        if (browsers === undefined) {
+          return Promise.resolve(err(request, {
+            code: 'browser-unavailable',
+            message: 'browser.replay needs the operatorBrowsers service, which this deployment does not compose',
+            details: {},
+          }))
+        }
+        const id = request.payload.browserId as OperatorBrowserId
+        const browser = browsers.list().find(candidate => candidate.browserId === id)
+        if (browser === undefined) {
+          return Promise.resolve(err(request, {
+            code: 'browser-no-browser',
+            message: `browser.replay: no browser ${request.payload.browserId}`,
+            details: { browserId: request.payload.browserId },
+          }))
+        }
+        const frame = browsers.lastFrame(id)
+        return Promise.resolve(ok(request, {
+          browser: browserView(browser),
+          ...frame === undefined ? {} : { frame },
+        }))
+      },
+
+      async navigate(request) {
+        return browserOperation(request, 'browser.navigate', request.payload.browserId, async (browsers) => {
+          await browsers.navigate(request.payload.browserId as OperatorBrowserId, request.payload.url)
+        }, request.payload.url)
+      },
+
+      async pointer(request) {
+        return browserOperation(request, 'browser.pointer', request.payload.browserId, async (browsers) => {
+          const { browserId: _id, ...gesture } = request.payload
+          await browsers.pointer(request.payload.browserId as OperatorBrowserId, gesture)
+        })
+      },
+
+      async key(request) {
+        return browserOperation(request, 'browser.key', request.payload.browserId, async (browsers) => {
+          const { browserId: _id, ...gesture } = request.payload
+          await browsers.key(request.payload.browserId as OperatorBrowserId, gesture)
+        })
+      },
+
+      async resize(request) {
+        return browserOperation(request, 'browser.resize', request.payload.browserId, async (browsers) => {
+          await browsers.resize(
+            request.payload.browserId as OperatorBrowserId, request.payload.width, request.payload.height)
+        })
+      },
+
+      async close(request) {
+        return browserOperation(request, 'browser.close', request.payload.browserId, async (browsers) => {
+          await browsers.close(request.payload.browserId as OperatorBrowserId)
+        })
       },
     },
 
@@ -3954,6 +4123,15 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           }),
           ctx.on('operator-terminal/changed', (terminals: OperatorTerminalView[]) => {
             queue.push(frame({ type: 'terminal/changed', terminals: terminals.map(terminalView) }))
+          }),
+          // Operator-browser traffic rides the same stream for the same reason,
+          // and is dropped by the same carrier check. A screencast frame is a
+          // picture of a page the host account is signed in to.
+          ctx.on('operator-browser/frame', (browserId: string, data: string) => {
+            queue.push(frame({ type: 'browser/frame', browserId, data }))
+          }),
+          ctx.on('operator-browser/changed', (browsers: OperatorBrowserView[]) => {
+            queue.push(frame({ type: 'browser/changed', browsers: browsers.map(browserView) }))
           }),
           // Allowlisted host events ride one verbatim wrapper frame each. The
           // allowlist is api-remotes', and `ctx.remote.$on` is the consumer

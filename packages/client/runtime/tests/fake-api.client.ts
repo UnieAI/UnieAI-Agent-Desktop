@@ -210,6 +210,27 @@ export class FakeApiClient implements IApiClient {
   onWorkspaceArchiveSession: (payload: unknown) => Promise<RpcResponse<{ archivedSessionIds: SessionId[] }>> =
     payload => Promise.resolve(ok({ archivedSessionIds: [(payload as { sessionId: SessionId }).sessionId] }))
 
+  readonly browser: IApiClient['browser'] = {
+    list: (payload: unknown) => this.record('browser.list', payload, Promise.resolve(ok({ browsers: [] }))),
+    open: (payload: unknown) => this.record('browser.open', payload, Promise.resolve(ok({
+      browser: {
+        browserId: 'fk-browser', workspaceId: 'fk-ws', url: 'https://example.org/',
+        title: 'example', width: 800, height: 600, live: true,
+      },
+    }))),
+    replay: (payload: unknown) => this.record('browser.replay', payload, Promise.resolve(ok({
+      browser: {
+        browserId: 'fk-browser', workspaceId: 'fk-ws', url: 'https://example.org/',
+        title: 'example', width: 800, height: 600, live: true,
+      },
+    }))),
+    navigate: (payload: unknown) => this.record('browser.navigate', payload, Promise.resolve(ok({}))),
+    pointer: (payload: unknown) => this.record('browser.pointer', payload, Promise.resolve(ok({}))),
+    key: (payload: unknown) => this.record('browser.key', payload, Promise.resolve(ok({}))),
+    resize: (payload: unknown) => this.record('browser.resize', payload, Promise.resolve(ok({}))),
+    close: (payload: unknown) => this.record('browser.close', payload, Promise.resolve(ok({}))),
+  }
+
   readonly terminal: IApiClient['terminal'] = {
     list: (payload: unknown) => this.record('terminal.list', payload, Promise.resolve(ok({ terminals: [] }))),
     open: (payload: unknown) => this.record('terminal.open', payload, Promise.resolve(ok({

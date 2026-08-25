@@ -13,7 +13,7 @@ type PanelLabel = Parameters<DetailsSlotProps['t']>[0]
 import css from './PanelMenu.module.css'
 
 /** What one menu row opens. */
-export type PanelItemId = 'review' | 'files' | 'terminal'
+export type PanelItemId = 'review' | 'files' | 'terminal' | 'browser'
 
 /** One row: what it opens, and how it is labelled. */
 interface PanelItem {
@@ -30,9 +30,6 @@ interface PanelItem {
 
 /**
  * The rows, in the order the column offers them.
- *
- * The browser belongs here too and is absent until it exists: a row that opens
- * nothing teaches someone the menu is unreliable.
  *
  * There is no "produced" row. It listed the files a session wrote as bare
  * names; Review lists the same files WITH the change in each one, and carries
@@ -51,6 +48,7 @@ export const PANEL_ITEMS: readonly PanelItem[] = [
   { id: 'review', label: 'panel.review' },
   { id: 'files', label: 'panel.files' },
   { id: 'terminal', label: 'panel.terminal' },
+  { id: 'browser', label: 'panel.browser' },
 ]
 
 /**
@@ -68,6 +66,17 @@ export function PanelItemIcon({ id }: { id: PanelItemId }) {
       <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
         <rect x="2.25" y="2.25" width="11.5" height="11.5" rx="2" fill="none" stroke="currentColor" strokeWidth="1.2" />
         <path d="M5.25 6.5h5.5M5.25 9.5h3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      </svg>
+    )
+  }
+  if (id === 'browser') {
+    return (
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
+        <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
+        <path
+          d="M2 8h12M8 2c1.6 1.7 2.4 3.7 2.4 6S9.6 12.3 8 14c-1.6-1.7-2.4-3.7-2.4-6S6.4 3.7 8 2z"
+          fill="none" stroke="currentColor" strokeWidth="1.2"
+        />
       </svg>
     )
   }

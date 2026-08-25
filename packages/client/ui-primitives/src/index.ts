@@ -39,6 +39,8 @@ export type { HighlightSpan } from './markdown/highlight.ts'
 export type { ReadBlockProps, ReadBlockLine } from './ReadBlock.tsx'
 export { DiffBlock, DEFAULT_DIFF_MAX_LINES, diffStats } from './DiffBlock.tsx'
 export type { DiffBlockProps, DiffHunk, DiffStats } from './DiffBlock.tsx'
+export { CHAT_DIFF_MAX_LINES, diffCardModel } from './diff-card-model.ts'
+export type { DiffCardModel, DiffCardSource } from './diff-card-model.ts'
 export { SearchBlock, DEFAULT_SEARCH_MAX_LINES } from './SearchBlock.tsx'
 export type {
   SearchBlockProps, SearchMatchesBlockProps, SearchPathsBlockProps, SearchFileGroup, SearchBlockLineMatch,

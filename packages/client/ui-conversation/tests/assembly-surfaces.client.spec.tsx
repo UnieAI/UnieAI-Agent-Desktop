@@ -64,6 +64,15 @@ async function bench(opts?: { blank?: boolean }) {
     close: vi.fn(),
     subscribe: vi.fn(() => () => {}),
   })
+  runtime.provide('panelBrowsers', {
+    open: vi.fn(),
+    navigate: vi.fn(),
+    pointer: vi.fn(),
+    key: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   const locale = new LocaleRuntime(runtime.ctx)
   runtime.provide('locale', locale)
   runtime.slots.installLocale(locale)
@@ -95,6 +104,15 @@ describe('resident composer', () => {
     runtime.provide('panelTerminals', {
       open: vi.fn(),
       write: vi.fn(),
+      resize: vi.fn(),
+      close: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    })
+    runtime.provide('panelBrowsers', {
+      open: vi.fn(),
+      navigate: vi.fn(),
+      pointer: vi.fn(),
+      key: vi.fn(),
       resize: vi.fn(),
       close: vi.fn(),
       subscribe: vi.fn(() => () => {}),
@@ -132,6 +150,15 @@ describe('resident composer', () => {
     runtime.provide('panelTerminals', {
       open: vi.fn(),
       write: vi.fn(),
+      resize: vi.fn(),
+      close: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    })
+    runtime.provide('panelBrowsers', {
+      open: vi.fn(),
+      navigate: vi.fn(),
+      pointer: vi.fn(),
+      key: vi.fn(),
       resize: vi.fn(),
       close: vi.fn(),
       subscribe: vi.fn(() => () => {}),
@@ -208,6 +235,15 @@ describe('prompt rejection through the assembled composer', () => {
     runtime.provide('panelTerminals', {
       open: vi.fn(),
       write: vi.fn(),
+      resize: vi.fn(),
+      close: vi.fn(),
+      subscribe: vi.fn(() => () => {}),
+    })
+    runtime.provide('panelBrowsers', {
+      open: vi.fn(),
+      navigate: vi.fn(),
+      pointer: vi.fn(),
+      key: vi.fn(),
       resize: vi.fn(),
       close: vi.fn(),
       subscribe: vi.fn(() => () => {}),

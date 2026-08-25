@@ -388,6 +388,11 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [],
       },
       {
+        signature: 'browser: BrowserApi',
+        description: 'The browser a person drives; loopback-pinned and model-invisible.',
+        parameters: [],
+      },
+      {
         signature: 'downloads: DownloadsApi',
         description: 'Host-only download surfaces (GET, no wire envelope); absent from IApiClient.',
         parameters: [],
@@ -1085,6 +1090,62 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Delete one feedback item. Absence is successful regardless of the supplied version; an existing item requires an exact version match.',
         parameters: [{ name: 'request', description: 'Session, message, and observed item version.' }],
         returns: 'the stable absent postcondition, or an explicit failure.',
+      },
+    ],
+  },
+  {
+    key: 'operatorBrowsers',
+    summary: 'Registry of the browsers a person opened in the GUI.',
+    description: 'Registry of the browsers a person opened in the GUI.\n\nBrowsers are scoped to a workspace, like terminals: a page left open on a dashboard must not close because the user started a new conversation.',
+    methods: [
+      {
+        signature: 'async open(spec: OperatorBrowserOpenSpec): Promise<OperatorBrowserView>',
+        description: 'Open a browser on one address.',
+        parameters: [{ name: 'spec', description: 'workspace, first address, and the panel\'s current viewport.' }],
+        returns: 'the new browser\'s view.',
+      },
+      {
+        signature: 'async navigate(browserId: OperatorBrowserId, url: string): Promise<void>',
+        description: 'Point this browser at another address.',
+        parameters: [{ name: 'browserId', description: 'the browser to navigate.' }, { name: 'url', description: 'the address.' }],
+      },
+      {
+        signature: 'async pointer(browserId: OperatorBrowserId, pointer: OperatorBrowserPointer): Promise<void>',
+        description: 'Forward a pointer gesture.',
+        parameters: [{ name: 'browserId', description: 'the browser to drive.' }, { name: 'pointer', description: 'the gesture, in the page\'s own coordinates.' }],
+      },
+      {
+        signature: 'async key(browserId: OperatorBrowserId, key: OperatorBrowserKey): Promise<void>',
+        description: 'Forward a keyboard gesture.',
+        parameters: [{ name: 'browserId', description: 'the browser to drive.' }, { name: 'key', description: 'the gesture.' }],
+      },
+      {
+        signature: 'async resize(browserId: OperatorBrowserId, width: number, height: number): Promise<void>',
+        description: 'Tell the page its viewport changed.',
+        parameters: [{ name: 'browserId', description: 'the browser to resize.' }, { name: 'width', description: 'viewport width the panel measures.' }, { name: 'height', description: 'viewport height the panel measures.' }],
+      },
+      {
+        signature: 'lastFrame(browserId: OperatorBrowserId): string | undefined',
+        description: 'The most recent frame, so a reopened panel paints immediately.',
+        parameters: [{ name: 'browserId', description: 'the browser to read.' }],
+        returns: 'the frame as base64, or undefined before the first paint.',
+      },
+      {
+        signature: 'list(): OperatorBrowserView[]',
+        description: 'Every browser this service holds, live and closed alike.\n\nSent whole rather than as a delta so two panels watching the same Host converge on the same list instead of each keeping its own running total.',
+        parameters: [],
+        returns: 'a view of every browser the service holds.',
+      },
+      {
+        signature: 'liveIn(workspaceId: string): OperatorBrowserId | undefined',
+        description: 'The live browser for one workspace, if any.',
+        parameters: [{ name: 'workspaceId', description: 'the workspace to look in.' }],
+        returns: 'its newest live browser\'s id, or undefined.',
+      },
+      {
+        signature: 'async close(browserId: OperatorBrowserId): Promise<void>',
+        description: 'End a browser and forget it.',
+        parameters: [{ name: 'browserId', description: 'the browser to close.' }],
       },
     ],
   },
@@ -2714,6 +2775,22 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; their messages already obey the immutable creation contract.' }],
   },
   {
+    name: 'operator-browser/changed',
+    mode: 'emit',
+    signature: '\'operator-browser/changed\': (browsers: OperatorBrowserView[]) => void',
+    summary: 'The set of operator browsers changed, or one of them navigated.',
+    description: 'The set of operator browsers changed, or one of them navigated. Sent whole for the same reason the terminal list is: a second tab and a reconnecting browser have to converge on one authoritative value.',
+    parameters: [{ name: 'browsers', description: 'every browser the service still holds.' }],
+  },
+  {
+    name: 'operator-browser/frame',
+    mode: 'emit',
+    signature: '\'operator-browser/frame\': (browserId: OperatorBrowserId, data: string) => void',
+    summary: 'One repaint of a browser\'s page, as a base64 JPEG.',
+    description: 'One repaint of a browser\'s page, as a base64 JPEG.',
+    parameters: [{ name: 'browserId', description: 'the browser that painted it.' }, { name: 'data', description: 'the frame, base64-encoded.' }],
+  },
+  {
     name: 'operator-terminal/changed',
     mode: 'emit',
     signature: '\'operator-terminal/changed\': (terminals: OperatorTerminalView[]) => void',
@@ -3140,6 +3217,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'Branded',
     declaration: 'export type Branded<B extends string> = string & {\n    readonly [BRAND]: B;\n};',
+  },
+  {
+    name: 'BrowserApi',
+    declaration: 'export interface BrowserApi {\n    list(request: RpcRequest<{}>, signal: AbortSignal): Promise<RpcResponse<{\n        browsers: BrowserView[];\n    }>>;\n    open(request: RpcRequest<{\n        workspaceId: string;\n        url: string;\n        width: number;\n        height: number;\n    }>, signal: AbortSignal): Promise<RpcResponse<BrowserOpened>>;\n    replay(request: RpcRequest<{\n        browserId: string;\n    }>, signal: AbortSignal): Promise<RpcResponse<BrowserOpened>>;\n    navigate(request: RpcRequest<{\n        browserId: string;\n        url: string;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n    pointer(request: RpcRequest<{\n        browserId: string;\n        type: \'mousePressed\' | \'mouseReleased\' | \'mouseMoved\' | \'mouseWheel\';\n        x: number;\n        y: number;\n        deltaX?: number;\n        deltaY?: number;\n        clickCount?: number;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n    key(request: RpcRequest<{\n        browserId: string;\n        type: \'keyDown\' | \'keyUp\' | \'char\';\n        key?: string;\n        code?: string;\n        text?: string;\n        modifiers?: number;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n    resize(request: RpcRequest<{\n        browserId: string;\n        width: number;\n        height: number;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n    close(request: RpcRequest<{\n        browserId: string;\n    }>, signal: AbortSignal): Promise<RpcResponse<{}>>;\n}',
+  },
+  {
+    name: 'BrowserOpened',
+    declaration: 'export interface BrowserOpened {\n    browser: BrowserView;\n    frame?: string;\n}',
+  },
+  {
+    name: 'BrowserView',
+    declaration: 'export interface BrowserView {\n    browserId: string;\n    workspaceId: string;\n    url: string;\n    title: string;\n    width: number;\n    height: number;\n    live: boolean;\n}',
   },
   {
     name: 'CancelOptions',
@@ -3938,6 +4027,26 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface OneShotSubagentDescriptorData extends SubagentDescriptorBase {\n    readonly mode: \'one-shot\';\n    readonly label?: string;\n}',
   },
   {
+    name: 'OperatorBrowserId',
+    declaration: 'export type OperatorBrowserId = string & {\n    readonly __operatorBrowser: unique symbol;\n};',
+  },
+  {
+    name: 'OperatorBrowserKey',
+    declaration: 'export interface OperatorBrowserKey {\n    type: \'keyDown\' | \'keyUp\' | \'char\';\n    key?: string;\n    code?: string;\n    text?: string;\n    modifiers?: number;\n}',
+  },
+  {
+    name: 'OperatorBrowserOpenSpec',
+    declaration: 'export interface OperatorBrowserOpenSpec {\n    workspaceId: string;\n    url: string;\n    width: number;\n    height: number;\n}',
+  },
+  {
+    name: 'OperatorBrowserPointer',
+    declaration: 'export interface OperatorBrowserPointer {\n    type: \'mousePressed\' | \'mouseReleased\' | \'mouseMoved\' | \'mouseWheel\';\n    x: number;\n    y: number;\n    deltaX?: number;\n    deltaY?: number;\n    clickCount?: number;\n}',
+  },
+  {
+    name: 'OperatorBrowserView',
+    declaration: 'export interface OperatorBrowserView {\n    browserId: OperatorBrowserId;\n    workspaceId: string;\n    url: string;\n    title: string;\n    width: number;\n    height: number;\n    live: boolean;\n}',
+  },
+  {
     name: 'OperatorTerminalId',
     declaration: 'export type OperatorTerminalId = string & {\n    readonly __operatorTerminal: unique symbol;\n};',
   },
@@ -4127,7 +4236,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'RpcErrorDetailsMap',
-    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n    \'terminal-exited\': {\n        terminalId: string;\n    };\n    \'agent-preset-read-only\': {\n  /* …truncated — full shape in source */',
+    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n    \'terminal-exited\': {\n        terminalId: string;\n    };\n    \'browser-unavailable\': {};\n   /* …truncated — full shape in source */',
   },
   {
     name: 'RpcId',

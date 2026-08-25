@@ -27,7 +27,7 @@ import type { ConversationSnapshot, ToolCallBlock } from '@unieai/uad-client-run
 import type { DiffHunk, DiffStats } from '@unieai/uad-client-ui-primitives'
 import { diffStats } from '@unieai/uad-client-ui-primitives'
 import type { ChatNode } from '../contract/chat-nodes.ts'
-import { diffCardModel } from '../diff-card-model.ts'
+import { diffCardModel } from '@unieai/uad-client-ui-primitives'
 
 /** One file the session changed. */
 export interface ReviewedFile {

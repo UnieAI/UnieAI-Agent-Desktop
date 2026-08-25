@@ -165,6 +165,15 @@ async function bench(snapshot: ConversationSnapshot) {
     close: vi.fn(),
     subscribe: vi.fn(() => () => {}),
   })
+  ctx.provide('panelBrowsers', {
+    open: vi.fn(),
+    navigate: vi.fn(),
+    pointer: vi.fn(),
+    key: vi.fn(),
+    resize: vi.fn(),
+    close: vi.fn(),
+    subscribe: vi.fn(() => () => {}),
+  })
   ctx.provide('connection', {
     api: { settings: {} },
     isLoopback: false,

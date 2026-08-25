@@ -8,6 +8,11 @@
 
 import { hostWriteWorkspaceFileRequestSchema } from '../api/host.schema.ts'
 import {
+  browserCloseRequestSchema, browserKeyRequestSchema, browserListRequestSchema,
+  browserNavigateRequestSchema, browserOpenRequestSchema, browserPointerRequestSchema,
+  browserReplayRequestSchema, browserResizeRequestSchema,
+} from '../api/browser.schema.ts'
+import {
   terminalCloseRequestSchema, terminalListRequestSchema, terminalOpenRequestSchema,
   terminalReplayRequestSchema, terminalResizeRequestSchema, terminalSignalRequestSchema,
   terminalWriteRequestSchema,
@@ -120,6 +125,14 @@ const UNARY_ROUTES: UnaryRoutes = {
   'host.readWorkspaceFile': { schema: hostReadWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.readWorkspaceFile(r, signal) },
   'host.writeWorkspaceFile': { schema: hostWriteWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.writeWorkspaceFile(r, signal) },
   'host.openPath': { schema: hostOpenPathRequestSchema, invoke: (api, r, signal) => api.host.openPath(r, signal) },
+  'browser.list': { schema: browserListRequestSchema, invoke: (api, r, signal) => api.browser.list(r, signal) },
+  'browser.open': { schema: browserOpenRequestSchema, invoke: (api, r, signal) => api.browser.open(r, signal) },
+  'browser.replay': { schema: browserReplayRequestSchema, invoke: (api, r, signal) => api.browser.replay(r, signal) },
+  'browser.navigate': { schema: browserNavigateRequestSchema, invoke: (api, r, signal) => api.browser.navigate(r, signal) },
+  'browser.pointer': { schema: browserPointerRequestSchema, invoke: (api, r, signal) => api.browser.pointer(r, signal) },
+  'browser.key': { schema: browserKeyRequestSchema, invoke: (api, r, signal) => api.browser.key(r, signal) },
+  'browser.resize': { schema: browserResizeRequestSchema, invoke: (api, r, signal) => api.browser.resize(r, signal) },
+  'browser.close': { schema: browserCloseRequestSchema, invoke: (api, r, signal) => api.browser.close(r, signal) },
   'terminal.list': { schema: terminalListRequestSchema, invoke: (api, r, signal) => api.terminal.list(r, signal) },
   'terminal.open': { schema: terminalOpenRequestSchema, invoke: (api, r, signal) => api.terminal.open(r, signal) },
   'terminal.replay': { schema: terminalReplayRequestSchema, invoke: (api, r, signal) => api.terminal.replay(r, signal) },

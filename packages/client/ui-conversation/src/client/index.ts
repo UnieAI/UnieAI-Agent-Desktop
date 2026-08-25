@@ -18,8 +18,6 @@ export type {} from './conversation-nodes/turn-tail.ts'
 // here because the dependency runs ui-tool → ui-conversation: the panel cannot
 // import the rows' package, and one derivation is what keeps the two readings
 // of a change from disagreeing.
-export { CHAT_DIFF_MAX_LINES, diffCardModel, diffSummarySuffix } from './diff-card-model.ts'
-export type { DiffCardModel } from './diff-card-model.ts'
 export { apply, inject } from './apply.ts'
 export { ConversationController } from './service.ts'
 export type { IConversation } from './service.ts'

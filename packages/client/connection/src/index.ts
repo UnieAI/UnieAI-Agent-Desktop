@@ -128,6 +128,19 @@ const PRIVILEGED_METHODS = new Set([
   'terminal.resize',
   'terminal.signal',
   'terminal.close',
+  // An operator browser drives a real Chrome on the host account's machine —
+  // its cookies, its logged-in sessions, its localhost. Pinned for the same
+  // reason as the terminal beside it, and reading is pinned alongside opening:
+  // `browser.replay` returns a screenshot of whatever is on that page, and the
+  // stream's `browser/*` frames are filtered by the same check.
+  'browser.list',
+  'browser.open',
+  'browser.replay',
+  'browser.navigate',
+  'browser.pointer',
+  'browser.key',
+  'browser.resize',
+  'browser.close',
 ])
 
 /**
@@ -207,7 +220,7 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
     // privileged-method fence above applies. A peer that may not CALL
     // terminal.* may not receive its output frames either.
     registerDownlink(HOST_EVENTS_PATH, (req, socket, head) => {
-      downlinks.handleHost(req, socket, head, { terminals: isTrustedApiRequest(req, []) })
+      downlinks.handleHost(req, socket, head, { operator: isTrustedApiRequest(req, []) })
     })
   })
 }

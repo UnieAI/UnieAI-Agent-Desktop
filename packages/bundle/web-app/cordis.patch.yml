@@ -80,6 +80,14 @@
     - id: operator-terminal
       name: '@unieai/uad-terminal-operator'
 
+    # The browser a PERSON drives: a real Chrome the Host launches, seen
+    # through a CDP screencast. Web-only for the terminal's reason, and its own
+    # Chrome rather than the reader's running one — attaching to a browser
+    # someone is already using would move their tabs and their windows around
+    # underneath them.
+    - id: operator-browser
+      name: '@unieai/uad-browser-operator'
+
     - id: session-projection-cache
       name: '@unieai/uad-session-projection-cache'
       config:

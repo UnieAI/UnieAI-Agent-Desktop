@@ -397,6 +397,34 @@ Depends on: [`LocalConfig`](#unieaiuad-bash-local)
 
 Source: [`packages/shell/bash-sandbox/src/index.ts:35`](../packages/shell/bash-sandbox/src/index.ts)
 
+<a id="unieaiuad-browser-operator"></a>
+
+## `@unieai/uad-browser-operator`
+
+```ts config-catalog
+/** Public plugin configuration. */
+export interface Config {
+  /**
+   * Whether the GUI may open a browser at all (default: `true`).
+   *
+   * The panel renders whatever a page sends it and runs that page on the
+   * machine the Host runs on. The switch exists so a deployment that does not
+   * want that surface can remove it rather than hide it.
+   */
+  enabled?: boolean
+  /** Browser executable; default is the machine's own (see `chrome.ts`). */
+  chromePath?: string
+  /** Maximum simultaneous live browsers per workspace. */
+  maxBrowsersPerWorkspace?: number
+  /** JPEG quality of the streamed frames, 1–100. */
+  frameQuality?: number
+  /** Seconds to wait for the browser to print its DevTools endpoint. */
+  startupTimeoutSeconds?: number
+}
+```
+
+Source: [`packages/browser/browser-operator/src/config.ts:4`](../packages/browser/browser-operator/src/config.ts)
+
 <a id="unieaiuad-client-connection"></a>
 
 ## `@unieai/uad-client-connection`
@@ -2525,6 +2553,36 @@ export type ShellDialect = 'bash' | 'pwsh'
 ```
 
 Source: [`packages/terminal/terminal-bash/src/config.ts:10`](../packages/terminal/terminal-bash/src/config.ts)
+
+<a id="unieaiuad-terminal-operator"></a>
+
+## `@unieai/uad-terminal-operator`
+
+Requires: `subprocess`
+
+```ts config-catalog
+/** Public plugin configuration. */
+export interface Config {
+  /**
+   * Whether the GUI may open a terminal at all (default: `true`).
+   *
+   * This tab runs any command as the user who started the app, which is what a
+   * terminal is for; the switch exists so a deployment that does not want that
+   * surface can remove it rather than hide it.
+   */
+  enabled?: boolean
+  /** Interactive shell to run (default: `$SHELL`, then `/bin/bash`, then `/bin/sh`). */
+  shellPath?: string
+  /** Maximum retained UTF-8 bytes of output per terminal, for repaint after reconnect. */
+  scrollbackMaxBytes?: number
+  /** Maximum simultaneous live terminals per workspace. */
+  maxTerminalsPerWorkspace?: number
+  /** Grace before teardown escalates to `SIGKILL`. */
+  disposeGraceMs?: number
+}
+```
+
+Source: [`packages/terminal/terminal-operator/src/config.ts:4`](../packages/terminal/terminal-operator/src/config.ts)
 
 <a id="unieaiuad-time-context"></a>
 

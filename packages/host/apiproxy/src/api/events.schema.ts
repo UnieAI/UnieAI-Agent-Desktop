@@ -67,6 +67,17 @@ export const muxFrameSchema = z.discriminatedUnion('type', [
 ]) as unknown as z.ZodType<MuxFrame>
 
 /** HostFrame union (payload slot of a host-stream ServerRequest). */
+/** One operator browser inside a `browser/changed` frame. */
+const browserFrameViewSchema = z.object({
+  browserId: z.string(),
+  workspaceId: z.string(),
+  url: z.string(),
+  title: z.string(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  live: z.boolean(),
+})
+
 /** One operator terminal inside a `terminal/changed` frame. */
 const terminalFrameViewSchema = z.object({
   terminalId: z.string(),
@@ -101,6 +112,8 @@ export const hostFrameSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('terminal/output'), terminalId: z.string(), chunk: z.string() }),
   z.object({ type: z.literal('terminal/exited'), terminalId: z.string(), exitCode: z.number().int().optional() }),
   z.object({ type: z.literal('terminal/changed'), terminals: z.array(terminalFrameViewSchema) }),
+  z.object({ type: z.literal('browser/frame'), browserId: z.string(), data: z.string() }),
+  z.object({ type: z.literal('browser/changed'), browsers: z.array(browserFrameViewSchema) }),
   // args stays wide, the same posture as session/projection's value: the frame
   // arrives from JSON.parse, so every element is already a JSON value, and the
   // structural contract belongs to the owner package's cordis `Events`

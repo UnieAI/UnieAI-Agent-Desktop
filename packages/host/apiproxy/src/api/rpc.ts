@@ -64,6 +64,20 @@ export interface RpcErrorDetailsMap {
   'terminal-no-shell': {}
   /** The shell has exited; the panel keeps its output but accepts no more input. */
   'terminal-exited': { terminalId: string }
+  /** The deployment composes no operator-browser service. */
+  'browser-unavailable': {}
+  /** The deployment turned the operator browser off. */
+  'browser-disabled': {}
+  /** No browser by that id; it was closed, or the Host restarted under the panel. */
+  'browser-no-browser': { browserId: string }
+  /** This machine has no Chrome, Chromium or Edge for the panel to drive. */
+  'browser-no-chrome': {}
+  /** The workspace already holds as many live browsers as the deployment allows. */
+  'browser-too-many-browsers': {}
+  /** The browser has closed; the panel keeps its last frame but drives nothing. */
+  'browser-closed': { browserId: string }
+  /** An address this panel does not open: not http(s), or not a URL at all. */
+  'browser-blocked-url': { url: string }
   'agent-preset-read-only': { agentPreset: string; reason: string }
   'agent-preset-locked': { sessionId: SessionId; agentPreset: string }
   'agent-preset-conflict': { sessionId: SessionId; requestedPreset: string; existingPreset?: string }

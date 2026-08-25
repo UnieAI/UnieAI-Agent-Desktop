@@ -432,6 +432,14 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'The terminal a PERSON drives: workspace-scoped interactive shells over ctx.subprocess.spawnTerminal, streamed as host frames and loopback-pinned. Deliberately not ctx.terminals — that one fences to an Agent, is read by polling, and runs a profile-free shell.',
   },
   {
+    key: 'operatorBrowsers',
+    pkg: 'browser-operator',
+    title: 'Operator browser registry',
+    mode: 'core',
+    consumers: ['host-apiproxy'],
+    note: 'The browser a PERSON drives: a real Chrome the Host launches, driven over CDP, its repaints streamed as host frames and loopback-pinned. Deliberately not ctx.web — that one is the model\'s search/fetch capability and reaches no browser at all.',
+  },
+  {
     key: 'sandbox',
     pkg: 'sandbox',
     title: 'Process-sandbox seam',

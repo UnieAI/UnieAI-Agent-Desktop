@@ -33,6 +33,7 @@ import type { CommandDescriptor, CommandExecution, CommandResult } from '@unieai
 import { deriveEventMessage, foldSurface } from '@unieai/uad-session/surface'
 import type {
   ApiProxy, ClientRequest, ClientResponse, HistoryEntry, HostFrame, MuxFrame, RpcReceipt,
+  BrowserView,
   TerminalView,
   ModelProviderGroup, ModelSelection, RpcRequest, RpcResponse, RpcResult, ServerRequest, ServerResponse, SessionSummary,
   ToolCallView, ToolEventView, ToolResultView, WorkspaceId, WorkspaceView,
@@ -2709,6 +2710,130 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
       }
     })(),
 
+    browser: (() => {
+      // A fixture browser is a real enough page for a panel to be developed
+      // against: it holds a URL and a viewport, answers every gesture, and
+      // repaints through the same `browser/frame` the Host uses. The picture
+      // is a 1x1 grey JPEG — a fixture cannot rasterise a page, and inventing
+      // a richer one would only teach the panel to trust a shape no Chrome
+      // ever sends.
+      const PIXEL = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q=='
+      interface FxBrowser { view: BrowserView }
+      const fxBrowsers = new Map<string, FxBrowser>()
+      let nextBrowser = 0
+      const views = (): BrowserView[] => [...fxBrowsers.values()].map(entry => ({ ...entry.view }))
+      const found = (browserId: string): FxBrowser | undefined => fxBrowsers.get(browserId)
+      const paint = (entry: FxBrowser): void => {
+        emitHost({ type: 'browser/frame', browserId: entry.view.browserId, data: PIXEL })
+      }
+      const titleOf = (url: string): string => {
+        try {
+          return new URL(url).hostname
+        } catch {
+          return url
+        }
+      }
+      // The scheme fence is the Host's, mirrored here so a panel developed
+      // against the fixture meets the same refusal it will meet in the Host.
+      const navigable = (url: string): boolean => {
+        try {
+          const parsed = new URL(url)
+          return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+        } catch {
+          return false
+        }
+      }
+      const missing = <T>(request: RpcRequest<{ browserId: string }>): Promise<RpcResponse<T>> => err(request, {
+        code: 'browser-no-browser',
+        message: `no browser ${request.payload.browserId}`,
+        details: { browserId: request.payload.browserId },
+      })
+      return {
+        list: request => ok(request, { browsers: views() }),
+
+        open: (request) => {
+          if (!navigable(request.payload.url)) {
+            return err(request, {
+              code: 'browser-blocked-url',
+              message: `refused ${request.payload.url}`,
+              details: { url: request.payload.url },
+            })
+          }
+          const browserId = `fx-browser-${String(nextBrowser++)}`
+          const entry: FxBrowser = {
+            view: {
+              browserId,
+              workspaceId: request.payload.workspaceId,
+              url: request.payload.url,
+              title: titleOf(request.payload.url),
+              width: Math.max(1, Math.trunc(request.payload.width)),
+              height: Math.max(1, Math.trunc(request.payload.height)),
+              live: true,
+            },
+          }
+          fxBrowsers.set(browserId, entry)
+          emitHost({ type: 'browser/changed', browsers: views() })
+          paint(entry)
+          return ok(request, { browser: { ...entry.view }, frame: PIXEL })
+        },
+
+        replay: (request) => {
+          const entry = found(request.payload.browserId)
+          if (entry === undefined) return missing(request)
+          return ok(request, { browser: { ...entry.view }, frame: PIXEL })
+        },
+
+        navigate: (request) => {
+          const entry = found(request.payload.browserId)
+          if (entry === undefined) return missing(request)
+          if (!navigable(request.payload.url)) {
+            return err(request, {
+              code: 'browser-blocked-url',
+              message: `refused ${request.payload.url}`,
+              details: { url: request.payload.url },
+            })
+          }
+          entry.view.url = request.payload.url
+          entry.view.title = titleOf(request.payload.url)
+          emitHost({ type: 'browser/changed', browsers: views() })
+          paint(entry)
+          return ok(request, {})
+        },
+
+        pointer: (request) => {
+          const entry = found(request.payload.browserId)
+          if (entry === undefined) return missing(request)
+          paint(entry)
+          return ok(request, {})
+        },
+
+        key: (request) => {
+          const entry = found(request.payload.browserId)
+          if (entry === undefined) return missing(request)
+          paint(entry)
+          return ok(request, {})
+        },
+
+        resize: (request) => {
+          const entry = found(request.payload.browserId)
+          if (entry === undefined) return missing(request)
+          entry.view.width = Math.max(1, Math.trunc(request.payload.width))
+          entry.view.height = Math.max(1, Math.trunc(request.payload.height))
+          emitHost({ type: 'browser/changed', browsers: views() })
+          paint(entry)
+          return ok(request, {})
+        },
+
+        close: (request) => {
+          const entry = found(request.payload.browserId)
+          if (entry === undefined) return missing(request)
+          fxBrowsers.delete(request.payload.browserId)
+          emitHost({ type: 'browser/changed', browsers: views() })
+          return ok(request, {})
+        },
+      }
+    })(),
+
     terminal: (() => {
       // A fixture terminal is a real enough shell for a panel to be developed
       // and tested against: it echoes what is typed, answers Enter with a
@@ -3322,6 +3447,14 @@ export class FixtureApiClient extends AbstractApiClient {
     signal: AbortSignal,
   ): Promise<RpcResponse<unknown>> {
     switch (method) {
+      case 'browser.list': return this.api.browser.list(request, signal)
+      case 'browser.open': return this.api.browser.open(request, signal)
+      case 'browser.replay': return this.api.browser.replay(request, signal)
+      case 'browser.navigate': return this.api.browser.navigate(request, signal)
+      case 'browser.pointer': return this.api.browser.pointer(request, signal)
+      case 'browser.key': return this.api.browser.key(request, signal)
+      case 'browser.resize': return this.api.browser.resize(request, signal)
+      case 'browser.close': return this.api.browser.close(request, signal)
       case 'terminal.list': return this.api.terminal.list(request, signal)
       case 'terminal.open': return this.api.terminal.open(request, signal)
       case 'terminal.replay': return this.api.terminal.replay(request, signal)

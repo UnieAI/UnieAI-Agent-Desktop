@@ -148,6 +148,28 @@ describe('render branch tails', () => {
         writeWorkspaceFile={() => Promise.resolve('v1')}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
+        browsers={{
+          adopt: () => undefined,
+          lastFrame: () => undefined,
+          replay: () => Promise.resolve({
+            browser: {
+              browserId: 'b1', workspaceId: 'w1', url: 'https://example.org/',
+              title: 'example', width: 800, height: 600, live: true,
+            },
+          }),
+          open: () => Promise.resolve({
+            browser: {
+              browserId: 'b1', workspaceId: 'w1', url: 'https://example.org/',
+              title: 'example', width: 800, height: 600, live: true,
+            },
+          }),
+          navigate: () => Promise.resolve(),
+          pointer: () => Promise.resolve(),
+          key: () => Promise.resolve(),
+          resize: () => Promise.resolve(),
+          close: () => Promise.resolve(),
+          subscribe: () => () => {},
+        }}
         terminals={{
           adopt: () => undefined,
           replay: () => Promise.resolve({
@@ -234,6 +256,28 @@ describe('render branch tails', () => {
         writeWorkspaceFile={() => Promise.resolve('v1')}
         toggleDetailsMaximized={() => {}}
         canOpenFileHere
+        browsers={{
+          adopt: () => undefined,
+          lastFrame: () => undefined,
+          replay: () => Promise.resolve({
+            browser: {
+              browserId: 'b1', workspaceId: 'w1', url: 'https://example.org/',
+              title: 'example', width: 800, height: 600, live: true,
+            },
+          }),
+          open: () => Promise.resolve({
+            browser: {
+              browserId: 'b1', workspaceId: 'w1', url: 'https://example.org/',
+              title: 'example', width: 800, height: 600, live: true,
+            },
+          }),
+          navigate: () => Promise.resolve(),
+          pointer: () => Promise.resolve(),
+          key: () => Promise.resolve(),
+          resize: () => Promise.resolve(),
+          close: () => Promise.resolve(),
+          subscribe: () => () => {},
+        }}
         terminals={{
           adopt: () => undefined,
           replay: () => Promise.resolve({

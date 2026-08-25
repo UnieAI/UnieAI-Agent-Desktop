@@ -24,6 +24,7 @@ import { ReviewPanel } from './ReviewPanel.tsx'
 import { FileBrowser } from './FileBrowser.tsx'
 import { PANEL_ITEMS, PanelItemIcon, PanelMenu, type PanelItemId } from './PanelMenu.tsx'
 import { TerminalTab } from './TerminalTab.tsx'
+import { BrowserTab } from './BrowserTab.tsx'
 import css from './DetailsPanel.module.css'
 
 /** Full props composed by reference from the contract (automatic shares & injected share). */
@@ -82,6 +83,7 @@ type PanelTab =
   | { key: string; kind: 'files' }
   | { key: string; kind: 'file'; path: string }
   | { key: string; kind: 'terminal'; title?: string; terminalId?: string | undefined }
+  | { key: string; kind: 'browser'; title?: string; browserId?: string | undefined }
   | { key: string; kind: 'selection'; callId: string }
 
 /**
@@ -122,6 +124,17 @@ function TabIcon({ kind }: { kind: PanelTab['kind'] }) {
       </svg>
     )
   }
+  if (kind === 'browser') {
+    return (
+      <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden>
+        <circle cx="7" cy="7" r="5.25" fill="none" stroke="currentColor" strokeWidth="1.1" />
+        <path
+          d="M1.75 7h10.5M7 1.75c1.4 1.5 2.1 3.25 2.1 5.25S8.4 10.75 7 12.25c-1.4-1.5-2.1-3.25-2.1-5.25S5.6 3.25 7 1.75z"
+          fill="none" stroke="currentColor" strokeWidth="1.1"
+        />
+      </svg>
+    )
+  }
   if (kind === 'terminal') {
     return (
       <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden>
@@ -147,6 +160,7 @@ function TabIcon({ kind }: { kind: PanelTab['kind'] }) {
 function tabFor(id: PanelItemId): PanelTab {
   if (id === 'files') return { key: 'files', kind: 'files' }
   if (id === 'terminal') return { key: 'terminal', kind: 'terminal' }
+  if (id === 'browser') return { key: 'browser', kind: 'browser' }
   return { key: 'review', kind: 'review' }
 }
 
@@ -154,7 +168,7 @@ export function DetailsPanel({
   useSession, useSessions, sessionId, useStore, actions, renderSlot, closeDetails,
   toggleDetailsMaximized, listWorkspaceEntries, readWorkspaceFile, writeWorkspaceFile,
   openFile, canOpenFileHere,
-  terminals, t,
+  terminals, browsers, t,
 }: DetailsPanelProps) {
   const [tabs, setTabs] = useState<PanelTab[]>([])
   const [activeKey, setActiveKey] = useState<string | undefined>(undefined)
@@ -192,6 +206,15 @@ export function DetailsPanel({
         void terminals.close(closing.terminalId)
       }
     }
+    // Closing the browser's tab ends it too, and for a heavier reason: an
+    // orphaned browser is a real Chrome process holding a profile directory,
+    // which nothing left on screen could reach to shut down.
+    if (key === 'browser') {
+      const closing = tabs.find(one => one.key === 'browser')
+      if (closing?.kind === 'browser' && closing.browserId !== undefined) {
+        void browsers.close(closing.browserId)
+      }
+    }
   }
 
   // A selection can arrive from the transcript, so the tab follows it rather
@@ -214,6 +237,7 @@ export function DetailsPanel({
     if (tab.kind === 'files') return t('panel.files')
     if (tab.kind === 'review') return t('panel.review')
     if (tab.kind === 'terminal') return tab.title ?? t('panel.terminal')
+    if (tab.kind === 'browser') return tab.title ?? t('panel.browser')
     return material?.name ?? selection?.toolName ?? t('details.title')
   }
 
@@ -337,50 +361,70 @@ export function DetailsPanel({
                   }}
                 />
               )
-            : active.kind === 'files' || active.kind === 'file'
+            : active.kind === 'browser'
               ? sessionCwd === undefined
                 ? <div className={css.note}>{t('files.noWorkspace')}</div>
                 : (
-                  <FileBrowser
-                    root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile}
-                    write={writeWorkspaceFile} t={t}
-                    {...active.kind === 'file' ? { path: active.path } : {}}
-                    onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
-                    onOpenExternally={canOpenFileHere ? (path) => { void openFile(path) } : undefined}
+                // Keyed on the workspace for the terminal's reason: pointing the
+                // panel at another workspace is another browser, not this one
+                // relocated.
+                  <BrowserTab
+                    key={sessionCwd} workspaceId={sessionCwd}
+                    browsers={browsers} t={t}
+                    onNamed={(title) => {
+                      setTabs(current => current.map(one =>
+                        one.kind === 'browser' ? { ...one, title } : one))
+                    }}
+                    onAttached={(browserId) => {
+                      setTabs(current => current.map(one =>
+                        one.kind === 'browser' ? { ...one, browserId } : one))
+                    }}
                   />
                 )
-              : (
-                <div className={css.body}>
-                  {material === null
-                    ? <div className={css.note}>{t('details.notInWindow')}</div>
-                    : (
-                      <>
-                        {material.argsRaw !== null && (
+              : active.kind === 'files' || active.kind === 'file'
+                ? sessionCwd === undefined
+                  ? <div className={css.note}>{t('files.noWorkspace')}</div>
+                  : (
+                    <FileBrowser
+                      root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile}
+                      write={writeWorkspaceFile} t={t}
+                      {...active.kind === 'file' ? { path: active.path } : {}}
+                      onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
+                      onOpenExternally={canOpenFileHere ? (path) => { void openFile(path) } : undefined}
+                    />
+                  )
+                : (
+                  <div className={css.body}>
+                    {material === null
+                      ? <div className={css.note}>{t('details.notInWindow')}</div>
+                      : (
+                        <>
+                          {material.argsRaw !== null && (
+                            <section className={css.section}>
+                              <div className={css.sectionLabel}>{t('details.input')}</div>
+                              <CodeBlock code={pretty(material.argsRaw)} lang="json" copyLabel={t('copy')} copiedLabel={t('copied')} />
+                            </section>
+                          )}
                           <section className={css.section}>
-                            <div className={css.sectionLabel}>{t('details.input')}</div>
-                            <CodeBlock code={pretty(material.argsRaw)} lang="json" copyLabel={t('copy')} copiedLabel={t('copied')} />
+                            <div className={css.sectionLabel}>{t('details.output')}</div>
+                            {/* Keyed by the call: the body owns per-call view state
+                              the panel would otherwise carry into the next one. */}
+                            <Fragment key={active.callId}>
+                              {renderSlot('conversation.details.tool', { block: material.block, cwd: sessionCwd }, {
+                                fallback: 'kind' in material.block
+                                  ? (
+                                    <pre className={css.code} data-error={material.block.isError || undefined}>
+                                      {rawResultText(material.block)}
+                                    </pre>
+                                  )
+                                  : <div className={css.note}>{t('details.running')}</div>,
+                              })}
+                            </Fragment>
                           </section>
-                        )}
-                        <section className={css.section}>
-                          <div className={css.sectionLabel}>{t('details.output')}</div>
-                          {/* Keyed by the call: the body owns per-call view state
-                            the panel would otherwise carry into the next one. */}
-                          <Fragment key={active.callId}>
-                            {renderSlot('conversation.details.tool', { block: material.block, cwd: sessionCwd }, {
-                              fallback: 'kind' in material.block
-                                ? (
-                                  <pre className={css.code} data-error={material.block.isError || undefined}>
-                                    {rawResultText(material.block)}
-                                  </pre>
-                                )
-                                : <div className={css.note}>{t('details.running')}</div>,
-                            })}
-                          </Fragment>
-                        </section>
-                      </>
-                    )}
-                </div>
-              )}
+                        </>
+                      )}
+                  </div>
+                )}
     </div>
   )
 }

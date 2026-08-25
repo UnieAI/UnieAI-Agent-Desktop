@@ -8,6 +8,7 @@ import type { SessionsApi } from './sessions.ts'
 import type { HostApi } from './host.ts'
 import type { WorkspaceApi } from './workspace.ts'
 import type { TerminalApi } from './terminal.ts'
+import type { BrowserApi } from './browser.ts'
 import type { AgentPresetsApi } from './agent-presets.ts'
 import type { SkillsApi } from './skills.ts'
 import type { SubagentsApi } from './subagents.ts'
@@ -27,6 +28,8 @@ export interface ApiProxy {
   workspace: WorkspaceApi
   /** The terminal a person drives; loopback-pinned and model-invisible. */
   terminal: TerminalApi
+  /** The browser a person drives; loopback-pinned and model-invisible. */
+  browser: BrowserApi
   skills: SkillsApi
   agentPresets: AgentPresetsApi
   events: EventsApi
@@ -60,6 +63,7 @@ export type {
 export type { JobView } from './jobs.ts'
 export type { WorkspaceApi, WorkspaceId, WorkspaceView } from './workspace.ts'
 export type { TerminalApi, TerminalOpened, TerminalSignalName, TerminalView } from './terminal.ts'
+export type { BrowserApi, BrowserOpened, BrowserView } from './browser.ts'
 export type { SkillsApi, SkillEntry } from './skills.ts'
 export type { AgentPresetsApi, AgentPresetEntry } from './agent-presets.ts'
 export type { EventsApi, MuxFrame, HostFrame, QueuedInboxItem, ToolCallView, ToolEventView, ToolResultView } from './events.ts'

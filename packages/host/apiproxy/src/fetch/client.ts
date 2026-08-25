@@ -11,6 +11,11 @@ import type { RequestPayload, ResponseValue, RpcMethodMap } from '../api/rpc-map
 import type { ClientRequest, ClientResponse, RpcMessage, RpcReceipt, RpcRequest, RpcResponse, ServerRequest } from '../api/rpc.ts'
 import { hostWriteWorkspaceFileValueSchema } from '../api/host.schema.ts'
 import {
+  browserCloseValueSchema, browserKeyValueSchema, browserListValueSchema,
+  browserNavigateValueSchema, browserOpenValueSchema, browserPointerValueSchema,
+  browserReplayValueSchema, browserResizeValueSchema,
+} from '../api/browser.schema.ts'
+import {
   terminalCloseValueSchema, terminalListValueSchema, terminalOpenValueSchema,
   terminalReplayValueSchema, terminalResizeValueSchema, terminalSignalValueSchema,
   terminalWriteValueSchema,
@@ -123,6 +128,16 @@ export interface IApiClient {
     writeWorkspaceFile(payload: RequestPayload<'host.writeWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.writeWorkspaceFile'>>>
     openPath(payload: RequestPayload<'host.openPath'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.openPath'>>>
   }
+  browser: {
+    list(payload: RequestPayload<'browser.list'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.list'>>>
+    open(payload: RequestPayload<'browser.open'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.open'>>>
+    replay(payload: RequestPayload<'browser.replay'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.replay'>>>
+    navigate(payload: RequestPayload<'browser.navigate'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.navigate'>>>
+    pointer(payload: RequestPayload<'browser.pointer'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.pointer'>>>
+    key(payload: RequestPayload<'browser.key'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.key'>>>
+    resize(payload: RequestPayload<'browser.resize'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.resize'>>>
+    close(payload: RequestPayload<'browser.close'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.close'>>>
+  }
   terminal: {
     list(payload: RequestPayload<'terminal.list'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.list'>>>
     open(payload: RequestPayload<'terminal.open'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'terminal.open'>>>
@@ -191,6 +206,14 @@ export interface IApiClient {
  */
 const UNARY_VALUE_SCHEMAS: { [K in keyof RpcMethodMap]: z.ZodType<Wire<ResponseValue<K>>> } = {
   'host.writeWorkspaceFile': hostWriteWorkspaceFileValueSchema,
+  'browser.list': browserListValueSchema,
+  'browser.open': browserOpenValueSchema,
+  'browser.replay': browserReplayValueSchema,
+  'browser.navigate': browserNavigateValueSchema,
+  'browser.pointer': browserPointerValueSchema,
+  'browser.key': browserKeyValueSchema,
+  'browser.resize': browserResizeValueSchema,
+  'browser.close': browserCloseValueSchema,
   'terminal.list': terminalListValueSchema,
   'terminal.open': terminalOpenValueSchema,
   'terminal.replay': terminalReplayValueSchema,
@@ -474,6 +497,17 @@ export abstract class AbstractApiClient implements IApiClient {
     readWorkspaceFile: (payload, signal) => this.callUnary('host.readWorkspaceFile', payload, signal),
     writeWorkspaceFile: (payload, signal) => this.callUnary('host.writeWorkspaceFile', payload, signal),
     openPath: (payload, signal) => this.callUnary('host.openPath', payload, signal),
+  }
+
+  readonly browser: IApiClient['browser'] = {
+    list: (payload, signal) => this.callUnary('browser.list', payload, signal),
+    open: (payload, signal) => this.callUnary('browser.open', payload, signal),
+    replay: (payload, signal) => this.callUnary('browser.replay', payload, signal),
+    navigate: (payload, signal) => this.callUnary('browser.navigate', payload, signal),
+    pointer: (payload, signal) => this.callUnary('browser.pointer', payload, signal),
+    key: (payload, signal) => this.callUnary('browser.key', payload, signal),
+    resize: (payload, signal) => this.callUnary('browser.resize', payload, signal),
+    close: (payload, signal) => this.callUnary('browser.close', payload, signal),
   }
 
   readonly terminal: IApiClient['terminal'] = {

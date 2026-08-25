@@ -17,7 +17,7 @@ import type { RunningToolCall, ToolResultNode } from '@unieai/uad-client-runtime
 import type { ToolCallView, ToolResultView } from '@unieai/uad-api-remotes/client'
 import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
 import { zh } from '@unieai/uad-client-ui-conversation/src/client/locales.ts'
-import { diffSummarySuffix } from '@unieai/uad-client-ui-conversation/client'
+import { diffSummarySuffix } from '../src/client/tool/diff-summary.ts'
 import { FileMutationRow } from '../src/client/tool/toolviews/file-mutation-row.tsx'
 import { GenericToolCard, type GenericToolCardProps } from '../src/client/tool/toolviews/GenericToolCard.tsx'
 
