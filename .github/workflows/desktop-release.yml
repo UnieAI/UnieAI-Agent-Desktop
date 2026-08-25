@@ -38,7 +38,13 @@ jobs:
         include:
           - runner: macos-14
             target: package:mac:arm64
-          - runner: macos-13
+          # `macos-15-intel`, not `macos-13`: GitHub retired the macOS 13 image,
+          # and a job asking for a label with no runners behind it does not
+          # fail — it QUEUES, forever. The other three targets of
+          # desktop-v0.1.8 finished while this one sat for over an hour with
+          # "Waiting for a runner to pick up this job", which is why the
+          # release had three of its four installers and no error to read.
+          - runner: macos-15-intel
             target: package:mac:x64
           - runner: windows-latest
             target: package:win:x64
