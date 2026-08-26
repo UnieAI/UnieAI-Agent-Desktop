@@ -163,6 +163,19 @@ declare module '@unieai/uad-client-ui-slots' {
      */
     'conversation.details.tool': { kind: 'single'; scope: 'session'; owner: DetailsToolOwnerProps }
     /**
+     * Rows appended under the selected call's Output, for what another
+     * package can derive from a result the person is already looking at —
+     * the knowledge-base citations inside a Studio MCP answer, for one.
+     *
+     * A list rather than the keyed `tool.call.toolview` seat, because the
+     * name an occupant recognizes is not knowable when it registers: an MCP
+     * tool arrives as `mcp__<serverName>__<rawName>` and the server name is
+     * the deployment's to choose. Occupants therefore read `name` themselves
+     * and render nothing for a call they do not know, which is also why this
+     * adds to the output instead of replacing it.
+     */
+    'conversation.details.tool.annotation': { kind: 'list'; scope: 'session'; owner: DetailsToolAnnotationOwnerProps }
+    /**
      * The composer takeover chain: entries are selector-routed replacements
      * of the default InputBar. Declared by this package's 'conversation'
      * entry; the owner dispatches the {@link ComposerChainProps} currency and
@@ -436,6 +449,16 @@ export interface DetailsToolOwnerProps {
   /** Frozen selected call slice. */
   block: ToolCallBlock
   /** Session workspace root for card cwd and relative-path display. */
+  cwd?: string | undefined
+}
+
+/** Owner currency of the per-call annotation rows under the details Output. */
+export interface DetailsToolAnnotationOwnerProps {
+  /** Wire name of the selected call, as the tool registry knows it. */
+  name: string
+  /** Frozen selected call slice; a running call has no `kind`. */
+  block: ToolCallBlock
+  /** Session workspace root for relative-path display. */
   cwd?: string | undefined
 }
 
@@ -1045,7 +1068,8 @@ export interface DetailsInjected {
 }
 
 /** Full details-slot props: selection store, Tool output seat, injected close callback, and locale. */
-export type DetailsSlotProps = PropsRuntime<'details'> & PropsRenderSlots<'conversation.details.tool'>
+export type DetailsSlotProps = PropsRuntime<'details'>
+  & PropsRenderSlots<'conversation.details.tool' | 'conversation.details.tool.annotation'>
   & PropsStore<ChatStore> & DetailsInjected & PropsLocale<'conversation'>
 
 /** Owner share common to the hero / New-Session Workspace pickers. */

@@ -422,6 +422,15 @@ export function DetailsPanel({
                               })}
                             </Fragment>
                           </section>
+                          {/* Keyed by the call for the same reason as the body:
+                            an annotation must not carry into the next call. */}
+                          <Fragment key={`annotations-${active.callId}`}>
+                            {renderSlot('conversation.details.tool.annotation', {
+                              name: material.name,
+                              block: material.block,
+                              cwd: sessionCwd,
+                            })}
+                          </Fragment>
                         </>
                       )}
                   </div>

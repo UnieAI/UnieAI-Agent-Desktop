@@ -62,9 +62,9 @@ describe('reading citations', () => {
     })
   })
 
-  it('names an unnamed document rather than showing an empty row', () => {
+  it('leaves a nameless document nameless, for the surface to label in its own language', () => {
     const text = JSON.stringify({ results: [{ id: 'kb1:doc1:0:aa', page: 0 }] })
-    expect(kbSourcesOf('studio_kb_search', text)[0]?.docName).toBe('unnamed document')
+    expect(kbSourcesOf('studio_kb_search', text)[0]?.docName).toBe('')
   })
 })
 

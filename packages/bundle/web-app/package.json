@@ -84,6 +84,7 @@
     "@unieai/uad-client-ui-settings-plugins": "workspace:^",
     "@unieai/uad-client-ui-sidebar": "workspace:^",
     "@unieai/uad-client-ui-skill": "workspace:^",
+    "@unieai/uad-client-ui-studio-sources": "workspace:^",
     "@unieai/uad-client-ui-subagent": "workspace:^",
     "@unieai/uad-client-ui-theme": "workspace:^",
     "@unieai/uad-client-ui-tool": "workspace:^",

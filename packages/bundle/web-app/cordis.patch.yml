@@ -275,15 +275,21 @@
     - id: ui-unieai-providers
       name: '@unieai/uad-client-ui-unieai-providers'
 
-    # The mascot. Its NODE half serves the sprite sheets — a 1.7 MB grid
-    # imported by the browser half would sit base64 inside `client.js` and be
-    # paid for on every load, mascot or no mascot — and owns the `ui-pet`
-    # settings section the picker writes.
+    # The mascot. Its node half owns the `ui-pet` settings section the picker
+    # writes; the sprite sheets are static web assets (apps/web/public/pets),
+    # because a 1.7 MB grid imported by the browser half would sit base64
+    # inside `client.js` and be paid for on every load, mascot or no mascot.
     - id: ui-pet
       name: '@unieai/uad-client-ui-pet'
 
     - id: ui-conversation
       name: '@unieai/uad-client-ui-conversation'
+
+    # Citations under a Studio knowledge-base result, in the details panel's
+    # per-call annotation list. Mounted after the panel that declares the
+    # hole; the registration waits for it either way.
+    - id: ui-studio-sources
+      name: '@unieai/uad-client-ui-studio-sources'
 
     # UnieAI occupants for the generic sidebar and conversation brand slots.
     # The upstream official-brand row is deliberately absent: its occupants

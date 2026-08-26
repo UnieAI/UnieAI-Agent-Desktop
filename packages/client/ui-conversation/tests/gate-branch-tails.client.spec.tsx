@@ -9,7 +9,7 @@ import {
 import type { UseSession } from '@unieai/uad-client-test-runtime'
 import type { ConversationSnapshot, SessionId, SessionListState, WorkspaceListState } from '@unieai/uad-client-runtime/client'
 import type { SessionProviderComponent } from '@unieai/uad-client-ui-slots'
-import type { DetailsSlotProps, DetailsToolOwnerProps, SelectionTarget } from '@unieai/uad-client-ui-conversation/client'
+import type { DetailsSlotProps, DetailsToolAnnotationOwnerProps, DetailsToolOwnerProps, SelectionTarget } from '@unieai/uad-client-ui-conversation/client'
 import { makeTranslate } from '@unieai/uad-client-test-runtime'
 import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
 import { createChatStore } from '../src/client/stores.ts'
@@ -41,9 +41,22 @@ const SID = 's1' as SessionId
 /** Minimal framework seat for direct DetailsPanel host tests. */
 const SessionProviderStub: SessionProviderComponent = ({ children }) => children(SID)
 
-/** Observe the owner currency without importing the Tool details renderer. */
-function renderToolDetailsProbe(owners?: DetailsToolOwnerProps[]): DetailsSlotProps['renderSlot'] {
-  return (_key, owner) => {
+/**
+ * Observe the owner currency without importing the Tool details renderer.
+ *
+ * The panel renders two holes for the selected call — the body and the
+ * annotation list — so the probe seats them apart; a name-blind probe would
+ * report one call's currency twice.
+ */
+function renderToolDetailsProbe(
+  owners?: DetailsToolOwnerProps[],
+  annotations?: DetailsToolAnnotationOwnerProps[],
+): DetailsSlotProps['renderSlot'] {
+  return (key, owner) => {
+    if (key === 'conversation.details.tool.annotation') {
+      annotations?.push(owner as unknown as DetailsToolAnnotationOwnerProps)
+      return <div data-testid="tool-annotation-seat" />
+    }
     owners?.push(owner as unknown as DetailsToolOwnerProps)
     return <div data-testid="tool-details-seat" />
   }
@@ -231,10 +244,11 @@ describe('render branch tails', () => {
       baselinesReady: true, recentWorkspaceId: undefined,
     })
     const owners: DetailsToolOwnerProps[] = []
+    const annotations: DetailsToolAnnotationOwnerProps[] = []
     const view = render(
       <DetailsPanel
         SessionProvider={SessionProviderStub}
-        renderSlot={renderToolDetailsProbe(owners)}
+        renderSlot={renderToolDetailsProbe(owners, annotations)}
         sessionId={SID}
         useSession={bindSnapshotSelector({ getSnapshot: () => snap, subscribe: () => () => {} })}
         useSessions={bindSnapshotSelector(emptyList)}
@@ -308,6 +322,12 @@ describe('render branch tails', () => {
     expect(view.getByText('read')).toBeTruthy()
     expect(view.getByTestId('tool-details-seat')).toBeTruthy()
     expect(owners).toHaveLength(1)
+    // The annotation list sees the same resolved call, plus the wire name an
+    // occupant recognizes its own tool by.
+    expect(view.getByTestId('tool-annotation-seat')).toBeTruthy()
+    expect(annotations).toHaveLength(1)
+    expect(annotations[0]?.name).toBe('read')
+    expect(annotations[0]?.block).toBe(owners[0]?.block)
     expect(owners[0]?.block).toMatchObject({
       callId: 'p1:code:1:code:1',
       call: { name: 'read', argsRaw: '{"path":"notes/demo.txt"}' },

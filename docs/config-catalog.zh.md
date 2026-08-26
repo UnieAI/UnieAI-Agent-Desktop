@@ -3551,6 +3551,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@unieai/uad-client-ui-settings-plugins` ([`packages/client/ui-settings-plugins/src/index.ts`](../packages/client/ui-settings-plugins/src/index.ts))
 - `@unieai/uad-client-ui-sidebar` ([`packages/client/ui-sidebar/src/index.ts`](../packages/client/ui-sidebar/src/index.ts))
 - `@unieai/uad-client-ui-skill` ([`packages/client/ui-skill/src/index.ts`](../packages/client/ui-skill/src/index.ts))
+- `@unieai/uad-client-ui-studio-sources` ([`packages/client/ui-studio-sources/src/index.ts`](../packages/client/ui-studio-sources/src/index.ts))
 - `@unieai/uad-client-ui-subagent` ([`packages/client/ui-subagent/src/index.ts`](../packages/client/ui-subagent/src/index.ts))
 - `@unieai/uad-client-ui-theme` ([`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts))
 - `@unieai/uad-client-ui-tool` ([`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts))

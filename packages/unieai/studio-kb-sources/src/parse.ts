@@ -11,7 +11,12 @@
 
 /** One cited passage, as a reader needs it. */
 export interface KbSource {
-  /** Human document name; never empty (an unnamed document says so). */
+  /**
+   * Human document name, empty when the tool reports none.
+   *
+   * Naming the nameless row belongs to the surface, which knows the reader's
+   * language; a literal chosen here would reach a Japanese panel in English.
+   */
   docName: string
   /** Page number, ONE-BASED, or null when the tool reports none. */
   page: number | null
@@ -127,7 +132,7 @@ export function kbSourcesOf(toolName: string, text: string): KbSource[] {
     if (docName === '' && chunkId === '') continue
     const page = num(record['page'])
     sources.push({
-      docName: docName === '' ? 'unnamed document' : docName,
+      docName,
       // Search is zero-based; grep already counted from one.
       page: page === null ? null : reader === 'search' ? page + 1 : page,
       section: reader === 'search' ? str(record['section']) : '',

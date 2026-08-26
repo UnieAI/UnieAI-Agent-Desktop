@@ -1,0 +1,76 @@
+{
+  "name": "@unieai/uad-client-ui-studio-sources",
+  "description": "Knowledge-base citations under a Studio MCP tool result",
+  "version": "0.1.12",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "packages/client/ui-studio-sources"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@unieai/uad-client-runtime",
+        "@unieai/uad-client-locale",
+        "@unieai/uad-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-studio-kb-sources": "workspace:^",
+    "@unieai/cordis": "workspace:^"
+  },
+  "devDependencies": {
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-test-runtime": "workspace:^",
+    "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-client-ui-primitives": "workspace:^",
+    "@unieai/uad-client-ui-slots": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-studio-kb-sources": "workspace:^",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "~18.3.1",
+    "@unieai/cordis": "workspace:^",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

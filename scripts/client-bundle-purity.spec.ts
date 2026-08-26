@@ -79,6 +79,8 @@ describe('client bundle purity gate', () => {
     expect(resolveId('@unieai/uad-host-apiproxy/api')).toBeNull()
     expect(resolveId('@unieai/uad-session/surface')).toBeNull()
     expect(resolveId('@unieai/uad-brand')).toBeNull()
+    // A pure text reader over a tool result the browser already holds.
+    expect(resolveId('@unieai/uad-studio-kb-sources')).toBeNull()
   })
 
   it('lets exact generated Remote contributions inline without admitting their package implementation', () => {
