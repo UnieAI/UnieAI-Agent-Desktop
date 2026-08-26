@@ -47,6 +47,36 @@ export interface ModelsSettingsState {
   rows: readonly ProviderRow[]
   /** Namespace views by ns, for the editor's schema/layers/secrets. */
   namespaces: ReadonlyMap<string, SettingsNamespaceView>
+  /**
+   * Every model that DECLARES image input, across every route.
+   *
+   * The choices for the vision route. Read from the model catalog rather than
+   * from settings, because whether a model can see is a property of the
+   * provider's answer, not of anything a person configured here — and a route
+   * whose adapter never says stays out, since offering it would promise a
+   * picture the model would refuse.
+   */
+  visionModels: readonly VisionModelOption[]
+  /** The route `image_inspect` currently delegates to, when one is named. */
+  visionRoute: VisionRoute | undefined
+}
+
+/** One image-capable model, labelled by the route that offers it. */
+export interface VisionModelOption {
+  /** Provider route id. */
+  provider: string
+  /** Provider display name. */
+  providerName: string
+  /** Exact model id. */
+  model: string
+  /** Model display name. */
+  modelName: string
+}
+
+/** A named vision route. */
+export interface VisionRoute {
+  provider: string
+  model: string
 }
 
 /**
@@ -104,11 +134,39 @@ function apiKeyEnvOf(
   return typeof ref === 'string' && ref.length > 0 ? ref : undefined
 }
 
+/** Settings namespace the vision route lives in (`tool-image-inspect`'s own). */
+export const VISION_NS = 'tool-image-inspect'
+
+/**
+ * The route named in the vision namespace, if both halves are present.
+ *
+ * Half a route is not a route: a provider with no model (or the reverse) is
+ * what a cleared choice looks like mid-edit, and the tool treats it as
+ * dormant, so the page must agree.
+ * @param namespace - the `tool-image-inspect` namespace view, when present.
+ * @returns the route, or undefined when none is named.
+ */
+export function visionRouteOf(namespace: SettingsNamespaceView | undefined): VisionRoute | undefined {
+  const value = namespace?.value
+  if (typeof value !== 'object' || value === null) return undefined
+  const { provider, model } = value as { provider?: unknown; model?: unknown }
+  if (typeof provider !== 'string' || provider === '') return undefined
+  if (typeof model !== 'string' || model === '') return undefined
+  return { provider, model }
+}
+
 /** The models settings page controller (one per settings surface). */
 export class ModelsSettingsStore {
   /** The snapshot the section renders from (uSES-safe store). */
   readonly store: SnapshotStore<ModelsSettingsState> = createSnapshotStore<ModelsSettingsState>({
-    status: 'idle', error: null, credentialError: null, writable: false, rows: [], namespaces: new Map(),
+    status: 'idle',
+    error: null,
+    credentialError: null,
+    writable: false,
+    rows: [],
+    namespaces: new Map(),
+    visionModels: [],
+    visionRoute: undefined,
   })
 
   /** Latest load wins; an older response never overwrites a newer one. */
@@ -176,6 +234,27 @@ export class ModelsSettingsStore {
         credential: undefined,
       }
     })
+    // Which models can see, from the catalog rather than from the directory:
+    // a route's models and their modalities are the provider's answer, and the
+    // vision picker offers exactly what some provider says it accepts.
+    // A failed catalog read is an enrichment failure like the credential one —
+    // it leaves the page usable with no vision choices rather than blank.
+    let visionModels: VisionModelOption[] = []
+    try {
+      const response = await this.api.llm.models({})
+      if (response.result.ok) {
+        visionModels = response.result.value.groups.flatMap(group => group.models
+          .filter(model => model.acceptsImages === true)
+          .map(model => ({
+            provider: group.id,
+            providerName: group.name,
+            model: model.id,
+            modelName: model.name,
+          })))
+      }
+    } catch {
+      // Left empty: the page still configures providers without a catalog.
+    }
     const refs = [...new Set(rows.flatMap(row => row.apiKeyEnv === undefined ? [] : [row.apiKeyEnv]))]
     let credentials: Record<string, CredentialView> = {}
     let credentialError: string | null = null
@@ -204,6 +283,8 @@ export class ModelsSettingsStore {
           : {},
       }))
       s.namespaces = namespaces
+      s.visionModels = visionModels
+      s.visionRoute = visionRouteOf(namespaces.get(VISION_NS))
     })
   }
 }

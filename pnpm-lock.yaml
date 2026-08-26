@@ -6202,6 +6202,9 @@ importers:
       '@unieai/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
+      '@unieai/uad-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
     devDependencies:
       '@unieai/cordis':
         specifier: workspace:^

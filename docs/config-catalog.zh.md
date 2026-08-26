@@ -2766,7 +2766,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/llm/tool-image-inspect/src/index.ts:26`](../packages/llm/tool-image-inspect/src/index.ts)
+Source: [`packages/llm/tool-image-inspect/src/index.ts:27`](../packages/llm/tool-image-inspect/src/index.ts)
 
 <a id="unieaiuad-tool-jobs"></a>
 

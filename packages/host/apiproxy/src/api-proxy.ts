@@ -382,11 +382,17 @@ async function buildModelCatalog(ctx: Context): Promise<{
               ? {}
               : { defaultEffort: resolved.reasoning.defaultEffort },
           }
+        // Only a DECLARED image input is `true` here. A route whose adapter
+        // says nothing leaves the field absent rather than guessing: a
+        // surface picking a vision model from this catalog must not offer one
+        // that turns out to refuse pictures.
+        const acceptsImages = resolved.inputModalities?.includes('image')
         return {
           id: model.id,
           name: model.name,
           ...model.description === undefined ? {} : { description: model.description },
           ...reasoning === undefined ? {} : { reasoning },
+          ...acceptsImages === undefined ? {} : { acceptsImages },
         }
       }))
       const group: ModelProviderGroup = {

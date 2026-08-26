@@ -39,7 +39,8 @@
     "@unieai/uad-tools": "workspace:^"
   },
   "dependencies": {
-    "@unieai/schemastery": "workspace:^"
+    "@unieai/schemastery": "workspace:^",
+    "@unieai/uad-settings": "workspace:^"
   },
   "devDependencies": {
     "@unieai/cordis": "workspace:^",

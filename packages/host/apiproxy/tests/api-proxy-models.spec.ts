@@ -264,6 +264,40 @@ describe('Web session model selection', () => {
     await ctx.fiber.dispose()
   })
 
+  it('marks which models declare image input, so a vision route can be chosen from the catalog', async () => {
+    const { ctx, sessionId } = await harness()
+    ctx.llm.registerAdapter(['mixed'], new class extends CatalogAdapter {
+      override resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo> {
+        return Promise.resolve({
+          provider,
+          id: model,
+          name: model,
+          ...model === 'sees' ? { inputModalities: ['text', 'image'] as const } : {},
+          ...model === 'blind' ? { inputModalities: ['text'] as const } : {},
+        })
+      }
+    }('Mixed', [
+      { provider: 'mixed', id: 'sees', name: 'Sees' },
+      { provider: 'mixed', id: 'blind', name: 'Blind' },
+      { provider: 'mixed', id: 'silent', name: 'Silent' },
+    ]))
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
+      cwd: '/tmp',
+    })
+
+    const catalog = expectValue(await api.sessions.models(request({ sessionId })))
+    const mixed = catalog.groups.find(group => group.id === 'mixed')
+    expect(mixed?.models.map(model => [model.id, model.acceptsImages])).toEqual([
+      ['sees', true],
+      ['blind', false],
+      // Undeclared stays undeclared: a picker must not offer a model that
+      // turns out to refuse pictures on the strength of a guess here.
+      ['silent', undefined],
+    ])
+    await ctx.fiber.dispose()
+  })
+
   it('refuses an image for a blind model when nothing can look at it', async () => {
     // No `image_inspect` registered: there is no vision route to delegate to,
     // and admitting the image would drop it silently at request assembly.

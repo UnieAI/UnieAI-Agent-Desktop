@@ -22,6 +22,7 @@ import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './stor
 import type { ModelsSettingsStore, ProviderRow } from './store.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
 import { ProviderEditor, type ProviderEditorProps } from './ProviderEditor.tsx'
+import { VisionModelCard } from './VisionModelCard.tsx'
 import type { en } from './locales.ts'
 import styles from './ModelsSection.module.css'
 
@@ -293,6 +294,14 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
             {providerCopy(t('savedProvider'), savedIdentity)}
           </p>
         )}
+      <VisionModelCard
+        options={state.visionModels}
+        current={state.visionRoute}
+        writable={state.writable}
+        api={api}
+        t={t}
+        onSaved={() => { void controller.load() }}
+      />
       <ul className={styles['rows']}>
         {configured.map((row) => {
           const target = targetOf(row)

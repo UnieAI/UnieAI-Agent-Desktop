@@ -94,6 +94,13 @@ export const en = {
   welcomeContinue: WELCOME_NOTICE_COPY.en.continueLabel,
   welcomeError: 'The acknowledgement could not be saved. Please try again.',
   keyRequired: 'Enter an API key to continue.',
+  visionTitle: 'Vision model',
+  visionBody: 'The model that looks at pictures for models that cannot. When your model has no image input, an attached image is handed to it as a reference it can ask about with the image_inspect tool.',
+  visionNone: 'None — models that cannot see refuse images',
+  visionEmpty: 'No configured provider offers a model that accepts images.',
+  visionSaving: 'Saving…',
+  visionSaved: 'Vision model saved.',
+  visionFailed: 'The vision model could not be saved. Please try again.',
 }
 
 /** The settings.models namespace key union. */
@@ -191,6 +198,13 @@ export const zh: { [Key in keyof typeof en]: string } = {
   welcomeContinue: WELCOME_NOTICE_COPY.zh.continueLabel,
   welcomeError: '暂时无法保存确认状态，请重试。',
   keyRequired: '请输入 API 密钥后继续。',
+  visionTitle: '视觉模型',
+  visionBody: '替看不见图片的模型去看图的那一个。当你的模型没有图像输入时，贴上的图片会以一个引用交给它，它可以用 image_inspect 工具就此提问。',
+  visionNone: '不设置——看不见的模型会拒绝图片',
+  visionEmpty: '已配置的提供方中没有接受图片的模型。',
+  visionSaving: '保存中…',
+  visionSaved: '视觉模型已保存。',
+  visionFailed: '视觉模型保存失败，请重试。',
 }
 
 /** Traditional Chinese copy. */
@@ -285,6 +299,13 @@ export const zhTW: { [Key in keyof typeof en]: string } = {
   welcomeContinue: WELCOME_NOTICE_COPY.zhTW.continueLabel,
   welcomeError: '暫時無法儲存確認狀態，請重試。',
   keyRequired: '請輸入 API 金鑰後繼續。',
+  visionTitle: '視覺模型',
+  visionBody: '替看不到圖片的模型去看圖的那一個。當你的模型沒有影像輸入時，貼上的圖片會以一個參照交給它，它可以用 image_inspect 工具就此提問。',
+  visionNone: '不設定——看不到的模型會拒絕圖片',
+  visionEmpty: '已設定的提供方中沒有接受圖片的模型。',
+  visionSaving: '儲存中…',
+  visionSaved: '視覺模型已儲存。',
+  visionFailed: '視覺模型儲存失敗，請再試一次。',
 }
 
 /** Japanese copy. */
@@ -379,4 +400,11 @@ export const ja: { [Key in keyof typeof en]: string } = {
   welcomeContinue: WELCOME_NOTICE_COPY.ja.continueLabel,
   welcomeError: '確認状態を保存できませんでした。もう一度お試しください。',
   keyRequired: 'API キーを入力してから続けてください。',
+  visionTitle: 'ビジョンモデル',
+  visionBody: '画像を見られないモデルの代わりに画像を見るモデルです。使用中のモデルに画像入力がない場合、添付された画像は参照として渡され、image_inspect ツールで質問できます。',
+  visionNone: '設定しない — 画像を見られないモデルは画像を拒否します',
+  visionEmpty: '設定済みのプロバイダーに画像を受け取れるモデルがありません。',
+  visionSaving: '保存中…',
+  visionSaved: 'ビジョンモデルを保存しました。',
+  visionFailed: 'ビジョンモデルを保存できませんでした。もう一度お試しください。',
 }

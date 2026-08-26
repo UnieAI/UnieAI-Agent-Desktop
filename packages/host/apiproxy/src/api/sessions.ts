@@ -130,6 +130,14 @@ export interface ModelCatalogModel {
   description?: string
   /** Exact-route reasoning metadata when the adapter exposes it. */
   reasoning?: ModelReasoning
+  /**
+   * Whether this model declares image input.
+   *
+   * Absent when the adapter does not say, which is not the same as `false`:
+   * a surface offering a vision model needs a declaration, and one that
+   * cannot be read is not a promise this catalog will make on its behalf.
+   */
+  acceptsImages?: boolean
 }
 
 /** One provider and the models it advertised successfully. */

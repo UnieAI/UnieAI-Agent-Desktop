@@ -20,6 +20,7 @@ import { Context } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import { AttachmentId, type ImageAttachmentRef, type ImageMediaType } from '@unieai/uad-attachment'
 import { MessageId, type Message } from '@unieai/uad-llm'
+import { installSettingsSection, settingsNamespace } from '@unieai/uad-settings'
 import { defineTool } from '@unieai/uad-tools'
 
 /** Public plugin configuration. */
@@ -61,25 +62,79 @@ const SYSTEM = 'You are answering one question about one image on behalf of anot
  * @param config - plugin config; Schemastery defaults are already applied.
  */
 export function apply(ctx: Context, config: Config = {}): void {
-  // A row written with no `config:` at all arrives as undefined rather than as
-  // the schema's defaults, and every field here is optional, so the default
-  // parameter is what makes "mounted with nothing said" the dormant case
-  // instead of a TypeError inside the loader.
-  const given = config as Partial<ResolvedConfig>
-  // Mounted DORMANT when no vision route is named, the way `llm-pi-ai` is
-  // mounted with no providers: a deployment that has no vision model offers no
-  // `image_inspect` rather than offering one that fails every call. Naming a
-  // route in settings is what brings the tool into the catalog.
-  if ((given.provider ?? '') === '' || (given.model ?? '') === '') return
-  const resolved: ResolvedConfig = {
+  // The live source: the settings section while a settings service is
+  // attached, this row's composition entry otherwise. A person choosing a
+  // vision model in the UI writes the section, and the swap below happens
+  // without a restart — a route chosen in settings that only took effect next
+  // launch would read as "the setting did nothing".
+  let current: () => Config = () => config
+  let resync: () => void = () => undefined
+
+  installSettingsSection(ctx, NS, Config, config, {
+    setSource: (source) => { current = source },
+    onChange: () => { resync() },
+  })
+
+  ctx.inject(['attachments', 'llm', 'systemPrompt', 'tools'], (scope) => {
+    // Registered as a pair and disposed as a pair: the prompt section
+    // describes a tool, so a section outliving its registration would tell the
+    // model to call something that is no longer there.
+    let active: { key: string; dispose: () => void } | undefined
+    const withdraw = (): void => {
+      active?.dispose()
+      active = undefined
+    }
+    resync = (): void => {
+      const resolved = routeOf(current())
+      if (resolved === undefined) {
+        withdraw()
+        return
+      }
+      const key = JSON.stringify(resolved)
+      if (active?.key === key) return
+      withdraw()
+      active = { key, dispose: install(ctx, scope, resolved) }
+    }
+    resync()
+    scope.effect(() => () => {
+      withdraw()
+      resync = () => undefined
+    }, 'tool-image-inspect: vision route')
+  })
+}
+
+/**
+ * The route to serve, or `undefined` for the dormant case.
+ *
+ * Mounted DORMANT when no vision route is named, the way `llm-pi-ai` is
+ * mounted with no providers: a deployment that has no vision model offers no
+ * `image_inspect` rather than offering one that fails every call. A row
+ * written with no `config:` at all arrives as `undefined` rather than as the
+ * schema's defaults, so every field falls back explicitly.
+ * @param config - the currently authoritative configuration.
+ * @returns the resolved route, or undefined when none is named.
+ */
+function routeOf(config: Config | undefined): ResolvedConfig | undefined {
+  const given = (config ?? {}) as Partial<ResolvedConfig>
+  if ((given.provider ?? '') === '' || (given.model ?? '') === '') return undefined
+  return {
     provider: given.provider ?? '',
     model: given.model ?? '',
     maxTokens: given.maxTokens ?? 1024,
     timeoutMs: given.timeoutMs ?? 120_000,
   }
+}
 
-  ctx.inject(['attachments', 'llm', 'systemPrompt', 'tools'], (scope) => {
-    scope.systemPrompt.section({
+/**
+ * Install the prompt section and the tool for one route.
+ * @param ctx - the plugin scope, used for the delegation event.
+ * @param scope - the injected scope owning the registrations.
+ * @param resolved - the route to serve.
+ * @returns a disposer withdrawing both registrations.
+ */
+function install(ctx: Context, scope: Context, resolved: ResolvedConfig): () => void {
+  {
+    const withdrawSection = scope.systemPrompt.section({
       name: 'tool:image_inspect',
       order: 113,
       text: 'Use the image_inspect tool to ask about the contents of an image you cannot see yourself. '
@@ -92,7 +147,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         + 'and ask again for each further detail you need rather than requesting one exhaustive description.',
     })
 
-    scope.tools.register(defineTool({
+    const withdrawTool = scope.tools.register(defineTool({
       name: 'image_inspect',
       description: 'Ask a vision model one question about one image and get a text answer. '
         + 'Use when you need a fact from a picture you cannot read yourself.',
@@ -192,8 +247,15 @@ export function apply(ctx: Context, config: Config = {}): void {
         return { answer: answer.trim(), model: `${resolved.provider}/${resolved.model}` }
       },
     }))
-  })
+    return () => {
+      withdrawTool()
+      withdrawSection()
+    }
+  }
 }
+
+/** Settings namespace a UI writes the chosen vision route into. */
+const NS = settingsNamespace('tool-image-inspect')
 
 export const Config: z<Config> = z.object({
   provider: z.string().required(false),
