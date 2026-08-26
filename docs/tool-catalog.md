@@ -2241,6 +2241,29 @@ Render a web page in a browser and return a picture of it. Use for questions abo
     "fullPage": {
       "type": "boolean",
       "description": "Capture the whole document instead of just the first screen. Defaults to false."
+    },
+    "waitForText": {
+      "type": "string",
+      "description": "Text that must be on the page before the shot. Use it whenever the answer depends on loaded data: a page can finish loading long before its content arrives, and without this you may photograph a loading skeleton. The call fails if the text never appears."
+    },
+    "clipSelector": {
+      "type": "string",
+      "description": "CSS selector to photograph instead of the whole page, for one component."
+    },
+    "hideSelectors": {
+      "type": "array",
+      "description": "CSS selectors to hide before the shot, for a notification or banner that happens to be on screen and is not what you are looking at.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "theme": {
+      "type": "string",
+      "description": "Colour scheme to render in. Omit to use the browser default.",
+      "enum": [
+        "light",
+        "dark"
+      ]
     }
   },
   "required": [

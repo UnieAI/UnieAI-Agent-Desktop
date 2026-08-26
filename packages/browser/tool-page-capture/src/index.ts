@@ -95,6 +95,27 @@ export function apply(ctx: Context, config: Config = {}, probe: ChromeProbe = FI
           type: 'boolean',
           description: 'Capture the whole document instead of just the first screen. Defaults to false.',
         },
+        waitForText: {
+          type: 'string',
+          description: 'Text that must be on the page before the shot. Use it whenever the answer '
+            + 'depends on loaded data: a page can finish loading long before its content arrives, and '
+            + 'without this you may photograph a loading skeleton. The call fails if the text never appears.',
+        },
+        clipSelector: {
+          type: 'string',
+          description: 'CSS selector to photograph instead of the whole page, for one component.',
+        },
+        hideSelectors: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'CSS selectors to hide before the shot, for a notification or banner that '
+            + 'happens to be on screen and is not what you are looking at.',
+        },
+        theme: {
+          type: 'string',
+          enum: ['light', 'dark'],
+          description: 'Colour scheme to render in. Omit to use the browser default.',
+        },
       },
       output: {
         schema: {
@@ -148,6 +169,10 @@ export function apply(ctx: Context, config: Config = {}, probe: ChromeProbe = FI
             width: resolved.width,
             height: resolved.height,
             fullPage: args.fullPage === true,
+            ...args.waitForText === undefined ? {} : { waitForText: args.waitForText },
+            ...args.clipSelector === undefined ? {} : { clipSelector: args.clipSelector },
+            ...args.hideSelectors === undefined ? {} : { hideSelectors: args.hideSelectors },
+            ...args.theme === undefined ? {} : { theme: args.theme },
             settleMs: resolved.settleMs,
             startupTimeoutSeconds: resolved.startupTimeoutSeconds,
           }, probe)

@@ -14,6 +14,18 @@ So this launches a browser with a throwaway profile, photographs one page, and k
 
 There is one way to photograph a page — drive a real browser — and one consumer, the tool itself. A Service Definition with a single provider and a single consumer would be ceremony around a function. If a second way ever exists (a remote rendering service, say), that is when the roles have started to evolve independently and the seam is worth drawing.
 
+## Photographing the page, not a page that has not arrived
+
+Four options exist because a picture can be taken correctly and still answer the wrong question.
+
+**`waitForText`** is the one that matters most. A settle timer answers "has it had time?", never "is it there?", and a page holding a stream or a poll open never goes network-idle at all — so without a marker the capture is a race against the app's own data. Given one, the tool polls the rendered text and, if it never appears, **fails with `CONTENT_NOT_FOUND` instead of returning the skeleton**. A skeleton that answers the question wrongly is worse than no answer.
+
+**`clipSelector`** photographs one element at its own size, measured in page space so an element scrolled out of view still comes out. A selector that matches nothing, or matches a zero-sized box, is `ELEMENT_NOT_FOUND` rather than a silent fall back to the whole page — widening the shot would answer a different question than the one asked.
+
+**`hideSelectors`** hides what happened to be on screen. It sets `visibility`, not `display`, so removing a toast does not reflow the page underneath it.
+
+**`theme`** emulates `prefers-color-scheme`, applied BEFORE navigation: a scheme switched after first paint photographs a page mid-repaint, and some pages read the preference once at startup.
+
 ## Contract
 
 - **`http` and `https` only.** `file:` would turn a tool parameter into a reader for the host filesystem, and the schemes a browser treats specially reach the browser rather than a page. Here the caller is a MODEL, which makes it the stronger of the two cases for the fence.
