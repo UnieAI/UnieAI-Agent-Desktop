@@ -8924,6 +8924,15 @@ importers:
         specifier: workspace:^
         version: link:../web-gate
 
+  packages/unieai/studio-kb-sources:
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+
   packages/unieai/web-gate:
     dependencies:
       '@unieai/schemastery':

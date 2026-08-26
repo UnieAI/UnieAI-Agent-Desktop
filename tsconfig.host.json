@@ -311,6 +311,7 @@
     { "path": "./packages/unieai/web-gate" },
     { "path": "./packages/mcp/mcp-servers" },
     { "path": "./packages/unieai/mcp-supervisor" },
+    { "path": "./packages/unieai/studio-kb-sources" },
     { "path": "./packages/sdk/client" },
     { "path": "./packages/sdk/protocol" },
     { "path": "./packages/lsp/lsp" },

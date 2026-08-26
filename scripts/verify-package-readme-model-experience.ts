@@ -55,6 +55,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/client/ui-agent-preset': { kind: 'indirect', reason: 'Browser-side settings row; the preset it selects owns every model-facing effect.' },
   'packages/core/agent-default-model': { kind: 'indirect', reason: 'The service supplies a ModelSelection; request assembly and adapters own the model-visible request.' },
   'packages/preset/agent-presets': { kind: 'indirect', reason: 'The mount installs a preset\'s own plugins, which own every model-facing registration it makes visible.' },
+  'packages/unieai/studio-kb-sources': { kind: 'none', reason: 'A pure reader over text another plugin already produced: no tool, no prompt, no schema, no context. It turns a result the model has already seen into rows for a person\'s surface.' },
   'packages/client/ui-plugins-page': { kind: 'none', reason: 'Hosts a page and declares one hole; it injects only slots and locale and registers no tool, prompt or schema. The occupants it renders own whatever they reach.' },
   'packages/client/ui-settings-notifications': { kind: 'none', reason: 'Browser settings surface plus a completion watcher over the existing client session list; it raises a Notification and plays a cue, and registers no prompt, schema, or tool.' },
   'packages/client/unieai-account-gateway': { kind: 'none', reason: 'Reads an account snapshot from the host for a settings surface; the quota labels it holds are UI copy, and nothing here reaches a model request.' },

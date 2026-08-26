@@ -1,0 +1,33 @@
+{
+  "name": "@unieai/uad-studio-kb-sources",
+  "description": "Read knowledge-base citations out of Studio's MCP tool results",
+  "version": "0.1.12",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
+  },
+  "devDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
+  }
+}

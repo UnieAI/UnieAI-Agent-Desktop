@@ -3622,6 +3622,7 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 - `@unieai/uad-sdk-protocol` ([`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts))
 - `@unieai/uad-session-telemetry` ([`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts))
 - `@unieai/uad-session-title-llm` ([`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts))
+- `@unieai/uad-studio-kb-sources` ([`packages/unieai/studio-kb-sources/src/index.ts`](../packages/unieai/studio-kb-sources/src/index.ts))
 - `@unieai/uad-subagent-in-process-driver` ([`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts))
 - `@unieai/uad-timeout` ([`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts))
 - `@unieai/uad-typert-generator` ([`packages/typert/generator/src/index.ts`](../packages/typert/generator/src/index.ts))
