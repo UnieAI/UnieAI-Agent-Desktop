@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-typert-generator",
   "description": "TypeScript project analyzer and model-driven Typert artifact generator",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "publishConfig": {
     "access": "public"
   },

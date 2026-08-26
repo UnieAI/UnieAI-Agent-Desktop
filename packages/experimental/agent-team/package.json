@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-experimental-agent-team",
   "description": "Implicit-root Agent Teams roster, durable peer mailbox, and shared task DAG",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": true,
   "repository": {
     "type": "git",

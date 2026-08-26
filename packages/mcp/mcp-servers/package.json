@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-mcp-servers",
   "description": "MCP servers a person adds themselves: a settings-backed list, mounted live",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "publishConfig": {
     "access": "public"
   },
