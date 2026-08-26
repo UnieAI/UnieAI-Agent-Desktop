@@ -12,7 +12,7 @@ import ts from 'typescript'
 import { builtDeclarationPath } from './doc-typecheck-paths.ts'
 import { markdownFences } from './markdown.ts'
 import { partitionPairedMarkdownDerivatives } from './paired-markdown-derivatives.ts'
-import { isArchivedAgentNotePath } from './repo-files.ts'
+import { isAgentNotePath } from './repo-files.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -202,12 +202,18 @@ function remapBlockPaths(output: string, blocks: Block[]): string {
   })
 }
 
-const markdownGlobs = ['README.md', '.agents/notes/**/*.md', 'docs/**/*.md', 'packages/*/*.md', 'packages/*/*/*.md']
+// Agent Notes are NOT here. They are dated records whose code names the
+// packages that existed when the decision was made, and the rescope tool
+// refuses to rewrite them for that reason; compiling them against today's
+// package graph asks the repository to hold two contradictory rules at once.
+// Current-state prose — the docs tree and package READMEs — is what this gate
+// is for, and that prose is edited whenever the code moves.
+const markdownGlobs = ['README.md', 'docs/**/*.md', 'packages/*/*.md', 'packages/*/*/*.md']
 
 const files: string[] = []
 for (const pattern of markdownGlobs) {
   for (const match of globSync(pattern, { cwd: root })) {
-    if (!isArchivedAgentNotePath(match)) files.push(resolve(root, match))
+    if (!isAgentNotePath(match)) files.push(resolve(root, match))
   }
 }
 files.sort()

@@ -1,0 +1,110 @@
+# The checks this FORK actually runs, on runners this fork actually has.
+#
+# WHY A SECOND CI FILE. `ci.yml` is the upstream harness's pipeline: every one
+# of its jobs is gated `if: github.event_name == 'pull_request'` and asks for
+# DeepSeek's private pools (`dsh-ubuntu-24-04-16core`, a self-hosted
+# `vm-backup` fleet). This fork works on a branch, opens no pull requests, and
+# owns neither pool — so `ci.yml` has never run once here. Fifty commits,
+# including four desktop releases, went out with no automated check of any
+# kind; three of those releases were broken on arrival. Rather than rewire an
+# inherited pipeline around runners that do not exist, this file runs the
+# gates that pass here, on GitHub-hosted runners, on every push.
+#
+# WHAT IS DELIBERATELY NOT HERE, and why — an excluded gate is a fact, not an
+# omission:
+#   · `hygiene` — four of its gates fail for fork-wide reasons that are not
+#     about any one change: `rescope-vendor:check` (vendored manifests carry
+#     upstream's scope), `constraints` (every member's `repository` field must
+#     name deepseek-harness), `publint` (all 243 packages report the same two
+#     complaints), `knip` (the desktop shell's deploy dependencies read as
+#     unused). Turning a permanently red gate on teaches everyone to ignore
+#     red, which is the failure this file exists to end.
+#   · `test:coverage` — the per-file 100% gate has never run in this fork, so
+#     its true state is unknown; it goes in once measured, not before.
+#   · the Windows and Node-compatibility matrices — upstream runs those on the
+#     pools above, and this fork's Windows evidence comes from the desktop
+#     release job.
+
+name: CI (uad)
+
+on:
+  push:
+    branches: [uad]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # CI must never report to the production telemetry endpoint baked into
+  # apps/cli/cordis.yml (AppCLIEntry disables the row when this is set).
+  DSH_TELEMETRY_DISABLED: '1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The repository's own engines range (^22.19 || >=24). Older Node
+          # fails in ways that do not name the version.
+          node-version: 22
+
+      - uses: pnpm/action-setup@v4
+
+      - run: pnpm install --frozen-lockfile
+
+      # `--profile official` is what the release pack requires of client
+      # artifacts, so building any other way here would prove the wrong build.
+      - name: Build
+        run: pnpm run build -- --profile official
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Tests
+        run: pnpm run test
+
+      - name: Documentation gates
+        run: pnpm run doc-sync
+
+  # The check no release had: that the PACKAGED app starts and serves a page
+  # with its plugins loaded. Rabi 0.1.9 and 0.1.10 died at boot on a module
+  # the build never emitted, and 0.1.11 served a page whose plugin graph was
+  # empty — three releases in a row, each found by a person installing it.
+  # Every one of them fails this job.
+  packaged-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v4
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run build -- --profile official
+
+      # Linux `--dir`, not an installer: the question is whether the packaged
+      # TREE resolves and boots, and that is the same tree every platform
+      # ships. Making installers here would cost minutes and answer less.
+      - name: Package the desktop tree
+        run: pnpm --filter @unieai/uad-desktop run package:dir
+
+      - name: Boot the packaged app and check it serves its plugins
+        run: node scripts/verify-packaged-app.mjs

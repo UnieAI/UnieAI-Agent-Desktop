@@ -27,6 +27,23 @@ export function isArchivedAgentNotePath(path: string): boolean {
 }
 
 /**
+ * Whether a repository path is an Agent Note of any lifecycle.
+ *
+ * The whole tree is a dated RECORD of decisions, not current-state prose: it
+ * is the one tree `scripts/rescope-product.ts` refuses to rewrite ("historical
+ * record, not current authority"), so a note keeps the package names that
+ * existed when it was written. A gate that compiles a note's code against
+ * today's names therefore demands an edit that another tool forbids, and the
+ * repository cannot satisfy both — which is exactly how `doc-typecheck` came
+ * to fail on twelve blocks naming `@deepseek-ai/*`, permanently, on every run.
+ * @param path - repository-relative path.
+ * @returns true for any file under `.agents/notes/`.
+ */
+export function isAgentNotePath(path: string): boolean {
+  return path.replaceAll('\\', '/').startsWith('.agents/notes/')
+}
+
+/**
  * Expand repository-relative globs and deduplicate symlinked files.
  * @param root - absolute repository root.
  * @param patterns - repository-relative glob patterns, processed in order.

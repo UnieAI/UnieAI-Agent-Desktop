@@ -679,6 +679,40 @@ function jobStep(job: Record<string, unknown>, name: string): Record<string, unk
   return step
 }
 
+describe('This fork\'s own CI', () => {
+  it('runs on pushes to the working branch, because the inherited pipeline never runs here', () => {
+    // `ci.yml` gates every job on `pull_request` and asks for DeepSeek's
+    // private pools. This fork works on a branch and owns neither, so that
+    // file has never run once — fifty commits and four desktop releases with
+    // no automated check. This workflow is the one that does run.
+    const workflow = loadWorkflow('.github/workflows/ci-uad.yml')
+    const on = workflow['on'] as Record<string, unknown>
+    expect((on['push'] as { branches?: string[] }).branches).toContain('uad')
+    for (const job of ['checks', 'packaged-app']) {
+      const steps = workflowJob(workflow, job).steps
+      expect(Array.isArray(steps) && steps.length > 0, job).toBe(true)
+    }
+  })
+
+  it('asks only for GitHub-hosted runners, since a label with no runners queues forever', () => {
+    // The failure mode this repository has already paid for twice: a job whose
+    // label nothing answers does not fail, it waits.
+    const workflow = loadWorkflow('.github/workflows/ci-uad.yml')
+    for (const job of ['checks', 'packaged-app']) {
+      expect(workflowJob(workflow, job)['runs-on'], job).toBe('ubuntu-latest')
+    }
+  })
+
+  it('boots the PACKAGED tree, because fetching / proves nothing', () => {
+    // 0.1.9, 0.1.10 and 0.1.11 all answered 200 with the right <title> while
+    // being unusable. The packaged job runs the boot-graph check instead.
+    const job = workflowJob(loadWorkflow('.github/workflows/ci-uad.yml'), 'packaged-app')
+    const runs = (job.steps as { run?: string }[]).map(step => step.run ?? '').join('\n')
+    expect(runs).toContain('package:dir')
+    expect(runs).toContain('verify-packaged-app.mjs')
+  })
+})
+
 function loadWorkflow(path: string): Record<string, unknown> {
   const workflow: unknown = yaml.load(readFileSync(resolve(root, path), 'utf8'))
   if (!isRecord(workflow)) throw new TypeError(`${path} must define a workflow`)

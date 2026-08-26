@@ -725,6 +725,30 @@ declare abstract class LlmAdapter {
    */
   listModels(_provider: string): Promise<readonly LlmModelInfo[]>;
   /**
+   * Whether this adapter could currently authenticate a request on one owned
+   * route, WITHOUT reading the secret itself.
+   *
+   * A route is registered as soon as its plugin mounts, long before anyone
+   * stores a key, so registration says nothing about whether a request would
+   * be answered. Consumers that advertise a route's models to a person need
+   * that second fact: offering a model whose provider has no credential
+   * promises a run that can only end in `MISSING_CREDENTIAL`.
+   *
+   * Three answers, and the third is the important one. `true` means a request
+   * would find a credential — or that the route authenticates natively and
+   * needs none, which is the same thing from a caller's side. `false` means it
+   * would not. `undefined` means this adapter cannot tell, and a consumer must
+   * then treat the route as usable: hiding a working provider because its
+   * adapter declines to answer is a worse failure than showing one that will
+   * ask for a key.
+   *
+   * Implementations must not resolve the value to answer where a value-free
+   * check exists (`credentials.describe`), and must never return the secret.
+   * @param _provider - one provider route owned by this adapter.
+   * @returns whether a request could authenticate, or `undefined` when unknown.
+   */
+  credentialReady(_provider: string): Promise<boolean | undefined>;
+  /**
    * Resolve all metadata available for one exact model. This query is
    * independent of the advisory catalog and does not validate request routing.
    * @param provider - one provider route owned by this adapter.
