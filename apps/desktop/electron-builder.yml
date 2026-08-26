@@ -46,7 +46,8 @@ mac:
 
 win:
   # No `arch` list, for the reason mac has none: the arch comes from the CLI
-  # flag each `package:win:*` script passes, and the release workflow gives each
+  # flag each `package:win:*`/`publish:win:*` script passes, and the release
+  # workflow gives each
   # one its OWN runner. Listing both here made every Windows runner rebuild the
   # native modules for both — and an arm64 runner cannot build x64 ones, so the
   # arm64 job packaged `Rabi.exe`, then died in node-pty's x64 rebuild with

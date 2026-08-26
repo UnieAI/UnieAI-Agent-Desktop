@@ -13,7 +13,11 @@
     "package:mac:arm64": "node scripts/verify-target.mjs darwin arm64 && npm run build && electron-builder --mac --arm64 --publish never",
     "package:mac:x64": "node scripts/verify-target.mjs darwin x64 && npm run build && electron-builder --mac --x64 --publish never",
     "package:win:x64": "node scripts/verify-target.mjs win32 x64 && npm run build && electron-builder --win --x64 --publish never",
-    "package:win:arm64": "node scripts/verify-target.mjs win32 arm64 && npm run build && electron-builder --win --arm64 --publish never"
+    "package:win:arm64": "node scripts/verify-target.mjs win32 arm64 && npm run build && electron-builder --win --arm64 --publish never",
+    "publish:mac:arm64": "node scripts/verify-target.mjs darwin arm64 && npm run build && electron-builder --mac --arm64 --publish always",
+    "publish:mac:x64": "node scripts/verify-target.mjs darwin x64 && npm run build && electron-builder --mac --x64 --publish always",
+    "publish:win:x64": "node scripts/verify-target.mjs win32 x64 && npm run build && electron-builder --win --x64 --publish always",
+    "publish:win:arm64": "node scripts/verify-target.mjs win32 arm64 && npm run build && electron-builder --win --arm64 --publish always"
   },
   "dependencies": {
     "@unieai/rabi": "workspace:^",

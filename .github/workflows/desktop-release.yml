@@ -10,10 +10,26 @@
 # WHAT MAKES AUTO-UPDATE WORK is not the tag. `electron-updater` reads a feed:
 # for the github provider that is the release's `latest.yml` (Windows) and
 # `latest-mac.yml` (macOS), which electron-builder writes only when it
-# publishes. That is why `--publish always` is used here and `--publish never`
-# in the local scripts. The macOS `zip` target is required for the same reason:
-# Squirrel.Mac updates from the zip, and a release carrying only the .dmg gives
-# people something to install by hand and nothing to update from.
+# publishes. That is why the `publish:*` scripts are used here and the
+# `package:*` ones locally. The macOS `zip` target is required for the same
+# reason: Squirrel.Mac updates from the zip, and a release carrying only the
+# .dmg gives people something to install by hand and nothing to update from.
+#
+# THE SCRIPTS DIFFER BY A WHOLE SCRIPT, not by an appended flag, and that is
+# the point. This job used to run `run package:mac:arm64 -- --publish always`
+# over a script already ending in `--publish never`. pnpm passes the `--`
+# THROUGH, so electron-builder received
+#   --mac --arm64 --publish never -- --publish always
+# and yargs stops parsing options at `--`: `publish` was `never` and the flag
+# meant to override it sat inertly in `argv._`. Every desktop-v0.1.5 through
+# v0.1.8 run therefore built four installers, published nothing, and exited 0 —
+# a green run with no output anywhere. Never reach for `-- --flag` to override
+# a flag a script already sets; give the script a sibling that sets it right.
+#
+# The installers are ALSO uploaded as run artifacts. Publishing depends on a
+# token, a permission, and a provider all being right; the artifact depends on
+# the files existing. A build nobody can retrieve is a build that did not
+# happen, and this is the cheap way to never be there again.
 #
 # macOS builds here are UNSIGNED, so they can be installed but cannot update
 # themselves — see `apps/desktop/src/updates.ts` for what the app does instead,
@@ -37,7 +53,7 @@ jobs:
       matrix:
         include:
           - runner: macos-14
-            target: package:mac:arm64
+            target: publish:mac:arm64
           # `macos-15-intel`, not `macos-13`: GitHub retired the macOS 13 image,
           # and a job asking for a label with no runners behind it does not
           # fail — it QUEUES, forever. The other three targets of
@@ -45,11 +61,11 @@ jobs:
           # "Waiting for a runner to pick up this job", which is why the
           # release had three of its four installers and no error to read.
           - runner: macos-15-intel
-            target: package:mac:x64
+            target: publish:mac:x64
           - runner: windows-latest
-            target: package:win:x64
+            target: publish:win:x64
           - runner: windows-11-arm
-            target: package:win:arm64
+            target: publish:win:arm64
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -68,6 +84,23 @@ jobs:
       - run: pnpm run build
 
       - name: Package
-        run: pnpm --filter @unieai/uad-desktop run ${{ matrix.target }} -- --publish always
+        run: pnpm --filter @unieai/uad-desktop run ${{ matrix.target }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Named per target: four jobs upload into one run, and same-named
+      # artifacts from different jobs collide. `blockmap`/`yml` files come
+      # along because they are the update feed, not build noise.
+      - name: Keep the installers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.target }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.zip
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.blockmap
+            apps/desktop/release/latest*.yml

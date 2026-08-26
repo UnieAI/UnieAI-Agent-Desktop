@@ -49,11 +49,13 @@ pnpm --filter @unieai/uad-desktop run package:win:x64     # on Windows x64
 pnpm --filter @unieai/uad-desktop run package:win:arm64   # on Windows arm64
 ```
 
+這四個腳本各有一個 `publish:*` 兄弟，指令完全相同、只是結尾換成 `--publish always`，而 [`desktop-release.yml`](../../.github/workflows/desktop-release.yml) 跑的正是它們。它們之所以是獨立腳本、而不是由 workflow 附加一個旗標，是因為附加根本沒有用：`pnpm run package:mac:arm64 -- --publish always` 會把 `--` 一起傳過去，electron-builder 收到的是 `--publish never -- --publish always`，而 yargs 在 `--` 就停止解析選項。那個本該覆蓋的旗標落進了 `argv._`，於是建置什麼都沒發佈，還以 0 結束。`desktop-v0.1.5`–`v0.1.8` 的每一次執行都是這樣打出四份安裝檔、卻沒有產生任何 release。workflow 現在也會把安裝檔上傳成 run artifact，這樣即使發佈不是這次執行想做的事，建置結果仍然拿得到。
+
 **每個目標都必須在該平台上打包**，`scripts/verify-target.mjs` 會拒絕其他情況。這是被打包物本身的性質，不是保守：封閉集裡帶著套件管理器在安裝時依平台與架構挑選的原生二進位檔——`koffi`，也就是 Win32 沙箱的 FFI，是最清楚的例子——所以在 Linux 上產出的 macOS 版，會把 Linux 的二進位檔包進 `.dmg`，而且只有在有人執行時才會失敗。四個目標就是四台機器，或是 [`desktop-release.yml`](../../.github/workflows/desktop-release.yml) 裡的四個 runner。
 
 ## 更新
 
-app 啟動時會檢查 GitHub Releases 的來源。讓它能運作的不是 tag：`electron-updater` 讀的是 electron-builder **在發佈時**才會寫出的 `latest.yml` 和 `latest-mac.yml`，這也是為什麼 workflow 傳 `--publish always` 而本機腳本傳 `--publish never`。macOS 另外是從 `zip` 目標更新，而不是 `.dmg`，所以一份只帶磁碟映像的 release，只能讓人手動安裝，沒有東西可以更新。
+app 啟動時會檢查 GitHub Releases 的來源。讓它能運作的不是 tag：`electron-updater` 讀的是 electron-builder **在發佈時**才會寫出的 `latest.yml` 和 `latest-mac.yml`，這也是為什麼 workflow 跑的是 `publish:*` 腳本，而本機的 `package:*` 腳本傳 `--publish never`。macOS 另外是從 `zip` 目標更新，而不是 `.dmg`，所以一份只帶磁碟映像的 release，只能讓人手動安裝，沒有東西可以更新。
 
 **Windows 會自己安裝更新，macOS 只會告知並開啟下載頁。** 這個分歧不是偏好：Electron 的文件明載，在 macOS 上應用程式必須經過簽章才能自動更新，因為 Squirrel.Mac 要求如此。一份未簽章卻承諾會安裝的版本，會在下載完成之後才失敗，那比不提供更糟。`src/updates.ts` 明確寫出了有了 Developer ID 之後該刪掉什麼。
 

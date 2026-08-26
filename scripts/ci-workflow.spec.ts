@@ -539,6 +539,103 @@ describe('Git hooks', () => {
   })
 })
 
+describe('Desktop release workflow', () => {
+  it('runs a script that publishes, because an appended --publish flag never reaches electron-builder', () => {
+    // The bug this gate exists for: the job ran
+    //   pnpm run package:mac:arm64 -- --publish always
+    // over a script already ending in `--publish never`. pnpm passes the `--`
+    // through, yargs stops parsing options there, and the override landed in
+    // `argv._`. Four releases built four installers each and published none,
+    // every run green. So the flag must come from the script, and the step
+    // must append nothing.
+    const workflow = loadWorkflow('.github/workflows/desktop-release.yml')
+    const job = workflowJob(workflow, 'package')
+    const scripts = desktopScripts()
+
+    const targets = matrixTargets(job)
+    expect(targets.length).toBe(4)
+    for (const target of targets) {
+      const script = scripts[target]
+      expect(script, `apps/desktop must define the ${target} script`).toBeTypeOf('string')
+      expect(script, `${target} must publish`).toContain('--publish always')
+      expect(script, `${target} must not also say never`).not.toContain('--publish never')
+    }
+
+    const step = jobStep(job, 'Package')
+    expect(typeof step.run === 'string' ? step.run : '').toBe(
+      'pnpm --filter @unieai/uad-desktop run ${{ matrix.target }}',
+    )
+    expect(step.env).toMatchObject({ GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' })
+  })
+
+  it('keeps the installers as artifacts, so a build stays retrievable when publishing is not what it was', () => {
+    const job = workflowJob(loadWorkflow('.github/workflows/desktop-release.yml'), 'package')
+    const step = jobStep(job, 'Keep the installers')
+    expect(typeof step.uses === 'string' ? step.uses : '').toMatch(/^actions\/upload-artifact@/)
+    // Per target: four jobs upload into one run and same-named artifacts collide.
+    expect(step.with).toMatchObject({
+      name: 'desktop-${{ matrix.target }}',
+      'if-no-files-found': 'error',
+    })
+    const path = isRecord(step.with) && typeof step.with.path === 'string' ? step.with.path : ''
+    // The update feed, not build noise: an installer with no `latest*.yml`
+    // beside it is something to install by hand and nothing to update from.
+    for (const pattern of ['*.dmg', '*.zip', '*.exe', 'latest*.yml']) {
+      expect(path, `artifact must carry ${pattern}`).toContain(pattern)
+    }
+  })
+
+  it('packages each target on its own runner, because the closure carries per-platform native binaries', () => {
+    const job = workflowJob(loadWorkflow('.github/workflows/desktop-release.yml'), 'package')
+    const include = matrixInclude(job)
+    const runners = include.map(entry => String(entry.runner))
+    expect(new Set(runners).size).toBe(runners.length)
+    for (const entry of include) {
+      const target = String(entry.target)
+      const runner = String(entry.runner)
+      const wantsMac = target.includes(':mac:')
+      expect(runner.startsWith('macos-'), `${target} must run on macOS: ${runner}`).toBe(wantsMac)
+    }
+  })
+})
+
+/** The desktop app's npm scripts, by name. */
+function desktopScripts(): Record<string, string> {
+  const manifest: unknown = JSON.parse(readFileSync(resolve(root, 'apps/desktop/package.json'), 'utf8'))
+  if (!isRecord(manifest) || !isRecord(manifest.scripts)) throw new TypeError('apps/desktop must define scripts')
+  const scripts: Record<string, string> = {}
+  for (const [name, value] of Object.entries(manifest.scripts)) {
+    if (typeof value === 'string') scripts[name] = value
+  }
+  return scripts
+}
+
+/** The `include:` rows of a job's build matrix. */
+function matrixInclude(job: Record<string, unknown>): Record<string, unknown>[] {
+  if (!isRecord(job.strategy) || !isRecord(job.strategy.matrix) || !Array.isArray(job.strategy.matrix.include)) {
+    throw new TypeError('job must define a matrix include')
+  }
+  return job.strategy.matrix.include.filter(isRecord)
+}
+
+/** Every `target:` the matrix names. */
+function matrixTargets(job: Record<string, unknown>): string[] {
+  return matrixInclude(job).map(entry => String(entry.target))
+}
+
+/**
+ * One named step of a job.
+ * @param job - the job to search.
+ * @param name - the step's `name:`.
+ * @returns that step.
+ */
+function jobStep(job: Record<string, unknown>, name: string): Record<string, unknown> {
+  if (!Array.isArray(job.steps)) throw new TypeError('job must define steps')
+  const step = job.steps.filter(isRecord).find(candidate => candidate.name === name)
+  if (step === undefined) throw new TypeError(`job must define the ${name} step`)
+  return step
+}
+
 function loadWorkflow(path: string): Record<string, unknown> {
   const workflow: unknown = yaml.load(readFileSync(resolve(root, path), 'utf8'))
   if (!isRecord(workflow)) throw new TypeError(`${path} must define a workflow`)

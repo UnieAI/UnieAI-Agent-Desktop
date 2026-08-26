@@ -49,11 +49,13 @@ pnpm --filter @unieai/uad-desktop run package:win:x64     # on Windows x64
 pnpm --filter @unieai/uad-desktop run package:win:arm64   # on Windows arm64
 ```
 
+The `publish:*` siblings of those four are the same command ending in `--publish always`, and they are what [`desktop-release.yml`](../../.github/workflows/desktop-release.yml) runs. They exist as separate scripts rather than as a flag the workflow appends because appending does not work: `pnpm run package:mac:arm64 -- --publish always` passes the `--` through, electron-builder receives `--publish never -- --publish always`, and yargs stops parsing options at `--`. The override lands in `argv._` and the build publishes nothing while exiting 0. Every `desktop-v0.1.5`–`v0.1.8` run built four installers that way and produced no release. The workflow also uploads the installers as run artifacts, so a build is retrievable even when publishing is not what it was.
+
 **Each target must be packaged on that platform**, and `scripts/verify-target.mjs` refuses anything else. This is a property of what is being packaged, not caution: the closure carries native binaries the package manager chooses per platform and architecture at install time — `koffi`, the Win32 sandbox's FFI, is the clearest case — so a macOS build produced on Linux would ship Linux binaries inside a `.dmg` and fail only when someone ran it. Four targets means four machines, or the four runners in [`desktop-release.yml`](../../.github/workflows/desktop-release.yml).
 
 ## Updates
 
-The app checks a GitHub Releases feed on launch. What makes that work is not the tag: `electron-updater` reads the `latest.yml` and `latest-mac.yml` that electron-builder writes **when it publishes**, which is why the workflow passes `--publish always` and the local scripts pass `--publish never`. macOS additionally updates from the `zip` target rather than the `.dmg`, so a release carrying only the disk image gives people something to install by hand and nothing to update from.
+The app checks a GitHub Releases feed on launch. What makes that work is not the tag: `electron-updater` reads the `latest.yml` and `latest-mac.yml` that electron-builder writes **when it publishes**, which is why the workflow runs the `publish:*` scripts and the local `package:*` ones pass `--publish never`. macOS additionally updates from the `zip` target rather than the `.dmg`, so a release carrying only the disk image gives people something to install by hand and nothing to update from.
 
 **Windows installs updates itself. macOS tells and opens the download page.** That split is not a preference: Electron's documentation states that an application must be signed for automatic updates on macOS, because Squirrel.Mac requires it. An unsigned build that promised an install would fail after downloading, which is worse than not offering. `src/updates.ts` names exactly what to delete when a Developer ID exists.
 
