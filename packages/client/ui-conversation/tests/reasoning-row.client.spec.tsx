@@ -40,6 +40,32 @@ const t = makeTranslate(zh, commonZh)
 const renderMessageImages: AssistantMarkdownProps['renderMessageImages'] = () => null
 
 describe('ReasoningRow', () => {
+  it('shows the animated orb while thinking and the static mark once settled', () => {
+    // The web product replaces the row's glyph with the orb while the model is
+    // working; an animation that outlived the work would keep promising that
+    // something is still happening.
+    const view = render(
+      <AssistantMarkdown
+        t={t}
+        blocks={[{ kind: 'reasoning', text: 'Still thinking' }]}
+        streaming
+        renderMessageImages={renderMessageImages}
+      />,
+    )
+    expect(view.container.querySelector('canvas')).toBeTruthy()
+
+    view.rerender(
+      <AssistantMarkdown
+        t={t}
+        blocks={[{ kind: 'reasoning', text: 'Still thinking' }]}
+        streaming={false}
+        renderMessageImages={renderMessageImages}
+      />,
+    )
+    expect(view.container.querySelector('canvas')).toBeNull()
+    expect(view.container.querySelector('svg')).toBeTruthy()
+  })
+
   it('follows the latest streaming line, scrolls to its end, then restores the settled first line', () => {
     const view = render(
       <AssistantMarkdown

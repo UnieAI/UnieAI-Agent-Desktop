@@ -55,3 +55,8 @@ native/chromium/packages/*/LICENSE
 # Electron packaging output: an unpacked app plus its installers, hundreds of
 # megabytes rebuilt by `pnpm --filter @unieai/uad-desktop run package:*`.
 apps/desktop/release/
+
+# A browser profile directory literally named `[object Object]`: what a
+# launcher writes when an options OBJECT reaches an argument builder that
+# expects a path string. It has been committed once by a sweeping `git add`.
+'[object Object]'/

@@ -577,6 +577,12 @@ export function collectExportJsdocViolations(scanRoot: string = root): string[] 
   const violations: string[] = []
   const rels = globSync('packages/*/*/src/**/*.ts', { cwd: scanRoot })
     .map(path => path.split(sep).join('/'))
+    // Vendored source keeps upstream style and idioms — the same rule the
+    // root `vendor/` tree follows, and the reason oxlint ignores it too. A
+    // pinned copy that has been reformatted to this repository's conventions
+    // can no longer be diffed against the version it came from, which is the
+    // whole point of pinning one.
+    .filter(path => !path.includes('/src/vendor/'))
     .sort()
   const program = ts.createProgram(rels.map(rel => resolve(scanRoot, rel)), loadCompilerOptions(scanRoot))
   const checker = program.getTypeChecker()

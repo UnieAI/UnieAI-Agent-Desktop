@@ -686,6 +686,62 @@ export function isPermissive(license: string): boolean {
  * @param deps - development dependencies whose license is not permissive.
  * @returns the paragraph to place after the development table.
  */
+/** One upstream drawing, engine, or component pinned INSIDE a package's sources. */
+interface VendoredSourceRow {
+  /** Directory name under a package's `src/vendor/`. */
+  readonly name: string
+  /** Repository-relative directory. */
+  readonly dir: string
+  /** Copyright line read from the pinned LICENSE. */
+  readonly copyright: string
+  /** License name, from the LICENSE's first line. */
+  readonly license: string
+}
+
+/**
+ * Every upstream copy pinned under a package's own `src/vendor/` directory.
+ *
+ * The root `vendor/` tree holds whole PACKAGES with manifests; this finds the
+ * other kind — a component or engine copied into one package's sources, which
+ * has no manifest and would otherwise appear in no notice at all. Its LICENSE
+ * sits beside the code, but a license file inside `src/` reaches nobody: the
+ * package publishes `lib/`, and the desktop ships the bundle. Disclosing it
+ * here is what puts the attribution in front of a reader.
+ * @returns one row per pinned directory, in path order.
+ */
+function collectVendoredSource(): VendoredSourceRow[] {
+  const rows: VendoredSourceRow[] = []
+  for (const rel of globSync('packages/*/*/src/vendor/*/LICENSE', { cwd: root }).sort()) {
+    const dir = rel.split('/').slice(0, -1).join('/')
+    const text = readFileSync(resolve(root, rel), 'utf8')
+    const license = text.split('\n')[0]?.trim() ?? 'unknown'
+    const copyright = /^Copyright .*/mu.exec(text)?.[0]?.trim() ?? 'see LICENSE'
+    rows.push({ name: dir.split('/').at(-1) ?? dir, dir, copyright, license })
+  }
+  return rows
+}
+
+/**
+ * Render the pinned-source section, or nothing when none is pinned.
+ * @param rows - pinned directories.
+ * @returns the section, with a leading blank line, or an empty string.
+ */
+function renderVendoredSource(rows: VendoredSourceRow[]): string {
+  if (rows.length === 0) return ''
+  const table = rows
+    .map(row => `| \`${row.name}\` | ${row.copyright} | ${row.license} | [\`${row.dir}\`](${row.dir}) |`)
+    .join('\n')
+  return `
+## Vendored source (inside a package)
+
+Upstream components copied into one package's \`src/vendor/\` rather than consumed from npm. Each keeps its own \`LICENSE\` beside the code; the license text also ships wherever that package's bundle ships, which is what these rows disclose.
+
+| Component | Copyright | License | Location |
+| --- | --- | --- | --- |
+${table}
+`
+}
+
 function renderNonPermissiveNote(deps: ExternalDep[]): string {
   if (deps.length === 0) return ''
   const named = deps.map(dep => `\`${dep.name}\` (${dep.license})`)
@@ -797,7 +853,7 @@ The Cordis framework and its foundation libraries are source-vendored into this 
 | Package | Upstream name | Upstream | License |
 | --- | --- | --- | --- |
 ${vendored.map(row => `| \`${row.npmName}\` | \`${row.upstreamName}\` | [${row.upstream.replace('https://', '')}](${row.upstream}) | MIT |`).join('\n')}
-
+${renderVendoredSource(collectVendoredSource())}
 ## Runtime npm dependencies
 
 External packages that a workspace package resolves at runtime. The tier covers every plugin a user can mount from \`cordis.yml\` — not only what the \`dsh\` CLI, Web UI, and Python SDK runtime load by default.

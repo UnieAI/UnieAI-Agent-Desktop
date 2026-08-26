@@ -18,6 +18,10 @@ pre-commit:
       glob: '*.{ts,tsx,mts,cts,mjs}'
       exclude:
         - 'vendor/*/src/**'
+        # A pinned upstream copy inside a package, same rule as the root
+        # vendor tree: it keeps upstream's style, so linting it would demand
+        # edits that destroy the diff against the version it came from.
+        - 'packages/*/*/src/vendor/**'
       run: node_modules/.bin/tsx scripts/run-oxlint.ts --config .oxlintrc.staged.json --fix --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
 

@@ -25,6 +25,14 @@ The Cordis framework and its foundation libraries are source-vendored into this 
 | `@unieai/cordis-plugin-hmr` | `@cordisjs/plugin-hmr` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
 | `@unieai/cordis-plugin-logger-console` | `@cordisjs/plugin-logger-console` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
 
+## Vendored source (inside a package)
+
+Upstream components copied into one package's `src/vendor/` rather than consumed from npm. Each keeps its own `LICENSE` beside the code; the license text also ships wherever that package's bundle ships, which is what these rows disclose.
+
+| Component | Copyright | License | Location |
+| --- | --- | --- | --- |
+| `thinking-orbs` | Copyright (c) 2026 Jakub Antalik | MIT License | [`packages/client/ui-primitives/src/vendor/thinking-orbs`](packages/client/ui-primitives/src/vendor/thinking-orbs) |
+
 ## Runtime npm dependencies
 
 External packages that a workspace package resolves at runtime. The tier covers every plugin a user can mount from `cordis.yml` — not only what the `dsh` CLI, Web UI, and Python SDK runtime load by default.

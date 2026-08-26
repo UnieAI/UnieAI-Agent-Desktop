@@ -59,7 +59,8 @@
     "lib/index.js",
     "lib/invariant.js",
     "lib/**/*.css",
-    "lib/types/**/*.d.ts"
+    "lib/types/**/*.d.ts",
+    "src/vendor/*/LICENSE"
   ],
   "peerDependencies": {
     "@unieai/cordis": "workspace:^",

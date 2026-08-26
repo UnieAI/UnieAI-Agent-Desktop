@@ -1,6 +1,6 @@
 /** Assistant reasoning disclosure, independent of Tool-call presentation. */
 import { useEffect, useRef, useState } from 'react'
-import { DisclosureRow, IconThinkOutline14 } from '@unieai/uad-client-ui-primitives'
+import { DisclosureRow, IconThinkOutline14, ThinkingOrb } from '@unieai/uad-client-ui-primitives'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
 import { useThrottledVisualUpdate } from './use-throttled-visual-update.ts'
 import a11yCss from './accessibility.module.css'
@@ -45,7 +45,11 @@ export function ReasoningRow({ text, running, t }: { text: string; running: bool
         leadingClassName={css.leading}
         titleClassName={css.title}
         chevronClassName={css.chevron}
-        icon={<IconThinkOutline14 size={14} />}
+        // While the model is still thinking the orb REPLACES the glyph, which
+        // is what the web product shows in the same row. Settled, the static
+        // think mark returns — an animation that outlived the work would keep
+        // promising something is happening.
+        icon={running ? <ThinkingOrb size={20} /> : <IconThinkOutline14 size={14} />}
         title="Think"
         open={expanded}
         expandable
