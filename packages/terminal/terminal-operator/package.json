@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-terminal-operator",
   "description": "The terminal a person drives: workspace-scoped interactive shell sessions over the subprocess terminal primitive",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "publishConfig": {
     "access": "public"
   },
