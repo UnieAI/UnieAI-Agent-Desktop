@@ -16,12 +16,12 @@ import { describe, expect, it } from 'vitest'
 const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const dshSourceBin = 'apps/cli/src/bin.ts'
 
-describe('uad SOURCE launcher (node --import tsx/esm)', () => {
+describe('rabi SOURCE launcher (node --import tsx/esm)', () => {
   it('launches the source CLI without building', async () => {
     const rootPackage = JSON.parse(await readFile(new URL('../../../package.json', import.meta.url), 'utf8')) as {
       readonly scripts?: Record<string, string>
     }
-    expect(rootPackage.scripts?.uad).toBe('node --import tsx/esm apps/cli/src/bin.ts')
+    expect(rootPackage.scripts?.rabi).toBe('node --import tsx/esm apps/cli/src/bin.ts')
   })
 
   it('boots the source entry and requires a profile', async () => {
