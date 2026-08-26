@@ -2196,6 +2196,33 @@ export interface Config {
 
 Source: [`packages/spill/spill-policy/src/index.ts:60`](../packages/spill/spill-policy/src/index.ts)
 
+<a id="unieaiuad-ssh"></a>
+
+## `@unieai/uad-ssh`
+
+```ts config-catalog
+/** Configuration for the machine book. */
+export interface Config {
+  /** OpenSSH configuration file the alias list is read from. */
+  configPath?: string
+  /** The `ssh` client to run; a bare name is resolved on the harness PATH. */
+  sshCommand?: string
+  /** Seconds a connection attempt may take before OpenSSH gives up. */
+  connectTimeoutSeconds?: number
+  /**
+   * Seconds an idle multiplexed connection is kept open.
+   *
+   * This is what makes remote work usable: the first command performs the
+   * handshake, and every command within the window reuses it. Zero disables
+   * multiplexing, which is the honest setting for a host whose configuration
+   * forbids it.
+   */
+  controlPersistSeconds?: number
+}
+```
+
+Source: [`packages/ssh/ssh/src/index.ts:43`](../packages/ssh/ssh/src/index.ts)
+
 <a id="unieaiuad-storage-domain"></a>
 
 ## `@unieai/uad-storage-domain`

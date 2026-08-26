@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-26-remote-machines-over-the-ssh-client.md
+2026-08-26-remote-machines-over-the-ssh-client.md: f6d5d5f3de26902952e58eeeced455cc12e079c7
+2026-08-26-remote-machines-over-the-ssh-client.zh.md: 85cdaea65de7e27e6e1f664bdee5911f090025bc

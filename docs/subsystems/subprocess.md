@@ -273,6 +273,84 @@ async getSandbox(): Promise<Sandbox>
 
 Source: [`packages/e2b/e2b/src/index.ts`](../../packages/e2b/e2b/src/index.ts)
 
+<a id="ctxssh--sshhosts"></a>
+
+### `ctx.ssh` — `SshHosts`
+
+The machine book: which machines exist, what they resolve to, and the connection every adapter shares.
+
+```ts cordis-catalog
+/**
+ * Every alias a person could pick, in configuration-file order.
+ *
+ * Unmemoized: a machine added to the file while Rabi runs is selectable
+ * immediately, and one deleted disappears from the next read.
+ * @returns the aliases, empty when the file does not exist yet.
+ */
+list(): Promise<SshHostEntry[]>
+
+/**
+ * What one alias resolves to, according to the client that will connect.
+ * @param alias - the alias to resolve.
+ * @param signal - aborts the resolution.
+ * @returns the effective settings.
+ */
+async resolve(alias: string, signal?: AbortSignal): Promise<ResolvedSshHost>
+
+/**
+ * The multiplexing socket path for this deployment, or undefined when the
+ * harness home is too deep for a bindable socket.
+ * @returns the `ControlPath` value, `%C` included, or undefined.
+ */
+controlPath(): string | undefined
+
+/**
+ * The `ssh` argv for one remote command.
+ *
+ * Multiplexing is requested rather than assumed: `ControlMaster=auto` opens
+ * a master when there is none and joins one when there is, so the first
+ * command pays the handshake and the rest do not.
+ * @param alias - the machine to run on.
+ * @param remoteCommand - the command line for the remote shell; omitted for a login session.
+ * @param options - `tty` allocates a remote terminal, which is also what makes the remote command die with the connection.
+ * @returns argv whose first element is the configured `ssh` client.
+ */
+argvFor( alias: string, remoteCommand?: string, options: { tty?: boolean } = {}, ): string[]
+
+/**
+ * Try one connection and report what OpenSSH said.
+ *
+ * `BatchMode` is what makes this answerable: without it a machine needing a
+ * passphrase would wait for a prompt nobody is watching, and the probe
+ * would hang instead of reporting that the key is locked.
+ * @param alias - the machine to reach.
+ * @param signal - aborts the attempt.
+ * @returns reachability, with the client's own message when it failed.
+ */
+async probe(alias: string, signal?: AbortSignal): Promise<{ reachable: boolean; message: string }>
+
+/** Create the socket directory before OpenSSH needs to bind in it. */
+async ensureControlDir(): Promise<void>
+
+/**
+ * Record that an alias now has a multiplexed connection this service owns.
+ * @param alias - the machine just connected to.
+ */
+noteConnected(alias: string): void
+
+/**
+ * Close one alias's multiplexed connection.
+ *
+ * A master that is already gone is not an error: `ControlPersist` may have
+ * expired, and the caller's intent — no connection to this machine — holds
+ * either way.
+ * @param alias - the machine to disconnect from.
+ */
+async disconnect(alias: string): Promise<void>
+```
+
+Source: [`packages/ssh/ssh/src/index.ts`](../../packages/ssh/ssh/src/index.ts)
+
 <a id="ctxsubprocess--subprocessruntime-abstract-seam"></a>
 
 ### `ctx.subprocess` — `SubprocessRuntime` (abstract seam)

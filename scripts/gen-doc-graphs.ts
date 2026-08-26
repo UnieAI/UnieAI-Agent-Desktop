@@ -389,6 +389,14 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Owns one shared E2B SDK handle, remote working directory, and final sandbox disposition so both fundamental E2B providers inhabit the same Linux runtime.',
   },
   {
+    key: 'ssh',
+    pkg: 'ssh',
+    title: 'Remote machine book and shared connection owner',
+    mode: 'core',
+    consumers: [],
+    note: 'Reads the machines from the person\'s own OpenSSH configuration, asks the ssh client what an alias resolves to, and holds one multiplexed connection per machine so the execution-world adapters above it do not each pay a handshake.',
+  },
+  {
     key: 'subprocess',
     pkg: 'subprocess',
     title: 'Subprocess seam',

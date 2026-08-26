@@ -2674,9 +2674,6 @@ importers:
       '@unieai/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
-      '@unieai/uad-client-ui-primitives':
-        specifier: workspace:^
-        version: link:../ui-primitives
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
@@ -7964,6 +7961,25 @@ importers:
       '@unieai/uad-tools':
         specifier: workspace:^
         version: link:../../core/tools
+
+  packages/ssh/ssh:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      '@unieai/uad-home-paths':
+        specifier: workspace:^
+        version: link:../../util/home-paths
+      '@unieai/uad-subprocess':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
 
   packages/storage/storage:
     devDependencies:
