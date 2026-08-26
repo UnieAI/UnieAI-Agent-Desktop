@@ -12,6 +12,12 @@ So one tool call goes out carrying the image and the question, and what comes ba
 
 **The cost is real and the tool's own description states it: the caller gets a DESCRIPTION, not the picture.** "Is this button blue" survives that. "Click the button" does not — the coordinates in the answer were measured on an image the caller cannot see, and it has no way to check them. A model that needs to act on a position should be looking at the image itself, on a route that accepts one.
 
+## How a user's own image reaches a blind model
+
+An image the person attaches does not need a tool call to exist — it needs one to be SEEN. When the session's model does not declare image input, the host used to refuse the whole message (`MODEL_DOES_NOT_SUPPORT_IMAGES`, `packages/host/apiproxy/src/api-proxy.ts`). It still does when nothing is mounted that could look at the picture. But when this tool IS registered, the attachment is admitted and stored as usual and the model receives a text stub in its place, carrying the exact `image` object this tool takes.
+
+The model then asks its own question. That is the point of the stub over an automatic description: a description written before anyone asked is a guess at what mattered, and it spends a vision call on every attached image whether or not the answer needed one. The prompt section tells the model that a stub is inspectable, and that "I cannot see images" is not an answer it may give before asking.
+
 ## The image is not compressed here
 
 It travels as an attachment REFERENCE. The adapter derives a request version through `attachments.readImageRequest` against the model's own declared `imagePixelBudget` and `imageMaxBytes`, caches it by variant, and sends that. Shrinking here as well would shrink twice, cache neither, and hard-code a budget that belongs to whichever model the deployment named.

@@ -179,6 +179,43 @@ async function durablePromptContent(ctx: Context, content: readonly PromptConten
     : { type: 'image', attachment: refs[next++] as ImageAttachmentRef })
 }
 
+/** The tool a text-only model uses to ask a vision route about a picture. */
+const IMAGE_INSPECT_TOOL = 'image_inspect'
+
+/**
+ * Replace every image block with a text stub naming its stored reference.
+ *
+ * What a model that cannot see gets instead of a refusal. The stub carries the
+ * exact object {@link IMAGE_INSPECT_TOOL} takes, so the model asks its own
+ * question about the picture — the question it actually needs answered, which
+ * a description generated up front could not have guessed — and only then does
+ * a vision route run.
+ *
+ * The image itself is already durable: the attachment survives, the model just
+ * cannot look at it directly.
+ * @param content - durable content, images already admitted.
+ * @returns the same content with image blocks rewritten as text.
+ */
+function imagesAsInspectableStubs(content: readonly ContentBlock[]): ContentBlock[] {
+  return content.map((block) => {
+    if (block.type !== 'image') return block
+    const ref = block.attachment
+    const handle = JSON.stringify({
+      attachmentId: ref.attachmentId,
+      mediaType: ref.mediaType,
+      bytes: ref.bytes,
+      width: ref.width,
+      height: ref.height,
+    })
+    return {
+      type: 'text',
+      text: `[The user attached an image (${ref.mediaType}, ${String(ref.width)}x${String(ref.height)}). `
+        + `This model cannot see images. Call the ${IMAGE_INSPECT_TOOL} tool with image set to exactly ${handle} `
+        + 'and one specific question to learn what it shows.]',
+    }
+  })
+}
+
 /** Search durable content for an image reference, including nested tool results. */
 function imageBlockIn(content: unknown, match: (ref: ImageAttachmentRef) => boolean): ImageAttachmentRef | undefined {
   if (!Array.isArray(content)) return undefined
@@ -2586,18 +2623,32 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         const hasImage = content.some(part => part.type === 'image')
         const admit = async (): Promise<RpcResponse<{ accepted: true }>> => {
           try {
+            let delegateImages = false
             if (hasImage) {
               const current = selectionFor(agent).current
               const modelInfo = await ctx.llm.resolveModelInfo(current.provider, current.model)
               if (modelInfo.inputModalities !== undefined && !modelInfo.inputModalities.includes('image')) {
-                return err(request, {
-                  code: 'attachment-error',
-                  message: `Model "${current.model}" does not support image input.`,
-                  details: { reason: 'MODEL_DOES_NOT_SUPPORT_IMAGES' },
-                })
+                // A model that cannot see is not the end of the turn when a
+                // vision route is configured: the deployment that mounted
+                // `image_inspect` said one exists, so the picture becomes
+                // something this model can ASK about. Refusing is what happens
+                // when no such tool is registered — there is nothing to
+                // delegate to, and pretending otherwise would drop the image.
+                // `ctx.get`, not the property: this function is also constructed
+                // directly by tests and embedders that mount no tool registry,
+                // and "no registry" is the same answer as "no such tool".
+                delegateImages = ctx.get('tools')?.get(IMAGE_INSPECT_TOOL) !== undefined
+                if (!delegateImages) {
+                  return err(request, {
+                    code: 'attachment-error',
+                    message: `Model "${current.model}" does not support image input.`,
+                    details: { reason: 'MODEL_DOES_NOT_SUPPORT_IMAGES' },
+                  })
+                }
               }
             }
-            const durable = await durablePromptContent(ctx, content)
+            const admitted = await durablePromptContent(ctx, content)
+            const durable = delegateImages ? imagesAsInspectableStubs(admitted) : admitted
             const message: UserMessage = createUserMessage({ content: durable, source })
             if (mode === 'steer') agent.steer(message)
             else agent.followup(message)

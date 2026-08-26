@@ -20,6 +20,8 @@
 
 没有配置 `provider`/`model` 时，插件以**休眠**方式挂载，就像 `llm-pi-ai` 在没有任何 provider 时的挂载方式：没有视觉模型的部署干脆不提供 `image_inspect`，而不是提供一个每次都失败的工具。每次调用前它会重新确认该路由仍然声明支持 `image` 输入，因此当模型列表在运行期变化时，得到的是一次拒绝，而不是一个畸形请求。
 
+当会话模型看不见时，**人贴上来**的图片走的是同一条路：宿主照常接纳并存储附件，然后把一段带着本工具所需 `image` 对象的占位文本交给模型，由模型自己就它提问。只有在根本没有注册 `image_inspect` 时才会拒绝该条消息——没有可委派的对象，接纳这张图片只会让它在组装请求时被悄悄丢掉。
+
 图片大小不归本包管。适配器在读取附件时，已经按目标模型自己的 `imagePixelBudget`/`imageMaxBytes` 压过一次（[attachment.zh.md](attachment.zh.md)）；在这里再压一次，等于用两套预算把同一张图缩小两遍。
 
 来源：[`packages/llm/tool-image-inspect/src/index.ts`](../../packages/llm/tool-image-inspect/src/index.ts)

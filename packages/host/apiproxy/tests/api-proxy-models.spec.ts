@@ -19,6 +19,7 @@ import type {
 import SessionStore from '@unieai/uad-session'
 import type { SessionId } from '@unieai/uad-session'
 import SystemPrompt from '@unieai/uad-system-prompt'
+import ToolRuntime, { defineTool } from '@unieai/uad-tools'
 import UserQuestionService from '@unieai/uad-user-questions'
 import type { RpcRequest } from '@unieai/uad-host-apiproxy/api/rpc'
 import { RpcId } from '@unieai/uad-host-apiproxy/api/rpc'
@@ -141,6 +142,16 @@ function expectValue<T>(response: { result: { ok: true; value: T } | { ok: false
   return response.result.value
 }
 
+/** Image admission limits wide enough that these tests exercise the model gate, not the store. */
+const IMAGE_LIMITS = {
+  maxImageBytes: 16,
+  maxImagesPerMessage: 4,
+  maxMessageImageBytes: 16,
+  maxImagePixels: 64,
+  maxImageDimension: 2000,
+  mediaTypes: ['image/png'],
+} as const
+
 function registerTextOnly(ctx: Context): void {
   ctx.llm.registerAdapter(['text-only'], new class extends CatalogAdapter {
     override resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo> {
@@ -250,6 +261,95 @@ describe('Web session model selection', () => {
     expect(expectValue(await api.sessions.selectModel(request({
       sessionId, provider: 'text-only', model: 'plain',
     }))).selected).toEqual({ provider: 'text-only', model: 'plain' })
+    await ctx.fiber.dispose()
+  })
+
+  it('refuses an image for a blind model when nothing can look at it', async () => {
+    // No `image_inspect` registered: there is no vision route to delegate to,
+    // and admitting the image would drop it silently at request assembly.
+    const { ctx, agent, sessionId } = await harness()
+    registerTextOnly(ctx)
+    const saveImage = vi.fn(() => Promise.resolve({
+      attachmentId: 'att-blind', mediaType: 'image/png' as const, bytes: 1, width: 4, height: 3,
+    }))
+    ctx.provide('attachments', Object.setPrototypeOf(
+      { imageLimits: IMAGE_LIMITS, validateImage: () => Promise.resolve(), saveImage },
+      AttachmentStore.prototype,
+    ) as never)
+    const followup = vi.fn()
+    Object.assign(agent, { followup })
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => ({ provider: 'text-only', model: 'plain' }),
+      cwd: '/tmp',
+    })
+    expectValue(await api.sessions.selectModel(request({ sessionId, provider: 'text-only', model: 'plain' })))
+
+    const denied = await api.sessions.prompt(request({
+      sessionId,
+      mode: 'queue' as const,
+      content: [{ type: 'image' as const, mediaType: 'image/png' as const, data: 'AQ==' }],
+    }))
+    expect(denied.result).toMatchObject({
+      ok: false,
+      error: { code: 'attachment-error', details: { reason: 'MODEL_DOES_NOT_SUPPORT_IMAGES' } },
+    })
+    // Refused BEFORE admission: a rejected turn stores nothing.
+    expect(saveImage).not.toHaveBeenCalled()
+    expect(followup).not.toHaveBeenCalled()
+    await ctx.fiber.dispose()
+  })
+
+  it('hands a blind model an inspectable stub when a vision route is mounted', async () => {
+    const { ctx, agent, sessionId } = await harness()
+    registerTextOnly(ctx)
+    await ctx.plugin(ToolRuntime, { mode: 'native' })
+    // Only the NAME matters here: the gate asks whether anything can look at
+    // an image, not what it would answer.
+    ctx.tools.register(defineTool({
+      name: 'image_inspect',
+      description: 'ask a vision model about one image',
+      parameters: {},
+      output: {
+        schema: { type: 'object', additionalProperties: false, properties: {} },
+        render: () => [{ type: 'text', text: 'unreachable in this test' }],
+      },
+      execute: () => Promise.resolve({}),
+    }))
+    const saveImage = vi.fn(() => Promise.resolve({
+      attachmentId: 'att-stub', mediaType: 'image/png' as const, bytes: 7, width: 4, height: 3,
+    }))
+    ctx.provide('attachments', Object.setPrototypeOf(
+      { imageLimits: IMAGE_LIMITS, validateImage: () => Promise.resolve(), saveImage },
+      AttachmentStore.prototype,
+    ) as never)
+    const followup = vi.fn()
+    Object.assign(agent, { followup })
+    const api = createApiProxy(ctx, {
+      defaultModelSelection: () => ({ provider: 'text-only', model: 'plain' }),
+      cwd: '/tmp',
+    })
+    expectValue(await api.sessions.selectModel(request({ sessionId, provider: 'text-only', model: 'plain' })))
+
+    const accepted = await api.sessions.prompt(request({
+      sessionId,
+      mode: 'queue' as const,
+      content: [
+        { type: 'image' as const, mediaType: 'image/png' as const, data: 'AQ==' },
+        { type: 'text' as const, text: 'what does this say?' },
+      ],
+    }))
+    expect(accepted.result.ok).toBe(true)
+    // The picture is still stored; only the model's VIEW of it changed.
+    expect(saveImage).toHaveBeenCalledOnce()
+    const content = (followup.mock.calls[0]?.[0] as UserMessage).content
+    expect(content.every(block => block.type === 'text')).toBe(true)
+    const stub = content[0] as { type: 'text'; text: string }
+    // The exact object the tool takes, so the model can copy it verbatim.
+    expect(stub.text).toContain('image_inspect')
+    expect(stub.text).toContain('"attachmentId":"att-stub"')
+    expect(stub.text).toContain('"width":4')
+    expect(stub.text).toContain('"height":3')
+    expect(content[1]).toEqual({ type: 'text', text: 'what does this say?' })
     await ctx.fiber.dispose()
   })
 

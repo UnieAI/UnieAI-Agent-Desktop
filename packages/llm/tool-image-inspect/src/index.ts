@@ -85,7 +85,11 @@ export function apply(ctx: Context, config: Config = {}): void {
       text: 'Use the image_inspect tool to ask about the contents of an image you cannot see yourself. '
         + 'Pass the image object exactly as the tool that produced it reported, plus one specific question. '
         + 'It answers from a vision model and returns text, so ask for the fact you need — the text on a '
-        + 'button, whether an element rendered, what a chart shows — rather than for a general description.',
+        + 'button, whether an element rendered, what a chart shows — rather than for a general description. '
+        + 'This is also how an image the USER attached reaches you when your own model cannot see images: '
+        + 'the attachment arrives as a text stub carrying the image object, and it is inspectable exactly '
+        + 'the same way. Never tell the person you cannot see their image without asking about it first, '
+        + 'and ask again for each further detail you need rather than requesting one exhaustive description.',
     })
 
     scope.tools.register(defineTool({

@@ -20,6 +20,8 @@ The turn keeps its own model. One question, one image, and one delegated call go
 
 The plugin mounts **dormant** when no `provider`/`model` is configured, the way `llm-pi-ai` mounts with no providers: a deployment with no vision model offers no `image_inspect` rather than offering one that fails every call. Before each call it re-checks that the route still declares `image` input, so a model list that changes under the harness produces a refusal, not a malformed request.
 
+A picture the PERSON attached takes the same path when the session's model cannot see. The host admits and stores the attachment as usual, then hands the model a text stub carrying the exact `image` object the tool takes, so the model asks its own question about it. It refuses the message only when no `image_inspect` is registered at all — with nothing to delegate to, admitting the image would drop it silently at request assembly.
+
 Image size is **not** this package's business. The adapter already reduces every image against the target model's own `imagePixelBudget`/`imageMaxBytes` when it reads the attachment ([attachment.md](attachment.md)); compressing again here would shrink a picture twice against two different budgets.
 
 Source: [`packages/llm/tool-image-inspect/src/index.ts`](../../packages/llm/tool-image-inspect/src/index.ts)
