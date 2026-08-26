@@ -186,6 +186,12 @@ export const EVENT_SCOPE_PAGE: Record<string, string> = {
   // stack it deliberately does not share a registry with.
   'operator-terminal': 'terminal.md',
   'operator-browser': 'operator-browser.md',
+  // The two model-facing halves of "what about what the model cannot
+  // see": one gets a picture, one reads one. Deliberately NOT
+  // operator-browser.md — that page owns the browser a person drives and
+  // has no model-facing side.
+  'tool-page-capture': 'model-vision.md',
+  'tool-image-inspect': 'model-vision.md',
   // Emitted by the sign-in gate when the account it acts for changes; same
   // page as the service that emits it.
   'unieai-gate': 'web-server.md',

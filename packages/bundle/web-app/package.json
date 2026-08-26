@@ -118,6 +118,8 @@
     "@unieai/uad-storage-json": "workspace:^",
     "@unieai/uad-subprocess": "workspace:^",
     "@unieai/uad-terminal-operator": "workspace:^",
+    "@unieai/uad-tool-image-inspect": "workspace:^",
+    "@unieai/uad-tool-page-capture": "workspace:^",
     "@unieai/uad-unieai-mcp-supervisor": "workspace:^",
     "@unieai/uad-unieai-web-gate": "workspace:^",
     "@unieai/uad-web-frontend": "workspace:^",

@@ -23,14 +23,14 @@
  */
 
 import { spawn, type ChildProcess } from 'node:child_process'
-import { accessSync, chmodSync, constants, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
-import { createRequire } from 'node:module'
+import { accessSync, chmodSync, constants, mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { Context, Service } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import { CdpConnection, endpointFrom } from './cdp.ts'
 import { chromeArgs, resolveChrome, type ChromeProbe } from './chrome.ts'
+import { FILESYSTEM_CHROME_PROBE } from './probe.ts'
 import { validateConfig, type Config, type ResolvedConfig } from './config.ts'
 import {
   OperatorBrowserError,
@@ -42,6 +42,7 @@ import {
 } from './types.ts'
 
 export { validateConfig } from './config.ts'
+export { FILESYSTEM_CHROME_PROBE } from './probe.ts'
 export type { Config, ResolvedConfig } from './config.ts'
 export { CHROME_PATH_VARIABLE, chromeArgs, resolveChrome } from './chrome.ts'
 export type { ChromeProbe } from './chrome.ts'
@@ -596,39 +597,6 @@ function assertNavigable(url: string): void {
 function clampSize(value: number): number {
   if (!Number.isFinite(value)) return 1
   return Math.max(1, Math.trunc(value))
-}
-
-/** Executable-and-directory probe against the real filesystem. */
-export const FILESYSTEM_CHROME_PROBE: ChromeProbe = {
-  exists(path: string): boolean {
-    return existsSync(path)
-  },
-  list(path: string): readonly string[] {
-    try {
-      return readdirSync(path)
-    } catch {
-      return []
-    }
-  },
-  manifest(specifier: string): string | undefined {
-    try {
-      // `require.resolve` throws for a package that is not installed, which for
-      // an optional platform payload is the ordinary case: npm installs the one
-      // matching `os`/`cpu` and skips the other three.
-      return createRequire(import.meta.url).resolve(specifier)
-    } catch {
-      return undefined
-    }
-  },
-  readManifest(path: string): { executable?: unknown } | undefined {
-    try {
-      return JSON.parse(readFileSync(path, 'utf8')) as { executable?: unknown }
-    } catch {
-      // A half-extracted install falls through to the search rather than
-      // taking the call down with it.
-      return undefined
-    }
-  },
 }
 
 export default OperatorBrowserService

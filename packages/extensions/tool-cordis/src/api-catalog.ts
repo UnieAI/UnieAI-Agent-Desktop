@@ -2927,6 +2927,22 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [],
   },
   {
+    name: 'tool-image-inspect/delegated',
+    mode: 'emit',
+    signature: '\'tool-image-inspect/delegated\': (route: string, sawImage: boolean) => void',
+    summary: 'One question delegated to the vision route.',
+    description: 'One question delegated to the vision route.\n\nCarries the route and whether it declared image input, so the invariant beside it can check the tool\'s own gate rather than repeat it.',
+    parameters: [{ name: 'route', description: '`provider/model` the question went to.' }, { name: 'sawImage', description: 'whether that route declares `image` input.' }],
+  },
+  {
+    name: 'tool-page-capture/captured',
+    mode: 'emit',
+    signature: '\'tool-page-capture/captured\': (attachmentId: string, width: number, height: number, bytes: number) => void',
+    summary: 'One capture published to the model.',
+    description: 'One capture published to the model.\n\nCarries what the block beside the picture claims, so an invariant can check the claim against the reference without reaching into the store.',
+    parameters: [{ name: 'attachmentId', description: 'the stored image\'s identity.' }, { name: 'width', description: 'encoded width in pixels.' }, { name: 'height', description: 'encoded height in pixels.' }, { name: 'bytes', description: 'encoded byte length.' }],
+  },
+  {
     name: 'tools/change',
     mode: 'emit',
     signature: '\'tools/change\'(): void',

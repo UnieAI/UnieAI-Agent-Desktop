@@ -41,6 +41,8 @@ This table connects model-visible tool names to the plugin package and service s
 | `@unieai/uad-tool-todo` | `todo_write` | `ctx.tools`, `owning Agent session` | `tool/call`, `todo/write`, `tool/result` | - | todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task. |
 | `@unieai/uad-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@unieai/uad-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
+| `@unieai/uad-tool-page-capture` | `page_screenshot` | `ctx.tools`, `ctx.attachments`, `ctx.systemPrompt` | `tool/call`, `tool/result carrying an image attachment` | - | page_screenshot launches a browser for one call and discards it, so no session survives to carry one page's cookies into another page's picture. |
+| `@unieai/uad-tool-image-inspect` | `image_inspect` | `ctx.tools`, `ctx.attachments`, `ctx.llm`, `ctx.systemPrompt` | `tool/call`, `tool/result carrying the vision route's answer` | - | image_inspect registers only when a vision route is configured; the turn keeps its own model and one question is delegated. |
 
 <a id="unieaiuad-tool-ask-user"></a>
 
@@ -2219,3 +2221,91 @@ Search the web for current information. Provide 1–4 queries in the required qu
 Source: [`packages/web/tool-web/src/index.ts`](../packages/web/tool-web/src/index.ts)
 
 web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps.
+
+<a id="unieaiuad-tool-page-capture"></a>
+
+## `@unieai/uad-tool-page-capture`
+
+### `page_screenshot`
+
+Render a web page in a browser and return a picture of it. Use for questions about appearance or layout; use web_fetch for text.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Absolute http or https address to photograph."
+    },
+    "fullPage": {
+      "type": "boolean",
+      "description": "Capture the whole document instead of just the first screen. Defaults to false."
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+Source: [`packages/browser/tool-page-capture/src/index.ts`](../packages/browser/tool-page-capture/src/index.ts)
+
+page_screenshot launches a browser for one call and discards it, so no session survives to carry one page's cookies into another page's picture.
+
+<a id="unieaiuad-tool-image-inspect"></a>
+
+## `@unieai/uad-tool-image-inspect`
+
+### `image_inspect`
+
+Ask a vision model one question about one image and get a text answer. Use when you need a fact from a picture you cannot read yourself.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "image": {
+      "type": "object",
+      "description": "The image object exactly as the producing tool reported it.",
+      "additionalProperties": false,
+      "properties": {
+        "attachmentId": {
+          "type": "string"
+        },
+        "mediaType": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "attachmentId",
+        "mediaType",
+        "bytes",
+        "width",
+        "height"
+      ]
+    },
+    "question": {
+      "type": "string",
+      "description": "One specific question about the image."
+    }
+  },
+  "required": [
+    "image",
+    "question"
+  ]
+}
+```
+
+Source: [`packages/llm/tool-image-inspect/src/index.ts`](../packages/llm/tool-image-inspect/src/index.ts)
+
+image_inspect registers only when a vision route is configured; the turn keeps its own model and one question is delegated.

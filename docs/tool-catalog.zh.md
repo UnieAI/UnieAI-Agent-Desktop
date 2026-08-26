@@ -45,6 +45,8 @@
 | `@unieai/uad-tool-todo` | `todo_write` | `ctx.tools`、`owning Agent session` | `tool/call`、`todo/write`、`tool/result` | - | todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为检查清单。`allowParallelInProgress` 是没有默认值的必填项，因此本目录明确选择 `true`，对应描述允许同时存在多个 `in_progress` 项。选择 `false` 的部署会获得同一工具，但描述会要求只能有 1 个活动任务。 |
 | `@unieai/uad-tool-workflow` | `workflow` | `ctx.tools`、`ctx.workflowEngine`、`ctx.systemPrompt`、`a calling Agent (exec.agent parents the script children)` | `tool/call`、`tool/result` | - | - |
 | `@unieai/uad-tool-web` | `web_fetch`、`web_search` | `ctx.tools`、`ctx.web`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可见 schema 在更换后端时保持稳定。 |
+| `@unieai/uad-tool-page-capture` | `page_screenshot` | `ctx.tools`、`ctx.attachments`、`ctx.systemPrompt` | `tool/call`、`tool/result carrying an image attachment` | - | page_screenshot 每次调用启动一个浏览器并在调用后丢弃，因此不会有会话存活到把一个页面的 cookie 带进另一个页面的画面里。 |
+| `@unieai/uad-tool-image-inspect` | `image_inspect` | `ctx.tools`、`ctx.attachments`、`ctx.llm`、`ctx.systemPrompt` | `tool/call`、`tool/result carrying the vision route's answer` | - | image_inspect 只在配置了视觉路由时才注册；本轮对话保持自己的模型，只把一个问题委派出去。 |
 
 <a id="unieaiuad-tool-ask-user"></a>
 
@@ -2227,3 +2229,91 @@ todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为
 来源：[`packages/web/tool-web/src/index.ts`](../packages/web/tool-web/src/index.ts)
 
 web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可见 schema 在更换后端时保持稳定。
+
+<a id="unieaiuad-tool-page-capture"></a>
+
+## `@unieai/uad-tool-page-capture`
+
+### `page_screenshot`
+
+在浏览器中渲染一个网页并返回它的图片。涉及外观或排版的问题用它；要文本请用 web_fetch。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Absolute http or https address to photograph."
+    },
+    "fullPage": {
+      "type": "boolean",
+      "description": "Capture the whole document instead of just the first screen. Defaults to false."
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+来源：[`packages/browser/tool-page-capture/src/index.ts`](../packages/browser/tool-page-capture/src/index.ts)
+
+page_screenshot 每次调用启动一个浏览器并在调用后丢弃，因此不会有会话存活到把一个页面的 cookie 带进另一个页面的画面里。
+
+<a id="unieaiuad-tool-image-inspect"></a>
+
+## `@unieai/uad-tool-image-inspect`
+
+### `image_inspect`
+
+就一张图片向视觉模型提一个问题，得到一段文本回答。当你需要从自己看不到的图片中取得某个事实时使用。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "image": {
+      "type": "object",
+      "description": "The image object exactly as the producing tool reported it.",
+      "additionalProperties": false,
+      "properties": {
+        "attachmentId": {
+          "type": "string"
+        },
+        "mediaType": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "attachmentId",
+        "mediaType",
+        "bytes",
+        "width",
+        "height"
+      ]
+    },
+    "question": {
+      "type": "string",
+      "description": "One specific question about the image."
+    }
+  },
+  "required": [
+    "image",
+    "question"
+  ]
+}
+```
+
+来源：[`packages/llm/tool-image-inspect/src/index.ts`](../packages/llm/tool-image-inspect/src/index.ts)
+
+image_inspect 只在配置了视觉路由时才注册；本轮对话保持自己的模型，只把一个问题委派出去。

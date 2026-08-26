@@ -1191,6 +1191,31 @@ importers:
         specifier: workspace:^
         version: link:../../../native/chromium/packages/win32-x64
 
+  packages/browser/tool-page-capture:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-attachment':
+        specifier: workspace:^
+        version: link:../../attachment/attachment
+      '@unieai/uad-browser-operator':
+        specifier: workspace:^
+        version: link:../browser-operator
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
+      '@unieai/uad-tools':
+        specifier: workspace:^
+        version: link:../../core/tools
+
   packages/bundle/base:
     dependencies:
       '@unieai/cordis-plugin-hmr':
@@ -1693,6 +1718,12 @@ importers:
       '@unieai/uad-terminal-operator':
         specifier: workspace:^
         version: link:../../terminal/terminal-operator
+      '@unieai/uad-tool-image-inspect':
+        specifier: workspace:^
+        version: link:../../llm/tool-image-inspect
+      '@unieai/uad-tool-page-capture':
+        specifier: workspace:^
+        version: link:../../browser/tool-page-capture
       '@unieai/uad-unieai-mcp-supervisor':
         specifier: workspace:^
         version: link:../../unieai/mcp-supervisor
@@ -6165,6 +6196,31 @@ importers:
       '@unieai/uad-session-projection':
         specifier: workspace:^
         version: link:../../session/session-projection
+
+  packages/llm/tool-image-inspect:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-attachment':
+        specifier: workspace:^
+        version: link:../../attachment/attachment
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-llm':
+        specifier: workspace:^
+        version: link:../llm
+      '@unieai/uad-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
+      '@unieai/uad-tools':
+        specifier: workspace:^
+        version: link:../../core/tools
 
   packages/lsp/lsp:
     devDependencies:

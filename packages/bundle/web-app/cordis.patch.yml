@@ -88,6 +88,21 @@
     - id: operator-browser
       name: '@unieai/uad-browser-operator'
 
+    # `page_screenshot`: the MODEL asks what a page looks like. Deliberately not
+    # the operator browser above — that one is a person's, is loopback-pinned,
+    # and outlives the panel showing it; this launches a browser for one call
+    # and throws it away, so one page's cookies never reach another's picture.
+    - id: tool-page-capture
+      name: '@unieai/uad-tool-page-capture'
+
+    # `image_inspect`: the turn keeps its own model and hands ONE question about
+    # ONE picture to a vision route. Dormant until a route is named here, so a
+    # deployment with no vision model offers no such tool rather than one that
+    # fails every call. Name it as:
+    #   config: { provider: '<llm route>', model: '<model id declaring image input>' }
+    - id: tool-image-inspect
+      name: '@unieai/uad-tool-image-inspect'
+
     - id: session-projection-cache
       name: '@unieai/uad-session-projection-cache'
       config:

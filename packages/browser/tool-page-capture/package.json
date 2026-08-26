@@ -1,0 +1,53 @@
+{
+  "name": "@unieai/uad-tool-page-capture",
+  "description": "The page_screenshot tool: the model asks for a picture of a web page, and a short-lived headless Chromium takes it",
+  "version": "0.1.8",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "packages/browser/tool-page-capture"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-attachment": "workspace:^",
+    "@unieai/uad-browser-operator": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^",
+    "@unieai/uad-tools": "workspace:^"
+  },
+  "dependencies": {
+    "@unieai/schemastery": "workspace:^"
+  },
+  "devDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-attachment": "workspace:^",
+    "@unieai/uad-browser-operator": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^",
+    "@unieai/uad-tools": "workspace:^"
+  }
+}

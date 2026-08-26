@@ -2738,6 +2738,34 @@ export interface Config {
 
 Source: [`packages/goal/tool-goal/src/index.ts:26`](../packages/goal/tool-goal/src/index.ts)
 
+<a id="unieaiuad-tool-image-inspect"></a>
+
+## `@unieai/uad-tool-image-inspect`
+
+Requires: `attachments` · `llm` · `tools` · `systemPrompt`
+
+```ts config-catalog
+/** Public plugin configuration. */
+export interface Config {
+  /** Registered `llm` route the question goes to. */
+  provider?: string
+  /** Exact model id on that route; it must declare `image` input. */
+  model?: string
+  /**
+   * Cap on the answer, in tokens.
+   *
+   * A vision model asked an open question will describe a whole screenshot;
+   * the caller wanted an answer. The cap is a deployment choice because how
+   * much detail is useful depends on what the surface does with it.
+   */
+  maxTokens?: number
+  /** Cooperative tool-call budget, in milliseconds. */
+  timeoutMs?: number
+}
+```
+
+Source: [`packages/llm/tool-image-inspect/src/index.ts:26`](../packages/llm/tool-image-inspect/src/index.ts)
+
 <a id="unieaiuad-tool-jobs"></a>
 
 ## `@unieai/uad-tool-jobs`
@@ -2791,6 +2819,36 @@ export interface Config {
 ```
 
 Source: [`packages/lsp/tool-lsp/src/index.ts:58`](../packages/lsp/tool-lsp/src/index.ts)
+
+<a id="unieaiuad-tool-page-capture"></a>
+
+## `@unieai/uad-tool-page-capture`
+
+Requires: `attachments` · `tools` · `systemPrompt`
+
+```ts config-catalog
+/** Public plugin configuration. */
+export interface Config {
+  /** Viewport width the page is rendered at, in CSS pixels. */
+  width?: number
+  /** Viewport height, and the picture's height unless `fullPage` is asked for. */
+  height?: number
+  /**
+   * How long to let a page paint before shooting, in milliseconds.
+   *
+   * A load event is not a painted page: fonts swap, images decode, and a
+   * framework's first render lands after it. The wait is a deployment choice
+   * because it trades a slower tool against blank screenshots.
+   */
+  settleMs?: number
+  /** How long to wait for the browser to start, in seconds. */
+  startupTimeoutSeconds?: number
+  /** Cooperative tool-call budget, in milliseconds. */
+  timeoutMs?: number
+}
+```
+
+Source: [`packages/browser/tool-page-capture/src/index.ts:30`](../packages/browser/tool-page-capture/src/index.ts)
 
 <a id="unieaiuad-tool-pwsh"></a>
 

@@ -23,11 +23,16 @@
       "default": "./lib/invariant.js"
     },
     "./src/*": "./src/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./chromium": {
+      "types": "./lib/types/chromium.d.ts",
+      "default": "./lib/chromium.js"
+    }
   },
   "files": [
     "lib/index.js",
     "lib/invariant.js",
+    "lib/chromium.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",

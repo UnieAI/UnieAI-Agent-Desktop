@@ -1,0 +1,52 @@
+{
+  "name": "@unieai/uad-tool-image-inspect",
+  "description": "The image_inspect tool: the main model hands one picture and one question to a vision model and gets an answer back",
+  "version": "0.1.8",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "packages/llm/tool-image-inspect"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json",
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    }
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-attachment": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^",
+    "@unieai/uad-tools": "workspace:^"
+  },
+  "dependencies": {
+    "@unieai/schemastery": "workspace:^"
+  },
+  "devDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-attachment": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^",
+    "@unieai/uad-tools": "workspace:^"
+  }
+}

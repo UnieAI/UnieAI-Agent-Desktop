@@ -9,7 +9,7 @@
 import { globSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 import { Context } from '@unieai/cordis'
-import type { ToolSchema } from '@unieai/uad-llm'
+import { LlmRuntime, type ToolSchema } from '@unieai/uad-llm'
 import AgentRegistry from '@unieai/uad-agent'
 import type { Agent } from '@unieai/uad-agent'
 import { createScope } from '@unieai/uad-scope'
@@ -63,6 +63,8 @@ import * as ToolTeam from '@unieai/uad-experimental-tool-agent-team'
 import * as ToolTodo from '@unieai/uad-tool-todo'
 import * as ToolSubagent from '@unieai/uad-tool-subagent'
 import * as ToolWeb from '@unieai/uad-tool-web'
+import * as ToolPageCapture from '@unieai/uad-tool-page-capture'
+import * as ToolImageInspect from '@unieai/uad-tool-image-inspect'
 import VmWorkflowEngine from '@unieai/uad-workflow-worker-thread'
 import * as ToolRalph from '@unieai/uad-tool-ralph'
 import * as ToolWorkflow from '@unieai/uad-tool-workflow'
@@ -605,6 +607,41 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps.',
+  },
+  {
+    pkg: '@unieai/uad-tool-page-capture',
+    dir: 'tool-page-capture',
+    source: 'packages/browser/tool-page-capture/src/index.ts',
+    requires: ['ctx.tools', 'ctx.attachments', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result carrying an image attachment'],
+    async mount(ctx) {
+      // The attachment seam is what gates registration, so the harvest needs
+      // it mounted; no browser is launched by registering the tool.
+      await ctx.plugin(CatalogAttachmentStore)
+      await ctx.plugin(ToolPageCapture)
+    },
+    note:
+      'page_screenshot launches a browser for one call and discards it, so no session survives to carry one page\'s cookies into another page\'s picture.',
+  },
+  {
+    pkg: '@unieai/uad-tool-image-inspect',
+    dir: 'tool-image-inspect',
+    source: 'packages/llm/tool-image-inspect/src/index.ts',
+    requires: ['ctx.tools', 'ctx.attachments', 'ctx.llm', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result carrying the vision route\'s answer'],
+    async mount(ctx) {
+      await ctx.plugin(CatalogAttachmentStore)
+      // The route is never called during a harvest; `llm` is mounted because
+      // the plugin injects it, and an uninjected service leaves the fiber
+      // PENDING with no tool to read.
+      await ctx.plugin(LlmRuntime)
+      // A route must be named for the tool to register at all: without one the
+      // plugin is dormant by design, and a dormant plugin has no schema to
+      // harvest.
+      await ctx.plugin(ToolImageInspect, { provider: 'catalog', model: 'catalog-vision' })
+    },
+    note:
+      'image_inspect registers only when a vision route is configured; the turn keeps its own model and one question is delegated.',
   },
 ]
 
