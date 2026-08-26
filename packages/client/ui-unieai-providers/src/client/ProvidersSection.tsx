@@ -17,17 +17,19 @@
  * and letting the 409 arrive afterwards would tell the reader about the rule
  * only once they had already typed into it.
  *
- * The desktop's own local providers are NOT here. Those live in the Models
- * section over `settings.yaml`, they are a different store with different
- * credentials, and merging the two lists would tell the user that removing a
- * row in one place removes it in the other.
+ * The desktop's own local providers are NOT in this list. They sit under
+ * their own heading on the same page, over `settings.yaml`: a different store
+ * with different credentials, so merging the two into one list would tell the
+ * reader that removing a row in one place removes it in the other. Two
+ * headings on one page says they are alternatives; two pages said they were
+ * unrelated.
  */
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 import { Button } from '@unieai/uad-client-ui-primitives'
-// Type-only: the settings slot declarations (the `settings.section` entry).
-import type {} from '@unieai/uad-client-ui-settings/client'
+// Type-only: the Models page's slot declaration (`settings.models.account`).
+import type {} from '@unieai/uad-client-ui-settings-models/client'
 import { AddProviderForm } from './AddProviderForm.tsx'
 import { EditProviderForm } from './EditProviderForm.tsx'
 import type { EditResult } from './EditProviderForm.tsx'
@@ -56,7 +58,7 @@ export interface ProvidersSectionInjected {
 
 /** Full component props: runtime share + locale seat + injected face. */
 export type ProvidersSectionComponentProps =
-  PropsRuntime<'settings.section'> & PropsLocale<'settings.providers'>
+  PropsRuntime<'settings.models.account'> & PropsLocale<'settings.providers'>
   & InjectFace<ProvidersSectionInjected>
 
 /** The translate seat this section and its card share. */
@@ -96,7 +98,9 @@ export function ProvidersSection(
 
   return (
     <div className={css.section}>
-      <h2 className={css.title}>{t('title')}</h2>
+      {/* A heading inside the Models page, not a page title: the section
+          above it already carries the page's own <h2>. */}
+      <h3 className={css.title}>{t('title')}</h3>
       <p className={css.intro}>{t('intro')}</p>
       {state.status === 'loading' ? <p className={css.status}>{t('loading')}</p> : null}
       {state.status === 'signed-out' ? <p className={css.status}>{t('signedOut')}</p> : null}

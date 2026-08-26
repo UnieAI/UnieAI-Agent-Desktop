@@ -16,7 +16,9 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { IApiClient } from '@unieai/uad-api-remotes/client'
 import { Button, IconPlusOutline16, Modal } from '@unieai/uad-client-ui-primitives'
-import type { InjectFace } from '@unieai/uad-client-ui-slots'
+import type { InjectFace, PropsRenderSlots } from '@unieai/uad-client-ui-slots'
+// Type-only: this package's own slot declaration (the account provider list).
+import type {} from './slot-contract.ts'
 import { CustomProviderCard } from './CustomProviderCard.tsx'
 import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
 import type { ModelsSettingsStore, ProviderRow } from './store.ts'
@@ -46,7 +48,9 @@ export interface ModelsSectionInjected {
  * Props delivered by the slot outlet: the inject face spread flat (the
  * renderer erases the share boundary at the render call).
  */
-export type ModelsSectionProps = Partial<InjectFace<ModelsSectionInjected>>
+export type ModelsSectionProps =
+  Partial<InjectFace<ModelsSectionInjected>>
+  & Partial<PropsRenderSlots<'settings.models.account'>>
 
 type ModelsSectionFace = InjectFace<ModelsSectionInjected>
 
@@ -177,15 +181,23 @@ export function providerCopy(template: string, target: ProviderIdentity): string
  * @returns the section, or null while the shell has not injected yet.
  */
 export function ModelsSection(props: ModelsSectionProps): ReactNode {
-  const { controller, useSnapshot, api, schema, t } = props
+  const { controller, useSnapshot, api, schema, t, renderSlot } = props
   if (
     controller === undefined || useSnapshot === undefined || api === undefined
     || schema === undefined || t === undefined
   ) return null
-  return <Loaded injected={{ controller, useSnapshot, api, schema, t }} />
+  return (
+    <Loaded
+      injected={{ controller, useSnapshot, api, schema, t }}
+      {...renderSlot === undefined ? {} : { renderSlot }}
+    />
+  )
 }
 
-function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
+function Loaded({ injected, renderSlot }: {
+  injected: ModelsSectionFace
+  renderSlot?: PropsRenderSlots<'settings.models.account'>['renderSlot']
+}): ReactNode {
   const { controller, api, schema, t } = injected
   const state = injected.useSnapshot(snapshot => snapshot)
   const [editing, setEditing] = useState<EditorTarget | undefined>(undefined)
@@ -294,6 +306,9 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
             {providerCopy(t('savedProvider'), savedIdentity)}
           </p>
         )}
+      {/* Above both groups: the vision route is chosen from every provider's
+          models at once, so it belongs to the page rather than to either
+          list. */}
       <VisionModelCard
         options={state.visionModels}
         current={state.visionRoute}
@@ -302,6 +317,12 @@ function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
         t={t}
         onSaved={() => { void controller.load() }}
       />
+      {/* The account's own list, when a plugin registered one. It comes first
+          because it is the list the product owns and bills, and it is absent
+          in a deployment that has no account at all. */}
+      {renderSlot === undefined ? null : renderSlot('settings.models.account', {})}
+      <h3 className={styles['groupTitle']}>{t('localGroup')}</h3>
+      <p className={styles['intro']}>{t('localGroupBody')}</p>
       <ul className={styles['rows']}>
         {configured.map((row) => {
           const target = targetOf(row)

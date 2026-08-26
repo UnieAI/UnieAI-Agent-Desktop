@@ -1,9 +1,11 @@
 /**
  * ui-unieai-providers browser half on a real SlotRegistry: dictionaries ride
- * the locale service, the section registers into the settings-shell slot only
- * once that slot is declared, the nav label follows the active locale, the
- * injected face carries the one source plus the four gestures the page offers,
- * and teardown empties the slot (HMR safety).
+ * the locale service, the list registers into the MODELS PAGE's slot only once
+ * that slot is declared, the injected face carries the one source plus the
+ * four gestures the page offers, and teardown empties the slot (HMR safety).
+ *
+ * The list has no nav label of its own: it is a group inside the Models page,
+ * and that page owns the row in the nav.
  *
  * The lane has no jsdom `window`, so a fresh LocaleRuntime opens on the
  * English fallback; the bench switches locale explicitly where it asserts copy.
@@ -20,7 +22,7 @@ import { ProvidersSection } from '../src/client/ProvidersSection.tsx'
 import type { ProvidersSectionInjected } from '../src/client/ProvidersSection.tsx'
 import { en, ja, zh, zhTW } from '../src/client/locales.ts'
 
-const SLOT = 'settings.section'
+const SLOT = 'settings.models.account'
 
 /** One recorded call to the stubbed global fetch. */
 interface Sent { path: string; init: RequestInit | undefined }
@@ -35,7 +37,7 @@ function hostRoute(body: unknown, ok = true): Sent[] {
   return sent
 }
 
-/** Stand in for the settings shell: declare the section slot from root. */
+/** Stand in for the Models page: declare the account-list slot from root. */
 function declareSections(slots: SlotRegistry): () => void {
   return slots.register(
     { name: 'root', children: { [SLOT]: { kind: 'list', scope: 'root' } } } as never,
@@ -82,7 +84,7 @@ describe('ui-unieai-providers browser apply', () => {
     for (const dict of [en, zhTW, ja]) expect(Object.keys(dict).sort()).toEqual(keys)
   })
 
-  it('waits until the settings shell declares the section slot', async () => {
+  it('waits until the Models page declares the account-list slot', async () => {
     hostRoute({ status: 'signed-out' })
     const b = await bench()
     await b.ctx.plugin({ inject: [...inject], apply }).await()
@@ -93,23 +95,18 @@ describe('ui-unieai-providers browser apply', () => {
     expect(entryOf(b.slots)?.component).toBe(ProvidersSection)
   })
 
-  it('sits after the Models page, which is the desktop\'s own provider surface', async () => {
+  it('renders inside the Models page rather than as a settings section of its own', async () => {
+    // The whole point of the move: two pages that both said "add a provider"
+    // hid that one stores the key on the product's server and meters the call
+    // while the other keeps it on this machine and meters nothing.
     hostRoute({ status: 'signed-out' })
     const b = await bench()
     declareSections(b.slots)
     await b.ctx.plugin({ inject: [...inject], apply }).await()
-    expect(entryOf(b.slots)?.options.order).toBeGreaterThan(10)
-  })
-
-  it('labels the nav row from the active locale', async () => {
-    hostRoute({ status: 'signed-out' })
-    const b = await bench()
-    declareSections(b.slots)
-    await b.ctx.plugin({ inject: [...inject], apply }).await()
-    const label = entryOf(b.slots)?.options.label as () => string
-    expect(label()).toBe(en['nav'])
-    b.locale.setLocale('ja')
-    expect(label()).toBe(ja['nav'])
+    expect(entryOf(b.slots)?.component).toBe(ProvidersSection)
+    expect(b.slots.entries('settings.section')).toHaveLength(0)
+    // No nav label: the page it renders into owns the nav row.
+    expect(entryOf(b.slots)?.options.label).toBeUndefined()
   })
 
   it('reads the gate route once on apply, and again on demand', async () => {

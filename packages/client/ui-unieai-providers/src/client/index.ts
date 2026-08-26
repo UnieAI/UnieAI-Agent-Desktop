@@ -10,18 +10,21 @@
  * product. The provider credential a create carries travels the same way, and
  * nothing on the return path carries any credential at all.
  *
- * This section sits AFTER Models in the panel. Models is the desktop's own
- * provider surface over `settings.yaml` and is what a local agent actually
- * runs on; this one is the cloud account's list, and putting it second says
- * which of the two the desktop owns.
+ * This list renders INSIDE the Models page, above the desktop's own rows,
+ * through the `settings.models.account` slot. It used to be a settings section
+ * of its own, which made two pages that both said "add a provider" while
+ * meaning different stores, different credentials, and different billing: a
+ * row here is metered by the account and follows the person to every client
+ * signed into it, a row on the Models page keeps its key on this machine and
+ * is metered by nobody. One page names that difference; two pages hid it.
  *
  * Export discipline: packages/client/AGENTS.md.
  */
 import type { ClientContext } from '@unieai/uad-client-runtime/client'
-// Type-only: the settings slot declarations (the `settings.section` entry).
+// Type-only: the Models page's slot declaration (`settings.models.account`).
 // Cross-plugin collaboration goes through slots and services, never a value
 // import (client bundle purity gate).
-import type {} from '@unieai/uad-client-ui-settings/client'
+import type {} from '@unieai/uad-client-ui-settings-models/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@unieai/uad-client-locale/client'
 import { ProvidersSection } from './ProvidersSection.tsx'
@@ -38,8 +41,8 @@ export type {
 /** Dictionary namespace owned by this plugin. */
 const NS = 'settings.providers'
 
-/** Nav position: after Models (10), which is the desktop's own provider page. */
-const SECTION_ORDER = 15
+/** Order within the Models page: first, above the machine's own rows. */
+const LIST_ORDER = 10
 
 /**
  * Required services (cordis fiber inject). `settings.section` is declared by
@@ -63,9 +66,9 @@ export function apply(ctx: ClientContext): void {
   const source = new ProviderSource({ request: (path, init) => globalThis.fetch(path, init) })
   ctx.effect(() => () => { source.dispose() }, 'ui-unieai-providers: provider source')
 
-  // Registration-time text (the nav label thunk) and the inject face share one
-  // bound translate; copy freshness rides the locale revision.
-  const t = ctx.locale.bind(NS)
+  // The list has no registration-time text of its own now: the page it renders
+  // into owns the nav label, and every string inside the list comes from the
+  // locale seat the slot binds.
   const injected = (): ProvidersSectionInjected => ({
     hooks: { providers: source },
     refresh: () => { void source.refresh() },
@@ -74,11 +77,10 @@ export function apply(ctx: ClientContext): void {
     remove: id => source.remove(id),
   })
 
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
-    name: 'settings.section',
+  ctx.slots.inject('settings.models.account', () => ctx.slots.register({
+    name: 'settings.models.account',
     id: 'unieai-providers',
-    order: SECTION_ORDER,
-    label: () => t('nav'),
+    order: LIST_ORDER,
     locale: NS,
     inject: injected,
   }, ProvidersSection))

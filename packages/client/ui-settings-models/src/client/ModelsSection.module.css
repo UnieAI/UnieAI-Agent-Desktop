@@ -694,3 +694,12 @@ select.input {
   font-size: 13px;
   overflow-wrap: anywhere;
 }
+
+/* Group heading: the page carries two kinds of provider row now, and which
+   kind a row is decides where its key lives and who meters the call. */
+.groupTitle {
+  margin: 24px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}

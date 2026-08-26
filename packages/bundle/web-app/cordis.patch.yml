@@ -265,8 +265,13 @@
 
     # The UnieAI account's API Providers, read from — and added back to — the
     # web product through the sign-in gate's /auth/providers route. It renders
-    # its signed-out line without a gate, so the row is safe in a composition
-    # that mounts no gate at all.
+    # INSIDE the Models page (the `settings.models.account` slot), above that
+    # page's own rows: a row here keeps its key on the product's server and is
+    # metered by the account, a row there keeps its key on this machine and is
+    # metered by nobody, and one page is what names that difference. The row
+    # renders its signed-out line without a gate, so it is safe in a
+    # composition that mounts no gate at all; drop `ui-settings-models` and the
+    # list simply has no page to render into.
     - id: ui-unieai-providers
       name: '@unieai/uad-client-ui-unieai-providers'
 

@@ -3519,6 +3519,9 @@ importers:
       '@unieai/uad-client-ui-settings':
         specifier: workspace:^
         version: link:../ui-settings
+      '@unieai/uad-client-ui-settings-models':
+        specifier: workspace:^
+        version: link:../ui-settings-models
       '@unieai/uad-client-ui-slots':
         specifier: workspace:^
         version: link:../ui-slots

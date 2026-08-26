@@ -18,6 +18,7 @@ import type {} from '@unieai/uad-client-locale/client'
 // (settings/credentials invalidations ride the allowlist) into this program.
 import type {} from '@unieai/uad-api-remotes/client'
 import { ModelsSection } from './ModelsSection.tsx'
+
 import type { ModelsSectionInjected } from './ModelsSection.tsx'
 import { WelcomeNotice } from './WelcomeNotice.tsx'
 import type { WelcomeNoticeInjected } from './WelcomeNotice.tsx'
@@ -64,6 +65,8 @@ export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope
  * pushed invalidation (settings, credentials, or provider topology).
  * @param ctx - client root context.
  */
+export type { ModelsAccountOwnerProps } from './slot-contract.ts'
+
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { 'zh-CN': zh, 'zh-TW': zhTW, ja, en }), 'ui-settings-models: copy dictionaries')
 
@@ -116,6 +119,10 @@ export function apply(ctx: ClientContext): void {
     id: 'models',
     order: 10,
     label: () => t('nav'),
+    // Declared here so an account-owned provider list can sit on this page
+    // instead of on a second one that looks like a second way to do the same
+    // thing (see `slot-contract.ts`).
+    children: { 'settings.models.account': { kind: 'list', scope: 'root' } },
     inject: injected,
   }, ModelsSection))
   ctx.slots.inject('settings.onboarding', () => ctx.slots.register({

@@ -101,6 +101,8 @@ export const en = {
   visionSaving: 'Saving…',
   visionSaved: 'Vision model saved.',
   visionFailed: 'The vision model could not be saved. Please try again.',
+  localGroup: 'On this machine',
+  localGroupBody: 'Providers configured here keep their key on this computer and are called directly, so nothing about them is metered by your account or shared with your other devices. Point one at http://localhost:… to use a model you run yourself.',
 }
 
 /** The settings.models namespace key union. */
@@ -205,6 +207,8 @@ export const zh: { [Key in keyof typeof en]: string } = {
   visionSaving: '保存中…',
   visionSaved: '视觉模型已保存。',
   visionFailed: '视觉模型保存失败，请重试。',
+  localGroup: '本机',
+  localGroupBody: '在这里配置的提供方，密钥留在这台电脑上并直接调用，因此不计入账号用量，也不会同步到你的其他设备。要用你自己跑的模型，把地址指向 http://localhost:… 即可。',
 }
 
 /** Traditional Chinese copy. */
@@ -306,6 +310,8 @@ export const zhTW: { [Key in keyof typeof en]: string } = {
   visionSaving: '儲存中…',
   visionSaved: '視覺模型已儲存。',
   visionFailed: '視覺模型儲存失敗，請再試一次。',
+  localGroup: '這台機器',
+  localGroupBody: '在這裡設定的提供方，金鑰留在這台電腦上並直接呼叫，因此不計入帳號用量，也不會同步到你的其他裝置。要用你自己跑的模型，把位址指向 http://localhost:… 即可。',
 }
 
 /** Japanese copy. */
@@ -407,4 +413,6 @@ export const ja: { [Key in keyof typeof en]: string } = {
   visionSaving: '保存中…',
   visionSaved: 'ビジョンモデルを保存しました。',
   visionFailed: 'ビジョンモデルを保存できませんでした。もう一度お試しください。',
+  localGroup: 'このコンピューター',
+  localGroupBody: 'ここで設定したプロバイダーはキーをこのコンピューターに保持し、直接呼び出します。アカウントの使用量には計上されず、他の端末にも同期されません。自分で動かしているモデルを使うには http://localhost:… を指定してください。',
 }
