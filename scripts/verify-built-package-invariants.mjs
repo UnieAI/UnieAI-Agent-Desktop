@@ -66,6 +66,26 @@ for (const manifestPath of manifests) {
       throw new Error('companion does not inject invariants')
     }
     if (typeof unwrapped.apply !== 'function') throw new Error('companion apply is missing')
+
+    // Every OTHER `./lib/*.js` subpath the manifest offers, checked against
+    // the SAME staged view. A subpath is a promise to whoever installs the
+    // package, and the build only emits what a tsdown entry names:
+    // `@unieai/uad-browser-operator` shipped `./chromium` for a bundle no
+    // config produced, and the desktop app died at boot on `Cannot find
+    // module .../lib/chromium.js` while every test here stayed green, because
+    // tests resolve `src`. Read rather than imported: some subpaths are CLI
+    // entries that run on import.
+    for (const [subpath, target] of libSubpaths(manifest.exports)) {
+      if (subpath === './invariant') continue
+      const staged = resolve(stagedPackageDir, target.slice(2))
+      if (!existsSync(staged)) {
+        throw new Error(`subpath ${subpath} promises ${target}, which the build does not publish`)
+      }
+      for (const relative of relativeImportsOf(readFileSync(staged, 'utf8'))) {
+        if (existsSync(resolve(dirname(staged), relative))) continue
+        throw new Error(`subpath ${subpath} imports ${relative}, which files does not publish`)
+      }
+    }
   } catch (error) {
     failures.push(`${packageName}: ${error instanceof Error ? error.message : String(error)}`)
   } finally {
@@ -80,6 +100,44 @@ if (failures.length > 0) {
 }
 
 console.log(`verify-built-package-invariants: ${manifests.length} compiled companion(s) passed plain-Node Loader checks.`)
+
+/**
+ * Every export subpath whose runtime target is a built `lib/*.js` file.
+ * `lib/types/*.js` is unbundled tsc output rather than a build entry, and a
+ * non-JavaScript target (a `cordis.patch.yml`) is not importable.
+ * @param exportsField - the manifest's `exports` object.
+ * @returns `[subpath, target]` pairs, excluding the root and wildcards.
+ */
+function libSubpaths(exportsField) {
+  const pairs = []
+  for (const [subpath, value] of Object.entries(exportsField ?? {})) {
+    if (subpath === '.' || subpath.includes('*')) continue
+    const target = typeof value === 'string' ? value : value?.default
+    if (typeof target !== 'string') continue
+    if (!/^\.\/lib\/[^/]+\.js$/.test(target)) continue
+    pairs.push([subpath, target])
+  }
+  return pairs
+}
+
+/**
+ * Relative specifiers one bundle imports, so a shared chunk left out of
+ * `files` is a failure here rather than at someone's first run.
+ *
+ * Only `.js`/`.mjs`/`.cjs` targets count. Built output always carries the
+ * extension, while `import('./x.ts')` appears inside generated STRINGS —
+ * cordis-client-runner embeds type descriptors that read as imports — and a
+ * scan without this bound reports those as missing files.
+ * @param source - the bundle's JavaScript text.
+ * @returns each relative specifier, once.
+ */
+function relativeImportsOf(source) {
+  const found = new Set()
+  for (const match of source.matchAll(/(?:from|import)\s*\(?\s*["'](\.[^"']*\.[cm]?js)["']/g)) {
+    found.add(match[1])
+  }
+  return found
+}
 
 function copyDeclaredLibFiles(packageDir, stagedPackageDir, files) {
   for (const pattern of files) {
