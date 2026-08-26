@@ -65,12 +65,18 @@ export function apply(ctx: Context, config: Config = {}): void {
   // the schema's defaults, and every field here is optional, so the default
   // parameter is what makes "mounted with nothing said" the dormant case
   // instead of a TypeError inside the loader.
-  const resolved = config as ResolvedConfig
+  const given = config as Partial<ResolvedConfig>
   // Mounted DORMANT when no vision route is named, the way `llm-pi-ai` is
   // mounted with no providers: a deployment that has no vision model offers no
   // `image_inspect` rather than offering one that fails every call. Naming a
   // route in settings is what brings the tool into the catalog.
-  if ((resolved.provider ?? '') === '' || (resolved.model ?? '') === '') return
+  if ((given.provider ?? '') === '' || (given.model ?? '') === '') return
+  const resolved: ResolvedConfig = {
+    provider: given.provider ?? '',
+    model: given.model ?? '',
+    maxTokens: given.maxTokens ?? 1024,
+    timeoutMs: given.timeoutMs ?? 120_000,
+  }
 
   ctx.inject(['attachments', 'llm', 'systemPrompt', 'tools'], (scope) => {
     scope.systemPrompt.section({

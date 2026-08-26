@@ -92,6 +92,14 @@ The supplier does not exist yet: it will be a desktop BFF added to the UnieAI we
 
 `UnieAiAccountState` keeps `unavailable` and `signed-out` apart because the user-visible difference is real: the first means no gateway is composed and a Sign in button would do nothing, so none is drawn; the second means one is composed and holds no session, so signing in is the screen's wanted action. There is deliberately no state between them and `signed-in`. The sign-in this product runs is a device-code flow the host renders server-side, so pressing Sign in navigates the browser out of the single-page app and the app that comes back is either signed in or not: a waiting posture is unobservable from inside the app, and the branch that drew one was unreachable in every composition.
 
+## The sign-in gate
+
+A `signed-out` window is SENT to the gate's server-rendered `/auth/login`, not asked whether it would like to go. The overlay that used to stand there — a mark, a title, a sentence, and one button whose only destination was that page — was a page whose whole purpose was to ask permission to show the next page. While the browser leaves, the overlay paints a blank veil: the shell behind it can answer nothing without an account, and naming the destination in a card nobody chose to read is the second page this removes.
+
+The card is still in the file, as the fallback for the two ways the send can fail to land. A composition with no gateway has a `signIn` that reaches nothing, caught by a short timer; a person who came back from the sign-in page without finishing is caught by a per-tab mark in `sessionStorage`. Either one stops this tab redirecting and draws the card instead, because a window that throws someone back out every time they return is worse than a button. The mark is cleared as soon as the account is anything but signed out, so a later sign-out leaves the same way the first one did.
+
+`unavailable` is still untouched by all of it. The host could not reach the product at all, the local agent does not need it, and a sign-in page nobody can complete is a locked door with no key — redirecting to one would be a locked door that also throws away the key.
+
 ## Invites
 
 The product's referral model is one row per invited address, each with its own single-use code. There is no standing personal invite link, so the card offers none: what it shows is the rate-limit resets the account has banked, how many invites it has sent, those invites when the supplier lists them — each with its own link and a control that copies it — and the trigger that opens the compose dialog. Each part is drawn only where the supplier reported it, so an account whose referral call failed shows the parts that arrived rather than a zero balance nobody reported.
