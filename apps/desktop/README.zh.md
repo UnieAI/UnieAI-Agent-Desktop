@@ -51,7 +51,7 @@ pnpm --filter @unieai/uad-desktop run package:win:arm64   # on Windows arm64
 
 這四個腳本各有一個 `publish:*` 兄弟，指令完全相同、只是結尾換成 `--publish always`，而 [`desktop-release.yml`](../../.github/workflows/desktop-release.yml) 跑的正是它們。它們之所以是獨立腳本、而不是由 workflow 附加一個旗標，是因為附加根本沒有用：`pnpm run package:mac:arm64 -- --publish always` 會把 `--` 一起傳過去，electron-builder 收到的是 `--publish never -- --publish always`，而 yargs 在 `--` 就停止解析選項。那個本該覆蓋的旗標落進了 `argv._`，於是建置什麼都沒發佈，還以 0 結束。`desktop-v0.1.5`–`v0.1.8` 的每一次執行都是這樣打出四份安裝檔、卻沒有產生任何 release。workflow 現在也會把安裝檔上傳成 run artifact，這樣即使發佈不是這次執行想做的事，建置結果仍然拿得到。
 
-**每個目標都必須在該平台上打包**，`scripts/verify-target.mjs` 會拒絕其他情況。這是被打包物本身的性質，不是保守：封閉集裡帶著套件管理器在安裝時依平台與架構挑選的原生二進位檔——`koffi`，也就是 Win32 沙箱的 FFI，是最清楚的例子——所以在 Linux 上產出的 macOS 版，會把 Linux 的二進位檔包進 `.dmg`，而且只有在有人執行時才會失敗。四個目標就是四台機器，或是 [`desktop-release.yml`](../../.github/workflows/desktop-release.yml) 裡的四個 runner。
+**每個目標都必須在該平台上打包**，`scripts/verify-target.mjs` 會拒絕其他情況。這是被打包物本身的性質，不是保守：封閉集裡帶著套件管理器在安裝時依平台與架構挑選的原生二進位檔——`koffi`，也就是 Win32 沙箱的 FFI，是最清楚的例子——所以在 Linux 上產出的 macOS 版，會把 Linux 的二進位檔包進 `.dmg`，而且只有在有人執行時才會失敗。四個目標就是四台機器，或是 [`desktop-release.yml`](../../.github/workflows/desktop-release.yml) 裡的四個 runner：兩種 Mac 架構用 `macos-15` 與 `macos-15-intel`，兩種 Windows 架構用 `windows-latest` 與 `windows-11-arm`。該 workflow 把目標驗證、建置、打包拆成三個具名步驟，因為一個 job 的步驟結論不需要 token 就能從 GitHub API 讀到，而它的日誌不行——單一步驟失敗時，你只知道「打包壞了」。
 
 ## 更新
 

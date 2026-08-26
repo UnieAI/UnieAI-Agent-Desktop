@@ -561,7 +561,7 @@ describe('Desktop release workflow', () => {
       expect(script, `${target} must not also say never`).not.toContain('--publish never')
     }
 
-    const step = jobStep(job, 'Package')
+    const step = jobStep(job, 'Package and publish')
     expect(typeof step.run === 'string' ? step.run : '').toBe(
       'pnpm --filter @unieai/uad-desktop run ${{ matrix.target }}',
     )
@@ -592,6 +592,39 @@ describe('Desktop release workflow', () => {
     // beside it is something to install by hand and nothing to update from.
     for (const pattern of ['*.dmg', '*.zip', '*.exe', 'latest*.yml']) {
       expect(path, `artifact must carry ${pattern}`).toContain(pattern)
+    }
+  })
+
+  it('splits packaging into named steps, because step conclusions are readable without a token and logs are not', () => {
+    // desktop-v0.1.11's Apple Silicon job failed 34 seconds into one `Package`
+    // step. The API gives step names and conclusions to anyone; the log needs
+    // a token. Three steps turn "something in packaging broke" into "the
+    // runner was not the target" / "the shell did not build" / "packaging
+    // failed", which is the difference between a diagnosis and another tag.
+    const job = workflowJob(loadWorkflow('.github/workflows/desktop-release.yml'), 'package')
+    for (const name of ['Verify this runner is the target', 'Build the desktop shell', 'Package and publish']) {
+      expect(jobStep(job, name), name).toBeDefined()
+    }
+    const verify = jobStep(job, 'Verify this runner is the target')
+    expect(typeof verify.run === 'string' ? verify.run : '').toContain('verify-target.mjs')
+  })
+
+  it('declares each row\'s platform and arch, and agrees with both the target and the runner', () => {
+    // The verify step takes them as arguments, so a row that named the wrong
+    // pair would refuse a runner that is in fact correct — or, worse, accept
+    // one that is not.
+    const job = workflowJob(loadWorkflow('.github/workflows/desktop-release.yml'), 'package')
+    for (const entry of matrixInclude(job)) {
+      const target = String(entry.target)
+      const runner = String(entry.runner)
+      const platform = String(entry.platform)
+      const arch = String(entry.arch)
+      expect(platform, target).toBe(target.includes(':mac:') ? 'darwin' : 'win32')
+      expect(target, `${target} must end in its arch`).toMatch(new RegExp(`:${arch}$`))
+      expect(runner.startsWith(platform === 'darwin' ? 'macos-' : 'windows-'), `${target} on ${runner}`).toBe(true)
+      // An Intel runner is named as one; every other image of that family is
+      // the family's own architecture.
+      expect(runner.includes('intel'), `${runner} for ${arch}`).toBe(arch === 'x64' && platform === 'darwin')
     }
   })
 
