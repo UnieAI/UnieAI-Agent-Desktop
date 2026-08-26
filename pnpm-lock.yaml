@@ -7999,9 +7999,15 @@ importers:
       '@unieai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+      '@unieai/uad-bash-local':
+        specifier: workspace:^
+        version: link:../../shell/bash-local
       '@unieai/uad-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-shell':
+        specifier: workspace:^
+        version: link:../../shell/shell
 
   packages/storage/storage:
     devDependencies:

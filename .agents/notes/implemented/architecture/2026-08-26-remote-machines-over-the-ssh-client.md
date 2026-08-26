@@ -54,12 +54,14 @@ The multiplexing socket lives under the harness home. OpenSSH substitutes a 40-c
 
 Four hermetic suites pin the substrate rules: alias enumeration including `Include` and its cycles, `ssh -G` reading, the remote command line's three shell lessons, and the connection options with the control-path measurement.
 
-A gated suite (`tests/live-connection.e2e.ts`) runs the same code against a real `sshd`: resolution, reachability and its failure message, connection reuse timing, exit-status propagation, stream separation, environment carrying an embedded quote, working directories present and missing, and multi-byte output. It reports itself skipped without `DSH_SSH_TEST_CONFIG` and `DSH_SSH_TEST_ALIAS` rather than passing hollowly, and the file documents the disposable server it expects.
+`subprocess-ssh` adds its own: hermetic tests for the pid-file lines and the refusals, a live suite for commands, lookups and remote termination of a HUP-ignoring tree, and a composition suite that runs `dsh-bash-local` — which knows nothing about SSH — over the remote seam and asserts on the executor's own result.
+
+A gated suite (`tests/live-connection.e2e.ts`) runs the same code against a real `sshd`: resolution, reachability and its failure message, connection reuse (asserted as the master's existence, because a duration comparison fails exactly when the machine is busy), exit-status propagation, stream separation, environment carrying an embedded quote, working directories present and missing, and multi-byte output. It reports itself skipped without `DSH_SSH_TEST_CONFIG` and `DSH_SSH_TEST_ALIAS` rather than passing hollowly, and the file documents the disposable server it expects.
 
 ## Deferred
 
-- **The execution-world adapters.** `subprocess-ssh` and `fs-ssh` are the packages that make bash, terminals, language servers and the file tools run on the machine; this note ships the owner they will share.
-- **Remote process lifetime.** A remote command outlives the connection that started it: measured against a real server, killing the local client leaves the remote process running with and without a terminal allocated. The subprocess adapter must own remote process groups, as the E2B adapter does; the owner deliberately holds no per-command remote state.
+- **The filesystem adapter.** `fs-ssh` is what puts file reads, writes, edits and searches on the machine; `subprocess-ssh` ships with this note and puts every command there.
+- **A terminal on the machine.** `subprocess-ssh.spawnTerminal` refuses rather than allocating a local one, because the local PTY's foreground process is always `ssh` and prompt and idle detection would read it as the shell. Remote foreground inspection is the missing piece.
 - **Choosing a machine per workspace.** The service pools by alias so that several machines can be live at once, but nothing yet routes a call to one. `ctx.agents.currentInitiator()` is the ambient fact a router would read.
 - **A login shell that is not POSIX-like.** csh and fish would each need their own composition of the remote command line.
 
