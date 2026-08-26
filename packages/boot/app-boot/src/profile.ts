@@ -232,7 +232,7 @@ export function healProfilesModuleFallback(installAnchor: string, home: string =
   const appManifest = JSON.parse(readFileSync(installAnchor, 'utf8')) as ProfileManifest
   const links = new Map<string, string>()
   /* v8 ignore next -- a real app manifest always declares its name */
-  if (appManifest.name !== undefined) links.set(appManifest.name, dirname(installAnchor))
+  if (appManifest.name !== undefined) links.set(appManifest.name, outsideArchive(dirname(installAnchor)))
   // BFS over the resolvable dependency graph; the visited set is the link
   // map itself (first resolution wins, matching Node's own nearest-wins).
   const queue: { anchor: string; manifest: ProfileManifest }[] = [{ anchor: installAnchor, manifest: appManifest }]
@@ -421,9 +421,34 @@ function packageDirFromAnchor(anchor: string, packageName: string): string | und
   /* v8 ignore next */
   for (const searchPath of createRequire(anchor).resolve.paths(packageName) ?? []) {
     const candidate = join(searchPath, packageName)
-    if (existsSync(join(candidate, 'package.json'))) return candidate
+    if (existsSync(join(candidate, 'package.json'))) return outsideArchive(candidate)
   }
   return undefined
+}
+
+/**
+ * The same package directory, named so a profile can RESOLVE through it.
+ *
+ * Inside a packaged Electron app the search lands on a path THROUGH the asar
+ * archive. Electron's patched `fs` reads such a path, which is why
+ * `existsSync` above says yes, but Node's module resolver calls `realpath` on
+ * a symlink target, and realpath of a path whose parent is the archive file
+ * fails with ENOTDIR. A link into the archive therefore resolves nothing: the
+ * desktop app served a boot graph with no entries at all, and the page died
+ * on `client-modules: HTML did not preload @unieai/uad-client-modules/client.js`.
+ *
+ * `asarUnpack` already places these packages beside the archive, so the twin
+ * is a real directory. A package with no twin keeps the archive path — it is
+ * still readable, and inventing a path that does not exist would be worse.
+ * @param dir - a package directory as module resolution found it.
+ * @returns the unpacked twin when one exists, otherwise `dir` unchanged.
+ */
+function outsideArchive(dir: string): string {
+  // The archive directory itself is the app's own row, so the segment may
+  // also END the path.
+  const twin = dir.replace(/([/\\])app\.asar(?=[/\\]|$)/, '$1app.asar.unpacked')
+  if (twin === dir) return dir
+  return existsSync(join(twin, 'package.json')) ? twin : dir
 }
 
 /**

@@ -242,6 +242,53 @@ describe('healProfilesModuleFallback', () => {
     expect(before).toContain('dep-of-a')
   })
 
+  it('links the unpacked twin of a package the search found inside an asar archive', () => {
+    // A packaged Electron app: `app.asar` is a FILE, and Electron's patched fs
+    // reads THROUGH it, so resolution lands on a path inside the archive. Node
+    // calls realpath on a symlink target, and realpath through the archive
+    // fails with ENOTDIR — so a link into `app.asar` resolves nothing. The
+    // desktop app served a boot graph with no entries and the page died on
+    // "HTML did not preload @unieai/uad-client-modules/client.js".
+    const root = tmp()
+    const archiveDir = join(root, 'resources', 'app.asar')
+    const unpackedDir = join(root, 'resources', 'app.asar.unpacked')
+    for (const base of [archiveDir, unpackedDir]) {
+      const dep = join(base, 'node_modules', 'client-pkg')
+      mkdirSync(dep, { recursive: true })
+      writeFileSync(join(dep, 'package.json'), JSON.stringify({ name: 'client-pkg', version: '0.0.0' }))
+    }
+    writeFileSync(
+      join(archiveDir, 'package.json'),
+      JSON.stringify({ name: 'dsh-app', dependencies: { 'client-pkg': '0.0.0' } }),
+    )
+    mkdirSync(unpackedDir, { recursive: true })
+    writeFileSync(join(unpackedDir, 'package.json'), JSON.stringify({ name: 'dsh-app' }))
+    const home = tmp()
+    healProfilesModuleFallback(join(archiveDir, 'package.json'), home)
+    const fallback = join(home, 'profiles', 'node_modules')
+    expect(readlinkSync(join(fallback, 'client-pkg'))).toBe(join(unpackedDir, 'node_modules', 'client-pkg'))
+    // The app's own row too: it is resolved from the same archive path.
+    expect(readlinkSync(join(fallback, 'dsh-app'))).toBe(unpackedDir)
+  })
+
+  it('keeps the archive path for a package asarUnpack did not place beside it', () => {
+    // Inventing a path that does not exist would be worse than the archive
+    // path, which Electron's fs at least reads.
+    const root = tmp()
+    const archiveDir = join(root, 'resources', 'app.asar')
+    const dep = join(archiveDir, 'node_modules', 'packed-only')
+    mkdirSync(dep, { recursive: true })
+    writeFileSync(join(dep, 'package.json'), JSON.stringify({ name: 'packed-only', version: '0.0.0' }))
+    writeFileSync(
+      join(archiveDir, 'package.json'),
+      JSON.stringify({ name: 'dsh-app', dependencies: { 'packed-only': '0.0.0' } }),
+    )
+    const home = tmp()
+    healProfilesModuleFallback(join(archiveDir, 'package.json'), home)
+    expect(readlinkSync(join(home, 'profiles', 'node_modules', 'packed-only')))
+      .toBe(join(archiveDir, 'node_modules', 'packed-only'))
+  })
+
   it('throws when a fallback entry is a real directory', () => {
     const anchor = stageInstallation({})
     const home = tmp()

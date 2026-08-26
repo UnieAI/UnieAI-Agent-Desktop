@@ -20,18 +20,31 @@ files:
 
 # The harness runs as a real Node program: it opens files, spawns shells and
 # loads a platform-specific sandbox. None of that works from inside an asar.
+#
+# THE WHOLE TREE, not a list of the packages that obviously need it. Two
+# release-blocking failures came from splitting node_modules across the
+# archive boundary:
+#
+#   1. `$DSH_HOME/profiles/node_modules` links each plugin package to where
+#      resolution found it. Electron's patched `fs` READS through `app.asar`,
+#      so the search succeeds there — but Node's resolver calls `realpath` on
+#      a symlink target, and realpath through the archive file fails with
+#      ENOTDIR. Every client package resolved to nothing, the boot graph
+#      served `entries: []`, and the page died on "HTML did not preload
+#      @unieai/uad-client-modules/client.js".
+#   2. Pointing those links at the unpacked twins instead moved the problem
+#      one level down: `@unieai/uad-goal/lib/typert.host.js` sits outside the
+#      archive while `zod` sits inside it, and a module cannot reach across
+#      that line — `Cannot find package 'zod'`, six contributors at once.
+#
+# A shared library also cannot be dlopen'd from inside an asar at all: sharp's
+# binding loads `libvips-cpp.so` by path, which is what produced
+# `ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3` from an archived tree.
+#
+# What the archive still holds is the shell's own `lib/`, which is what `files`
+# ships and what nothing resolves through.
 asarUnpack:
-  - node_modules/@unieai/**
-  - node_modules/koffi/**
-  # Every other native payload, for the same reason and one more: a SHARED
-  # LIBRARY cannot be dlopen'd from inside an asar at all. sharp's binding
-  # loads `libvips-cpp.so` by path, and leaving that file in the archive is
-  # what produced `ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open
-  # shared object file` from a package whose node_modules contained it.
-  - node_modules/@img/**
-  - node_modules/@koromix/**
-  - node_modules/@vscode/ripgrep*/**
-  - node_modules/node-addon-require-builtin*/**
+  - node_modules/**
 
 mac:
   target:
