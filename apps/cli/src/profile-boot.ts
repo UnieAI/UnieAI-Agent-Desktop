@@ -34,6 +34,23 @@ import { resolveDshHome } from '@unieai/uad-home-paths'
 /** Shipped agent-preset root: beside this app's own config, in both source and built layouts. */
 const SHIPPED_PRESET_ROOT = fileURLToPath(new URL('../config/agent-presets/', import.meta.url))
 
+/** Skills shipped with the application, beside its config in both layouts. */
+const SHIPPED_SKILL_ROOT = fileURLToPath(new URL('../config/skills/', import.meta.url))
+
+/**
+ * Point every `skill-filesystem` instance at the skills this app ships.
+ *
+ * Through the environment rather than through a composition overlay, because
+ * the row is not always in the host composition to overlay: the desktop
+ * bundle disables the host row and each agent PRESET mounts its own. An
+ * environment default reaches every instance, host or preset, and a
+ * deployment that sets the variable itself keeps its own answer.
+ * @returns nothing.
+ */
+function defaultBundledSkillRoot(): void {
+  process.env['DSH_BUNDLED_SKILL_DIR'] ??= SHIPPED_SKILL_ROOT
+}
+
 import { DSH_LAUNCH_ENVIRONMENT_KEY, type LaunchEnvironmentSnapshot } from '@unieai/uad-launch-environment'
 import { provideCmdline } from '@unieai/uad-cmdline'
 import { createProcessShutdown, type ProcessShutdown } from './process-shutdown.ts'
@@ -205,6 +222,7 @@ function suppressShutdownError(ctx: Context, signal: AbortSignal, error: unknown
  * @returns the settled root context and the shutdown controller.
  */
 export async function runProfile(options: RunProfileOptions): Promise<{ ctx: Context; shutdown: ProcessShutdown }> {
+  defaultBundledSkillRoot()
   const composed = composeProfile(options.profile, options.patchFiles)
   const app: { current?: Context } = {}
   const shutdown = createProcessShutdown(async () => { await app.current?.fiber.dispose() })
