@@ -574,9 +574,19 @@ describe('Desktop release workflow', () => {
     expect(typeof step.uses === 'string' ? step.uses : '').toMatch(/^actions\/upload-artifact@/)
     // Per target: four jobs upload into one run and same-named artifacts collide.
     expect(step.with).toMatchObject({
-      name: 'desktop-${{ matrix.target }}',
+      name: 'desktop-${{ matrix.slug }}',
       'if-no-files-found': 'error',
     })
+    // The name is built from `slug`, not `target`, and every slug must survive
+    // an artifact name: `desktop-publish:mac:arm64` failed all four jobs of
+    // desktop-v0.1.9 AFTER their installers were built, because an artifact
+    // name may not contain `:` (NTFS). GitHub expressions have no string
+    // replace, so the safe form is carried per row and checked here.
+    for (const entry of matrixInclude(job)) {
+      const slug = String(entry.slug)
+      expect(slug, `${String(entry.target)} must carry a slug`).not.toBe('undefined')
+      expect(slug, `slug ${slug} must be an artifact-safe name`).toMatch(/^[a-z0-9][a-z0-9.-]*$/)
+    }
     const path = isRecord(step.with) && typeof step.with.path === 'string' ? step.with.path : ''
     // The update feed, not build noise: an installer with no `latest*.yml`
     // beside it is something to install by hand and nothing to update from.

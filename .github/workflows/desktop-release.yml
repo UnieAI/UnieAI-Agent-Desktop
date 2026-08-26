@@ -54,6 +54,9 @@ jobs:
         include:
           - runner: macos-14
             target: publish:mac:arm64
+            # Artifact names cannot contain `:`, so the slug is carried rather
+            # than derived — GitHub expressions have no string replace.
+            slug: mac-arm64
           # `macos-15-intel`, not `macos-13`: GitHub retired the macOS 13 image,
           # and a job asking for a label with no runners behind it does not
           # fail — it QUEUES, forever. The other three targets of
@@ -62,10 +65,13 @@ jobs:
           # release had three of its four installers and no error to read.
           - runner: macos-15-intel
             target: publish:mac:x64
+            slug: mac-x64
           - runner: windows-latest
             target: publish:win:x64
+            slug: win-x64
           - runner: windows-11-arm
             target: publish:win:arm64
+            slug: win-arm64
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -89,13 +95,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Named per target: four jobs upload into one run, and same-named
-      # artifacts from different jobs collide. `blockmap`/`yml` files come
-      # along because they are the update feed, not build noise.
+      # artifacts from different jobs collide. The name uses the row's `slug`,
+      # NOT its `target`: an artifact name may not contain `:` (NTFS), and
+      # `desktop-publish:mac:arm64` failed all four jobs of desktop-v0.1.9
+      # after their installers had already been built and published.
+      # `blockmap`/`yml` files come along because they are the update feed,
+      # not build noise.
       - name: Keep the installers
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: desktop-${{ matrix.target }}
+          name: desktop-${{ matrix.slug }}
           if-no-files-found: error
           retention-days: 30
           path: |
