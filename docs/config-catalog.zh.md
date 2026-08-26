@@ -2527,6 +2527,22 @@ export interface Config {
 
 Source: [`packages/e2b/subprocess-e2b/src/index.ts:25`](../packages/e2b/subprocess-e2b/src/index.ts)
 
+<a id="unieaiuad-subprocess-ssh"></a>
+
+## `@unieai/uad-subprocess-ssh`
+
+Requires: `ssh`
+
+```ts config-catalog
+/** Configuration for the remote subprocess provider. */
+export interface Config {
+  /** Alias of the machine every command runs on, as the person's OpenSSH configuration names it. */
+  machine: string
+}
+```
+
+Source: [`packages/ssh/subprocess-ssh/src/index.ts:41`](../packages/ssh/subprocess-ssh/src/index.ts)
+
 <a id="unieaiuad-system-prompt"></a>
 
 ## `@unieai/uad-system-prompt`

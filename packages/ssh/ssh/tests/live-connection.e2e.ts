@@ -71,16 +71,17 @@ describe.skipIf(!ready)('the machine book against a real server', () => {
   it('reuses the connection, which is what makes remote work usable', async () => {
     const hosts = book()
     await hosts.ensureControlDir()
-    const first = Date.now()
     await remote(hosts, remoteCommandLine(['true'], undefined))
-    const handshake = Date.now() - first
 
-    const second = Date.now()
-    await remote(hosts, remoteCommandLine(['true'], undefined))
-    const reused = Date.now() - second
+    // Asserted as the master's existence rather than as elapsed time: a
+    // duration comparison fails whenever the machine is busy, which is
+    // exactly when a person is running commands.
+    const control = hosts.controlPath()
+    expect(control).toBeDefined()
+    const check = await run('ssh', ['-F', CONFIG as string, '-o', `ControlPath=${control as string}`,
+      '-O', 'check', ALIAS as string], { encoding: 'utf8' }).then(() => true, () => false)
+    expect(check).toBe(true)
 
-    // The handshake is the expensive part; a reused connection skips it.
-    expect(reused).toBeLessThan(Math.max(handshake, 50))
     await hosts.disconnect(ALIAS as string)
   })
 

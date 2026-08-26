@@ -7981,6 +7981,28 @@ importers:
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
 
+  packages/ssh/subprocess-ssh:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../ssh
+      '@unieai/uad-subprocess':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess
+      '@unieai/uad-subprocess-local':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess-local
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+
   packages/storage/storage:
     devDependencies:
       '@unieai/cordis':

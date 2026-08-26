@@ -7,6 +7,7 @@ One execution world placed on a machine the person can already reach, using the 
 | Package | ctx key | Role |
 |---|---|---|
 | [`ssh`](ssh/README.md) (`@unieai/uad-ssh`) | `ctx.ssh` | The machines in the person's own OpenSSH configuration, what an alias resolves to, and one multiplexed connection per machine |
+| [`subprocess-ssh`](subprocess-ssh/README.md) (`@unieai/uad-subprocess-ssh`) | `ctx.subprocess` | Runs every command on the machine by rewriting each spec into an `ssh` invocation, and ends a run by signalling its remote process group |
 
 Nothing is installed on the remote machine. A remote development server would be a second thing to version, deploy and keep compatible; the two seams above need only a shell and a filesystem, which sshd already provides.
 
