@@ -62,10 +62,18 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # `--profile official` is what the release pack requires of client
+      # The official client profile is what `release:pack` requires of client
       # artifacts, so building any other way here would prove the wrong build.
+      #
+      # The ENV selector, not `-- --profile official`: pnpm passes the `--`
+      # through to the script, `parseArgs` refuses the positional, and the
+      # build exits 1. That is the same trap that made four desktop releases
+      # publish nothing (`-- --publish always` reaching electron-builder after
+      # a `--`), and this file walked into it on its very first run.
       - name: Build
-        run: pnpm run build -- --profile official
+        run: pnpm run build
+        env:
+          DSH_BUILD_CLIENT_PROFILE: official
 
       - name: Typecheck
         run: pnpm run typecheck
@@ -98,7 +106,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm run build -- --profile official
+      - name: Build
+        run: pnpm run build
+        env:
+          DSH_BUILD_CLIENT_PROFILE: official
 
       # Linux `--dir`, not an installer: the question is whether the packaged
       # TREE resolves and boots, and that is the same tree every platform

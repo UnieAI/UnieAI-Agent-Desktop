@@ -694,6 +694,20 @@ describe('This fork\'s own CI', () => {
     }
   })
 
+  it('never passes a flag to a pnpm script after `--`, because pnpm forwards the separator', () => {
+    // Twice now: `-- --publish always` reached electron-builder behind a `--`
+    // and four desktop releases published nothing, and `-- --profile official`
+    // made this very workflow exit 1 on its first run. pnpm hands the `--` to
+    // the script, and the script's own parser refuses what follows.
+    const workflow = loadWorkflow('.github/workflows/ci-uad.yml')
+    for (const [name, job] of Object.entries(workflow.jobs as Record<string, unknown>)) {
+      for (const step of (job as { steps: { run?: string }[] }).steps) {
+        const run = step.run ?? ''
+        expect(/pnpm[^\n]*\brun\b[^\n]*\s--\s/.test(run), `${name}: ${run}`).toBe(false)
+      }
+    }
+  })
+
   it('asks only for GitHub-hosted runners, since a label with no runners queues forever', () => {
     // The failure mode this repository has already paid for twice: a job whose
     // label nothing answers does not fail, it waits.
