@@ -1,0 +1,11 @@
+/* Bottom-right, above the composer's own furniture, clear of the scrollbar.
+   `pointer-events: none` on the dock as well as the sprite: an overlay seat
+   spans the whole app box, and a transparent box that swallows clicks is
+   indistinguishable from a broken page. */
+.dock {
+  position: absolute;
+  right: 24px;
+  bottom: 96px;
+  z-index: 30;
+  pointer-events: none;
+}

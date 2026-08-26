@@ -1511,6 +1511,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'settings.plugins.tab\' (client-ui-settings-plugins), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-pet PetSettingsCard',
       'client-ui-settings-plugins BashCard',
       'client-ui-settings-plugins AgentLoopCard',
       'client-ui-settings-plugins WebSearchCard',
@@ -1680,6 +1681,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'root\' (client-ui-layout), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-pet PetDock id \'pet-dock\'',
       'client-ui-plugins-page PluginsPage id \'plugins-page\'',
       'client-ui-unieai-account SignInGate id \'sign-in-gate\'',
       'session-log-export SessionLogDownloadOverlay id \'session-log-download\'',

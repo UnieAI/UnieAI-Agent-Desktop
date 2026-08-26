@@ -464,6 +464,29 @@ export interface Config {
 
 Source: [`packages/client/hmr/src/index.ts:31`](../packages/client/hmr/src/index.ts)
 
+<a id="unieaiuad-client-ui-pet"></a>
+
+## `@unieai/uad-client-ui-pet`
+
+```ts config-catalog
+/**
+ * What a composition may say about the mascot.
+ *
+ * Both fields are optional and carry no defaults: this is the BASE layer under
+ * a person's own choice, and a default here would be a deployment stating a
+ * preference it never expressed. The section's own defaults live on
+ * `PetSettingsSchema`, which is what a reader with no layers at all gets.
+ */
+export interface Config {
+  /** Pet shown when the person has not chosen one. */
+  pet?: string
+  /** Whether the mascot starts out shown. */
+  enabled?: boolean
+}
+```
+
+Source: [`packages/client/ui-pet/src/index.ts:57`](../packages/client/ui-pet/src/index.ts)
+
 <a id="unieaiuad-code-runtime-worker-thread"></a>
 
 ## `@unieai/uad-code-runtime-worker-thread`

@@ -71,6 +71,7 @@
     "@unieai/uad-client-ui-message-feedback": "workspace:^",
     "@unieai/uad-client-ui-model-selection": "workspace:^",
     "@unieai/uad-client-ui-permission-presets": "workspace:^",
+    "@unieai/uad-client-ui-pet": "workspace:^",
     "@unieai/uad-client-ui-plan": "workspace:^",
     "@unieai/uad-client-ui-plugins-page": "workspace:^",
     "@unieai/uad-client-ui-reference": "workspace:^",

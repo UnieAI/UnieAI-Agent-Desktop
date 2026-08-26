@@ -275,6 +275,13 @@
     - id: ui-unieai-providers
       name: '@unieai/uad-client-ui-unieai-providers'
 
+    # The mascot. Its NODE half serves the sprite sheets — a 1.7 MB grid
+    # imported by the browser half would sit base64 inside `client.js` and be
+    # paid for on every load, mascot or no mascot — and owns the `ui-pet`
+    # settings section the picker writes.
+    - id: ui-pet
+      name: '@unieai/uad-client-ui-pet'
+
     - id: ui-conversation
       name: '@unieai/uad-client-ui-conversation'
 

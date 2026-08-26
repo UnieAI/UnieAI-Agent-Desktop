@@ -1577,6 +1577,9 @@ importers:
       '@unieai/uad-client-ui-permission-presets':
         specifier: workspace:^
         version: link:../../client/ui-permission-presets
+      '@unieai/uad-client-ui-pet':
+        specifier: workspace:^
+        version: link:../../client/ui-pet
       '@unieai/uad-client-ui-plan':
         specifier: workspace:^
         version: link:../../client/ui-plan
@@ -2659,6 +2662,52 @@ importers:
       '@unieai/uad-permission-presets':
         specifier: workspace:^
         version: link:../../interaction/permission-presets
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+
+  packages/client/ui-pet:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      '@unieai/uad-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      clsx:
+        specifier: ^2.0.0
+        version: 2.1.1
+    devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@unieai/uad-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@unieai/uad-client-ui-layout':
+        specifier: workspace:^
+        version: link:../ui-layout
+      '@unieai/uad-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
+      '@unieai/uad-client-ui-settings-plugins':
+        specifier: workspace:^
+        version: link:../ui-settings-plugins
+      '@unieai/uad-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
       react:
         specifier: ^18.2.0
         version: 18.3.1

@@ -1,0 +1,74 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--dsw-alias-bg-module-platform);
+  border-radius: var(--dsw-radius-lg);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.pets {
+  display: flex;
+  gap: 12px;
+  padding: 0;
+  margin: 4px 0 0;
+  list-style: none;
+}
+
+/* The chosen pet is marked by its frame, not by a tick in a corner: the thing
+   being chosen is a picture, so the selection should read as one too. */
+.pet {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--dsw-alias-border-primary);
+  border-radius: var(--dsw-radius-md);
+}
+
+.pet[aria-pressed='true'] {
+  border-color: var(--dsw-alias-label-primary);
+}
+
+.pet:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.preview {
+  image-rendering: pixelated;
+}

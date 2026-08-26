@@ -1,0 +1,7 @@
+/* The mascot floats over the app and is never in the way of a click: it is a
+   presence, not a control. */
+.sprite {
+  display: block;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
