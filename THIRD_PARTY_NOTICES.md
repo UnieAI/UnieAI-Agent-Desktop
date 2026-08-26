@@ -43,6 +43,7 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`@anthropic-ai/claude-agent-sdk`](https://github.com/anthropics/claude-agent-sdk-typescript) | SEE LICENSE IN README.md |
 | [`@anthropic-ai/sdk`](https://github.com/anthropics/anthropic-sdk-typescript) | MIT |
 | [`@babel/code-frame`](https://github.com/babel/babel) | MIT |
+| [`@changfenhuang/dsh-genui`](https://github.com/omdsh-dev/dsh-genui) | MIT |
 | [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) | MIT |
 | [`@img/sharp-darwin-arm64`](https://github.com/lovell/sharp) | Apache-2.0 |
 | [`@img/sharp-darwin-x64`](https://github.com/lovell/sharp) | Apache-2.0 |

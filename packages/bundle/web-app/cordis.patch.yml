@@ -564,3 +564,17 @@
       name: '@unieai/uad-agent-presets'
       config:
         default: standard
+
+# GenUI: the model may answer with a ```dsh-ui fence, and this renders it —
+# layout, charts, forms, mermaid, 3D — with an action loop back to the model.
+#
+# A COMMUNITY plugin, and the first one this product ships. It is published
+# against the upstream harness names (`@deepseek-ai/dsh-*`), which this fork
+# renamed; it works here because `dsh-upstream-names` already answers an
+# upstream request on both sides — the host publishes each package under its
+# legacy name too, and the browser's module table resolves one to the product
+# package. Shipping it is therefore also the standing proof that a plugin
+# written for the upstream ecosystem runs unmodified on this fork.
+- insert:
+    - id: genui
+      name: '@changfenhuang/dsh-genui'
