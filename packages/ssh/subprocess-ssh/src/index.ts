@@ -113,12 +113,6 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
       cwd: homedir(),
       env: CLIENT_ENV,
     })
-    // The pid file is the only trace a run leaves on the machine, so its
-    // removal is tied to the outcome rather than to a successful exit.
-    void handle.done.then(
-      () => { this.control(cleanupLine(pidFile)) },
-      () => { this.control(cleanupLine(pidFile)) },
-    )
     return this.terminatingRemotely(handle, pidFile, spec.graceMs)
   }
 
@@ -148,7 +142,7 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
     const lookup = command.startsWith('/')
       ? `test -x ${quoteShellArg(command)} && printf %s ${quoteShellArg(command)}`
       : `command -v ${quoteShellArg(command)}`
-    const found = (await this.control(withPath(lookup, env), signal)).trim()
+    const found = (await this.control(withPath(lookup, env), signal)).text.trim()
     if (found === '') {
       throw new Error(`subprocess-ssh: '${command}' is not an executable on ${this.sshConfig.machine}`)
     }
@@ -185,11 +179,11 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
       env: {},
     })
     void local.done.finally(() => {
-      this.control(`${cleanupLine(pidFile)}; ${cleanupLine(ttyFile)}`)
+      void this.control(`${cleanupLine(pidFile)}; ${cleanupLine(ttyFile)}`)
     })
     return new RemoteTerminalHandle(
       local,
-      line => this.control(line),
+      async line => (await this.control(line)).text,
       pidFile,
       ttyFile,
       spec.graceMs,
@@ -204,9 +198,9 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
    * collection cap and a short grace.
    * @param line - the remote command line.
    * @param signal - aborts the run.
-   * @returns the command's stdout.
+   * @returns the command's stdout and its exit status.
    */
-  private async control(line: string, signal?: AbortSignal): Promise<string> {
+  private async control(line: string, signal?: AbortSignal): Promise<{ text: string; exitCode: number | null }> {
     const handle = super.spawn({
       argv: this.ctx.ssh.argvFor(this.sshConfig.machine, line),
       cwd: homedir(),
@@ -215,8 +209,8 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
       graceMs: CONTROL_GRACE_MS,
       ...(signal === undefined ? {} : { signal }),
     })
-    await handle.done
-    return handle.collected.stdout?.readFrom(0).text ?? ''
+    const outcome = await handle.done
+    return { text: handle.collected.stdout?.readFrom(0).text ?? '', exitCode: outcome.exitCode }
   }
 
   /**
@@ -237,6 +231,25 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
     graceMs: number,
   ): SubprocessHandle {
     let ending = false
+    const end = (): void => {
+      if (ending) return
+      ending = true
+      void this.endRemote(pidFile, graceMs)
+    }
+    // What the client's exit means for the machine depends on WHOSE exit it
+    // was. A status the remote command produced (anything but 255) means the
+    // command finished, and its pid file is just litter. A 255, or a signal,
+    // is the CLIENT ending — which says nothing about the remote process,
+    // since outliving its connection is exactly what a remote process does.
+    // Removing the pid file then would throw away the only handle on work
+    // that is still running.
+    void handle.done.then(
+      (outcome) => {
+        if (outcome.exitCode === 255 || outcome.signal !== null) end()
+        else void this.control(cleanupLine(pidFile))
+      },
+      () => { end() },
+    )
     return {
       get pid() { return handle.pid },
       get stdin() { return handle.stdin },
@@ -245,10 +258,11 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
       get collected() { return handle.collected },
       done: handle.done,
       terminate: () => {
+        // The remote end is started BEFORE the client is killed: killing it
+        // first would settle `done`, and the handler above would have to
+        // decide the same thing from less information.
+        end()
         handle.terminate()
-        if (ending) return
-        ending = true
-        void this.endRemote(pidFile, graceMs)
       },
       waitForExit: signal => handle.waitForExit(signal),
     }
@@ -258,21 +272,42 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
    * Signal the remote process group, then escalate once.
    *
    * The wait is the caller's own grace, so a consumer that allows a slow
-   * shutdown gets one on the remote too. A KILL always follows: the run's
-   * pid file is removed by the outcome handler either way, and a process
+   * shutdown gets one on the remote too. A KILL always follows: a process
    * that ignored TERM would otherwise keep the machine's work alive with
    * nothing left to observe it.
    * @param pidFile - shell expression naming the run's pid file.
    * @param graceMs - milliseconds between TERM and KILL.
    */
   private async endRemote(pidFile: string, graceMs: number): Promise<void> {
-    try {
-      await this.control(terminationLine(pidFile, 'TERM'))
-      await sleepMs(graceMs)
-      await this.control(terminationLine(pidFile, 'KILL'))
-    } catch {
-      // The connection is gone, which is also how a caller's command ends;
-      // nothing here can report to anyone still waiting.
+    await this.signalRemote(pidFile, 'TERM')
+    await sleepMs(graceMs)
+    await this.signalRemote(pidFile, 'KILL')
+    await this.signalRemote(pidFile, 'CLEANUP')
+  }
+
+  /**
+   * Deliver one termination step, retrying a lost connection once.
+   *
+   * A failed control command is NOT evidence that the work stopped — the
+   * whole reason this machinery exists is that a remote process outlives its
+   * connection. The multiplexed master can also be closed by anything else
+   * holding it, so the first failure is usually "that socket is gone", and
+   * the retry opens a fresh connection.
+   * @param pidFile - shell expression naming the run's pid file.
+   * @param step - which command to send.
+   */
+  private async signalRemote(pidFile: string, step: 'TERM' | 'KILL' | 'CLEANUP'): Promise<void> {
+    const line = step === 'CLEANUP' ? cleanupLine(pidFile) : terminationLine(pidFile, step)
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        // The exit status is the point: the remote script always ends `exit
+        // 0`, so anything else came from the CLIENT — a master closed
+        // underneath it, a refused connection — and treating that as done
+        // would leave the machine running work nobody is watching.
+        if ((await this.control(line)).exitCode === 0) return
+      } catch {
+        // Same conclusion as a non-zero status; the retry is the answer.
+      }
     }
   }
 }

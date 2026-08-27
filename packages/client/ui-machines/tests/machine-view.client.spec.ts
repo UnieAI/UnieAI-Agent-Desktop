@@ -13,13 +13,13 @@ const BUILD = { id: 'build-box', label: 'build-box', kind: 'ssh' as const, sourc
 
 describe('reading the machines', () => {
   it('starts with nothing read and this computer assumed', () => {
-    const view = createMachineView({ list: vi.fn(), select: vi.fn() } as never)
+    const view = createMachineView({ list: vi.fn(), select: vi.fn() })
     expect(view.getSnapshot()).toEqual(INITIAL_MACHINE_STATE)
   })
 
   it('asks the host, and publishes what it said', async () => {
     const list = vi.fn().mockResolvedValue({ ok: true, machines: [LOCAL, BUILD], current: 'local' })
-    const view = createMachineView({ list, select: vi.fn() } as never)
+    const view = createMachineView({ list, select: vi.fn() })
     await view.refresh()
     expect(view.getSnapshot()).toMatchObject({ machines: [LOCAL, BUILD], current: 'local', busy: false })
   })
@@ -30,7 +30,7 @@ describe('reading the machines', () => {
     const list = vi.fn()
       .mockResolvedValueOnce({ ok: true, machines: [LOCAL, BUILD], current: 'local' })
       .mockResolvedValueOnce({ ok: false, message: 'the host is not answering' })
-    const view = createMachineView({ list, select: vi.fn() } as never)
+    const view = createMachineView({ list, select: vi.fn() })
     await view.refresh()
     await view.refresh()
     expect(view.getSnapshot()).toMatchObject({ machines: [LOCAL, BUILD], error: 'the host is not answering' })
@@ -40,7 +40,7 @@ describe('reading the machines', () => {
 describe('picking one', () => {
   it('switches, and takes the answer as the new truth', async () => {
     const select = vi.fn().mockResolvedValue({ ok: true, machines: [LOCAL, BUILD], current: 'build-box' })
-    const view = createMachineView({ list: vi.fn(), select } as never)
+    const view = createMachineView({ list: vi.fn(), select })
     await view.select('build-box')
     expect(select).toHaveBeenCalledWith('build-box')
     expect(view.getSnapshot().current).toBe('build-box')
@@ -48,21 +48,21 @@ describe('picking one', () => {
 
   it('does not ask the host to switch to the machine it is already on', async () => {
     const select = vi.fn()
-    const view = createMachineView({ list: vi.fn(), select } as never)
+    const view = createMachineView({ list: vi.fn(), select })
     await view.select('local')
     expect(select).not.toHaveBeenCalled()
   })
 
   it('shows the host\'s own words when a switch is refused', async () => {
     const select = vi.fn().mockResolvedValue({ ok: false, message: "unknown machine 'typo-box'" })
-    const view = createMachineView({ list: vi.fn(), select } as never)
+    const view = createMachineView({ list: vi.fn(), select })
     await view.select('typo-box')
     expect(view.getSnapshot()).toMatchObject({ current: 'local', error: "unknown machine 'typo-box'" })
   })
 
   it('tells its subscribers, once per change', async () => {
     const select = vi.fn().mockResolvedValue({ ok: true, machines: [LOCAL, BUILD], current: 'build-box' })
-    const view = createMachineView({ list: vi.fn(), select } as never)
+    const view = createMachineView({ list: vi.fn(), select })
     const seen = vi.fn()
     const stop = view.subscribe(seen)
     await view.select('build-box')

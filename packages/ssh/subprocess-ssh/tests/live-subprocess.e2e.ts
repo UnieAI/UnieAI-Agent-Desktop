@@ -94,6 +94,24 @@ describe.skipIf(!ready)('commands on a real machine', () => {
     await expect(runtime.resolveExecutable('dsh-no-such-executable')).rejects.toThrow(/not an executable/)
   })
 
+  it('ends the remote work when the CONNECTION dies, not only when asked', async () => {
+    const runtime = await provider()
+    // A client that exits 255 says nothing about the remote command — that
+    // is the whole reason a pid file exists — so the run is ended rather
+    // than treated as finished and forgotten.
+    const work = runtime.spawn({
+      argv: ['sh', '-c', 'trap "" HUP; sleep 5321 & echo up; wait'],
+      cwd: '/tmp', stdio: COLLECT, graceMs: 1000,
+    })
+    await sleepMs(2000)
+
+    // Kill the local client the way a lost connection would, without going
+    // through the handle's own termination.
+    process.kill(work.pid, 'SIGKILL')
+
+    expect(await goneFromMachine(runtime, 'sleep 5321')).toBe(0)
+  })
+
   it('ends the remote process tree, not just the connection', async () => {
     const runtime = await provider()
     // The child ignores SIGHUP deliberately: closing the connection is not

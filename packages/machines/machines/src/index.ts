@@ -17,6 +17,7 @@
 import { Context, Service } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import { settingsNamespace } from '@unieai/uad-settings'
+import type { SshHostEntry } from '@unieai/uad-ssh'
 import type { SettingsScope } from '@unieai/uad-settings'
 
 export type { MachineTarget } from './types.ts'
@@ -92,7 +93,7 @@ export class Machines extends Service {
     }
     const ssh = this.ctx.get('ssh')
     if (ssh === undefined) return [local]
-    const entries = await ssh.list()
+    const entries: readonly SshHostEntry[] = await ssh.list()
     void signal
     // Duplicate aliases are possible across included files; the first wins,
     // as it does for OpenSSH itself.

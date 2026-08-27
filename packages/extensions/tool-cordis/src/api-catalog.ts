@@ -1069,6 +1069,31 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'machines',
+    summary: 'The machines a person can work on, and the one they are working on now.',
+    description: 'The machines a person can work on, and the one they are working on now.',
+    methods: [
+      {
+        signature: 'async list(signal?: AbortSignal): Promise<MachineTarget[]>',
+        description: 'Every machine a person could pick.\n\nThis computer is always first and always present: a deployment with no OpenSSH configuration still has somewhere to work, and a person who has lost access to every remote machine can still get back.',
+        parameters: [{ name: 'signal', description: 'aborts reading the machine book.' }],
+        returns: 'the targets, in picking order.',
+      },
+      {
+        signature: 'async select(id: string): Promise<void>',
+        description: 'Work on another machine from now on.\n\nAn unknown id is refused, naming what is available: a target that no configuration mentions cannot be connected to, and storing it would leave the person with a Rabi that fails every command until they find the setting again.',
+        parameters: [{ name: 'id', description: 'the target to work on.' }],
+        returns: 'resolution after the choice is durable.',
+      },
+      {
+        signature: 'watch(callback: (id: string) => void): () => void',
+        description: 'Observe changes to the current machine.',
+        parameters: [{ name: 'callback', description: 'invoked after each committed change with the new target id.' }],
+        returns: 'the disposer removing this observer.',
+      },
+    ],
+  },
+  {
     key: 'messageFeedback',
     summary: 'Storage-domain sidecar service.',
     description: 'Storage-domain sidecar service. It inspects persisted Session history and never creates or resumes an Agent or Session.',
@@ -1837,6 +1862,58 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Persist `input.content` to a session-scoped spill artifact.',
         parameters: [{ name: 'input', description: 'the owner, caller-supplied source fields, suggested name, and full text to save.' }],
         returns: 'the saved artifact\'s {@link SpillRef}; rejects on a storage failure.',
+      },
+    ],
+  },
+  {
+    key: 'ssh',
+    summary: 'The machine book: which machines exist, what they resolve to, and the connection every adapter shares.',
+    description: 'The machine book: which machines exist, what they resolve to, and the connection every adapter shares.',
+    methods: [
+      {
+        signature: 'list(): Promise<SshHostEntry[]>',
+        description: 'Every alias a person could pick, in configuration-file order.\n\nUnmemoized: a machine added to the file while Rabi runs is selectable immediately, and one deleted disappears from the next read.',
+        parameters: [],
+        returns: 'the aliases, empty when the file does not exist yet.',
+      },
+      {
+        signature: 'async resolve(alias: string, signal?: AbortSignal): Promise<ResolvedSshHost>',
+        description: 'What one alias resolves to, according to the client that will connect.',
+        parameters: [{ name: 'alias', description: 'the alias to resolve.' }, { name: 'signal', description: 'aborts the resolution.' }],
+        returns: 'the effective settings.',
+      },
+      {
+        signature: 'controlPath(): string | undefined',
+        description: 'The multiplexing socket path for this deployment, or undefined when the harness home is too deep for a bindable socket.',
+        parameters: [],
+        returns: 'the `ControlPath` value, `%C` included, or undefined.',
+      },
+      {
+        signature: 'argvFor( alias: string, remoteCommand?: string, options: { tty?: boolean } = {}, ): string[]',
+        description: 'The `ssh` argv for one remote command.\n\nMultiplexing is requested rather than assumed: `ControlMaster=auto` opens a master when there is none and joins one when there is, so the first command pays the handshake and the rest do not.',
+        parameters: [{ name: 'alias', description: 'the machine to run on.' }, { name: 'remoteCommand', description: 'the command line for the remote shell; omitted for a login session.' }, { name: 'options', description: '`tty` allocates a remote terminal, which is also what makes the remote command die with the connection.' }],
+        returns: 'argv whose first element is the configured `ssh` client.',
+      },
+      {
+        signature: 'async probe(alias: string, signal?: AbortSignal): Promise<{ reachable: boolean; message: string }>',
+        description: 'Try one connection and report what OpenSSH said.\n\n`BatchMode` is what makes this answerable: without it a machine needing a passphrase would wait for a prompt nobody is watching, and the probe would hang instead of reporting that the key is locked.',
+        parameters: [{ name: 'alias', description: 'the machine to reach.' }, { name: 'signal', description: 'aborts the attempt.' }],
+        returns: 'reachability, with the client\'s own message when it failed.',
+      },
+      {
+        signature: 'async ensureControlDir(): Promise<void>',
+        description: 'Create the socket directory before OpenSSH needs to bind in it.',
+        parameters: [],
+      },
+      {
+        signature: 'noteConnected(alias: string): void',
+        description: 'Record that an alias now has a multiplexed connection this service owns.',
+        parameters: [{ name: 'alias', description: 'the machine just connected to.' }],
+      },
+      {
+        signature: 'async disconnect(alias: string): Promise<void>',
+        description: 'Close one alias\'s multiplexed connection.\n\nA master that is already gone is not an error: `ControlPersist` may have expired, and the caller\'s intent — no connection to this machine — holds either way.',
+        parameters: [{ name: 'alias', description: 'the machine to disconnect from.' }],
       },
     ],
   },
@@ -3923,6 +4000,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface LspRange {\n    readonly start: LspPosition;\n    readonly end: LspPosition;\n}',
   },
   {
+    name: 'MachineTarget',
+    declaration: 'export interface MachineTarget {\n    id: string;\n    label: string;\n    kind: \'local\' | \'ssh\';\n    source?: string;\n}',
+  },
+  {
     name: 'ManualCompactAgentContext',
     declaration: 'export interface ManualCompactAgentContext extends CompactionAgentContext {\n    runMaintenance<T>(task: (signal: AbortSignal) => Promise<T>): Promise<T>;\n}',
   },
@@ -4231,6 +4312,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type ResolvedRetryPolicy = ResolvedNormalRetryPolicy | ResolvedAlwaysRetryPolicy;',
   },
   {
+    name: 'ResolvedSshHost',
+    declaration: 'export interface ResolvedSshHost {\n    alias: string;\n    hostName: string;\n    user: string;\n    port: number;\n    proxyJump: readonly string[];\n    identityFiles: readonly string[];\n}',
+  },
+  {
     name: 'ResolvedSubagentStartRequest',
     declaration: 'export interface ResolvedSubagentStartRequest extends SubagentStartRequest {\n    readonly descriptor: SubagentDescriptorData;\n}',
   },
@@ -4252,7 +4337,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'RpcErrorDetailsMap',
-    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n    \'terminal-exited\': {\n        terminalId: string;\n    };\n    \'browser-unavailable\': {};\n   /* …truncated — full shape in source */',
+    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n    \'terminal-exited\': {\n        t /* …truncated — full shape in source */',
   },
   {
     name: 'RpcId',
@@ -4725,6 +4810,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SpillSource',
     declaration: 'export interface SpillSource {\n    toolName: string;\n    callId: CallId;\n    label: string;\n}',
+  },
+  {
+    name: 'SshHostEntry',
+    declaration: 'export interface SshHostEntry {\n    alias: string;\n    source: string;\n}',
   },
   {
     name: 'StorageBackend',

@@ -21,6 +21,10 @@ So the connection is not a handle on the process, and a pid file is. The remote 
 
 Termination does both halves and needs both: ending the client releases the caller's streams and settles the outcome, while the remote signal is what stops the work.
 
+**What the client's exit means depends on whose exit it was.** A status the remote command produced — anything but 255 — means the command finished, and its pid file is litter to remove. A 255, or a signal, is the *client* ending, which says nothing about the remote process: outliving its connection is exactly what a remote process does. Removing the pid file then would throw away the only handle on work that is still running, so a lost connection ends the remote run rather than forgetting it.
+
+A control command's own exit status is checked for the same reason. The remote script always ends `exit 0`, so anything else came from the client — a multiplexed master closed underneath it, a refused connection — and treating that as "done" would leave the machine running work nobody is watching. Each termination step is retried once on that.
+
 ## Terminals
 
 A terminal is a local PTY running `ssh -tt`, which carries the bytes, the window size and the session's lifetime. A terminal is also what makes `-tt` correct here: the newline translation and merged streams that would corrupt a collected command are exactly what a terminal wants.

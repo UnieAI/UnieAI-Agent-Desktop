@@ -37,9 +37,9 @@ async function remote(line: string): Promise<string> {
 beforeAll(async () => {
   if (!ready) return
   const ctx = new Context()
-  hosts = new SshHosts(ctx, { configPath: CONFIG as string })
+  hosts = new SshHosts(ctx, { configPath: CONFIG })
   await hosts.ensureControlDir()
-  fs = new SshFileSystem(ctx, { machine: ALIAS as string, cwd: ROOT })
+  fs = new SshFileSystem(ctx, { machine: ALIAS, cwd: ROOT })
   await remote(`mkdir -p '${ROOT}'`)
 })
 

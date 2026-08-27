@@ -39,10 +39,10 @@ async function command(argv: string[], cwd = ROOT): Promise<string> {
 beforeAll(async () => {
   if (!ready) return
   ctx = new Context()
-  const hosts = new SshHosts(ctx, { configPath: CONFIG as string })
+  const hosts = new SshHosts(ctx, { configPath: CONFIG })
   await hosts.ensureControlDir()
-  subprocess = new SshSubprocessRuntime(ctx, { machine: ALIAS as string })
-  fs = new SshFileSystem(ctx, { machine: ALIAS as string, cwd: ROOT })
+  subprocess = new SshSubprocessRuntime(ctx, { machine: ALIAS })
+  fs = new SshFileSystem(ctx, { machine: ALIAS, cwd: ROOT })
   await command(['mkdir', '-p', ROOT], '/tmp')
 })
 

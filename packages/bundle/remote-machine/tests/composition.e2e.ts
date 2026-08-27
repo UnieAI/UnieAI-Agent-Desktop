@@ -43,8 +43,8 @@ describe.skipIf(!ready)('the harness composed onto a machine', () => {
       binArgs: [configPath, 'where are you running'],
       tsconfigPath,
       env: {
-        DSH_SSH_CONFIG: CONFIG as string,
-        DSH_SSH_MACHINE: ALIAS as string,
+        DSH_SSH_CONFIG: CONFIG,
+        DSH_SSH_MACHINE: ALIAS,
         DSH_SSH_CWD: '/tmp',
         DSH_SSH_SMOKE_MARKER: marker,
         DSH_PERMISSION_MODE: 'danger-full-access',

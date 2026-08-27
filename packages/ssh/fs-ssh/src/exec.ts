@@ -73,20 +73,20 @@ export async function runRemote(
 
   const chunks: Buffer[] = []
   let size = 0
-  let overflow = false
   const errors: Buffer[] = []
 
-  const finished = new Promise<number>((resolve, reject) => {
-    child.on('error', reject)
-    child.on('close', (code) => { resolve(code ?? -1) })
-  })
+  // The ceiling rejects the run rather than raising a flag to check later:
+  // the bytes already read are dropped at the moment the limit is passed, so
+  // there is no partial result for anyone to mistake for a complete one.
+  const finished = Promise.withResolvers<number>()
+  child.on('error', finished.reject)
+  child.on('close', (code) => { finished.resolve(code ?? -1) })
 
   child.stdout.on('data', (chunk: Buffer) => {
-    if (overflow) return
     size += chunk.byteLength
     if (options.maxBytes !== undefined && size > options.maxBytes) {
-      overflow = true
       chunks.length = 0
+      finished.reject(new RemoteTooLarge())
       child.kill('SIGKILL')
       return
     }
@@ -101,8 +101,7 @@ export async function runRemote(
   else child.stdin.end()
 
   try {
-    const code = await finished
-    if (overflow) throw new RemoteTooLarge()
+    const code = await finished.promise
     return { code, stdout: Buffer.concat(chunks), stderr: Buffer.concat(errors).toString('utf8') }
   } finally {
     options.signal?.removeEventListener('abort', onAbort)
