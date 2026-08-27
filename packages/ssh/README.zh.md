@@ -8,6 +8,7 @@
 |---|---|---|
 | [`ssh`](ssh/README.zh.md)（`@unieai/uad-ssh`） | `ctx.ssh` | 使用者自己 OpenSSH 設定裡的機器、alias 實際解析成什麼，以及每台機器一條重用連線 |
 | [`subprocess-ssh`](subprocess-ssh/README.zh.md)（`@unieai/uad-subprocess-ssh`） | `ctx.subprocess` | 把每一份 spec 改寫成 `ssh` 呼叫，讓所有指令跑在那台機器上；終止一次執行則是對它的遠端行程群組送訊號 |
+| [`fs-ssh`](fs-ssh/README.zh.md)（`@unieai/uad-fs-ssh`） | `ctx.fs` | 以 POSIX shell 指令走共用連線提供那台機器的檔案，含原子寫入與一次往返的目錄列表 |
 
 遠端機器上不安裝任何東西。一套遠端開發伺服器會變成另一個要版本控管、要部署、要維持相容的東西；而上面那兩個接縫只需要一個 shell 和一個檔案系統，那是 sshd 本來就提供的。
 

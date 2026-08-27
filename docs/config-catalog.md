@@ -745,6 +745,24 @@ Depends on: [`LocalConfig`](#unieaiuad-fs-local)
 
 Source: [`packages/fs/fs-sandbox/src/index.ts:49`](../packages/fs/fs-sandbox/src/index.ts)
 
+<a id="unieaiuad-fs-ssh"></a>
+
+## `@unieai/uad-fs-ssh`
+
+Requires: `ssh`
+
+```ts config-catalog
+/** Configuration for the remote filesystem provider. */
+export interface Config {
+  /** Alias of the machine whose files this provider serves. */
+  machine: string
+  /** Directory relative paths resolve against, on that machine. */
+  cwd: string
+}
+```
+
+Source: [`packages/ssh/fs-ssh/src/index.ts:54`](../packages/ssh/fs-ssh/src/index.ts)
+
 <a id="unieaiuad-goal"></a>
 
 ## `@unieai/uad-goal`

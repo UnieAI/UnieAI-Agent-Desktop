@@ -7962,6 +7962,31 @@ importers:
         specifier: workspace:^
         version: link:../../core/tools
 
+  packages/ssh/fs-ssh:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      '@unieai/uad-fs':
+        specifier: workspace:^
+        version: link:../../fs/fs
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../ssh
+      '@unieai/uad-subprocess':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-subprocess-ssh':
+        specifier: workspace:^
+        version: link:../subprocess-ssh
+
   packages/ssh/ssh:
     dependencies:
       '@unieai/schemastery':

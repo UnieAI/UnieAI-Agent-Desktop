@@ -34,6 +34,14 @@ Nothing is installed on the remote machine. A remote development server would be
 
 A missing working directory fails the command with `exit 127` rather than running it in the login directory, because a caller that named a directory meant it.
 
+### The filesystem, as shell commands
+
+`fs-ssh` answers the twelve filesystem methods with POSIX shell over the same connection. Two portability facts shape it. `stat` has two incompatible dialects — GNU `stat -c '%s %Y'` and BSD `stat -f '%z %m'` — so the machine is probed once per connection rather than inferred from `uname`, because a Linux host can carry BSD tools and a Mac can carry GNU ones. Canonicalization is `cd` plus `pwd -P`, not `realpath` or `readlink -f`, which are absent or differently spelled across that same divide; it also names a path that does not exist yet, which every file creation needs.
+
+A listing is one round trip whatever the directory holds — per-child `stat` calls would be one round trip each, and a two-hundred-file directory on a 30 ms link would take six seconds to open. Names come back NUL-terminated, because a filename may contain any byte but NUL.
+
+A write stages in the target's own directory and renames over it, since `mv` is atomic only within one filesystem, and carries the existing file's mode across in the machine's own dialect.
+
 ### The control socket
 
 The multiplexing socket lives under the harness home. OpenSSH substitutes a 40-character digest for `%C` and then refuses **the whole connection** — not merely multiplexing — when the bound path exceeds the platform's `sun_path` limit (104 bytes on macOS, 108 on Linux). The guard therefore measures the expanded path, not the template, and a harness home deep enough to overflow it costs multiplexing rather than the machine.
@@ -56,11 +64,12 @@ Four hermetic suites pin the substrate rules: alias enumeration including `Inclu
 
 `subprocess-ssh` adds its own: hermetic tests for the pid-file lines and the refusals, a live suite for commands, lookups and remote termination of a HUP-ignoring tree, and a composition suite that runs `dsh-bash-local` — which knows nothing about SSH — over the remote seam and asserts on the executor's own result.
 
+`fs-ssh` pins its shell text by parsing it (`sh -n`) rather than by pattern, after a `;`-plus-joiner defect produced `;;` where no `case` arm was ending. Its live suite covers all twelve seam methods against a real machine, including a filename containing a newline, permission preservation across an atomic write, a multi-byte stream split across chunks, and binary refusal. A further suite mounts both adapters together and asserts the promise that matters: a file the tools write is one the commands can run, in both directions.
+
 A gated suite (`tests/live-connection.e2e.ts`) runs the same code against a real `sshd`: resolution, reachability and its failure message, connection reuse (asserted as the master's existence, because a duration comparison fails exactly when the machine is busy), exit-status propagation, stream separation, environment carrying an embedded quote, working directories present and missing, and multi-byte output. It reports itself skipped without `DSH_SSH_TEST_CONFIG` and `DSH_SSH_TEST_ALIAS` rather than passing hollowly, and the file documents the disposable server it expects.
 
 ## Deferred
 
-- **The filesystem adapter.** `fs-ssh` is what puts file reads, writes, edits and searches on the machine; `subprocess-ssh` ships with this note and puts every command there.
 - **A terminal on the machine.** `subprocess-ssh.spawnTerminal` refuses rather than allocating a local one, because the local PTY's foreground process is always `ssh` and prompt and idle detection would read it as the shell. Remote foreground inspection is the missing piece.
 - **Choosing a machine per workspace.** The service pools by alias so that several machines can be live at once, but nothing yet routes a call to one. `ctx.agents.currentInitiator()` is the ambient fact a router would read.
 - **A login shell that is not POSIX-like.** csh and fish would each need their own composition of the remote command line.
