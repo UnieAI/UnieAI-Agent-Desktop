@@ -273,6 +273,46 @@ async getSandbox(): Promise<Sandbox>
 
 Source: [`packages/e2b/e2b/src/index.ts`](../../packages/e2b/e2b/src/index.ts)
 
+<a id="ctxmachines--machines"></a>
+
+### `ctx.machines` — `Machines`
+
+The machines a person can work on, and the one they are working on now.
+
+```ts cordis-catalog
+/**
+ * Every machine a person could pick.
+ *
+ * This computer is always first and always present: a deployment with no
+ * OpenSSH configuration still has somewhere to work, and a person who has
+ * lost access to every remote machine can still get back.
+ * @param signal - aborts reading the machine book.
+ * @returns the targets, in picking order.
+ */
+async list(signal?: AbortSignal): Promise<MachineTarget[]>
+
+/**
+ * Work on another machine from now on.
+ *
+ * An unknown id is refused, naming what is available: a target that no
+ * configuration mentions cannot be connected to, and storing it would
+ * leave the person with a Rabi that fails every command until they find
+ * the setting again.
+ * @param id - the target to work on.
+ * @returns resolution after the choice is durable.
+ */
+async select(id: string): Promise<void>
+
+/**
+ * Observe changes to the current machine.
+ * @param callback - invoked after each committed change with the new target id.
+ * @returns the disposer removing this observer.
+ */
+watch(callback: (id: string) => void): () => void
+```
+
+Source: [`packages/machines/machines/src/index.ts`](../../packages/machines/machines/src/index.ts)
+
 <a id="ctxssh--sshhosts"></a>
 
 ### `ctx.ssh` — `SshHosts`

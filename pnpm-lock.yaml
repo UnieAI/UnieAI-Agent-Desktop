@@ -6463,6 +6463,71 @@ importers:
         specifier: workspace:^
         version: link:../../core/tools
 
+  packages/machines/execution-router:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      '@unieai/uad-fs':
+        specifier: workspace:^
+        version: link:../../fs/fs
+      '@unieai/uad-fs-local':
+        specifier: workspace:^
+        version: link:../../fs/fs-local
+      '@unieai/uad-fs-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/fs-ssh
+      '@unieai/uad-machines':
+        specifier: workspace:^
+        version: link:../machines
+      '@unieai/uad-sandbox':
+        specifier: workspace:^
+        version: link:../../sandbox/sandbox
+      '@unieai/uad-subprocess':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess
+      '@unieai/uad-subprocess-local':
+        specifier: workspace:^
+        version: link:../../subprocess/subprocess-local
+      '@unieai/uad-subprocess-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/subprocess-ssh
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-settings-file':
+        specifier: workspace:^
+        version: link:../../settings/settings-file
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/ssh
+
+  packages/machines/machines:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+      '@unieai/uad-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-settings-file':
+        specifier: workspace:^
+        version: link:../../settings/settings-file
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/ssh
+
   packages/mcp/mcp-client:
     dependencies:
       '@modelcontextprotocol/sdk':

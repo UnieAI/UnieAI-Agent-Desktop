@@ -646,6 +646,27 @@ export interface Config {
 
 Source: [`packages/e2b/e2b/src/index.ts:43`](../packages/e2b/e2b/src/index.ts)
 
+<a id="unieaiuad-execution-router"></a>
+
+## `@unieai/uad-execution-router`
+
+Requires: `machines`
+
+```ts config-catalog
+/** Configuration shared by both routed providers. */
+export interface Config {
+  /**
+   * Directory on a remote machine that relative paths resolve against.
+   *
+   * The login directory by default, because that is where a fresh
+   * `ssh <alias>` puts a person.
+   */
+  remoteCwd?: string
+}
+```
+
+Source: [`packages/machines/execution-router/src/index.ts:48`](../packages/machines/execution-router/src/index.ts)
+
 <a id="unieaiuad-experimental-agent-team"></a>
 
 ## `@unieai/uad-experimental-agent-team`
@@ -1480,6 +1501,22 @@ export interface LspLocalServerConfig {
 ```
 
 Source: [`packages/lsp/lsp-stdio/src/index.ts:82`](../packages/lsp/lsp-stdio/src/index.ts)
+
+<a id="unieaiuad-machines"></a>
+
+## `@unieai/uad-machines`
+
+Requires: `settings`
+
+```ts config-catalog
+/** Configuration for the machine list. */
+export interface Config {
+  /** How this computer is labelled in a picker. */
+  localLabel?: string
+}
+```
+
+Source: [`packages/machines/machines/src/index.ts:49`](../packages/machines/machines/src/index.ts)
 
 <a id="unieaiuad-mcp-client"></a>
 

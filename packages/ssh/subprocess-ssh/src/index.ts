@@ -87,6 +87,9 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
   /** The machine book supplies the connection arguments. */
   static inject = ['ssh']
 
+  /** Config schema, reachable from a composition that constructs directly. */
+  static Config: z<Config> = Config
+
   constructor(ctx: Context, public sshConfig: Config) {
     super(ctx)
   }

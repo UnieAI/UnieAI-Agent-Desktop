@@ -397,6 +397,14 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Reads the machines from the person\'s own OpenSSH configuration, asks the ssh client what an alias resolves to, and holds one multiplexed connection per machine so the execution-world adapters above it do not each pay a handshake.',
   },
   {
+    key: 'machines',
+    pkg: 'machines',
+    title: 'Where work happens, and the machine list a person picks from',
+    mode: 'core',
+    consumers: ['execution-router'],
+    note: 'Answers which machines exist — this computer plus the aliases in the person\'s own OpenSSH configuration — and which one is current, remembering that choice across restarts. It holds no connection: the routed execution world asks it which target to use.',
+  },
+  {
     key: 'subprocess',
     pkg: 'subprocess',
     title: 'Subprocess seam',

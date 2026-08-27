@@ -130,6 +130,9 @@ export class SshFileSystem extends FileSystem {
   /** The machine book supplies connection arguments. */
   static inject = ['ssh']
 
+  /** Config schema, reachable from a composition that constructs directly. */
+  static Config: z<Config> = Config
+
   /** Which `stat` this machine speaks; probed once, then remembered. */
   private dialect: Promise<StatDialect> | undefined
 

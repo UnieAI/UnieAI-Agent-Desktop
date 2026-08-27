@@ -17,6 +17,7 @@ packages/    @unieai/uad-<pkg> workspaces at packages/<group>/<pkg>/
   llm/         LLM capability: Service Definition/Consumer + DeepSeek providers
   e2b/         E2B POC: sandbox + FS/subprocess adapters
   ssh/         remote machines over the OpenSSH client already on the computer
+  machines/    where work happens: the machine list + the routed execution world
   shell/        bash capability: Service Definition + local/pwsh providers + shell Consumers
   subprocess/  subprocess capability + local process-tree provider
   terminal/         persistent sessions

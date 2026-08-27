@@ -20,6 +20,7 @@ Groups hold `packages/<group>/<pkg>/`; names stay `@unieai/uad-<pkg>`. **Group R
 | [`llm/`](llm/README.md) | LLM capability family: the abstract service + provider adapters | Product — stable API |
 | [`e2b/`](e2b/README.md) | E2B providers | POC |
 | [`ssh/`](ssh/README.md) | Remote machines over the OpenSSH client | Provider |
+| [`machines/`](machines/README.md) | Where work happens: the machine list and the routed execution world | Provider |
 | [`subprocess/`](subprocess/README.md) | Subprocess capability family: Service Definition + local process-tree provider | Product — stable API |
 | [`shell/`](shell/README.md) | Bash capability family: executor seam, local impl, model-facing tool | Product — stable API |
 | [`terminal/`](terminal/README.md) | Persistent PTY capability family: owner-scoped sessions, local implementation, and model-facing tools | Product — stable API |

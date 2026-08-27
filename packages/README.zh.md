@@ -20,6 +20,7 @@ npm scope 为 `@unieai/uad-*`；Cordis `Service` 子类和函数插件通过 `ct
 | [`llm/`](llm/README.zh.md) | LLM（大语言模型）能力系列：抽象服务 + 提供方适配器 | 产品：稳定 API |
 | [`e2b/`](e2b/README.zh.md) | E2B 提供方 | POC |
 | [`ssh/`](ssh/README.zh.md) | 透過 OpenSSH 客戶端連到遠端機器 | 提供方 |
+| [`machines/`](machines/README.zh.md) | 工作發生在哪裡：機器清單與路由式執行世界 | 提供方 |
 | [`subprocess/`](subprocess/README.zh.md) | 子进程能力系列：Service Definition + 本地进程树提供方 | 产品：稳定 API |
 | [`shell/`](shell/README.zh.md) | Bash 能力系列：执行器 seam、本地实现、面向模型的工具 | 产品：稳定 API |
 | [`terminal/`](terminal/README.zh.md) | 持久 PTY 能力系列：限定所有者范围的会话、本地实现和面向模型的工具 | 产品：稳定 API |
