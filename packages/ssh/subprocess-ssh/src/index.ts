@@ -33,9 +33,20 @@ import type {
   SubprocessTerminalSpawnSpec,
 } from '@unieai/uad-subprocess'
 import { cleanupLine, pidFileExpression, recordingPid, terminationLine } from './remote-process.ts'
+import { RemoteTerminalHandle, recordingSession, ttyFileExpression } from './terminal.ts'
 
 export { cleanupLine, pidFileExpression, recordingPid, terminationLine } from './remote-process.ts'
 export type { RemoteRun } from './remote-process.ts'
+export {
+  RemoteTerminalHandle,
+  foregroundGroupCommand,
+  groupMembersCommand,
+  sessionTerminationLine,
+  inputWaitingCommand,
+  recordingSession,
+  ttyFileExpression,
+} from './terminal.ts'
+export type { RemoteControl } from './terminal.ts'
 
 /** Configuration for the remote subprocess provider. */
 export interface Config {
@@ -142,22 +153,44 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
   }
 
   /**
-   * Not yet implemented: a terminal on the remote machine.
+   * Allocate a terminal on the machine.
    *
-   * Refused rather than inherited. The inherited implementation would
-   * allocate a LOCAL terminal and run the argv here, so a person would get a
-   * shell on their own computer while every other capability ran on the
-   * machine — the two providers would no longer describe one execution
-   * world, which is the seam's central promise.
-   * @param spec - the terminal the consumer asked for.
-   * @throws always, naming the machine and what is missing.
+   * The local half is an ordinary PTY running `ssh -tt`, which carries the
+   * bytes, the window size and the session's lifetime. A terminal is what
+   * makes `-tt` correct here — the tty translation and merged streams that
+   * would corrupt a collected command are exactly what a terminal wants.
+   *
+   * Every question ABOUT the session is answered on the machine instead,
+   * because the local PTY's foreground process is always `ssh`: see
+   * {@link RemoteTerminalHandle}.
+   * @param spec - the fully specified terminal to allocate.
+   * @returns the live handle after allocation succeeds.
    */
-  override spawnTerminal(spec: SubprocessTerminalSpawnSpec): Promise<SubprocessTerminalHandle> {
-    void spec
-    return Promise.reject(new Error(
-      `subprocess-ssh: a terminal on ${this.sshConfig.machine} is not implemented yet; `
-      + 'a local terminal would run on the wrong machine, so this refuses rather than mislead',
-    ))
+  override async spawnTerminal(spec: SubprocessTerminalSpawnSpec): Promise<SubprocessTerminalHandle> {
+    const id = randomUUID()
+    const pidFile = pidFileExpression(id)
+    const ttyFile = ttyFileExpression(id)
+    const line = recordingSession(
+      remoteCommandLine(spec.argv, spec.cwd, spec.env ?? {}),
+      pidFile,
+      ttyFile,
+    )
+    const local = await super.spawnTerminal({
+      ...spec,
+      argv: this.ctx.ssh.argvFor(this.sshConfig.machine, line, { tty: true }),
+      cwd: homedir(),
+      env: {},
+    })
+    void local.done.finally(() => {
+      this.control(`${cleanupLine(pidFile)}; ${cleanupLine(ttyFile)}`)
+    })
+    return new RemoteTerminalHandle(
+      local,
+      line => this.control(line),
+      pidFile,
+      ttyFile,
+      spec.graceMs,
+    )
   }
 
   /**

@@ -21,10 +21,20 @@ So the connection is not a handle on the process, and a pid file is. The remote 
 
 Termination does both halves and needs both: ending the client releases the caller's streams and settles the outcome, while the remote signal is what stops the work.
 
+## Terminals
+
+A terminal is a local PTY running `ssh -tt`, which carries the bytes, the window size and the session's lifetime. A terminal is also what makes `-tt` correct here: the newline translation and merged streams that would corrupt a collected command are exactly what a terminal wants.
+
+Every question *about* the session is answered on the machine instead, because the local PTY's foreground process is always `ssh`:
+
+- **What is in the foreground** comes from the remote terminal's own `tpgid`, so it follows every `fg`, pipeline and nested program without the harness tracking any of it. The session's wrapper records its terminal (`tty`) before becoming the shell, which is how a second connection knows what to ask about.
+- **A signal goes to the remote foreground group.** Signalling the local PTY would reach the `ssh` client and end the whole session where the person meant to interrupt one command.
+- **Ending the session signals every member of the remote SESSION**, not just the shell's process group. Job control is the point of a terminal: `sleep 90 &` runs in its own group, and a group-scoped kill would leave it running with nothing left to observe it.
+- **Whether the shell is waiting for input** is read from the kernel wait site (`wchan`) of the foreground group. The stronger proof the local provider uses — the blocked syscall and its file descriptor — is unavailable: `/proc/<pid>/syscall` needs ptrace-level access, and a machine running the default `kernel.yama.ptrace_scope=1` refuses it to a second SSH session. Where the wait site is unnamed or unrecognized this reports nothing rather than guessing.
+
 ## What it refuses
 
-- **A terminal.** `spawnTerminal` throws. The inherited implementation would allocate a **local** terminal and run the argv here, so a person would get a shell on their own computer while everything else ran on the machine — and the filesystem and subprocess providers would stop describing one execution world, which is the seam's central promise.
-- **A relative executable path**, exactly as the local provider does: the base it would resolve against is undefined, and crossing a network does not supply one.
+**A relative executable path**, exactly as the local provider does: the base it would resolve against is undefined, and crossing a network does not supply one.
 
 ## Model Experience
 
@@ -36,7 +46,8 @@ None. No prompt fragment, tool definition, or context entry originates here.
 
 ## Known Limitations and Deferred Work
 
-- **No terminal yet.** `spawnTerminal` refuses, so `terminal-bash` and the terminal a person drives cannot run on a remote machine. What is missing is remote foreground inspection: the local PTY's foreground process is always `ssh`, and prompt and idle detection would read it as the shell.
+- **Input-waiting is evidence, not proof.** The kernel wait sites this recognizes (`n_tty_read`, `read_chan`, `wait_woken`, `ttyin`) cover current Linux and BSD; a kernel that spells it otherwise reports nothing, and a consumer's readiness logic falls back to silence. `wait_woken` in particular is a general wait site, so a foreground group blocked on something else can read as waiting.
+- **Foreground inspection costs a round trip**, and readiness polling asks repeatedly. Multiplexing keeps each one cheap, but a machine on a slow link answers a poll slower than a local `/proc` read.
 - **The remote must have a POSIX-like login shell**, which the [machine book](../ssh/README.md) documents.
 - **One machine per mount.** The alias is configuration, so every session in the process runs on the same machine; choosing per workspace needs a router the harness does not have yet.
 - **`exitCode` 255 is ambiguous.** It is OpenSSH's own failure code and also what a terminated run reports, so a caller cannot distinguish "the connection failed" from "the remote command was killed" by status alone.

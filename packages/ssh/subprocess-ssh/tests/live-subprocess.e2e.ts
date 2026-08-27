@@ -36,6 +36,25 @@ async function provider(): Promise<SshSubprocessRuntime> {
   return new SshSubprocessRuntime(ctx, { machine: ALIAS as string })
 }
 
+/**
+ * Wait until no process on the machine runs a command matching `pattern`.
+ *
+ * Polled rather than slept-on: termination is TERM, a grace, then KILL, and
+ * a fixed wait either flakes on a busy machine or slows every run. The
+ * matching is an exact field comparison in awk, because a `grep` for the
+ * pattern can match the very command that is doing the looking.
+ */
+async function goneFromMachine(runtime: SshSubprocessRuntime, pattern: string): Promise<number> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const result = await run(runtime, ['sh', '-c',
+      `ps -eo args= | awk -v p='${pattern}' 'index($0, p) == 1' | wc -l`])
+    const remaining = Number(result.stdout.trim())
+    if (remaining === 0) return 0
+    await sleepMs(500)
+  }
+  return -1
+}
+
 /** Run one command and wait for it. */
 async function run(runtime: SshSubprocessRuntime, argv: string[], env?: Record<string, string>) {
   const handle = runtime.spawn({ argv, cwd: '/tmp', env, stdio: COLLECT, graceMs: 1500 })
@@ -89,13 +108,10 @@ describe.skipIf(!ready)('commands on a real machine', () => {
       cwd: '/tmp', stdio: COLLECT, graceMs: 1000,
     })
     await sleepMs(2000)
-    const before = await run(runtime, ['sh', '-c', "pgrep -f 'sle[e]p 4321' | wc -l"])
+    const before = await run(runtime, ['sh', '-c', "ps -eo args= | awk -v p='sleep 4321' 'index($0, p) == 1' | wc -l"])
     expect(Number(before.stdout.trim())).toBeGreaterThan(0)
 
     work.terminate()
-    await sleepMs(4000)
-
-    const after = await run(runtime, ['sh', '-c', "ps -eo args | grep -c 'sle[e]p 4321' || true"])
-    expect(Number(after.stdout.trim())).toBe(0)
+    expect(await goneFromMachine(runtime, 'sleep 4321')).toBe(0)
   })
 })

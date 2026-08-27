@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-26-remote-machines-over-the-ssh-client.md
-2026-08-26-remote-machines-over-the-ssh-client.md: a12f45422c972d711bb3c60360d5ee15eef4031f
-2026-08-26-remote-machines-over-the-ssh-client.zh.md: 9ba21420cee5dc74c4f6fcd4b7a4a0f1c0649ad4
+2026-08-26-remote-machines-over-the-ssh-client.md: 8f7c6dbe6b8049e4826d7d42b110922256ef180e
+2026-08-26-remote-machines-over-the-ssh-client.zh.md: ceca7d966aef9763adb84246f11dee4d079f8fab

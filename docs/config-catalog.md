@@ -2557,7 +2557,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/ssh/subprocess-ssh/src/index.ts:41`](../packages/ssh/subprocess-ssh/src/index.ts)
+Source: [`packages/ssh/subprocess-ssh/src/index.ts:52`](../packages/ssh/subprocess-ssh/src/index.ts)
 
 <a id="unieaiuad-system-prompt"></a>
 

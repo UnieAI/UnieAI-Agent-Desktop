@@ -42,6 +42,14 @@ A listing is one round trip whatever the directory holds — per-child `stat` ca
 
 A write stages in the target's own directory and renames over it, since `mv` is atomic only within one filesystem, and carries the existing file's mode across in the machine's own dialect.
 
+### The terminal, and what cannot be delegated
+
+A terminal is a local PTY running `ssh -tt`, which carries bytes, window size and the session's lifetime. Every question ABOUT the session is answered on the machine, because the local PTY's foreground process is always `ssh`: a consumer asking what runs would be told `ssh` whatever the person is doing, and a signal aimed at the foreground group would end the connection instead of interrupting a command.
+
+The session's wrapper records its own pid and its terminal before becoming the shell, and a second multiplexed connection reads the terminal's `tpgid` for the foreground group, signals that group, and enumerates the SESSION to end it — job control puts `sleep 90 &` in its own group, so a group-scoped kill would leave it running.
+
+Whether the shell waits for input is read from the foreground group's kernel wait site (`wchan`). The stronger proof the local provider uses — the blocked syscall and its file descriptor — is unavailable across connections: `/proc/<pid>/syscall` needs ptrace-level access, and the default `kernel.yama.ptrace_scope=1` answers `Operation not permitted`. An unrecognized wait site reports nothing rather than guessing, which is what the seam's "can prove" wording allows.
+
 ### The control socket
 
 The multiplexing socket lives under the harness home. OpenSSH substitutes a 40-character digest for `%C` and then refuses **the whole connection** — not merely multiplexing — when the bound path exceeds the platform's `sun_path` limit (104 bytes on macOS, 108 on Linux). The guard therefore measures the expanded path, not the template, and a harness home deep enough to overflow it costs multiplexing rather than the machine.
@@ -64,13 +72,14 @@ Four hermetic suites pin the substrate rules: alias enumeration including `Inclu
 
 `subprocess-ssh` adds its own: hermetic tests for the pid-file lines and the refusals, a live suite for commands, lookups and remote termination of a HUP-ignoring tree, and a composition suite that runs `dsh-bash-local` — which knows nothing about SSH — over the remote seam and asserts on the executor's own result.
 
+The terminal's own live suite asserts what may not be delegated: that the foreground group named is a group on the MACHINE containing the person's command, that an interrupt ends that command and leaves the shell taking input, that a shell at its prompt reads as waiting and a running one does not, and that ending the session takes its background jobs with it.
+
 `fs-ssh` pins its shell text by parsing it (`sh -n`) rather than by pattern, after a `;`-plus-joiner defect produced `;;` where no `case` arm was ending. Its live suite covers all twelve seam methods against a real machine, including a filename containing a newline, permission preservation across an atomic write, a multi-byte stream split across chunks, and binary refusal. A further suite mounts both adapters together and asserts the promise that matters: a file the tools write is one the commands can run, in both directions.
 
 A gated suite (`tests/live-connection.e2e.ts`) runs the same code against a real `sshd`: resolution, reachability and its failure message, connection reuse (asserted as the master's existence, because a duration comparison fails exactly when the machine is busy), exit-status propagation, stream separation, environment carrying an embedded quote, working directories present and missing, and multi-byte output. It reports itself skipped without `DSH_SSH_TEST_CONFIG` and `DSH_SSH_TEST_ALIAS` rather than passing hollowly, and the file documents the disposable server it expects.
 
 ## Deferred
 
-- **A terminal on the machine.** `subprocess-ssh.spawnTerminal` refuses rather than allocating a local one, because the local PTY's foreground process is always `ssh` and prompt and idle detection would read it as the shell. Remote foreground inspection is the missing piece.
 - **Choosing a machine per workspace.** The service pools by alias so that several machines can be live at once, but nothing yet routes a call to one. `ctx.agents.currentInitiator()` is the ambient fact a router would read.
 - **A login shell that is not POSIX-like.** csh and fish would each need their own composition of the remote command line.
 

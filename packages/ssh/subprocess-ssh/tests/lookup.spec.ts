@@ -23,15 +23,3 @@ describe('resolving an executable', () => {
     await expect(runtime().resolveExecutable('')).rejects.toThrow(/cannot be empty/)
   })
 })
-
-describe('terminals', () => {
-  it('refuses rather than opening one on the wrong machine', async () => {
-    // The inherited implementation would allocate a LOCAL terminal: a person
-    // would get a shell on their own computer while every other capability
-    // ran on the remote, and the two providers would stop describing one
-    // execution world.
-    await expect(runtime().spawnTerminal({
-      argv: ['/bin/sh'], cwd: '/w', rows: 24, cols: 80, graceMs: 1000,
-    })).rejects.toThrow(/not implemented yet/)
-  })
-})
