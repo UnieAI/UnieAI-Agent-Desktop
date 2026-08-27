@@ -92,6 +92,23 @@ export class SandboxedFileSystem extends LocalFileSystem {
   }
 
   /**
+   * Fence the creation by the per-call policy, then delegate to the inherited
+   * one. See {@link checkedTarget}.
+   *
+   * Overridden rather than inherited because inheriting it would be the one
+   * write on this class that no fence covers: a person could make a folder
+   * anywhere the host account can write while every other write stayed inside
+   * the workspace.
+   * @param parent - the resolved directory the new one goes inside.
+   * @param name - one path segment.
+   * @param signal - aborts the creation.
+   * @returns the created directory's resolved target.
+   */
+  override async createDirectory(parent: FsTarget, name: string, signal?: AbortSignal): Promise<FsTarget> {
+    return super.createDirectory(await this.checkedTarget(parent), name, signal)
+  }
+
+  /**
    * Fence the edit by the per-call policy, then delegate to the inherited
    * atomic edit. See {@link checkedTarget}.
    * @param target - the resolved target to edit.

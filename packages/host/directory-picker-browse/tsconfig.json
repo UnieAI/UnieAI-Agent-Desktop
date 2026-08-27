@@ -12,10 +12,16 @@
   ],
   "references": [
     {
-      "path": "../directory-picker"
+      "path": "../../fs/fs"
+    },
+    {
+      "path": "../../machines/machines"
     },
     {
       "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../directory-picker"
     }
   ]
 }

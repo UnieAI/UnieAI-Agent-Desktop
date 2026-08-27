@@ -229,3 +229,116 @@ describe('BrowseDirectoryPicker', () => {
     expect((missingParent as DirectoryPickerError).code).toBe('directory-create-failed')
   })
 })
+
+/**
+ * The machine the folders come from.
+ *
+ * The rule: a person who selected a build box and was shown their laptop's
+ * directories would pick a path that does not exist where the work runs. So
+ * the backend reads through `ctx.fs` whenever the current machine is not this
+ * computer, and through `node:fs` when it is.
+ */
+describe('browsing a machine that is not this computer', () => {
+  /** A filesystem standing in for another machine, with its own tree. */
+  function remoteFilesystem(calls: string[]) {
+    const target = (path: string) => ({ targetKey: path as never, displayPath: path })
+    const tree: Record<string, { name: string; type: 'file' | 'directory' }[]> = {
+      '/srv/work': [
+        { name: 'builds', type: 'directory' },
+        { name: '.cache', type: 'directory' },
+        { name: 'README.md', type: 'file' },
+      ],
+      '/srv/work/builds': [],
+    }
+    return {
+      resolve: (path: string) => {
+        calls.push(`resolve:${path}`)
+        return Promise.resolve(target(path === '.' ? '/srv/work' : path))
+      },
+      processPath: (one: { displayPath: string }) => one.displayPath,
+      listDir: (one: { displayPath: string }) => {
+        calls.push(`listDir:${one.displayPath}`)
+        const children = tree[one.displayPath]
+        if (children === undefined) return Promise.reject(new Error('no such directory'))
+        return Promise.resolve(children.map(child => ({ ...child, target: target(`${one.displayPath}/${child.name}`) })))
+      },
+      createDirectory: (parent: { displayPath: string }, name: string) => {
+        calls.push(`createDirectory:${parent.displayPath}/${name}`)
+        return Promise.resolve(target(`${parent.displayPath}/${name}`))
+      },
+    }
+  }
+
+  /**
+   * Mount the backend over a machine list that reports the given current
+   * machine, and a filesystem standing in for it.
+   * @param current - the machine id the list reports.
+   * @returns the capability, the calls the filesystem saw, and the disposer.
+   */
+  async function mount(current: string) {
+    const calls: string[] = []
+    const ctx = new Context()
+    ctx.provide('machines', { current, list: () => Promise.resolve([]) } as never)
+    ctx.provide('fs', remoteFilesystem(calls) as never)
+    const fiber = ctx.plugin(BrowseDirectoryPicker)
+    await fiber.await()
+    const picked = ctx.get('directoryPicker')!.capability()
+    if (picked.kind !== 'browse') throw new Error('browse capability expected')
+    return { capability: picked, calls, dispose: () => fiber.dispose() }
+  }
+
+  it('lists the machine, not this computer, and starts where its work is', async () => {
+    const bench = await mount('build-box')
+    const listing = await bench.capability.list()
+
+    expect(listing.path).toBe('/srv/work')
+    expect(listing.home).toBe('/srv/work')
+    expect(listing.entries.map(entry => entry.name)).toEqual(['builds', '.cache'])
+    // Nothing on this computer was read.
+    expect(bench.calls).toContain('listDir:/srv/work')
+    await bench.dispose()
+  })
+
+  it('keeps files out and flags a dotted directory as hidden', async () => {
+    const bench = await mount('build-box')
+    const listing = await bench.capability.list('/srv/work')
+
+    expect(listing.entries.map(entry => entry.name)).not.toContain('README.md')
+    expect(listing.entries.find(entry => entry.name === '.cache')?.hidden).toBe(true)
+    await bench.dispose()
+  })
+
+  it('builds POSIX crumbs, whatever this computer spells its paths with', async () => {
+    const bench = await mount('build-box')
+    const listing = await bench.capability.list('/srv/work/builds')
+
+    expect(listing.crumbs.map(crumb => crumb.path)).toEqual(['/', '/srv', '/srv/work', '/srv/work/builds'])
+    await bench.dispose()
+  })
+
+  it('reports a directory the machine could not list as unreadable', async () => {
+    const bench = await mount('build-box')
+    await expect(bench.capability.list('/srv/gone')).rejects.toBeInstanceOf(DirectoryPickerError)
+    await bench.dispose()
+  })
+
+  it('creates the folder on the machine', async () => {
+    const bench = await mount('build-box')
+    const created = await bench.capability.createDirectory('/srv/work', 'new-thing')
+
+    expect(created).toBe('/srv/work/new-thing')
+    expect(bench.calls).toContain('createDirectory:/srv/work/new-thing')
+    await bench.dispose()
+  })
+
+  it('browses this computer when the current machine is this computer', async () => {
+    // The local path is the streaming one; the stand-in filesystem must not be
+    // asked anything at all.
+    const bench = await mount('local')
+    const listing = await bench.capability.list(homedir())
+
+    expect(listing.home).toBe(homedir())
+    expect(bench.calls).toEqual([])
+    await bench.dispose()
+  })
+})

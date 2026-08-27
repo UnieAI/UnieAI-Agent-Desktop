@@ -177,6 +177,26 @@ export class RoutedFileSystem extends FileSystem {
     return (await this.targetWorld(target)).listDir(target, signal)
   }
 
+  /**
+   * Create a directory on the machine the parent belongs to.
+   *
+   * Optional on the seam, so this asks the world rather than assuming: a
+   * provider that cannot create one is reported as such instead of failing at
+   * the attempt.
+   * @param parent - the resolved directory the new one goes inside.
+   * @param name - one path segment.
+   * @param signal - aborts the creation.
+   * @returns the created directory's resolved target.
+   * @throws when that machine's filesystem cannot create directories.
+   */
+  override async createDirectory(parent: FsTarget, name: string, signal?: AbortSignal): Promise<FsTarget> {
+    const world = await this.targetWorld(parent)
+    if (world.createDirectory === undefined) {
+      throw new Error(`the filesystem for "${parent.displayPath}" cannot create directories`)
+    }
+    return world.createDirectory(parent, name, signal)
+  }
+
   override async writeText(
     target: FsTarget,
     content: string,

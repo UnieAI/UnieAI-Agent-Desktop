@@ -36,6 +36,7 @@ import {
   atomicWriteCommand,
   canonicalizeCommand,
   listCommand,
+  makeDirectoryCommand,
   readCommand,
   statCommand,
   STAT_DIALECT_PROBE,
@@ -360,6 +361,19 @@ export class SshFileSystem extends FileSystem {
       return new FsError(`cannot read "${target.displayPath}": permission denied`, 'FS_PERMISSION_DENIED')
     }
     return new FsError(`cannot read "${target.displayPath}": ${stderr.trim()}`, 'FS_IO_ERROR')
+  }
+
+  override async createDirectory(parent: FsTarget, name: string, signal?: AbortSignal): Promise<FsTarget> {
+    if (name.trim() === '' || name === '.' || name === '..' || /[/\\]/u.test(name)) {
+      throw new FsError(`cannot create "${name}": not one path segment`, 'FS_NOT_DIRECTORY')
+    }
+    const path = this.pathOf(parent)
+    const result = await this.run(makeDirectoryCommand(path, name), { signal })
+    const target = posix.join(path, name)
+    if (result.code === 3) throw new FsError(`cannot create "${target}": already exists`, 'FS_ALREADY_EXISTS')
+    if (result.code === 4) throw new FsError(`cannot create "${target}": the parent does not exist`, 'FS_NOT_FOUND')
+    if (result.code !== 0) throw new FsError(`cannot create "${target}" on the machine`, 'FS_IO_ERROR')
+    return await this.resolve(target, signal === undefined ? {} : { signal })
   }
 
   override async listDir(target: FsTarget, signal?: AbortSignal): Promise<FsDirEntry[]> {

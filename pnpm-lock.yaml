@@ -5963,9 +5963,15 @@ importers:
       '@unieai/schemastery':
         specifier: link:../../../vendor/schemastery
         version: link:../../../vendor/schemastery
+      '@unieai/uad-fs':
+        specifier: workspace:^
+        version: link:../../fs/fs
       '@unieai/uad-host-directory-picker':
         specifier: workspace:^
         version: link:../directory-picker
+      '@unieai/uad-machines':
+        specifier: workspace:^
+        version: link:../../machines/machines
     devDependencies:
       '@unieai/cordis':
         specifier: workspace:^

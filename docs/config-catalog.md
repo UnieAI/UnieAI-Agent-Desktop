@@ -744,7 +744,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/fs/fs-local/src/index.ts:41`](../packages/fs/fs-local/src/index.ts)
+Source: [`packages/fs/fs-local/src/index.ts:42`](../packages/fs/fs-local/src/index.ts)
 
 <a id="unieaiuad-fs-sandbox"></a>
 
@@ -782,7 +782,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/ssh/fs-ssh/src/index.ts:54`](../packages/ssh/fs-ssh/src/index.ts)
+Source: [`packages/ssh/fs-ssh/src/index.ts:55`](../packages/ssh/fs-ssh/src/index.ts)
 
 <a id="unieaiuad-goal"></a>
 
@@ -931,7 +931,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/host/directory-picker-browse/src/index.ts:181`](../packages/host/directory-picker-browse/src/index.ts)
+Source: [`packages/host/directory-picker-browse/src/index.ts:222`](../packages/host/directory-picker-browse/src/index.ts)
 
 <a id="unieaiuad-host-frontend-static"></a>
 

@@ -139,3 +139,25 @@ export function readCommand(path: string): string {
   const p = quoteShellArg(path)
   return `[ -f ${p} ] || exit 1; exec cat ${p}`
 }
+
+/**
+ * Create one directory under an existing parent.
+ *
+ * Non-recursive (`mkdir` without `-p`), because the parent is a directory the
+ * caller is already looking at: a missing parent is a real failure, and `-p`
+ * would silently invent the whole chain. The two failures a caller must tell
+ * apart get their own exit codes, since `mkdir` reports both as 1 and its
+ * message is the machine's locale rather than something to parse.
+ * @param parent - absolute remote directory the new one goes inside.
+ * @param name - one path segment, quoted here.
+ * @returns a remote command exiting 0 on success, 3 when something is already
+ * there, 4 when the parent is missing, and 1 for anything else.
+ */
+export function makeDirectoryCommand(parent: string, name: string): string {
+  const target = quoteShellArg(`${parent.replace(/\/+$/u, '')}/${name}`)
+  return [
+    `if [ -e ${target} ]; then exit 3; fi`,
+    `if [ ! -d ${quoteShellArg(parent)} ]; then exit 4; fi`,
+    `mkdir ${target}`,
+  ].join('\n')
+}

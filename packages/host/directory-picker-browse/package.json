@@ -32,15 +32,17 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@unieai/schemastery": "workspace:^",
+    "@unieai/uad-fs": "workspace:^",
     "@unieai/uad-host-directory-picker": "workspace:^",
-    "@unieai/schemastery": "workspace:^"
+    "@unieai/uad-machines": "workspace:^"
   },
   "peerDependencies": {
-    "@unieai/uad-invariants": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
   },
   "devDependencies": {
-    "@unieai/uad-invariants": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
   }
 }

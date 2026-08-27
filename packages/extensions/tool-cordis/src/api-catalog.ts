@@ -815,6 +815,13 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'one entry per direct child, in stable name order.',
       },
       {
+        signature: 'createDirectory?(parent: FsTarget, name: string, signal?: AbortSignal): Promise<FsTarget>',
+        description: 'Create one directory, whose parent must already exist.\n\nOPTIONAL, and the only optional operation on this seam. Every other method here is something a provider must be able to do to be a filesystem at all; this one exists for the surfaces that let a person make a folder while choosing one, and a provider that serves a read-only or synthetic filesystem should not have to pretend. A caller checks for the method and says what it cannot do rather than failing at the attempt.\n\nNon-recursive on purpose: the parent is the directory a person is looking at, so a missing parent is a real failure rather than a level to invent.',
+        parameters: [{ name: 'parent', description: 'the resolved directory the new one goes inside.' }, { name: 'name', description: 'one path segment; a separator, `.` or `..` is refused.' }, { name: 'signal', description: 'aborts the creation.' }],
+        returns: 'the created directory\'s resolved target.',
+        throws: ['when the name is not one segment, the parent is missing, or something already exists under that name.'],
+      },
+      {
         signature: 'abstract writeText( target: FsTarget, content: string, expected?: FsWriteIntent, signal?: AbortSignal, sandboxPolicy?: SandboxExecutionPolicy, ): Promise<FsWriteOutcome>',
         description: 'Atomically create or replace UTF-8 text. `expected` guards intent and staleness; omission allows unconditional overwrite.',
         parameters: [{ name: 'target', description: 'the resolved target to write.' }, { name: 'content', description: 'the full new file content.' }, { name: 'expected', description: 'the write intent guarding the write; omit for unconditional.' }, { name: 'signal', description: 'aborts before atomic publication takes effect.' }, { name: 'sandboxPolicy', description: 'the per-call mode and workspace root this write runs under; a sandboxing backend fences the write by it, the bare backend ignores it. Omit to leave the backend its own default.' }],

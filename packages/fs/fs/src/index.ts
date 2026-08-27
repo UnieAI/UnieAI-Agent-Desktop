@@ -208,6 +208,27 @@ export abstract class FileSystem extends Service {
   abstract listDir(target: FsTarget, signal?: AbortSignal): Promise<FsDirEntry[]>
 
   /**
+   * Create one directory, whose parent must already exist.
+   *
+   * OPTIONAL, and the only optional operation on this seam. Every other method
+   * here is something a provider must be able to do to be a filesystem at all;
+   * this one exists for the surfaces that let a person make a folder while
+   * choosing one, and a provider that serves a read-only or synthetic
+   * filesystem should not have to pretend. A caller checks for the method and
+   * says what it cannot do rather than failing at the attempt.
+   *
+   * Non-recursive on purpose: the parent is the directory a person is looking
+   * at, so a missing parent is a real failure rather than a level to invent.
+   * @param parent - the resolved directory the new one goes inside.
+   * @param name - one path segment; a separator, `.` or `..` is refused.
+   * @param signal - aborts the creation.
+   * @returns the created directory's resolved target.
+   * @throws when the name is not one segment, the parent is missing, or
+   * something already exists under that name.
+   */
+  createDirectory?(parent: FsTarget, name: string, signal?: AbortSignal): Promise<FsTarget>
+
+  /**
    * Atomically create or replace UTF-8 text. `expected` guards intent and
    * staleness; omission allows unconditional overwrite.
    * @param target - the resolved target to write.

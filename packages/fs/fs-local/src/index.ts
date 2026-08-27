@@ -6,6 +6,7 @@
 
 import { Context } from '@unieai/cordis'
 import { constants as bufferConstants } from 'node:buffer'
+import { mkdir } from 'node:fs/promises'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import z from '@unieai/schemastery'
@@ -163,6 +164,35 @@ export class LocalFileSystem extends FileSystem {
     }))
   }
 
+  override async createDirectory(parent: FsTarget, name: string, signal?: AbortSignal): Promise<FsTarget> {
+    signal?.throwIfAborted()
+    if (!isSegment(name)) {
+      throw new FsError(`cannot create "${name}": not one path segment`, 'FS_NOT_DIRECTORY')
+    }
+    const path = resolve(parent.targetKey, name)
+    try {
+      // Non-recursive: the parent is a directory the caller is already
+      // looking at, so a missing one is a failure rather than a level to
+      // invent.
+      await mkdir(path)
+    } catch (error: unknown) {
+      const code = (error as { code?: string }).code
+      if (code === 'EEXIST') {
+        throw new FsError(`cannot create "${path}": already exists`, 'FS_ALREADY_EXISTS', { cause: error })
+      }
+      if (code === 'ENOENT') {
+        throw new FsError(`cannot create "${path}": the parent does not exist`, 'FS_NOT_FOUND', { cause: error })
+      }
+      if (code === 'EACCES' || code === 'EPERM') {
+        throw new FsError(`cannot create "${path}": permission denied`, 'FS_PERMISSION_DENIED', { cause: error })
+      }
+      throw new FsError(`cannot create "${path}": ${String(error)}`, 'FS_IO_ERROR', { cause: error })
+    }
+    // Resolved rather than manufactured: the caller's next call addresses
+    // the new directory the same way every other target is addressed.
+    return await this.resolve(path, signal === undefined ? {} : { signal })
+  }
+
   override async writeText(
     target: FsTarget,
     content: string,
@@ -263,3 +293,16 @@ export class LocalFileSystem extends FileSystem {
 }
 
 export default LocalFileSystem
+
+/**
+ * Whether a name is one path segment.
+ *
+ * `.` and `..` name a directory that already exists somewhere else, and a
+ * separator makes the value a path rather than a name — both would create
+ * outside the parent the caller named.
+ * @param name - the candidate segment.
+ * @returns whether it is safe to join onto a parent.
+ */
+function isSegment(name: string): boolean {
+  return name.trim() !== '' && name !== '.' && name !== '..' && !/[/\\]/u.test(name)
+}
