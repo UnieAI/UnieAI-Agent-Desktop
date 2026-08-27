@@ -47,6 +47,7 @@ export interface RpcMethodMap {
   'host.listWorkspaceEntries': HostApi['listWorkspaceEntries']
   'host.listMachines': HostApi['listMachines']
   'host.selectMachine': HostApi['selectMachine']
+  'host.machineMetrics': HostApi['machineMetrics']
   'host.addMachine': HostApi['addMachine']
   'host.removeMachine': HostApi['removeMachine']
   'host.probeMachine': HostApi['probeMachine']

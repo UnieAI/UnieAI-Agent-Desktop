@@ -1502,6 +1502,24 @@ export interface LspLocalServerConfig {
 
 Source: [`packages/lsp/lsp-stdio/src/index.ts:82`](../packages/lsp/lsp-stdio/src/index.ts)
 
+<a id="unieaiuad-machine-metrics"></a>
+
+## `@unieai/uad-machine-metrics`
+
+Requires: `subprocess`
+
+```ts config-catalog
+/** Machine-metrics configuration. */
+export interface Config {
+  /** Path whose filesystem the disk figures describe. Defaults to the harness's cwd. */
+  diskPath?: string
+  /** Milliseconds a sample may take before it is abandoned. */
+  timeoutMs?: number
+}
+```
+
+Source: [`packages/machines/machine-metrics/src/index.ts:73`](../packages/machines/machine-metrics/src/index.ts)
+
 <a id="unieaiuad-machines"></a>
 
 ## `@unieai/uad-machines`
@@ -3641,6 +3659,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@unieai/uad-client-ui-input-trigger` ([`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts))
 - `@unieai/uad-client-ui-jobs` ([`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts))
 - `@unieai/uad-client-ui-layout` ([`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts))
+- `@unieai/uad-client-ui-machine-gauges` ([`packages/client/ui-machine-gauges/src/index.ts`](../packages/client/ui-machine-gauges/src/index.ts))
 - `@unieai/uad-client-ui-machines` ([`packages/client/ui-machines/src/index.ts`](../packages/client/ui-machines/src/index.ts))
 - `@unieai/uad-client-ui-message-feedback` ([`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts))
 - `@unieai/uad-client-ui-model-selection` ([`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts))

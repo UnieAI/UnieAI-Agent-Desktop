@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod'
-import type { DirectoryEntry } from './host.ts'
+import type { DirectoryEntry, MachineAccelerator } from './host.ts'
 import type { RequestPayload, ResponseValue } from './rpc-map.ts'
 import type { Wire } from './rpc.schema.ts'
 
@@ -172,3 +172,38 @@ export const hostOpenPathRequestSchema = z.object({
 export const hostOpenPathValueSchema = z.object({
   opened: z.literal(true),
 }) satisfies z.ZodType<Wire<ResponseValue<'host.openPath'>>>
+
+/** One accelerator row of host.machineMetrics. */
+export const machineAcceleratorSchema = z.object({
+  name: z.string(),
+  utilPercent: z.number().optional(),
+  memoryUsedBytes: z.number().optional(),
+  memoryTotalBytes: z.number().optional(),
+  temperatureC: z.number().optional(),
+}) satisfies z.ZodType<Wire<MachineAccelerator>>
+
+/** host.machineMetrics request payload: the reading takes no arguments. */
+export const hostMachineMetricsRequestSchema = z.object({}) satisfies z.ZodType<
+  Wire<RequestPayload<'host.machineMetrics'>>
+>
+
+/**
+ * host.machineMetrics response value.
+ *
+ * Every gauge field is optional, because a machine that could not answer one
+ * of them says nothing rather than zero.
+ */
+export const hostMachineMetricsValueSchema = z.object({
+  machine: z.string(),
+  at: z.string(),
+  cpuPercent: z.number().optional(),
+  cores: z.number().optional(),
+  load: z.tuple([z.number(), z.number(), z.number()]).optional(),
+  memoryUsedBytes: z.number().optional(),
+  memoryTotalBytes: z.number().optional(),
+  diskUsedBytes: z.number().optional(),
+  diskTotalBytes: z.number().optional(),
+  diskMount: z.string().optional(),
+  gpus: z.array(machineAcceleratorSchema),
+  npus: z.array(machineAcceleratorSchema),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.machineMetrics'>>>

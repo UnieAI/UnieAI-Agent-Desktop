@@ -8,7 +8,8 @@
 export type {
   ApiProxy, SessionsApi, SessionSearchItem, SessionSummary, PromptContentPart, HostApi, EventsApi, MuxFrame, HostFrame,
   ApprovalResponsePayload, QuestionResponsePayload, HistoryEntry, ToolEventView,
-  DirectoryEntry, DirectoryListing, MachineEntry, MachineList, WorkspaceEntry, WorkspaceFile, WorkspaceListing,
+  DirectoryEntry, DirectoryListing, MachineAccelerator, MachineEntry, MachineList, MachineMetricsView,
+  WorkspaceEntry, WorkspaceFile, WorkspaceListing,
   ResponseValue, WorkspaceApi, WorkspaceId, WorkspaceView,
   TerminalApi, TerminalOpened, TerminalSignalName, TerminalView,
   BrowserApi, BrowserOpened, BrowserView,

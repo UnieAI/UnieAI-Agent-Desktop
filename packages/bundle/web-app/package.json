@@ -68,10 +68,8 @@
     "@unieai/uad-client-ui-input-trigger": "workspace:^",
     "@unieai/uad-client-ui-jobs": "workspace:^",
     "@unieai/uad-client-ui-layout": "workspace:^",
+    "@unieai/uad-client-ui-machine-gauges": "workspace:^",
     "@unieai/uad-client-ui-machines": "workspace:^",
-    "@unieai/uad-execution-router": "workspace:^",
-    "@unieai/uad-machines": "workspace:^",
-    "@unieai/uad-ssh": "workspace:^",
     "@unieai/uad-client-ui-message-feedback": "workspace:^",
     "@unieai/uad-client-ui-model-selection": "workspace:^",
     "@unieai/uad-client-ui-permission-presets": "workspace:^",
@@ -104,6 +102,7 @@
     "@unieai/uad-code-runtime-worker-thread": "workspace:^",
     "@unieai/uad-cordis-client-runner": "workspace:^",
     "@unieai/uad-cordis-host-runner": "workspace:^",
+    "@unieai/uad-execution-router": "workspace:^",
     "@unieai/uad-file-reference": "workspace:^",
     "@unieai/uad-file-reference-local": "workspace:^",
     "@unieai/uad-host-apiproxy": "workspace:^",
@@ -115,11 +114,14 @@
     "@unieai/uad-host-webserver": "workspace:^",
     "@unieai/uad-launch-environment": "workspace:^",
     "@unieai/uad-llm-unieai-cloud": "workspace:^",
+    "@unieai/uad-machine-metrics": "workspace:^",
+    "@unieai/uad-machines": "workspace:^",
     "@unieai/uad-message-feedback": "workspace:^",
     "@unieai/uad-session-log-export": "workspace:^",
     "@unieai/uad-session-projection-cache": "workspace:^",
     "@unieai/uad-session-reference": "workspace:^",
     "@unieai/uad-session-stats": "workspace:^",
+    "@unieai/uad-ssh": "workspace:^",
     "@unieai/uad-storage": "workspace:^",
     "@unieai/uad-storage-domain": "workspace:^",
     "@unieai/uad-storage-json": "workspace:^",
@@ -135,17 +137,17 @@
     "open": "^11.0.0"
   },
   "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
     "@unieai/cordis-plugin-loader": "workspace:^",
-    "@unieai/uad-shell-env": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
-    "@unieai/uad-system-prompt": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/uad-shell-env": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^"
   },
   "devDependencies": {
+    "@unieai/cordis": "workspace:^",
     "@unieai/cordis-plugin-loader": "workspace:^",
-    "@unieai/uad-shell-env": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
-    "@unieai/uad-system-prompt": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/uad-shell-env": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^"
   }
 }

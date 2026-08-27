@@ -157,6 +157,7 @@ export class FakeApiClient implements IApiClient {
     addMachine: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
     removeMachine: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
     probeMachine: () => Promise.resolve(ok({ reachable: true, message: '' })),
+    machineMetrics: () => Promise.resolve(ok({ machine: 'local', at: '2026-08-27T00:00:00.000Z', gpus: [], npus: [] })),
   }
 
   readonly browser: IApiClient['browser'] = {

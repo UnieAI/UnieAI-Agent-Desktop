@@ -63,6 +63,9 @@
       "path": "../../llm/llm"
     },
     {
+      "path": "../../machines/machine-metrics"
+    },
+    {
       "path": "../../machines/machines"
     },
     {

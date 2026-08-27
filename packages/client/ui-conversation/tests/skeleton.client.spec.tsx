@@ -434,7 +434,18 @@ describe('ConversationRoot resident composer', () => {
     expect(seat?.contains(textarea)).toBe(true)
     expect(b.slotCalls).toContain('conversation.session.header.lineage')
     expect(b.slotCalls).toContain('conversation.session.header.actions')
+    expect(b.slotCalls).toContain('conversation.session.header.gauges')
     expect(b.slotCalls).toContain('conversation.session.header.utilities')
+  })
+
+  it('draws the gauges seat before the view switch, and the utilities after it', () => {
+    // The order is the contract: a gauge describes the MACHINE, and one drawn
+    // after the switch reads as a property of the view the switch names.
+    const b = mount(conversationSnapshot())
+    const gauges = b.slotCalls.indexOf('conversation.session.header.gauges')
+    const utilities = b.slotCalls.indexOf('conversation.session.header.utilities')
+    expect(gauges).toBeGreaterThan(-1)
+    expect(gauges).toBeLessThan(utilities)
   })
 
   it('sticky composer seat wraps the whole overlay chain, not only the fallback stack', () => {

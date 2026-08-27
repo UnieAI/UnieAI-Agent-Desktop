@@ -1075,6 +1075,19 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'machineMetrics',
+    summary: 'The machine-metrics service.',
+    description: 'The machine-metrics service.\n\nHolds one thing between calls: the previous processor reading per world, so a percentage can be a difference. That memory is keyed by the identity the router gives a world rather than by machine name, because this package never learns which machine it is reading — it asks the seam, and the seam is already pointed somewhere.',
+    methods: [
+      {
+        signature: 'async sample(signal?: AbortSignal): Promise<MachineMetrics | MetricsRefusal>',
+        description: 'Read the machine the current execution world runs on.\n\nEvery field is optional and an unreadable one is absent, so a container with no `/proc`, a machine with no GPU, and a kernel that spells something differently each produce a smaller reading rather than a failure. Only two things are refusals: a composition with no subprocess provider at all, and a command that could not be run.',
+        parameters: [{ name: 'signal', description: 'abandons the sample.' }],
+        returns: 'the reading, or why there is none.',
+      },
+    ],
+  },
+  {
     key: 'machines',
     summary: 'The machines a person can work on, and the one they are working on now.',
     description: 'The machines a person can work on, and the one they are working on now.',
@@ -3181,6 +3194,10 @@ export const EVENT_API: readonly EventApiEntry[] = [
 /** Shapes of every exported type the Service and Event signatures reference (transitively), sorted by name. */
 export const TYPE_API: readonly TypeApiEntry[] = [
   {
+    name: 'AcceleratorReading',
+    declaration: 'export interface AcceleratorReading {\n    name: string;\n    utilPercent?: number;\n    memoryUsedBytes?: number;\n    memoryTotalBytes?: number;\n    temperatureC?: number;\n}',
+  },
+  {
     name: 'AccountSkillDocument',
     declaration: 'export interface AccountSkillDocument {\n    slug: string;\n    name: string;\n    content: string;\n}',
   },
@@ -4049,6 +4066,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface LspRange {\n    readonly start: LspPosition;\n    readonly end: LspPosition;\n}',
   },
   {
+    name: 'MachineMetrics',
+    declaration: 'export interface MachineMetrics {\n    at: string;\n    cpuPercent?: number;\n    cores?: number;\n    load?: readonly [\n        number,\n        number,\n        number\n    ];\n    memoryUsedBytes?: number;\n    memoryTotalBytes?: number;\n    diskUsedBytes?: number;\n    diskTotalBytes?: number;\n    diskMount?: string;\n    gpus: readonly AcceleratorReading[];\n    npus: readonly AcceleratorReading[];\n}',
+  },
+  {
     name: 'MachineTarget',
     declaration: 'export interface MachineTarget {\n    id: string;\n    label: string;\n    kind: \'local\' | \'ssh\';\n    source?: string;\n}',
   },
@@ -4151,6 +4172,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'MessageSourceMap',
     declaration: 'export interface MessageSourceMap {\n    user: {\n        kind: \'user\';\n    };\n    plugin: {\n        kind: \'plugin\';\n        plugin: string;\n    } & ContextFormed;\n    model: ModelMessageSource;\n    tool: ToolMessageSource;\n}',
+  },
+  {
+    name: 'MetricsRefusal',
+    declaration: 'export type MetricsRefusal = {\n    kind: \'no-execution-world\';\n} | {\n    kind: \'unreachable\';\n    message: string;\n};',
   },
   {
     name: 'ModelMessageSource',
@@ -4386,7 +4411,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'RpcErrorDetailsMap',
-    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'machine-edit-refused\': {};\n    \'skill-source-unavailable\': {};\n    \'skill-not-on-account\': {\n        slug: string;\n    };\n    \'skill-unreadable\': {\n        slug: string;\n    };\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal- /* …truncated — full shape in source */',
+    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'machine-edit-refused\': {};\n    \'metrics-unavailable\': {};\n    \'metrics-unreadable\': {};\n    \'skill-source-unavailable\': {};\n    \'skill-not-on-account\': {\n        slug: string;\n    };\n    \'skill-unreadable\': {\n        slug: string;\n    };\n    \'workspace-file-stale\': {\n        path:  /* …truncated — full shape in source */',
   },
   {
     name: 'RpcId',

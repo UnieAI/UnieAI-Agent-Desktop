@@ -75,6 +75,7 @@
     { "path": "./packages/client/ui-commands" },
     { "path": "./packages/client/ui-skill" },
     { "path": "./packages/client/ui-studio-sources" },
+    { "path": "./packages/client/ui-machine-gauges" },
     { "path": "./packages/client/ui-machines" },
     { "path": "./packages/client/ui-reference" },
     { "path": "./packages/client/ui-subagent" },

@@ -1,0 +1,192 @@
+/* The strip lives in a header row that is already dense, so it is sized to
+   the row rather than to its own content: three short bars, no numbers, no
+   chrome. Everything with a figure attached is in the panel. */
+.root {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  cursor: pointer;
+}
+
+.strip:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* A stale strip is dimmed rather than hidden: the last reading is still the
+   best answer anyone has, and removing it would read as a machine that went
+   away. */
+.strip[data-stale] {
+  opacity: 0.55;
+}
+
+.gauge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.label {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bar {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--dsw-alias-bg-module-platform);
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  background: var(--dsw-alias-label-tertiary);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  width: 300px;
+  padding: 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: var(--dsw-radius-card);
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: var(--dsw-shadow-lv);
+}
+
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.panelTitle {
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.machine {
+  color: var(--dsw-alias-label-tertiary);
+  font-family: var(--ds-font-family-code);
+  font-size: 11px;
+}
+
+.stale {
+  margin: 0 0 8px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowLabel {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The row's bar stretches; the strip's is fixed. Same element, two widths. */
+.row .bar {
+  width: auto;
+}
+
+.rowValue {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 12px 0 0;
+}
+
+.fact {
+  display: flex;
+  gap: 6px;
+}
+
+.fact dt {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+
+.fact dd {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.devices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--dsw-alias-border-l2);
+  list-style: none;
+}
+
+.device {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deviceName {
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+}
+
+.deviceFacts {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.none {
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}

@@ -100,6 +100,16 @@ declare module '@unieai/uad-client-ui-slots' {
      */
     'conversation.session.header.actions': { kind: 'list'; scope: 'session'; owner: ConversationHeaderActionOwnerProps }
     /**
+     * Continuous readings about the session's surroundings, drawn immediately
+     * BEFORE the view switch: a gauge describes the machine the work happens
+     * on, and the switch names what the column is showing, so a reading that
+     * appeared after the switch would read as a property of the view.
+     *
+     * A list rather than a single seat, because a deployment may want more
+     * than one reading and their order is `order`, not registration.
+     */
+    'conversation.session.header.gauges': { kind: 'list'; scope: 'session'; owner: ConversationHeaderActionOwnerProps }
+    /**
      * Right-aligned Session utilities kept outside the title-adjacent action
      * group, so an optional utility cannot reorder session context or lineage.
      */
@@ -705,6 +715,7 @@ export type ConversationSessionHeaderSlotProps =
   & PropsRenderSlots<
     'conversation.session.header.lineage'
     | 'conversation.session.header.actions'
+    | 'conversation.session.header.gauges'
     | 'conversation.session.header.utilities'
   >
   & PropsStore<ChatStore>

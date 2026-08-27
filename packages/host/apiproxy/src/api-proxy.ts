@@ -15,6 +15,9 @@ import { z as zod } from 'zod'
 import type { Context } from '@unieai/cordis'
 // Type-only: pulls the machine list's `ctx.machines` Context merge.
 import type {} from '@unieai/uad-machines'
+// Type-only: brings the sampler's `Context` merge so `ctx.get('machineMetrics')`
+// is the service rather than `any`.
+import type {} from '@unieai/uad-machine-metrics'
 // Type-only: brings the account gate's `Context` merge, so `ctx.get('unieaiGate')`
 // is the service and not `any`. No value from that package is imported.
 import type {} from '@unieai/uad-unieai-web-gate'
@@ -3472,6 +3475,47 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         }
         const listed = await machines.list()
         return ok(request, { machines: listed.map(entry => ({ ...entry })), current: machines.current })
+      },
+
+      async machineMetrics(request, signal) {
+        // Optional service, read through `ctx.get`: a deployment that does not
+        // compose the sampler has no gauges rather than a broken page, and the
+        // surface draws nothing for this answer.
+        const metrics = ctx.get('machineMetrics')
+        if (metrics === undefined) {
+          return err(request, {
+            code: 'metrics-unavailable',
+            message: 'host.machineMetrics needs the machine-metrics service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        const sample = await metrics.sample(signal)
+        if ('kind' in sample) {
+          // The two refusals are kept apart: a composition with no execution
+          // world can never answer, and an unreachable machine may answer the
+          // next time someone asks.
+          return err(request, sample.kind === 'no-execution-world'
+            ? {
+              code: 'metrics-unavailable',
+              message: 'this deployment composes no subprocess provider, so nothing can be measured anywhere',
+              details: {},
+            }
+            : { code: 'metrics-unreadable', message: sample.message, details: {} })
+        }
+        return ok(request, {
+          machine: ctx.get('machines')?.current ?? 'local',
+          at: sample.at,
+          ...sample.cpuPercent === undefined ? {} : { cpuPercent: sample.cpuPercent },
+          ...sample.cores === undefined ? {} : { cores: sample.cores },
+          ...sample.load === undefined ? {} : { load: [...sample.load] as [number, number, number] },
+          ...sample.memoryUsedBytes === undefined ? {} : { memoryUsedBytes: sample.memoryUsedBytes },
+          ...sample.memoryTotalBytes === undefined ? {} : { memoryTotalBytes: sample.memoryTotalBytes },
+          ...sample.diskUsedBytes === undefined ? {} : { diskUsedBytes: sample.diskUsedBytes },
+          ...sample.diskTotalBytes === undefined ? {} : { diskTotalBytes: sample.diskTotalBytes },
+          ...sample.diskMount === undefined ? {} : { diskMount: sample.diskMount },
+          gpus: sample.gpus.map(gpu => ({ ...gpu })),
+          npus: sample.npus.map(npu => ({ ...npu })),
+        })
       },
 
       async listWorkspaceEntries(request, signal) {

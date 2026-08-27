@@ -405,6 +405,14 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Answers which machines exist — this computer plus the aliases in the person\'s own OpenSSH configuration — and which one is current, remembering that choice across restarts. It holds no connection: the routed execution world asks it which target to use.',
   },
   {
+    key: 'machineMetrics',
+    pkg: 'machines/machine-metrics',
+    title: 'What the current machine is doing: processor, memory, disk, accelerators',
+    mode: 'core',
+    consumers: ['apiproxy'],
+    note: 'Samples one machine by running a guarded shell command through `ctx.subprocess`, which the router already aims at whichever machine is current — so a remote reading and a local one are one code path and this service never learns machines exist. Every field it cannot read is absent rather than zero, and a processor percentage is the difference between consecutive samples.',
+  },
+  {
     key: 'subprocess',
     pkg: 'subprocess',
     title: 'Subprocess seam',

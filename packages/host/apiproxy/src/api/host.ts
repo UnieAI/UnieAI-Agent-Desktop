@@ -64,6 +64,55 @@ export interface MachineEntry {
   source?: string
 }
 
+/** One accelerator on a machine, as its own vendor tool reports it. */
+export interface MachineAccelerator {
+  /** The vendor's own name for the device. */
+  name: string
+  /** Percent of the device busy, when the tool reports it. */
+  utilPercent?: number
+  /** Device memory in use, in bytes. */
+  memoryUsedBytes?: number
+  /** Device memory installed, in bytes. */
+  memoryTotalBytes?: number
+  /** Device temperature in Celsius, when reported. */
+  temperatureC?: number
+}
+
+/**
+ * What the machine a session runs on is doing right now.
+ *
+ * Every field is optional, and an unreadable one is ABSENT rather than zero:
+ * a container with no `/proc`, a machine with no GPU, and a kernel that spells
+ * something differently each produce a smaller reading, and a gauge drawn from
+ * a zero nobody measured is a lie someone acts on.
+ */
+export interface MachineMetricsView {
+  /** Which machine this reading describes. */
+  machine: string
+  /** When it was taken, ISO 8601. */
+  at: string
+  /** Percent of processor time busy since the previous reading; absent on the first. */
+  cpuPercent?: number
+  /** Logical processors. */
+  cores?: number
+  /** Load averages over 1, 5 and 15 minutes. */
+  load?: [number, number, number]
+  /** Memory in use, in bytes. */
+  memoryUsedBytes?: number
+  /** Memory installed, in bytes. */
+  memoryTotalBytes?: number
+  /** Space used on the filesystem holding the session's directory. */
+  diskUsedBytes?: number
+  /** That filesystem's total space. */
+  diskTotalBytes?: number
+  /** Which filesystem the disk figures describe. */
+  diskMount?: string
+  /** Every GPU a vendor tool reported. */
+  gpus: MachineAccelerator[]
+  /** Every NPU a vendor tool reported. */
+  npus: MachineAccelerator[]
+}
+
 /** The machines a person can work on, and the one they are working on. */
 export interface MachineList {
   /** Every machine, this computer first. */
@@ -213,6 +262,23 @@ export interface HostApi {
     request: RpcRequest<{ machine: string }>,
     signal: AbortSignal,
   ): Promise<RpcResponse<MachineList>>
+
+  /**
+   * Read what the machine work happens on is doing right now.
+   *
+   * Sampled on the machine itself, through the same execution seam a command
+   * runs on — so a session pointed at a build box reports that box, and the
+   * answer follows the machine picker without this route knowing it exists.
+   *
+   * A percentage of processor time is a difference between two readings, so
+   * the first call after a machine is selected reports none. Polling is the
+   * caller's business: nothing is pushed, because a reading nobody is looking
+   * at is a command run on someone's machine for no one.
+   */
+  machineMetrics(
+    request: RpcRequest<{}>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<MachineMetricsView>>
 
   /**
    * Ask whether one machine answers right now.

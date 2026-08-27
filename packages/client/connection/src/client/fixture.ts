@@ -2715,6 +2715,28 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
         addMachine: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
         removeMachine: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
         probeMachine: request => ok(request, { reachable: true, message: '' }),
+        // A fixture machine that is busy enough to draw: every gauge has a
+        // value, so a demo of the strip shows what a real one looks like.
+        machineMetrics: request => ok(request, {
+          machine: 'local',
+          at: '2026-08-27T09:00:00.000Z',
+          cpuPercent: 37,
+          cores: 8,
+          load: [1.2, 0.9, 0.7],
+          memoryUsedBytes: 9 * 1024 ** 3,
+          memoryTotalBytes: 16 * 1024 ** 3,
+          diskUsedBytes: 210 * 1024 ** 3,
+          diskTotalBytes: 500 * 1024 ** 3,
+          diskMount: '/',
+          gpus: [{
+            name: 'NVIDIA RTX 4090',
+            utilPercent: 64,
+            memoryUsedBytes: 12 * 1024 ** 3,
+            memoryTotalBytes: 24 * 1024 ** 3,
+            temperatureC: 58,
+          }],
+          npus: [],
+        }),
       }
     })(),
 
@@ -3523,6 +3545,7 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'host.addMachine': return this.api.host.addMachine(request, signal)
       case 'host.removeMachine': return this.api.host.removeMachine(request, signal)
       case 'host.probeMachine': return this.api.host.probeMachine(request, signal)
+      case 'host.machineMetrics': return this.api.host.machineMetrics(request, signal)
       case 'workspace.list': return this.api.workspace.list(request)
       case 'workspace.create': return this.api.workspace.create(request)
       case 'workspace.rename': return this.api.workspace.rename(request)

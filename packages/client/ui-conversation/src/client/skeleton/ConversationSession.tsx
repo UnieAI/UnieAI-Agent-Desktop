@@ -143,6 +143,11 @@ export function ConversationSessionHeader({
               </div>
             </div>
             <div className={css.headerUtilities}>
+              {/* Readings first: a gauge describes the machine the work runs
+                  on, and the switch beside it names what the column shows. A
+                  reading drawn after the switch would read as a property of
+                  the view rather than of the machine. */}
+              {renderSlot('conversation.session.header.gauges', {})}
               {alternate !== undefined && (
                 <button
                   type="button"

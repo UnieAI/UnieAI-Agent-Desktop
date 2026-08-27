@@ -49,6 +49,10 @@ export interface RpcErrorDetailsMap {
   'machines-unavailable': {}
   'machine-unknown': {}
   'machine-edit-refused': {}
+  /** No sampler, or no execution world to run one in: this deployment cannot measure a machine at all. */
+  'metrics-unavailable': {}
+  /** The machine could not be measured this time — unreachable, or the reading command failed. */
+  'metrics-unreadable': {}
   /**
    * There is no UnieAI account to copy a skill from: this build composes no
    * account gate, or nobody is signed in. Separate from a failed read because

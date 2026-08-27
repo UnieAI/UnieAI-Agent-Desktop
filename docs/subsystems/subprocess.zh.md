@@ -273,6 +273,31 @@ async getSandbox(): Promise<Sandbox>
 
 Source: [`packages/e2b/e2b/src/index.ts`](../../packages/e2b/e2b/src/index.ts)
 
+<a id="ctxmachinemetrics--machinemetricsservice"></a>
+
+### `ctx.machineMetrics` — `MachineMetricsService`
+
+The machine-metrics service.
+
+Holds one thing between calls: the previous processor reading per world, so a percentage can be a difference. That memory is keyed by the identity the router gives a world rather than by machine name, because this package never learns which machine it is reading — it asks the seam, and the seam is already pointed somewhere.
+
+```ts cordis-catalog
+/**
+ * Read the machine the current execution world runs on.
+ *
+ * Every field is optional and an unreadable one is absent, so a container
+ * with no `/proc`, a machine with no GPU, and a kernel that spells something
+ * differently each produce a smaller reading rather than a failure. Only two
+ * things are refusals: a composition with no subprocess provider at all, and
+ * a command that could not be run.
+ * @param signal - abandons the sample.
+ * @returns the reading, or why there is none.
+ */
+async sample(signal?: AbortSignal): Promise<MachineMetrics | MetricsRefusal>
+```
+
+Source: [`packages/machines/machine-metrics/src/index.ts`](../../packages/machines/machine-metrics/src/index.ts)
+
 <a id="ctxmachines--machines"></a>
 
 ### `ctx.machines` — `Machines`

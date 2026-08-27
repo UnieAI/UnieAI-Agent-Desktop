@@ -290,6 +290,12 @@
     - id: ui-machines
       name: '@unieai/uad-client-ui-machines'
 
+    # What that machine is doing, beside the view switch in the session
+    # header. Its node half registers nothing either: the reading is taken by
+    # the host's sampler, on whichever machine the router is pointed at.
+    - id: ui-machine-gauges
+      name: '@unieai/uad-client-ui-machine-gauges'
+
     # Where work happens. The machine list is `local` plus the aliases in the
     # person's own OpenSSH configuration; the routed providers put the whole
     # execution world on whichever one they pick. This computer keeps the
@@ -311,6 +317,12 @@
 
     - id: subprocess-routed
       name: '@unieai/uad-execution-router/subprocess'
+
+    # Reads the machine through the routed subprocess seam above, so it is
+    # mounted after it: a sampler that started first would measure whichever
+    # world happened to be current at boot.
+    - id: machine-metrics
+      name: '@unieai/uad-machine-metrics'
 
     # Citations under a Studio knowledge-base result, in the details panel's
     # per-call annotation list. Mounted after the panel that declares the

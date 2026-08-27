@@ -203,6 +203,7 @@
     { "path": "./packages/subprocess/subprocess-local" },
     { "path": "./packages/e2b/e2b" },
     { "path": "./packages/ssh/ssh" },
+    { "path": "./packages/machines/machine-metrics" },
     { "path": "./packages/machines/machines" },
     { "path": "./packages/machines/execution-router" },
     { "path": "./packages/ssh/subprocess-ssh" },

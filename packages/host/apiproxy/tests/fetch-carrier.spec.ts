@@ -183,6 +183,12 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
       async probeMachine(request) {
         return { rpcId: request.rpcId, result: { ok: true as const, value: { reachable: true, message: '' } } }
       },
+      async machineMetrics(request) {
+        return {
+          rpcId: request.rpcId,
+          result: { ok: true as const, value: { machine: 'local', at: '2026-08-27T00:00:00.000Z', gpus: [], npus: [] } },
+        }
+      },
     },
     browser: {
       async list(request) {

@@ -58,6 +58,7 @@
     "@unieai/uad-host-directory-picker": "workspace:^",
     "@unieai/uad-jobs": "workspace:^",
     "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-machine-metrics": "workspace:^",
     "@unieai/uad-native-command": "workspace:^",
     "@unieai/uad-session": "workspace:^",
     "@unieai/uad-session-persistence": "workspace:^",
