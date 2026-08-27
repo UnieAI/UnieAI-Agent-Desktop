@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-fs-ssh",
   "description": "The filesystem seam placed on a machine reached over SSH",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "publishConfig": {
     "access": "public"
   },
