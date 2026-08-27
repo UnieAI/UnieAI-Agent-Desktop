@@ -35,7 +35,8 @@
         "@unieai/uad-client-runtime",
         "@unieai/uad-client-ui-layout",
         "@unieai/uad-client-ui-sidebar",
-        "@unieai/uad-client-locale"
+        "@unieai/uad-client-locale",
+        "@unieai/uad-client-connection"
       ],
       "platform": "web"
     }
@@ -50,6 +51,8 @@
   },
   "peerDependencies": {
     "@unieai/cordis": "workspace:^",
+    "@unieai/uad-api-remotes": "workspace:^",
+    "@unieai/uad-client-connection": "workspace:^",
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
     "@unieai/uad-client-ui-layout": "workspace:^",
@@ -57,7 +60,10 @@
     "@unieai/uad-invariants": "workspace:^"
   },
   "devDependencies": {
+    "@types/react": "~18.3.1",
     "@unieai/cordis": "workspace:^",
+    "@unieai/uad-api-remotes": "workspace:^",
+    "@unieai/uad-client-connection": "workspace:^",
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
     "@unieai/uad-client-test-runtime": "workspace:^",
@@ -66,7 +72,6 @@
     "@unieai/uad-client-ui-sidebar": "workspace:^",
     "@unieai/uad-client-ui-slots": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
-    "@types/react": "~18.3.1",
     "react": "^18.2.0"
   },
   "files": [

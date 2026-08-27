@@ -17,3 +17,103 @@
   line-height: 19.5px;
   color: var(--dsw-alias-label-tertiary);
 }
+
+/* The catalogue: grouped by where each skill lives. */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.group {
+  margin-top: 18px;
+}
+
+.groupLabel {
+  margin-bottom: 6px;
+  color: var(--dsw-alias-label-caption);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--dsw-radius-control);
+}
+
+.row:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.rowMain {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+}
+
+.description {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+}
+
+/* The file is the answer to "which of these two is being used". */
+.path {
+  overflow: hidden;
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag {
+  flex: 0 0 auto;
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+}
+
+.action {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.action:hover {
+  background: var(--dsw-alias-interactive-bg-active);
+  color: var(--dsw-alias-label-primary);
+}
+
+.action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.error {
+  color: var(--dsw-alias-state-error-primary);
+  font-size: 12px;
+}

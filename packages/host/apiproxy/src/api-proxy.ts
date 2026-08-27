@@ -3928,6 +3928,60 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           return err(request, { code: 'internal', message: `skill listing failed: ${String(error)}`, details: {} })
         }
       },
+      async catalog(request) {
+        // The host registry, deliberately: a person managing skills has not
+        // necessarily opened a conversation, and the ones they most want to
+        // manage are their own rather than any session's.
+        const presets = ctx.get('agentPresets')
+        try {
+          // Discovery is usually the PRESET's, not the host's: a composition
+          // that lets presets own local discovery leaves the global layer
+          // empty, and a host-registry listing would report no skills while
+          // every session has plenty. The standing mount is the registry's
+          // answer for a reader with no agent — its scope selects the
+          // preset's layers, and its own instance is used when the preset
+          // realm-mounted a registry that host contexts cannot see. Both are
+          // ensured without starting a session or a turn.
+          const scope = await presets?.standingKeyFor()
+          const skillRegistry = (await presets?.standingService('skills')) ?? ctx.get('skills')
+          if (skillRegistry === undefined) {
+            return err(request, {
+              code: 'internal',
+              message: 'skill registry is absent: this composition does not mount @unieai/uad-skill',
+              details: {},
+            })
+          }
+          const view = {
+            ...request.payload.cwd === undefined ? {} : { cwd: request.payload.cwd },
+            ...scope === undefined ? {} : { scope },
+          }
+          // An incomplete observation is not an empty catalogue. The registry
+          // reports `complete: false` while a provider is still discovering
+          // or the catalog revised underneath the read, and says explicitly
+          // that such an observation is never cached and the consumer retries
+          // — a page that drew the first answer would tell someone they have
+          // no skills at the exact moment the scan for them started.
+          let snapshot = await skillRegistry.snapshot(view)
+          for (let attempt = 0; attempt < 20 && !snapshot.complete; attempt += 1) {
+            await new Promise(resolve => setTimeout(resolve, 50))
+            snapshot = await skillRegistry.snapshot(view)
+          }
+          return ok(request, {
+            skills: snapshot.skills.map(skill => ({
+              name: skill.name,
+              description: skill.description,
+              ...skill.whenToUse === undefined ? {} : { whenToUse: skill.whenToUse },
+              modelInvocable: skill.invocation.modelInvocable,
+              userInvocable: skill.invocation.userInvocable,
+              source: skill.source,
+              provider: skill.provider,
+              ...skill.path === undefined ? {} : { path: skill.path },
+            })),
+          })
+        } catch (error: unknown) {
+          return err(request, { code: 'internal', message: `skill listing failed: ${String(error)}`, details: {} })
+        }
+      },
     },
 
     settings: {

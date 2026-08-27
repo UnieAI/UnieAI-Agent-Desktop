@@ -31,7 +31,7 @@ import { settingsNamespace, type SettingsScope, type default as SettingsService 
 import { dshHomePath } from '@unieai/uad-home-paths'
 import { discoverPresets, USER_PRESET_DIR } from './discovery.ts'
 import { copyComposition, deleteComposition, readComposition } from './authoring.ts'
-import { mountPreset, serviceForAgent, standingMountFor } from './mount.ts'
+import { livePresetMounts, mountPreset, serviceForAgent, serviceWithinMount, standingMountFor } from './mount.ts'
 import { PresetExistsError } from './authoring.ts'
 import { PresetMountError, UnknownPresetError, type AgentPreset, type Config, type PresetRoot } from './preset.ts'
 import type {} from './types.ts'
@@ -55,7 +55,8 @@ export {
   METADATA_FILE, readPresetMetadata, renderPresetMetadata, type PresetMetadata,
 } from './metadata.ts'
 export {
-  inactiveRows, leakedServices, livePresetMounts, mountPreset, serviceForAgent, standingMountFor,
+  inactiveRows, leakedServices, livePresetMounts, mountPreset, serviceForAgent, serviceWithinMount,
+  standingMountFor,
   type JoinedPresetMount, type PresetMount,
 } from './mount.ts'
 export {
@@ -469,6 +470,29 @@ export class AgentPresets extends Service {
       binding.rebind(standing.key)
     }
     return preset
+  }
+
+  /**
+   * One service a preset's standing mount publishes, without an agent.
+   *
+   * The companion to {@link standingKeyFor}: that answers which scope a
+   * host reader resolves registrations in, and this answers which INSTANCE
+   * of a realm-published service serves them. A composition where a preset
+   * mounts its own registry keeps that instance invisible to host contexts,
+   * so a surface reading it — the skills a person manages, say — would
+   * otherwise see an empty host registry and report an empty catalogue.
+   * @param name - the service to resolve.
+   * @param id - preset id; omission uses the deployment default.
+   * @returns the standing mount's instance, or undefined when it publishes none.
+   */
+  async standingService<K extends string & keyof Context>(name: K, id?: string): Promise<Context[K] | undefined> {
+    const preset = await this.resolveMountable(id)
+    const standing = await this.ensureStanding(preset)
+    // The standing record carries the scope key; the live mount carries the
+    // fiber a realm-published service sits inside, and the key is what ties
+    // the two together.
+    const mount = livePresetMounts().find(candidate => candidate.key === standing.key)
+    return mount === undefined ? undefined : serviceWithinMount(this.ctx, mount, name)
   }
 
   /**

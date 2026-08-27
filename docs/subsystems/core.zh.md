@@ -543,6 +543,21 @@ serviceFor<K extends string & keyof Context>(agent: { ctx: Context }, name: K): 
 async recompose(agentCtx: Context, id: string): Promise<AgentPreset>
 
 /**
+ * One service a preset's standing mount publishes, without an agent.
+ *
+ * The companion to {@link standingKeyFor}: that answers which scope a
+ * host reader resolves registrations in, and this answers which INSTANCE
+ * of a realm-published service serves them. A composition where a preset
+ * mounts its own registry keeps that instance invisible to host contexts,
+ * so a surface reading it — the skills a person manages, say — would
+ * otherwise see an empty host registry and report an empty catalogue.
+ * @param name - the service to resolve.
+ * @param id - preset id; omission uses the deployment default.
+ * @returns the standing mount's instance, or undefined when it publishes none.
+ */
+async standingService<K extends string & keyof Context>(name: K, id?: string): Promise<Context[K] | undefined>
+
+/**
  * The standing scope key of one preset, for a host reader with no agent.
  *
  * A cold transcript read resolves tool presenters against the composition

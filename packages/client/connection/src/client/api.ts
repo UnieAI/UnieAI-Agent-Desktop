@@ -12,7 +12,7 @@ export type {
   ResponseValue, WorkspaceApi, WorkspaceId, WorkspaceView,
   TerminalApi, TerminalOpened, TerminalSignalName, TerminalView,
   BrowserApi, BrowserOpened, BrowserView,
-  SkillsApi, SkillEntry,
+  SkillsApi, SkillCatalogEntry, SkillEntry,
   ModelCatalogFailure, ModelCatalogModel, ModelProviderGroup, ModelReasoning,
   ModelReasoningEffort, ModelSelection, QueueAction, QueuedInboxItem, SessionModels,
   GoalsApi, GoalRef,

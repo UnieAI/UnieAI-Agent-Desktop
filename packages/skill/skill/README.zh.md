@@ -39,6 +39,10 @@
 | `{ modelInvocable: false, userInvocable: true }` | 排除 | 包含 |
 | `{ modelInvocable: false, userInvocable: false }` | 排除 | 排除 |
 
+### 一个技能是从哪里来的
+
+`SkillSummary.source` 说的是最终胜出的发现来源，`SkillSummary.path` 说的是它被读出来的那个文件——前提是拥有它的 provider 有文件这回事。`path` 是可选的，因为不是每个 provider 背后都有文件：运行期注册和远端注册表都没有；需要说清楚一个技能**在哪里**的消费端，就把手上有的显示出来，而不是编一个出来。文件系统 provider 会为它发现的每一个技能填上这个字段：一个界面上并排列出两个同名技能时，得靠它说清胜出的是哪个文件；而一个提供「打开」或「删除」的界面，必须说得出自己要动的是哪个文件。
+
 ### 共享的面向模型渲染
 
 `renderSkillContent(skill)` 把一个已加载 skill 渲染为规范的 `<skill_content>` 块（转义后的 `name` 属性、资源提示、原样正文）。它是两条加载路径的唯一真源：`dsh-tool-skill` 将其作为 `skill` 工具结果返回，并在用户显式的手势边界将其注入，因此无论加载由谁发起，模型看到的都是同一种形态。`escapeText` 随之一并导出，供要在同一标记框架中嵌入文案的消费方使用。该包还声明 `skill-invocation` 这个 `MessageSource` kind（{ name, form: 'instructions' }），用户显式注入会把它打在自己的消息上——transcript（文本记录）消费方依据这份元数据呈现该次调用，而不是重新解析正文。

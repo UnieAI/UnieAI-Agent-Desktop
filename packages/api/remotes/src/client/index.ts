@@ -43,7 +43,7 @@ export type {
   MessageId, ModelCatalogFailure, ModelProviderGroup, ModelReasoningEffort, ModelSelection,
   MachineEntry, MachineList, MuxFrame, PromptContentPart, QuestionResponsePayload, QueueAction, RpcError, RpcId, RpcReceipt,
   RpcRequest, RpcResponse, RpcResult, SessionId, SessionModels, SessionSearchItem,
-  SessionSummary, SettingsNamespaceView, SettingsPathOpView, SkillEntry, StreamChunk,
+  SessionSummary, SettingsNamespaceView, SettingsPathOpView, SkillCatalogEntry, SkillEntry, StreamChunk,
   SubagentAddress, SubagentCatalog, JobView, ToolCallView, ToolEventView, ToolResultView,
   WorkspaceEntry, WorkspaceFile, WorkspaceId, WorkspaceListing, WorkspaceView,
 } from '@unieai/uad-client-connection/client'

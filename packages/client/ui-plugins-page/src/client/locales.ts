@@ -73,7 +73,17 @@ export const zh = {
   // ── the skills destination ───────────────────────────────────────────────
   'skills.title': '技能',
   'skills.intro': '技能是随项目提供、用 /名称 调用的指令集。',
+  // Kept for a build that composes no skill registry at all.
   'skills.unsupported': '本版本没有账号级的技能目录。技能属于当前会话所在的项目：在输入框里键入 / 就能看到该会话可用的技能。',
+  'skills.refresh': '重新读取',
+  'skills.empty': '这个部署没有提供任何技能。',
+  'skills.group.personal': '你写的',
+  'skills.group.project': '项目提供',
+  'skills.group.bundled': '本版本自带',
+  'skills.group.other': '其他来源',
+  'skills.userOnly': '仅用户',
+  'skills.open': '打开文件',
+  'skills.write': '技能就是一个 SKILL.md 文件。要新增一个，直接让代理帮你写——它知道该放哪里、格式怎么写。',
   // ── the settings destination ─────────────────────────────────────────────
   'manage.title': '插件设置',
   'manage.intro': '此账号连接的 MCP 服务器，以及本次构建载入并可配置的插件。',
@@ -146,7 +156,17 @@ export const zhTW = {
   // ── the skills destination ───────────────────────────────────────────────
   'skills.title': '技能',
   'skills.intro': '技能是隨專案提供、用 /名稱 呼叫的指令集。',
+  // Kept for a build that composes no skill registry at all.
   'skills.unsupported': '本版本沒有帳號層級的技能目錄。技能屬於目前對話所在的專案：在輸入框裡輸入 / 就會看到該對話可用的技能。',
+  'skills.refresh': '重新讀取',
+  'skills.empty': '這個部署沒有提供任何技能。',
+  'skills.group.personal': '你寫的',
+  'skills.group.project': '專案提供',
+  'skills.group.bundled': '本版本自帶',
+  'skills.group.other': '其他來源',
+  'skills.userOnly': '僅使用者',
+  'skills.open': '開啟檔案',
+  'skills.write': '技能就是一個 SKILL.md 檔案。要新增一個，直接請代理幫你寫——它知道要放哪裡、格式怎麼寫。',
   // ── the settings destination ─────────────────────────────────────────────
   'manage.title': '外掛程式設定',
   'manage.intro': '此帳號連接的 MCP 伺服器，以及這次建置載入並可設定的外掛程式。',
@@ -216,7 +236,17 @@ export const ja = {
   // ── the skills destination ───────────────────────────────────────────────
   'skills.title': 'スキル',
   'skills.intro': 'スキルはプロジェクトに付属し、/名前 で呼び出す手順書です。',
+  // Kept for a build that composes no skill registry at all.
   'skills.unsupported': 'このビルドにアカウント単位のスキルカタログはありません。スキルは現在のセッションのプロジェクトに属します。入力欄に / と入力すると、そのセッションで使えるスキルが表示されます。',
+  'skills.refresh': '読み直す',
+  'skills.empty': 'このデプロイはスキルを提供していません。',
+  'skills.group.personal': 'あなたが書いたもの',
+  'skills.group.project': 'プロジェクト提供',
+  'skills.group.bundled': 'このビルド同梱',
+  'skills.group.other': 'その他',
+  'skills.userOnly': 'ユーザー専用',
+  'skills.open': 'ファイルを開く',
+  'skills.write': 'スキルは SKILL.md というファイルです。追加したいときはエージェントに書いてもらってください——置き場所も書式も知っています。',
   // ── the settings destination ─────────────────────────────────────────────
   'manage.title': 'プラグイン設定',
   'manage.intro': 'このアカウントが接続している MCP サーバーと、このビルドが読み込み設定できるプラグインです。',
@@ -286,7 +316,17 @@ export const en = {
   // ── the skills destination ───────────────────────────────────────────────
   'skills.title': 'Skills',
   'skills.intro': 'Skills are instruction sets that ship with a project and are invoked as /name.',
+  // Kept for a build that composes no skill registry at all.
   'skills.unsupported': 'This build has no account-level skill catalogue. Skills belong to the project a session runs in: type / in the composer to see the ones that session can invoke.',
+  'skills.refresh': 'Read again',
+  'skills.empty': 'This deployment serves no skills.',
+  'skills.group.personal': 'Yours',
+  'skills.group.project': 'From this project',
+  'skills.group.bundled': 'Shipped with this build',
+  'skills.group.other': 'Other sources',
+  'skills.userOnly': 'user only',
+  'skills.open': 'Open file',
+  'skills.write': 'A skill is a SKILL.md file. To add one, ask the agent to write it — it knows where they go and what the format is.',
   // ── the settings destination ─────────────────────────────────────────────
   'manage.title': 'Plugin settings',
   'manage.intro': 'The MCP servers this account has connected, and the plugins this build loads and can configure.',

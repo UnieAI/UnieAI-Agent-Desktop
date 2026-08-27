@@ -2854,6 +2854,12 @@ importers:
       '@unieai/cordis':
         specifier: workspace:^
         version: link:../../../vendor/cordis
+      '@unieai/uad-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@unieai/uad-client-connection':
+        specifier: workspace:^
+        version: link:../connection
       '@unieai/uad-client-locale':
         specifier: workspace:^
         version: link:../locale
@@ -5771,6 +5777,9 @@ importers:
       '@unieai/uad-machines':
         specifier: workspace:^
         version: link:../../machines/machines
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/ssh
       '@unieai/uad-storage':
         specifier: workspace:^
         version: link:../../storage/storage
@@ -6562,6 +6571,9 @@ importers:
       '@unieai/uad-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-sandbox-policy':
+        specifier: workspace:^
+        version: link:../../sandbox/sandbox-policy
       '@unieai/uad-settings-file':
         specifier: workspace:^
         version: link:../../settings/settings-file
@@ -6577,6 +6589,9 @@ importers:
       '@unieai/uad-settings':
         specifier: workspace:^
         version: link:../../settings/settings
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/ssh
     devDependencies:
       '@unieai/cordis':
         specifier: workspace:^
@@ -6587,9 +6602,6 @@ importers:
       '@unieai/uad-settings-file':
         specifier: workspace:^
         version: link:../../settings/settings-file
-      '@unieai/uad-ssh':
-        specifier: workspace:^
-        version: link:../../ssh/ssh
 
   packages/mcp/mcp-client:
     dependencies:

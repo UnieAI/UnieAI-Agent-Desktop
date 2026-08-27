@@ -260,6 +260,27 @@ export function serviceForAgent<K extends string & keyof Context>(
 ): Context[K] | undefined {
   const mount = standingMountFor(agent.ctx)
   if (mount === undefined) return undefined
+  return serviceWithinMount(ctx, mount, name)
+}
+
+/**
+ * One service a preset's standing mount publishes, for a reader with no agent.
+ *
+ * The same lookup {@link serviceForAgent} makes, reached by the mount itself
+ * rather than through an agent that joined it. A surface that manages what a
+ * preset serves — its skills, say — has no session and must not start one,
+ * and the realm the preset published behind is invisible to the host context
+ * either way.
+ * @param ctx - a host context whose reflect store is scanned.
+ * @param mount - the standing mount to look inside.
+ * @param name - the service to find.
+ * @returns the mount's instance, or undefined when it publishes none.
+ */
+export function serviceWithinMount<K extends string & keyof Context>(
+  ctx: Context,
+  mount: PresetMount,
+  name: K,
+): Context[K] | undefined {
   const store = ctx.reflect.store
   for (const key of Object.getOwnPropertySymbols(store)) {
     const impl = store[key]

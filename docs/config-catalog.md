@@ -2173,7 +2173,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/skill/skill/src/index.ts:279`](../packages/skill/skill/src/index.ts)
+Source: [`packages/skill/skill/src/index.ts:289`](../packages/skill/skill/src/index.ts)
 
 <a id="unieaiuad-skill-filesystem"></a>
 
@@ -2601,7 +2601,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/ssh/subprocess-ssh/src/index.ts:52`](../packages/ssh/subprocess-ssh/src/index.ts)
+Source: [`packages/ssh/subprocess-ssh/src/index.ts:53`](../packages/ssh/subprocess-ssh/src/index.ts)
 
 <a id="unieaiuad-system-prompt"></a>
 

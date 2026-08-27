@@ -19,7 +19,7 @@ import { apply as nodeApply } from '../src/index.ts'
 import { apply, inject } from '../src/client/index.ts'
 import { PluginsPage, TAB_VIEWS, VIEWS } from '../src/client/PluginsPage.tsx'
 import { PluginsNavRow } from '../src/client/PluginsNavRow.tsx'
-import { SkillsArea } from '../src/client/SkillsArea.tsx'
+import { SkillsArea, type SkillsAreaInjected } from '../src/client/SkillsArea.tsx'
 import { StudioMcpArea } from '../src/client/StudioMcpArea.tsx'
 import type { PluginsNavRowInjected, PluginsPageInjected } from '../src/client/contract/slots.ts'
 import type { StudioMcpAreaInjected } from '../src/client/StudioMcpArea.tsx'
@@ -183,14 +183,28 @@ describe('ui-plugins-page browser apply', () => {
     expect(row.hooks.page.getSnapshot()).toEqual({ open: false })
   })
 
-  it('registers the skills area, which reads nothing because nothing root-scoped reports skills', async () => {
+  it('registers the skills area, bound to the deployment catalogue', async () => {
     hostRoute({ status: 'signed-out' })
     const b = await bench()
     declareShell(b.slots)
     await b.ctx.plugin({ inject: [...inject], apply }).await()
     const entry = entryOf(b.slots, AREA, 'skills')
     expect(entry?.component).toBe(SkillsArea)
-    expect((entry!.inject as unknown as () => object)()).toEqual({})
+    const face = (entry!.inject as unknown as () => SkillsAreaInjected)()
+    expect(typeof face.hooks.skills.getSnapshot).toBe('function')
+    expect(typeof face.refresh).toBe('function')
+  })
+
+  it('says the catalogue is unavailable rather than holding the page pending', async () => {
+    // The connection is read, never injected: a composition that mounts none
+    // would otherwise leave this whole destination waiting forever, and a
+    // page that never renders is worse than one that says what it cannot do.
+    hostRoute({ status: 'signed-out' })
+    const b = await bench()
+    declareShell(b.slots)
+    await b.ctx.plugin({ inject: [...inject], apply }).await()
+    const face = (entryOf(b.slots, AREA, 'skills')!.inject as unknown as () => SkillsAreaInjected)()
+    expect(face.available).toBe(b.ctx.get('connection') !== undefined)
   })
 
   it('gives the surface chrome one re-read that covers every source it owns', async () => {

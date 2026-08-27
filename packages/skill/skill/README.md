@@ -39,6 +39,10 @@ The registry is host+per-scope layered over [`@unieai/uad-scope`](../../core/sco
 | `{ modelInvocable: false, userInvocable: true }` | excluded | included |
 | `{ modelInvocable: false, userInvocable: false }` | excluded | excluded |
 
+### Where a skill came from
+
+`SkillSummary.source` names the discovery source that won, and `SkillSummary.path` names the file it was read from when the owning provider has one. `path` is optional because not every provider has a file behind a skill — a runtime registration and a remote registry both have none — and a consumer that needs to say WHERE a skill is shows what it can rather than inventing one. The filesystem provider fills it for every skill it discovers; a surface listing two skills of the same name needs it to say which file the winner is, and one offering to open or delete a skill must name the file it would act on.
+
 ### Shared model-facing rendering
 
 `renderSkillContent(skill)` renders one loaded skill as the canonical `<skill_content>` block (escaped `name` attribute, resource hints, verbatim body). It is the single truth for both loading paths: `dsh-tool-skill` returns it as the `skill` tool result and injects it at the user-explicit gesture boundary, so the model sees one shape regardless of who initiated the load. `escapeText` is exported beside it for consumers embedding prose in the same markup frame. The package also declares the `skill-invocation` `MessageSource` kind ({ name, form: 'instructions' }) that user-explicit injection stamps on its messages — transcript consumers present the invocation from this metadata instead of re-parsing the body.

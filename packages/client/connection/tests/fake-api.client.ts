@@ -246,6 +246,7 @@ export class FakeApiClient implements IApiClient {
   }
 
   readonly skills: IApiClient['skills'] = {
+    catalog: () => Promise.resolve(ok({ skills: [] })),
     list: (payload: unknown) => this.record('skill.list', payload, this.onSkillList(payload)),
   }
 

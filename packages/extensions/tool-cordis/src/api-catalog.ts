@@ -201,6 +201,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         throws: ['when the preset is unknown or its composition is unusable.'],
       },
       {
+        signature: 'async standingService<K extends string & keyof Context>(name: K, id?: string): Promise<Context[K] | undefined>',
+        description: 'One service a preset\'s standing mount publishes, without an agent.\n\nThe companion to standingKeyFor: that answers which scope a host reader resolves registrations in, and this answers which INSTANCE of a realm-published service serves them. A composition where a preset mounts its own registry keeps that instance invisible to host contexts, so a surface reading it — the skills a person manages, say — would otherwise see an empty host registry and report an empty catalogue.',
+        parameters: [{ name: 'name', description: 'the service to resolve.' }, { name: 'id', description: 'preset id; omission uses the deployment default.' }],
+        returns: 'the standing mount\'s instance, or undefined when it publishes none.',
+      },
+      {
         signature: 'async standingKeyFor(id?: string): Promise<ScopeKey>',
         description: 'The standing scope key of one preset, for a host reader with no agent.\n\nA cold transcript read resolves tool presenters against the composition the session recorded, and the standing mount makes that possible without resuming anything: ensuring the mount composes plugins but starts no agent, no session, and no turn.',
         parameters: [{ name: 'id', description: 'the preset id, or `undefined` for {@link defaultId}.' }],
@@ -4814,7 +4820,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'SkillSummary',
-    declaration: 'export interface SkillSummary {\n    readonly name: string;\n    readonly description: string;\n    readonly whenToUse?: string;\n    readonly invocation: SkillInvocationPolicy;\n    readonly source: SkillSource;\n    readonly provider: string;\n    readonly resourceBase?: SkillResourceBase;\n}',
+    declaration: 'export interface SkillSummary {\n    readonly name: string;\n    readonly description: string;\n    readonly whenToUse?: string;\n    readonly invocation: SkillInvocationPolicy;\n    readonly source: SkillSource;\n    readonly provider: string;\n    readonly resourceBase?: SkillResourceBase;\n    readonly path?: string;\n}',
   },
   {
     name: 'SkillViewOptions',

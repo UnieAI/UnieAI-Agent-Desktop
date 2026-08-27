@@ -120,6 +120,16 @@ interface SkillSummary {
   readonly provider: string
   /** Provider-specific base for relative resources. */
   readonly resourceBase?: SkillResourceBase
+  /**
+   * Absolute file this skill was read from, when its provider has one.
+   *
+   * A catalog reader needs it to say WHERE a skill is: a person looking at
+   * two skills with the same name wants to know which file to open, and a
+   * surface offering to delete one must name the file it would delete.
+   * Providers without files (a remote registry, a runtime contribution)
+   * leave it absent, and a surface shows what it can instead.
+   */
+  readonly path?: string
 }
 ```
 

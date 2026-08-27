@@ -32,6 +32,7 @@
  * Export discipline: packages/client/AGENTS.md.
  */
 import type { ClientContext } from '@unieai/uad-client-runtime/client'
+import type { ConnectionHandle } from '@unieai/uad-api-remotes/client'
 // Type-only: pulls ui-layout's SlotMap merge (the 'shell.overlay' seat) and
 // ui-sidebar's (the 'sidebar.nav.action' seat). Cross-plugin collaboration
 // goes through slots and services, never a value import (client bundle purity
@@ -47,6 +48,7 @@ import { PluginsPageController } from './page-store.ts'
 import { DirectoryArea, type DirectoryAreaInjected } from './DirectoryArea.tsx'
 import { DirectorySource } from './directory-source.ts'
 import { SkillsArea, type SkillsAreaInjected } from './SkillsArea.tsx'
+import { createSkillsView } from './skills-view.ts'
 import { StudioMcpArea, type StudioMcpAreaInjected } from './StudioMcpArea.tsx'
 import { StudioEntry, type StudioEntryInjected } from './StudioEntry.tsx'
 import { StudioMcpSource } from './studio-mcp-source.ts'
@@ -130,6 +132,24 @@ export function apply(ctx: ClientContext): void {
   )
   const servers = new StudioMcpSource({ request: (path, init) => globalThis.fetch(path, init) })
   ctx.effect(() => () => { servers.dispose() }, 'ui-plugins-page: studio mcp source')
+
+  // The skill catalogue is an RPC route rather than a product endpoint: the
+  // skills are this deployment's own, read from the harness registry.
+  //
+  // Read through `ctx.get`, never injected. Injecting the connection would
+  // hold the whole destination pending in a composition that mounts none,
+  // and a page that never renders is a worse answer than a page that says
+  // this build has no catalogue — which is what the area draws instead.
+  const connection = ctx.get('connection') as ConnectionHandle | undefined
+  const skills = createSkillsView({
+    catalog: async () => {
+      if (connection === undefined) return { ok: false as const, message: '' }
+      const response = await connection.api.skills.catalog({})
+      return response.result.ok
+        ? { ok: true as const, skills: [...response.result.value.skills] }
+        : { ok: false as const, message: response.result.error.message }
+    },
+  })
 
   const directory = new DirectorySource({ request: (path, init) => globalThis.fetch(path, init) })
   ctx.effect(() => () => { directory.dispose() }, 'ui-plugins-page: plugin directory source')
@@ -225,16 +245,20 @@ export function apply(ctx: ClientContext): void {
     }),
   }, StudioMcpArea))
 
-  // The skills destination's only occupant. It reads nothing, because nothing
-  // root-scoped reports skills (SkillsArea's module doc names the route and
-  // why it cannot answer here); the entry exists so the destination has a
-  // body and so a build that gains a catalogue replaces this id instead of
-  // editing the surface.
+  // The skills destination's only occupant, reading the deployment-addressed
+  // catalogue: what this build serves and where each skill lives.
   ctx.slots.inject('plugins.page.area', () => ctx.slots.register({
     name: 'plugins.page.area',
     id: 'skills',
     order: 0,
     locale: NS,
-    inject: (): SkillsAreaInjected => ({}),
+    inject: (): SkillsAreaInjected => ({
+      hooks: { skills },
+      available: connection !== undefined,
+      refresh: () => { void skills.refresh() },
+      ...connection === undefined
+        ? {}
+        : { openPath: (path: string) => { void connection.api.host.openPath({ path }) } },
+    }),
   }, SkillsArea))
 }

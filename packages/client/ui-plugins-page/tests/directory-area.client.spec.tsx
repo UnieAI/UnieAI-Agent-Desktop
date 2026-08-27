@@ -16,6 +16,7 @@ import { bindSnapshotSelector, makeTranslate } from '@unieai/uad-client-test-run
 import { zh as commonZh } from '@unieai/uad-client-locale/src/locales/zh.ts'
 import { DirectoryArea } from '../src/client/DirectoryArea.tsx'
 import type { DirectoryAreaComponentProps } from '../src/client/DirectoryArea.tsx'
+import type { SkillCatalogEntry } from '@unieai/uad-api-remotes/client'
 import { SkillsArea } from '../src/client/SkillsArea.tsx'
 import type { SkillsAreaComponentProps } from '../src/client/SkillsArea.tsx'
 import type { DirectoryRow, DirectoryState } from '../src/client/directory-source.ts'
@@ -182,13 +183,61 @@ describe('the directory, with a catalogue', () => {
   })
 })
 
+/** A catalogue view over a fixed answer. */
+function skillsView(skills: SkillCatalogEntry[]) {
+  return {
+    getSnapshot: () => ({ skills, busy: false, loaded: true, error: '' }),
+    subscribe: () => () => undefined,
+  }
+}
+
+/** The props the framework composes, with the hook it derives from `hooks`. */
+function skillsProps(overrides: Record<string, unknown>): SkillsAreaComponentProps {
+  const view = skillsView((overrides.skills as SkillCatalogEntry[] | undefined) ?? [])
+  return {
+    t,
+    available: overrides.available !== false,
+    refresh: overrides.refresh ?? (() => undefined),
+    useSkills: (select: (snapshot: ReturnType<typeof view.getSnapshot>) => unknown) => select(view.getSnapshot()),
+    ...overrides.openPath === undefined ? {} : { openPath: overrides.openPath },
+  } as unknown as SkillsAreaComponentProps
+}
+
 describe('the skills destination', () => {
-  it('says this build has no catalogue rather than drawing controls over nothing', () => {
-    render(<SkillsArea {...({ t } as unknown as SkillsAreaComponentProps)} />)
+  it('says this build has no catalogue when nothing can answer', () => {
+    // A composition with no connection cannot read the route; drawing a
+    // refresh control over nothing would promise a catalogue.
+    render(<SkillsArea {...skillsProps({ available: false })} />)
     expect(screen.getByText(zh['skills.unsupported'])).toBeTruthy()
-    // No search field, no segmented control, no rows: every one of them would
-    // promise a catalogue that no root-scoped route reports.
     expect(screen.queryAllByRole('button')).toEqual([])
-    expect(document.querySelector('input')).toBeNull()
+  })
+
+  it('groups what it serves by where each skill lives', () => {
+    render(<SkillsArea {...skillsProps({ skills: [
+      { name: 'mine', description: 'one I wrote', source: 'user-dsh', provider: 'filesystem', path: '/home/dev/.dsh/skills/mine/SKILL.md', modelInvocable: true, userInvocable: true },
+      { name: 'shipped', description: 'one this build ships', source: 'bundled', provider: 'filesystem', path: '/app/skills/shipped/SKILL.md', modelInvocable: true, userInvocable: true },
+    ] })} />)
+    expect(screen.getByText(zh['skills.group.personal'])).toBeTruthy()
+    expect(screen.getByText(zh['skills.group.bundled'])).toBeTruthy()
+    expect(screen.getByText('mine')).toBeTruthy()
+    // The file is on screen, so "which of these two is being used" is read,
+    // not inferred.
+    expect(screen.getByText('/home/dev/.dsh/skills/mine/SKILL.md')).toBeTruthy()
+  })
+
+  it('marks a skill the model cannot invoke', () => {
+    render(<SkillsArea {...skillsProps({ skills: [
+      { name: 'user-only', description: 'a person invokes this one', source: 'user-dsh', provider: 'filesystem', modelInvocable: false, userInvocable: true },
+    ] })} />)
+    expect(screen.getByText(zh['skills.userOnly'])).toBeTruthy()
+  })
+
+  it('hands a skill\'s file to the editor when the host can open one', () => {
+    const openPath = vi.fn()
+    render(<SkillsArea {...skillsProps({ openPath, skills: [
+      { name: 'mine', description: 'one I wrote', source: 'user-dsh', provider: 'filesystem', path: '/skills/mine/SKILL.md', modelInvocable: true, userInvocable: true },
+    ] })} />)
+    fireEvent.click(screen.getByText(zh['skills.open']))
+    expect(openPath).toHaveBeenCalledWith('/skills/mine/SKILL.md')
   })
 })

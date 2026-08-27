@@ -3152,6 +3152,23 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
     },
 
     skills: {
+      // The same two skills the session-addressed listing serves, plus the
+      // facts a management surface reads: where each came from and which
+      // file it is.
+      catalog: request => ok(request, {
+        skills: [
+          {
+            name: 'fixture-demo', description: 'fixture 技能样本', whenToUse: '仅供 UI 目录渲染验收',
+            modelInvocable: true, userInvocable: true, source: 'bundled', provider: 'filesystem',
+            path: '/fixture/skills/fixture-demo/SKILL.md',
+          },
+          {
+            name: 'fixture-user-only', description: 'fixture 仅用户技能样本',
+            modelInvocable: false, userInvocable: true, source: 'user-dsh', provider: 'filesystem',
+            path: '/fixture/skills/fixture-user-only/SKILL.md',
+          },
+        ],
+      }),
       list: (request) => {
         const missing = requireSession(request)
         if (missing !== undefined) return missing
@@ -3507,6 +3524,7 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'workspace.insertSessionBefore': return this.api.workspace.insertSessionBefore(request)
       case 'workspace.archiveSession': return this.api.workspace.archiveSession(request)
       case 'skill.list': return this.api.skills.list(request)
+      case 'skill.catalog': return this.api.skills.catalog(request)
       case 'agentPreset.list': return this.api.agentPresets.list(request)
       case 'agentPreset.select': return this.api.agentPresets.select(request)
       case 'agentPreset.read': return this.api.agentPresets.read(request)

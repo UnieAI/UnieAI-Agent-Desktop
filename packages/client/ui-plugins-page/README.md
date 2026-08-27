@@ -56,11 +56,27 @@ The filter segment stands where the reference design puts a public/personal pair
 
 A write does not flip its own row. The product decides what installed means — which version was bound, whether a policy downgraded the request — so an install re-reads the catalogue and the row moves on the answer. `canInstall` is reported beside the rows rather than on them, because it is a property of the reader: a free account sees the whole catalogue and may install none of it.
 
-## Skills: a destination with nothing this build can list
+## Skills: what this deployment actually serves
 
-The skills destination draws its title, its one-line intro, and a sentence saying this build has no account-level skill catalogue. It draws no search field, no segmented control and no rows, because **there is nothing to put in them**. A skill in this product belongs to the project a session runs in, and the only enumeration on the wire is `skill.list`, addressed by `sessionId` (`packages/host/apiproxy/src/api/skills.ts`); this surface is root-scoped and opens with or without a current session, so there is no session to address. Nothing reports installed, personal, system or recommended skills at all.
+The destination lists every skill the deployment would give a model, grouped by where the file lives, with the file's own path on each row.
 
-It is a registered `plugins.page.area` entry (`skills`) rather than a branch inside the surface component, so the day a root-scoped catalogue exists that entry is replaced by one that reads it and nothing about the surface changes.
+**Origin is the grouping because origin is what a person can act on.** The ones they wrote are theirs to edit; a project's belong to that repository and travel with it; the ones this build ships are not theirs at all. `SkillSummary.source` carries the family and, for the two that have one, the directory it was found in — so `user:/home/p/.dsh/skills` and `user` are one heading here rather than a wall of paths. An origin this build does not recognise gets its own trailing heading instead of being dropped.
+
+**The path is on the row because it is the answer to the only question two same-named skills raise.** A personal `review` shadowing a project's `review` looks identical in a list of names; naming the file says which one a turn is about to read. Where the host can open it, the row offers that too — `host.openPath` hands the file to whatever the person's system opens `.md` with, which is their editor.
+
+### It is the same catalogue a turn gets, not a second reading of the same directories
+
+`skill.catalog` (`packages/host/apiproxy/src/api/skills.ts`) is root-scoped: it takes no `sessionId`, because this surface opens with or without a session. It answers by asking the deployment's **standing preset scope** — [`agent-presets`](../../preset/agent-presets/README.md)' `standingService('skills')` — for its snapshot, which is the same registry a turn would consult, discovered through the same mounted providers.
+
+That matters more than it sounds. Skill discovery reads files through `ctx.fs`, and which `ctx.fs` depends on which machine the session is pointed at; a route that walked directories with `node:fs` would list this computer's skills while a turn on a remote machine read that machine's. Asking the standing scope means the page and the model cannot disagree about what exists.
+
+**Discovery is asynchronous, so the route waits for a settled answer.** `snapshot()` reports `complete: false` while a provider is still reading, and the honest response to "what skills are there" is not a partial list that would fill in silently a moment later. The route re-reads until the snapshot settles, up to a second, and serves what it has if it does not — a bounded wait, because a directory on a slow remote machine must not hold the page open indefinitely.
+
+### It lists; it does not write
+
+There is no create, edit, rename or delete control, and that is the design rather than a gap. A skill is a Markdown file with frontmatter; the two things that already write files well are the person's own editor and the agent — which is how a skill gets made here: ask for one, in the conversation, and the `skill-creator` skill this build ships tells the agent where the file goes and what its frontmatter must say. The area says so in a closing line rather than drawing an Add button that would open a form worse than the thing it replaces.
+
+A read that fails leaves the previous catalogue on screen with the host's own message above it. What was served a moment ago is still the best answer anyone has, and blanking the list would turn a lost connection into "you have no skills".
 
 ## Studio MCP: it lists what the account has connected
 
@@ -124,4 +140,6 @@ None; this package assembles and sends nothing.
 - **The reference's Add (`新增 ⌄`) control is not drawn, because nothing on this host can add anything.** The gate serves no create route for a plugin, and the Studio MCP area is read-only by design — servers are added in UnieAI Studio. A menu button whose every item would refuse is worse than no button, so the chrome carries re-read, configuration and close instead.
 - **The reference's per-section gear beside the Installed heading is not drawn.** It would reach the same configuration destination the chrome's gear already reaches, and two controls for one destination on one screen is a choice with no difference behind it.
 - **The reference's public/personal segment is not drawn.** `DirectoryRow` carries no visibility or ownership field, and neither does the response the source reads; the filter segment in that position offers what the catalogue can answer instead.
-- **The skills destination lists nothing, and cannot until a root-scoped catalogue exists.** `skill.list` is addressed by `sessionId`, so it cannot answer for a surface that opens without one, and no route reports personal, system or recommended skills. Closing this needs a session-independent skill-catalogue route plus the `connection`/`remote` injections this package deliberately does not take today.
+- **The skills destination is read-only, and creating one is a conversation rather than a control.** Nothing here writes a `SKILL.md`, so a person who wants a new skill asks the agent for it and comes back to this list. A form would have to own the frontmatter rules, the directory choice and the validation the `skill-creator` skill already states in prose, and it would be a second place for those rules to be wrong.
+- **The catalogue is read on arrival, not watched.** Skills are files edited outside Rabi, and nothing publishes a change stream under them, so a skill written while this destination is open appears when someone presses Read again. Watching would mean a filesystem watcher per skill directory on whichever machine the session points at, which is a larger seam than this page should open.
+- **A skill that fails to load is absent rather than reported.** The registry's snapshot carries what parsed; a `SKILL.md` with broken frontmatter is simply not in it, and this page cannot tell that case from a file nobody wrote. Surfacing it needs the skill service to report its rejects, which it does not today.
