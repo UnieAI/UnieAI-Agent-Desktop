@@ -20,6 +20,37 @@ describe('publication payload policy', () => {
     expect(isForbiddenPublicationFile(file)).toBe(false)
   })
 
+  // A vendored component's licence travels with the copy that ships, and the
+  // copy that ships is `lib/`. `@unieai/uad-client-ui-primitives` declares
+  // `src/vendor/*/LICENSE` in its `files` for that reason.
+  it.each([
+    'src/vendor/thinking-orbs/LICENSE',
+    './src/vendor/thinking-orbs/LICENCE',
+    'src/vendor/thinking-orbs/COPYING',
+    'src/vendor/thinking-orbs/NOTICE.md',
+    'LICENSE',
+  ])('accepts the licence file %s', (file) => {
+    expect(isForbiddenPublicationFile(file)).toBe(false)
+  })
+
+  // The exemption is the whole basename, not a prefix: a source file named
+  // after a licence is still a source file.
+  it.each([
+    'src/vendor/thinking-orbs/LICENSE.ts',
+    'src/LICENSE-header.ts',
+    'src/licenses/index.ts',
+  ])('still rejects %s', (file) => {
+    expect(isForbiddenPublicationFile(file)).toBe(true)
+  })
+
+  it('accepts a packed tarball carrying a vendored licence', () => {
+    expect(validateFixtureTarball([
+      'package/package.json',
+      'package/lib/index.js',
+      'package/src/vendor/thinking-orbs/LICENSE',
+    ])).not.toThrow()
+  })
+
   it.each([
     'src',
     './src',

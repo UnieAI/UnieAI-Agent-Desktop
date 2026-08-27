@@ -23,15 +23,32 @@ function payloadPath(file: string): string {
 }
 
 /**
+ * Legal notices that accompany vendored code. A copy of someone else's work
+ * carries its licence text, and the copy that ships is the compiled `lib/`
+ * output — so the notice sitting beside the vendored source is the one that has
+ * to travel with it. Basenames are matched exactly, so `src/LICENSE.ts` is
+ * still source.
+ */
+const LICENCE_FILE = /^(LICENSE|LICENCE|COPYING|NOTICE)(\.(md|txt))?$/
+
+/**
  * Whether a package payload path exposes source or map intermediates. Maps
  * serve editor navigation during development, where a workspace consumer
  * resolves their source through the package link; a published map resolves
  * nothing, so no payload publishes one.
+ *
+ * A licence file under `src/` is neither: it is the notice a vendored
+ * component's licence requires the distribution to carry, npm force-includes
+ * such files anyway, and `@unieai/uad-client-ui-primitives` declares exactly
+ * that in its `files`. Rejecting it made the whole dsh family unpackable —
+ * which is why 0.1.9 through 0.1.12 were tagged and never reached the registry.
  * @param file - manifest path or tarball member to classify.
  * @returns whether publishing this path is forbidden.
  */
 export function isForbiddenPublicationFile(file: string): boolean {
   const normalized = payloadPath(file)
+  const basename = normalized.slice(normalized.lastIndexOf('/') + 1)
+  if (LICENCE_FILE.test(basename)) return false
   return normalized === 'src'
     || normalized.startsWith('src/')
     || normalized.endsWith('.d.ts.map')
