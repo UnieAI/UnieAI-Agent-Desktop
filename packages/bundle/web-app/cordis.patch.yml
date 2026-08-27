@@ -285,6 +285,33 @@
     - id: ui-conversation
       name: '@unieai/uad-client-ui-conversation'
 
+    # Which machine the work runs on, in the composer's tool row. Its node
+    # half registers nothing: the machine list is the host's own service.
+    - id: ui-machines
+      name: '@unieai/uad-client-ui-machines'
+
+    # Where work happens. The machine list is `local` plus the aliases in the
+    # person's own OpenSSH configuration; the routed providers put the whole
+    # execution world on whichever one they pick. This computer keeps the
+    # sandbox fence it already had — the router builds the sandboxed local
+    # filesystem when a policy is mounted.
+    - id: ssh
+      name: '@unieai/uad-ssh'
+      config:
+        # The person's own OpenSSH configuration by default; an explicit path
+        # is for a deployment that keeps one elsewhere, and for tests that
+        # must not read a developer's real machines.
+        configPath: !!js process.env.DSH_SSH_CONFIG
+
+    - id: machines
+      name: '@unieai/uad-machines'
+
+    - id: fs-routed
+      name: '@unieai/uad-execution-router/fs'
+
+    - id: subprocess-routed
+      name: '@unieai/uad-execution-router/subprocess'
+
     # Citations under a Studio knowledge-base result, in the details panel's
     # per-call annotation list. Mounted after the panel that declares the
     # hole; the registration waits for it either way.
@@ -591,3 +618,11 @@
 - insert:
     - id: genui
       name: '@changfenhuang/dsh-genui'
+
+# The execution world is routed now: these two rows are what it routes to,
+# built privately per machine rather than mounted once here.
+- id: subprocess
+  disabled: true
+
+- id: fs-sandbox
+  disabled: true

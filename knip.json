@@ -734,6 +734,18 @@
         "src/**/*.ts",
         "tests/**/*.ts"
       ]
+    },
+    "packages/client/ui-machines": {
+      "entry": [
+        "tests/**/*.spec.ts",
+        "tests/**/*.client.spec.tsx"
+      ],
+      "project": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tests/**/*.ts",
+        "tests/**/*.tsx"
+      ]
     }
   }
 }

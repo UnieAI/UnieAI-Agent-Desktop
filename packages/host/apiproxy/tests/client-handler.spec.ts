@@ -83,6 +83,8 @@ function scriptedApi(overrides: {
       },
       createDirectory: r => ok(r, { path: '/t/new' }),
       openPath: r => ok(r, { opened: true as const }),
+      listMachines: r => ok(r, { machines: [], current: 'local' }),
+      selectMachine: r => ok(r, { machines: [], current: 'local' }),
       ...overrides.host,
     },
     browser: {

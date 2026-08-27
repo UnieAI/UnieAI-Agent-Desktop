@@ -52,6 +52,26 @@ export interface WorkspaceFile {
   reason?: 'too-large' | 'binary'
 }
 
+/** One machine a person can work on. */
+export interface MachineEntry {
+  /** `local` for this computer, otherwise the OpenSSH alias. */
+  id: string
+  /** How a person sees it named. */
+  label: string
+  /** Which kind of target it is; a surface shows them differently. */
+  kind: 'local' | 'ssh'
+  /** Absolute path of the configuration file that declared an ssh target. */
+  source?: string
+}
+
+/** The machines a person can work on, and the one they are working on. */
+export interface MachineList {
+  /** Every machine, this computer first. */
+  machines: MachineEntry[]
+  /** Id of the machine work happens on now. */
+  current: string
+}
+
 /** host.listWorkspaceEntries response value: one level inside one workspace. */
 export interface WorkspaceListing {
   /** The workspace root this level was resolved against. */
@@ -148,6 +168,35 @@ export interface HostApi {
    * Names only. Sizes and kinds come along because a listing already knows
    * them; content does not, and no argument here can ask for it.
    */
+  /**
+   * The machines a person can work on, and which one they are working on.
+   *
+   * Names only: an alias, a label, and where it was declared. No hostname,
+   * no user, no key path — those are in the person's own OpenSSH
+   * configuration, and a page that published them would be publishing the
+   * shape of someone's network to anything that can read the page.
+   */
+  listMachines(
+    request: RpcRequest<{}>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<MachineList>>
+
+  /**
+   * Work on another machine from now on.
+   *
+   * The whole execution world moves: commands, files, terminals and language
+   * servers all follow. Sessions already open keep their history and their
+   * workspace, but their next command runs on the new machine — nothing is
+   * migrated, and nothing on the old machine is closed.
+   *
+   * A machine no configuration offers is refused rather than stored, because
+   * storing it would leave every later command failing.
+   */
+  selectMachine(
+    request: RpcRequest<{ machine: string }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<MachineList>>
+
   listWorkspaceEntries(
     request: RpcRequest<{ root: string; path?: string }>,
     signal: AbortSignal,

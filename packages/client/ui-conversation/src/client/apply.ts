@@ -207,6 +207,7 @@ export function apply(ctx: Context): void {
       'conversation.input.dock': { kind: 'list', scope: 'session' },
       'conversation.composer.dock': { kind: 'list', scope: 'session' },
       'conversation.input.left': { kind: 'list', scope: 'session' },
+      'conversation.input.chrome': { kind: 'list', scope: 'root' },
       'conversation.input.right': { kind: 'list', scope: 'session' },
       'conversation.hero.brand.mark': { kind: 'single', scope: 'root' },
       'conversation.hero.workspace': { kind: 'single', scope: 'root' },

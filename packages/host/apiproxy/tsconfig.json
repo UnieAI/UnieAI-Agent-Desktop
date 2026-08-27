@@ -109,6 +109,9 @@
     },
     {
       "path": "../../browser/browser-operator"
+    },
+    {
+      "path": "../../machines/machines"
     }
   ]
 }

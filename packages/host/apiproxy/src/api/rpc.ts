@@ -46,6 +46,8 @@ export interface RpcErrorDetailsMap {
   'directory-create-failed': { path: string }
   'directory-picker-unavailable': { capability: string }
   'workspace-listing-unavailable': {}
+  'machines-unavailable': {}
+  'machine-unknown': {}
   /**
    * The file changed since the editor read it — an agent working in the same
    * tree, another editor, or a build. The write is refused rather than made to

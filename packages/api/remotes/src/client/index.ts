@@ -41,7 +41,7 @@ export type {
   CredentialView, DirectoryListing, DiscoveredModelView, HistoryEntry, HostFrame, IApiClient,
   TerminalOpened, TerminalSignalName, TerminalView, BrowserOpened, BrowserView,
   MessageId, ModelCatalogFailure, ModelProviderGroup, ModelReasoningEffort, ModelSelection,
-  MuxFrame, PromptContentPart, QuestionResponsePayload, QueueAction, RpcError, RpcId, RpcReceipt,
+  MachineEntry, MachineList, MuxFrame, PromptContentPart, QuestionResponsePayload, QueueAction, RpcError, RpcId, RpcReceipt,
   RpcRequest, RpcResponse, RpcResult, SessionId, SessionModels, SessionSearchItem,
   SessionSummary, SettingsNamespaceView, SettingsPathOpView, SkillEntry, StreamChunk,
   SubagentAddress, SubagentCatalog, JobView, ToolCallView, ToolEventView, ToolResultView,

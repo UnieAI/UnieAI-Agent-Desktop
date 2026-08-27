@@ -27,6 +27,7 @@ import { hostFrameSchema, muxFrameSchema } from '../api/events.schema.ts'
 import {
   hostCreateDirectoryValueSchema,
   hostListWorkspaceEntriesValueSchema,
+  hostMachineListValueSchema,
   hostReadWorkspaceFileValueSchema, hostDescribeValueSchema,
   hostListDirectoryValueSchema, hostOpenPathValueSchema, hostPickDirectoryValueSchema,
 } from '../api/host.schema.ts'
@@ -124,6 +125,8 @@ export interface IApiClient {
     listDirectory(payload: RequestPayload<'host.listDirectory'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.listDirectory'>>>
     createDirectory(payload: RequestPayload<'host.createDirectory'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.createDirectory'>>>
     listWorkspaceEntries(payload: RequestPayload<'host.listWorkspaceEntries'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.listWorkspaceEntries'>>>
+    listMachines(payload: RequestPayload<'host.listMachines'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.listMachines'>>>
+    selectMachine(payload: RequestPayload<'host.selectMachine'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.selectMachine'>>>
     readWorkspaceFile(payload: RequestPayload<'host.readWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.readWorkspaceFile'>>>
     writeWorkspaceFile(payload: RequestPayload<'host.writeWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.writeWorkspaceFile'>>>
     openPath(payload: RequestPayload<'host.openPath'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.openPath'>>>
@@ -242,6 +245,8 @@ const UNARY_VALUE_SCHEMAS: { [K in keyof RpcMethodMap]: z.ZodType<Wire<ResponseV
   'host.listDirectory': hostListDirectoryValueSchema,
   'host.createDirectory': hostCreateDirectoryValueSchema,
   'host.listWorkspaceEntries': hostListWorkspaceEntriesValueSchema,
+  'host.listMachines': hostMachineListValueSchema,
+  'host.selectMachine': hostMachineListValueSchema,
   'host.readWorkspaceFile': hostReadWorkspaceFileValueSchema,
   'host.openPath': hostOpenPathValueSchema,
   'workspace.list': workspaceListValueSchema,
@@ -494,6 +499,8 @@ export abstract class AbstractApiClient implements IApiClient {
     listDirectory: (payload, signal) => this.callUnary('host.listDirectory', payload, signal),
     createDirectory: (payload, signal) => this.callUnary('host.createDirectory', payload, signal),
     listWorkspaceEntries: (payload, signal) => this.callUnary('host.listWorkspaceEntries', payload, signal),
+    listMachines: (payload, signal) => this.callUnary('host.listMachines', payload, signal),
+    selectMachine: (payload, signal) => this.callUnary('host.selectMachine', payload, signal),
     readWorkspaceFile: (payload, signal) => this.callUnary('host.readWorkspaceFile', payload, signal),
     writeWorkspaceFile: (payload, signal) => this.callUnary('host.writeWorkspaceFile', payload, signal),
     openPath: (payload, signal) => this.callUnary('host.openPath', payload, signal),

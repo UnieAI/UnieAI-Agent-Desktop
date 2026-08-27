@@ -161,14 +161,19 @@ export function ConversationRoot({
         ? { blocked: composerBlock, placeholder: composerBlock.reason }
         : hero ? { placeholder: t('placeholder.hero') } : {}),
     overlay: renderSlot('conversation.input.overlay', {}),
-    leftItems: zone === undefined
-      ? null
-      : (
-        <>
-          {renderSlot('conversation.hero.agentPreset', {})}
-          {renderSlot('conversation.input.left', zone)}
-        </>
-      ),
+    leftItems: (
+      <>
+        {/* Resident chrome first: it is there from cold start, while the
+          session-scoped seats wait for a session to exist. */}
+        {renderSlot('conversation.input.chrome', {})}
+        {zone !== undefined && (
+          <>
+            {renderSlot('conversation.hero.agentPreset', {})}
+            {renderSlot('conversation.input.left', zone)}
+          </>
+        )}
+      </>
+    ),
     rightItems: zone === undefined ? null : renderSlot('conversation.input.right', zone),
     // Stats band under the card, inside the bar's width column so both
     // share one constraint (composer.dock = stats-line family).

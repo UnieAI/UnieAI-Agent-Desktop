@@ -42,7 +42,9 @@ import {
 } from '../api/sessions.schema.ts'
 import {
   hostCreateDirectoryRequestSchema,
+  hostListMachinesRequestSchema,
   hostListWorkspaceEntriesRequestSchema,
+  hostSelectMachineRequestSchema,
   hostReadWorkspaceFileRequestSchema, hostDescribeRequestSchema,
   hostListDirectoryRequestSchema, hostOpenPathRequestSchema,
   hostPickDirectoryRequestSchema,
@@ -122,6 +124,8 @@ const UNARY_ROUTES: UnaryRoutes = {
   'host.listDirectory': { schema: hostListDirectoryRequestSchema, invoke: (api, r, signal) => api.host.listDirectory(r, signal) },
   'host.createDirectory': { schema: hostCreateDirectoryRequestSchema, invoke: (api, r) => api.host.createDirectory(r) },
   'host.listWorkspaceEntries': { schema: hostListWorkspaceEntriesRequestSchema, invoke: (api, r, signal) => api.host.listWorkspaceEntries(r, signal) },
+  'host.listMachines': { schema: hostListMachinesRequestSchema, invoke: (api, r, signal) => api.host.listMachines(r, signal) },
+  'host.selectMachine': { schema: hostSelectMachineRequestSchema, invoke: (api, r, signal) => api.host.selectMachine(r, signal) },
   'host.readWorkspaceFile': { schema: hostReadWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.readWorkspaceFile(r, signal) },
   'host.writeWorkspaceFile': { schema: hostWriteWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.writeWorkspaceFile(r, signal) },
   'host.openPath': { schema: hostOpenPathRequestSchema, invoke: (api, r, signal) => api.host.openPath(r, signal) },

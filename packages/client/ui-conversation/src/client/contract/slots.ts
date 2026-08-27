@@ -236,6 +236,18 @@ declare module '@unieai/uad-client-ui-slots' {
      */
     'conversation.input.left': { kind: 'list'; scope: 'session'; owner: InputZone }
     /**
+     * Resident controls in the composer's tool row that do not depend on a
+     * session — rendered from cold start, beside the workspace chip.
+     *
+     * Root scope, and that is the point: `conversation.input.left` carries an
+     * {@link InputZone}, so it cannot render before a session exists, while
+     * facts about WHERE work will happen are true before anyone has started
+     * a conversation. A person choosing a machine has not necessarily chosen
+     * a folder yet — and on a remote machine, which folders exist depends on
+     * the answer.
+     */
+    'conversation.input.chrome': { kind: 'list'; scope: 'root'; owner: Record<string, never> }
+    /**
      * The right end of the same tool row, before the primary send button —
      * the seat for a control the user reaches on the way to sending (the
      * model select sits in its own named seat just left of here). Same
@@ -672,7 +684,7 @@ export type ConversationSlotProps =
     | 'conversation.composer' | 'conversation.composer.bar'
     | 'conversation.input.overlay'
     | 'conversation.input.dock' | 'conversation.composer.dock'
-    | 'conversation.input.left' | 'conversation.input.right'
+    | 'conversation.input.left' | 'conversation.input.right' | 'conversation.input.chrome'
     | 'conversation.hero.brand.mark'
     | 'conversation.hero.workspace'
     | 'conversation.hero.agentPreset'

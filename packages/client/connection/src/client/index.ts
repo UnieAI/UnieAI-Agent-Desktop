@@ -16,7 +16,7 @@ import type { ClientConnectionRpc } from '../rpc.ts'
 export type {
   ApiProxy, SessionsApi, SessionSearchItem, SessionSummary, PromptContentPart, HostApi, EventsApi, MuxFrame, HostFrame,
   ApprovalResponsePayload, QuestionResponsePayload, HistoryEntry, ToolEventView,
-  DirectoryEntry, DirectoryListing, WorkspaceEntry, WorkspaceFile, WorkspaceListing,
+  DirectoryEntry, DirectoryListing, MachineEntry, MachineList, WorkspaceEntry, WorkspaceFile, WorkspaceListing,
   ToolCallView, ToolResultView, WorkspaceApi, WorkspaceId, WorkspaceView,
   TerminalApi, TerminalOpened, TerminalSignalName, TerminalView,
   BrowserApi, BrowserOpened, BrowserView,

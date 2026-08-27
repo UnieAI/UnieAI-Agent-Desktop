@@ -1,0 +1,79 @@
+{
+  "name": "@unieai/uad-client-ui-machines",
+  "description": "The machine a conversation runs on, chosen from the composer",
+  "version": "0.1.12",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "packages/client/ui-machines"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@unieai/uad-client-runtime",
+        "@unieai/uad-client-locale",
+        "@unieai/uad-client-connection",
+        "@unieai/uad-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-api-remotes": "workspace:^",
+    "@unieai/uad-client-connection": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "~18.3.1",
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-api-remotes": "workspace:^",
+    "@unieai/uad-client-connection": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-test-runtime": "workspace:^",
+    "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-client-ui-primitives": "workspace:^",
+    "@unieai/uad-client-ui-slots": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

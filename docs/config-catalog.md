@@ -3639,6 +3639,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@unieai/uad-client-ui-input-trigger` ([`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts))
 - `@unieai/uad-client-ui-jobs` ([`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts))
 - `@unieai/uad-client-ui-layout` ([`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts))
+- `@unieai/uad-client-ui-machines` ([`packages/client/ui-machines/src/index.ts`](../packages/client/ui-machines/src/index.ts))
 - `@unieai/uad-client-ui-message-feedback` ([`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts))
 - `@unieai/uad-client-ui-model-selection` ([`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts))
 - `@unieai/uad-client-ui-permission-presets` ([`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts))

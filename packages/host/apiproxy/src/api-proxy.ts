@@ -13,6 +13,8 @@ import type { FsDirEntry } from '@unieai/uad-fs'
 import type { WorkspaceEntry } from './api/host.ts'
 import { z as zod } from 'zod'
 import type { Context } from '@unieai/cordis'
+// Type-only: pulls the machine list's `ctx.machines` Context merge.
+import type {} from '@unieai/uad-machines'
 import { installModelSelection } from '@unieai/uad-agent'
 import type { Agent, ModelSelection, ModelSelectionRef, AgentOptions, AgentStatus } from '@unieai/uad-agent'
 import type {} from '@unieai/uad-agent-presets/types'
@@ -3349,6 +3351,48 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         } catch (error: unknown) {
           return err(request, directoryError(error))
         }
+      },
+
+      async listMachines(request, signal) {
+        void signal
+        // Optional service: a deployment that composes no machine list works
+        // on the computer it runs on, and says so rather than offering a
+        // picker with nothing in it.
+        const machines = ctx.get('machines')
+        if (machines === undefined) {
+          return err(request, {
+            code: 'machines-unavailable',
+            message: 'host.listMachines needs the machines service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        const listed = await machines.list()
+        return ok(request, { machines: listed.map(entry => ({ ...entry })), current: machines.current })
+      },
+
+      async selectMachine(request, signal) {
+        void signal
+        const machines = ctx.get('machines')
+        if (machines === undefined) {
+          return err(request, {
+            code: 'machines-unavailable',
+            message: 'host.selectMachine needs the machines service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        try {
+          await machines.select(request.payload.machine)
+        } catch (error: unknown) {
+          // The service refuses a machine nothing offers; that refusal is the
+          // answer a page needs, not a failure to report as a crash.
+          return err(request, {
+            code: 'machine-unknown',
+            message: error instanceof Error ? error.message : String(error),
+            details: {},
+          })
+        }
+        const listed = await machines.list()
+        return ok(request, { machines: listed.map(entry => ({ ...entry })), current: machines.current })
       },
 
       async listWorkspaceEntries(request, signal) {

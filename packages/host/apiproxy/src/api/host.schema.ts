@@ -58,6 +58,28 @@ const workspaceEntrySchema = z.object({
   size: z.number().optional(),
 })
 
+/** One machine, as a page sees it. */
+const machineEntrySchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  kind: z.union([z.literal('local'), z.literal('ssh')]),
+  source: z.string().optional(),
+})
+
+/** host.listMachines request payload: the list takes no arguments. */
+export const hostListMachinesRequestSchema = z.object({}) satisfies z.ZodType<Wire<RequestPayload<'host.listMachines'>>>
+
+/** host.listMachines response value, shared with host.selectMachine. */
+export const hostMachineListValueSchema = z.object({
+  machines: z.array(machineEntrySchema),
+  current: z.string(),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.listMachines'>>>
+
+/** host.selectMachine request payload. */
+export const hostSelectMachineRequestSchema = z.object({
+  machine: z.string(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.selectMachine'>>>
+
 /** host.listWorkspaceEntries request payload; an absent path lists the root itself. */
 export const hostListWorkspaceEntriesRequestSchema = z.object({
   root: z.string(),

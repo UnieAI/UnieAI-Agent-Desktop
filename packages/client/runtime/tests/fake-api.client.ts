@@ -186,6 +186,8 @@ export class FakeApiClient implements IApiClient {
       Promise.resolve({ rpcId: RpcId('fake'), result: { ok: true as const, value: { root: '/w', path: '/w/a', size: 0, text: '' } } })),
     writeWorkspaceFile: (payload: unknown) => this.record('host.writeWorkspaceFile', payload, Promise.resolve(ok({ version: 'v1' }))),
     openPath: (payload: unknown) => this.record('host.openPath', payload, this.onOpenPath(payload)),
+    listMachines: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
+    selectMachine: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
   }
 
   // The archive-set field defaults at the binding below so list stubs keep

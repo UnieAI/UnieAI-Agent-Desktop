@@ -2707,6 +2707,11 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
           return ok(request, { path: target })
         },
         openPath: request => ok(request, { opened: true as const }),
+        // One machine, and it is this computer: the fixture composes no
+        // machine list, and offering names it cannot switch to would be a
+        // picker that lies.
+        listMachines: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
+        selectMachine: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
       }
     })(),
 
@@ -3486,6 +3491,8 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'host.listDirectory': return this.api.host.listDirectory(request, new AbortController().signal)
       case 'host.createDirectory': return this.api.host.createDirectory(request)
       case 'host.openPath': return this.api.host.openPath(request, new AbortController().signal)
+      case 'host.listMachines': return this.api.host.listMachines(request, signal)
+      case 'host.selectMachine': return this.api.host.selectMachine(request, signal)
       case 'workspace.list': return this.api.workspace.list(request)
       case 'workspace.create': return this.api.workspace.create(request)
       case 'workspace.rename': return this.api.workspace.rename(request)

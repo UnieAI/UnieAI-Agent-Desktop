@@ -24,6 +24,7 @@
 import { Context } from '@unieai/cordis'
 import { LOCAL_MACHINE } from '@unieai/uad-machines'
 import { LocalFileSystem } from '@unieai/uad-fs-local'
+import { SandboxedFileSystem } from '@unieai/uad-fs-sandbox'
 import { LocalSubprocessRuntime } from '@unieai/uad-subprocess-local'
 import { SshFileSystem } from '@unieai/uad-fs-ssh'
 import { SshSubprocessRuntime } from '@unieai/uad-subprocess-ssh'
@@ -45,9 +46,17 @@ export interface RemoteWorldOptions {
  */
 export function buildFileSystem(ctx: Context, machine: string, options: RemoteWorldOptions): FileSystem {
   const world = ctx.isolate('fs')
-  return machine === LOCAL_MACHINE
-    ? new LocalFileSystem(world, LocalFileSystem.Config({}))
-    : new SshFileSystem(world, SshFileSystem.Config({ machine, cwd: options.cwd }))
+  if (machine !== LOCAL_MACHINE) {
+    return new SshFileSystem(world, SshFileSystem.Config({ machine, cwd: options.cwd }))
+  }
+  // This computer keeps the fence it already had. A composition that mounts
+  // a sandbox policy expects writes to be confined by it, and routing must
+  // not be the thing that quietly removes that — while a remote machine has
+  // no local fence to apply, which its own provider documents.
+  const config = LocalFileSystem.Config({})
+  return ctx.get('sandboxPolicy') === undefined
+    ? new LocalFileSystem(world, config)
+    : new SandboxedFileSystem(world, config)
 }
 
 /**

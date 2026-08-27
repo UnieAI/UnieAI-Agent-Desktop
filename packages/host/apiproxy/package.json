@@ -81,6 +81,7 @@
     "@unieai/uad-cordis-host-runner": "workspace:^",
     "@unieai/uad-fs": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-machines": "workspace:^",
     "@unieai/uad-terminal-operator": "workspace:^"
   },
   "devDependencies": {
@@ -91,6 +92,7 @@
     "@unieai/uad-fs": "workspace:^",
     "@unieai/uad-fs-local": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-machines": "workspace:^",
     "@unieai/uad-storage": "workspace:^",
     "@unieai/uad-storage-domain": "workspace:^",
     "@unieai/uad-terminal-operator": "workspace:^",

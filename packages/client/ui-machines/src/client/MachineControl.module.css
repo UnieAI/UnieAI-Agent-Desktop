@@ -1,0 +1,101 @@
+.control {
+  position: relative;
+  display: inline-flex;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 150ms, color 150ms;
+}
+
+.chip:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* A remote machine is the state worth noticing: work is leaving this
+   computer, and a person should not have to open the menu to find out. */
+.chip[data-remote='true'] {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-active);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 220px;
+  max-width: 320px;
+  padding: 4px;
+  border-radius: var(--dsw-radius-card, 10px);
+  background: var(--dsw-alias-surface-raised, #fff);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 18%);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.item[aria-pressed='true'] {
+  background: var(--dsw-alias-interactive-bg-active);
+}
+
+.itemKind {
+  margin-left: auto;
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+}
+
+.footer {
+  padding: 7px 10px 5px;
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.error {
+  padding: 6px 10px;
+  color: var(--dsw-alias-label-danger, #b3261e);
+  font-size: 12px;
+}
