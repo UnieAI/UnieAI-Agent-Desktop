@@ -25,7 +25,11 @@
 
 每個世界都是在**隔離的子 context**（`ctx.isolate('fs')`）裡建構的真正 provider，那個 context 的服務欄位與父層分開。這正是這個套件能夠自己註冊成唯一的 `ctx.fs`、同時私有地持有好幾個其他 provider 的原因。
 
-建構刻意是同步的，而且每個 provider 自己的 schema 在這裡套用。provider 在建構子裡就註冊自己，而 subprocess 接縫的 `spawn` 是同步發佈一個活的 handle——呼叫端下一行就可能往子行程的 stdin 寫東西，所以一個「串流稍後才出現」的 handle 會弄壞那些接縫契約本來就允許的呼叫端。schema 的預設值是外掛生命週期的工作，而直接建構跳過了它，因此拿到空的 `{}` 的 provider 會拒絕自己的設定。
+兩個接縫的建法不同，而其中一種能付的代價，另一種付不起。
+
+**檔案系統**的 world 走外掛生命週期掛載（`world.plugin(...)`），因為它的 provider 都宣告了注入——本機那個帶沙箱的要 `sandboxPolicy`，遠端那個要機器名冊——而**只有外掛生命週期會兌現一個宣告過的注入**。用 `new` 建出來的 provider 坐在一個沒有 inject 清單的 context 上，它自己的讀取會被 context proxy 拒絕（`cannot get property "sandboxPolicy" without inject`），於是這個接縫看起來掛上了，實際上什麼都答不出來。檔案系統上真正要緊的方法本來就都是非同步的，所以等它掛完，呼叫端察覺不到任何代價。
+
+**subprocess** 的 world 則是直接建構，因為 `spawn` 是同步發佈一個活的 handle——呼叫端下一行就可能往子行程的 stdin 寫東西，而一個「串流稍後才出現」的 handle 會弄壞那些接縫契約本來就允許的呼叫端。這條路付得起，只因為兩個 runtime 都不需要注入才能工作：本機那個一個都沒宣告，遠端那個則是把機器名冊當建構參數交給它，而不是去讀一個沒宣告的服務。直接建構出來的 provider，它自己的 schema 在這裡套用——schema 的預設值是外掛生命週期的工作，而直接建構跳過了它，一個拿到裸 `{}` 的 provider 會拒絕自己的設定。
 
 ## Model Experience
 

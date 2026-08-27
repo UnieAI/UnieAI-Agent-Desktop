@@ -26,6 +26,7 @@ import { Context } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import { LocalSubprocessRuntime } from '@unieai/uad-subprocess-local'
 import { quoteShellArg, remoteCommandLine } from '@unieai/uad-ssh'
+import type { SshHosts } from '@unieai/uad-ssh'
 import type {
   SubprocessHandle,
   SubprocessSpawnSpec,
@@ -90,8 +91,21 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
   /** Config schema, reachable from a composition that constructs directly. */
   static Config: z<Config> = Config
 
-  constructor(ctx: Context, public sshConfig: Config) {
+  /**
+   * @param ctx - context this provider registers `subprocess` in.
+   * @param sshConfig - which machine every command runs on.
+   * @param hosts - the machine book, for a caller that constructs this
+   * directly. Mounted as a plugin the declared injection supplies it; built
+   * by hand — as the execution router does — nothing declares it, and
+   * reading an undeclared service through the context proxy is refused.
+   */
+  constructor(ctx: Context, public sshConfig: Config, private readonly hosts?: SshHosts) {
     super(ctx)
+  }
+
+  /** The machine book: the one handed in, else the declared injection. */
+  private get book(): SshHosts {
+    return this.hosts ?? this.ctx.ssh
   }
 
   /**
@@ -109,7 +123,7 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
     const line = recordingPid(remoteCommandLine(spec.argv, spec.cwd, remoteEnv(spec.env)), pidFile)
     const handle = super.spawn({
       ...spec,
-      argv: this.ctx.ssh.argvFor(this.sshConfig.machine, line),
+      argv: this.book.argvFor(this.sshConfig.machine, line),
       cwd: homedir(),
       env: CLIENT_ENV,
     })
@@ -174,7 +188,7 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
     )
     const local = await super.spawnTerminal({
       ...spec,
-      argv: this.ctx.ssh.argvFor(this.sshConfig.machine, line, { tty: true }),
+      argv: this.book.argvFor(this.sshConfig.machine, line, { tty: true }),
       cwd: homedir(),
       env: {},
     })
@@ -202,7 +216,7 @@ export class SshSubprocessRuntime extends LocalSubprocessRuntime {
    */
   private async control(line: string, signal?: AbortSignal): Promise<{ text: string; exitCode: number | null }> {
     const handle = super.spawn({
-      argv: this.ctx.ssh.argvFor(this.sshConfig.machine, line),
+      argv: this.book.argvFor(this.sshConfig.machine, line),
       cwd: homedir(),
       env: CLIENT_ENV,
       stdio: { stdin: 'ignore', stdout: CONTROL_OUTPUT, stderr: CONTROL_OUTPUT },

@@ -49,6 +49,9 @@
     },
     {
       "path": "../../fs/fs-sandbox"
+    },
+    {
+      "path": "../../sandbox/sandbox-policy"
     }
   ]
 }

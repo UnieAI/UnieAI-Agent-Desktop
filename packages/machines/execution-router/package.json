@@ -60,6 +60,7 @@
   "devDependencies": {
     "@unieai/cordis": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-sandbox-policy": "workspace:^",
     "@unieai/uad-settings-file": "workspace:^",
     "@unieai/uad-ssh": "workspace:^"
   },

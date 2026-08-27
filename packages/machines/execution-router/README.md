@@ -25,7 +25,11 @@ One world per machine, built when that machine is first used and kept afterwards
 
 Each world is a real provider constructed in an **isolated child context** (`ctx.isolate('fs')`), whose service slot is separate from its parent's. That is what lets this package register itself as the one `ctx.fs` while owning several others privately.
 
-Construction is deliberately synchronous, and each provider's own schema is applied here. A provider registers itself in its constructor, and the subprocess seam publishes a live handle from a synchronous `spawn` — a caller may write to the child's stdin on the very next line, so a handle whose streams appeared later would break callers that the seam's own contract permits. Schema defaults are the plugin lifecycle's work, which construction skips, so a provider handed a bare `{}` would reject its own configuration.
+The two seams are built differently, and each way costs something the other cannot pay.
+
+A **filesystem** world is mounted through the plugin lifecycle (`world.plugin(...)`), because its providers declare injections — the sandboxed local one needs `sandboxPolicy`, the remote one needs the machine book — and **only the plugin lifecycle honours a declared injection**. A provider built with `new` sits on a context with no inject list, so its own reads are refused by the context proxy (`cannot get property "sandboxPolicy" without inject`) and the seam answers nothing while looking mounted. Every filesystem method that matters is async already, so waiting for the mount costs nothing a caller can observe.
+
+A **subprocess** world is constructed directly, because `spawn` publishes a live handle synchronously — a caller may write to the child's stdin on the very next line, and a handle whose streams appeared later would break callers the seam's own contract permits. That is affordable only because neither runtime needs an injection to work: the local one declares none, and the remote one is handed the machine book as a constructor argument rather than reading an undeclared service. Each directly-constructed provider's own schema is applied here, since schema defaults are the plugin lifecycle's work and construction skips them — a provider handed a bare `{}` would reject its own configuration.
 
 ## Model Experience
 

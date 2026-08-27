@@ -6,19 +6,30 @@
  * separate from its parent's, which is what lets the router register itself
  * as the one `ctx.fs` while owning others privately.
  *
- * Construction is deliberately synchronous. A provider registers itself in
- * its constructor, and the subprocess seam publishes a live handle from a
- * synchronous `spawn` — a caller may write to the child's stdin on the next
- * line. Building a world through the plugin lifecycle would make that handle
- * a placeholder whose streams appear later, which no caller of that seam is
- * written to expect.
+ * The two seams are built differently, and the reason is what each promises.
+ *
+ * A FILESYSTEM world is mounted as a plugin, because its providers declare
+ * injections — the sandboxed local one needs `sandboxPolicy`, the remote one
+ * needs the machine book — and only the plugin lifecycle honours a declared
+ * injection. Constructing such a provider by hand leaves those reads refused
+ * by the context proxy (`cannot get property "sandboxPolicy" without
+ * inject`), which surfaces as a filesystem that quietly answers nothing.
+ * Every method that matters there is async already, so waiting for the mount
+ * costs nothing a caller can observe.
+ *
+ * A SUBPROCESS world is constructed directly, because `spawn` publishes a
+ * live handle synchronously — a caller may write to the child's stdin on the
+ * next line, and a placeholder whose streams appear later is not what that
+ * seam promises. The local runtime declares no injections, and the remote one
+ * is handed its machine book instead of reading an undeclared service.
  *
  * Worlds are built lazily and kept: switching back to a machine finds its
  * connection still open, and a machine never used costs nothing.
  *
- * Each provider's own schema is applied here. Schema defaults are the plugin
- * lifecycle's work, and construction skips it — a provider handed a bare `{}`
- * would be missing every defaulted field and reject its own configuration.
+ * Each directly-constructed provider's own schema is applied here. Schema
+ * defaults are the plugin lifecycle's work, and construction skips it — a
+ * provider handed a bare `{}` would be missing every defaulted field and
+ * reject its own configuration.
  */
 
 import { Context } from '@unieai/cordis'
@@ -44,19 +55,27 @@ export interface RemoteWorldOptions {
  * @param options - remote-world settings, used for a non-local machine.
  * @returns the provider.
  */
-export function buildFileSystem(ctx: Context, machine: string, options: RemoteWorldOptions): FileSystem {
+export async function buildFileSystem(
+  ctx: Context,
+  machine: string,
+  options: RemoteWorldOptions,
+): Promise<FileSystem> {
   const world = ctx.isolate('fs')
   if (machine !== LOCAL_MACHINE) {
-    return new SshFileSystem(world, SshFileSystem.Config({ machine, cwd: options.cwd }))
+    await world.plugin(SshFileSystem, { machine, cwd: options.cwd })
+  } else if (ctx.get('sandboxPolicy') === undefined) {
+    await world.plugin(LocalFileSystem, {})
+  } else {
+    // This computer keeps the fence it already had. A composition that
+    // mounts a sandbox policy expects writes to be confined by it, and
+    // routing must not be the thing that quietly removes that — while a
+    // remote machine has no local fence to apply, which its provider
+    // documents.
+    await world.plugin(SandboxedFileSystem, {})
   }
-  // This computer keeps the fence it already had. A composition that mounts
-  // a sandbox policy expects writes to be confined by it, and routing must
-  // not be the thing that quietly removes that — while a remote machine has
-  // no local fence to apply, which its own provider documents.
-  const config = LocalFileSystem.Config({})
-  return ctx.get('sandboxPolicy') === undefined
-    ? new LocalFileSystem(world, config)
-    : new SandboxedFileSystem(world, config)
+  const provider = world.get('fs')
+  if (provider === undefined) throw new Error(`machine '${machine}' has no filesystem provider`)
+  return provider
 }
 
 /**
