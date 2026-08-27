@@ -85,6 +85,9 @@ function scriptedApi(overrides: {
       openPath: r => ok(r, { opened: true as const }),
       listMachines: r => ok(r, { machines: [], current: 'local' }),
       selectMachine: r => ok(r, { machines: [], current: 'local' }),
+      addMachine: r => ok(r, { machines: [], current: 'local' }),
+      removeMachine: r => ok(r, { machines: [], current: 'local' }),
+      probeMachine: r => ok(r, { reachable: true, message: '' }),
       ...overrides.host,
     },
     browser: {

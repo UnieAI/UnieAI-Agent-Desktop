@@ -1086,6 +1086,27 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'resolution after the choice is durable.',
       },
       {
+        signature: 'add(draft: SshHostDraft): Promise<SshEditRefusal | undefined>',
+        description: 'Write one machine into the person\'s own OpenSSH configuration.',
+        parameters: [{ name: 'draft', description: 'the machine to add.' }],
+        returns: 'nothing, or the refusal that stopped it.',
+        throws: ['when no machine book is composed, which is a composition error rather than a person\'s mistake.'],
+      },
+      {
+        signature: 'async remove(id: string): Promise<SshEditRefusal | undefined>',
+        description: 'Remove one machine from the person\'s own configuration.\n\nSwitching back to this computer first when the machine being removed is the current one: leaving it selected would point every later command at a machine that is no longer written down anywhere.',
+        parameters: [{ name: 'id', description: 'the machine to remove.' }],
+        returns: 'nothing, or the refusal that stopped it.',
+        throws: ['when no machine book is composed.'],
+      },
+      {
+        signature: 'probe(id: string, signal?: AbortSignal): Promise<{ reachable: boolean; message: string }>',
+        description: 'Ask whether one machine answers right now.',
+        parameters: [{ name: 'id', description: 'the machine to reach.' }, { name: 'signal', description: 'aborts the attempt.' }],
+        returns: 'reachability, with the client\'s own message when it failed.',
+        throws: ['when no machine book is composed.'],
+      },
+      {
         signature: 'watch(callback: (id: string) => void): () => void',
         description: 'Observe changes to the current machine.',
         parameters: [{ name: 'callback', description: 'invoked after each committed change with the new target id.' }],
@@ -1893,6 +1914,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'The `ssh` argv for one remote command.\n\nMultiplexing is requested rather than assumed: `ControlMaster=auto` opens a master when there is none and joins one when there is, so the first command pays the handshake and the rest do not.',
         parameters: [{ name: 'alias', description: 'the machine to run on.' }, { name: 'remoteCommand', description: 'the command line for the remote shell; omitted for a login session.' }, { name: 'options', description: '`tty` allocates a remote terminal, which is also what makes the remote command die with the connection.' }],
         returns: 'argv whose first element is the configured `ssh` client.',
+      },
+      {
+        signature: 'add(draft: SshHostDraft): Promise<SshEditRefusal | undefined>',
+        description: 'Write one machine into the person\'s configuration.\n\nAppend-only: whatever the file already says is unchanged, and the new block goes at the end where a person will find it. Editing an existing machine is deliberately not offered — a form that parsed the file into fields and wrote it back would lose the comments and the order on the first save, and nothing would tell them until they looked.',
+        parameters: [{ name: 'draft', description: 'the machine to add.' }],
+        returns: 'nothing, or the refusal that stopped it.',
+      },
+      {
+        signature: 'async remove(alias: string, declaredIn?: string): Promise<SshEditRefusal | undefined>',
+        description: 'Remove one machine from the person\'s configuration.\n\nOnly a block that file declares alone: an alias sharing a `Host` line, or one that came from an included file, is refused with which it was, because either edit changes a line another machine depends on.',
+        parameters: [{ name: 'alias', description: 'the machine to remove.' }, { name: 'declaredIn', description: 'the file the alias was read from, when known.' }],
+        returns: 'nothing, or the refusal that stopped it.',
       },
       {
         signature: 'async probe(alias: string, signal?: AbortSignal): Promise<{ reachable: boolean; message: string }>',
@@ -4337,7 +4370,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'RpcErrorDetailsMap',
-    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n    \'terminal-exited\': {\n        t /* …truncated — full shape in source */',
+    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'machine-edit-refused\': {};\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n   /* …truncated — full shape in source */',
   },
   {
     name: 'RpcId',
@@ -4810,6 +4843,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SpillSource',
     declaration: 'export interface SpillSource {\n    toolName: string;\n    callId: CallId;\n    label: string;\n}',
+  },
+  {
+    name: 'SshEditRefusal',
+    declaration: 'export type SshEditRefusal = {\n    kind: \'invalid-alias\';\n    alias: string;\n} | {\n    kind: \'duplicate\';\n    alias: string;\n} | {\n    kind: \'not-found\';\n    alias: string;\n} | {\n    kind: \'shared-line\';\n    alias: string;\n    line: string;\n} | {\n    kind: \'declared-elsewhere\';\n    alias: string;\n    source: string;\n};',
+  },
+  {
+    name: 'SshHostDraft',
+    declaration: 'export interface SshHostDraft {\n    alias: string;\n    hostName?: string;\n    user?: string;\n    port?: number;\n    identityFile?: string;\n    proxyJump?: string;\n}',
   },
   {
     name: 'SshHostEntry',

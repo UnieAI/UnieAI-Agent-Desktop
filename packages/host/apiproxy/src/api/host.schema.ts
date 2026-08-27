@@ -75,6 +75,32 @@ export const hostMachineListValueSchema = z.object({
   current: z.string(),
 }) satisfies z.ZodType<Wire<ResponseValue<'host.listMachines'>>>
 
+/** host.addMachine request payload; only `alias` is required. */
+export const hostAddMachineRequestSchema = z.object({
+  alias: z.string(),
+  hostName: z.string().optional(),
+  user: z.string().optional(),
+  port: z.number().optional(),
+  identityFile: z.string().optional(),
+  proxyJump: z.string().optional(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.addMachine'>>>
+
+/** host.removeMachine request payload. */
+export const hostRemoveMachineRequestSchema = z.object({
+  machine: z.string(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.removeMachine'>>>
+
+/** host.probeMachine request payload. */
+export const hostProbeMachineRequestSchema = z.object({
+  machine: z.string(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.probeMachine'>>>
+
+/** host.probeMachine response value. */
+export const hostProbeMachineValueSchema = z.object({
+  reachable: z.boolean(),
+  message: z.string(),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.probeMachine'>>>
+
 /** host.selectMachine request payload. */
 export const hostSelectMachineRequestSchema = z.object({
   machine: z.string(),

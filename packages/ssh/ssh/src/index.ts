@@ -25,6 +25,8 @@ import { dshHomePath } from '@unieai/uad-home-paths'
 import { scrubbedParentEnv } from '@unieai/uad-subprocess'
 import { readHostEntries } from './config-file.ts'
 import type { SshHostEntry } from './config-file.ts'
+import { addHost, removeHost } from './edit.ts'
+import type { SshEditRefusal, SshHostDraft } from './edit.ts'
 import { parseEffectiveConfig, resolvedHostOf } from './resolve.ts'
 import type { ResolvedSshHost } from './resolve.ts'
 
@@ -32,6 +34,8 @@ export { includePaths, readHostEntries, splitDirective } from './config-file.ts'
 export type { SshHostEntry } from './config-file.ts'
 export { parseEffectiveConfig, resolvedHostOf } from './resolve.ts'
 export type { ResolvedSshHost } from './resolve.ts'
+export { addHost, blockSpan, hostBlock, removeHost } from './edit.ts'
+export type { SshEditRefusal, SshHostDraft } from './edit.ts'
 
 declare module '@unieai/cordis' {
   interface Context {
@@ -239,6 +243,39 @@ export class SshHosts extends Service {
     argv.push(alias)
     if (remoteCommand !== undefined) argv.push('--', remoteCommand)
     return argv
+  }
+
+  /**
+   * Write one machine into the person's configuration.
+   *
+   * Append-only: whatever the file already says is unchanged, and the new
+   * block goes at the end where a person will find it. Editing an existing
+   * machine is deliberately not offered — a form that parsed the file into
+   * fields and wrote it back would lose the comments and the order on the
+   * first save, and nothing would tell them until they looked.
+   * @param draft - the machine to add.
+   * @returns nothing, or the refusal that stopped it.
+   */
+  add(draft: SshHostDraft): Promise<SshEditRefusal | undefined> {
+    return addHost(this.configPath, draft)
+  }
+
+  /**
+   * Remove one machine from the person's configuration.
+   *
+   * Only a block that file declares alone: an alias sharing a `Host` line,
+   * or one that came from an included file, is refused with which it was,
+   * because either edit changes a line another machine depends on.
+   * @param alias - the machine to remove.
+   * @param declaredIn - the file the alias was read from, when known.
+   * @returns nothing, or the refusal that stopped it.
+   */
+  async remove(alias: string, declaredIn?: string): Promise<SshEditRefusal | undefined> {
+    const refusal = await removeHost(this.configPath, alias, declaredIn)
+    // A removed machine may still have a connection open; leaving it would
+    // keep a socket to a machine the person just said they were done with.
+    if (refusal === undefined) await this.disconnect(alias)
+    return refusal
   }
 
   /**

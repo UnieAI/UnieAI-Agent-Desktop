@@ -304,6 +304,35 @@ async list(signal?: AbortSignal): Promise<MachineTarget[]>
 async select(id: string): Promise<void>
 
 /**
+ * Write one machine into the person's own OpenSSH configuration.
+ * @param draft - the machine to add.
+ * @returns nothing, or the refusal that stopped it.
+ * @throws when no machine book is composed, which is a composition error rather than a person's mistake.
+ */
+add(draft: SshHostDraft): Promise<SshEditRefusal | undefined>
+
+/**
+ * Remove one machine from the person's own configuration.
+ *
+ * Switching back to this computer first when the machine being removed is
+ * the current one: leaving it selected would point every later command at
+ * a machine that is no longer written down anywhere.
+ * @param id - the machine to remove.
+ * @returns nothing, or the refusal that stopped it.
+ * @throws when no machine book is composed.
+ */
+async remove(id: string): Promise<SshEditRefusal | undefined>
+
+/**
+ * Ask whether one machine answers right now.
+ * @param id - the machine to reach.
+ * @param signal - aborts the attempt.
+ * @returns reachability, with the client's own message when it failed.
+ * @throws when no machine book is composed.
+ */
+probe(id: string, signal?: AbortSignal): Promise<{ reachable: boolean; message: string }>
+
+/**
  * Observe changes to the current machine.
  * @param callback - invoked after each committed change with the new target id.
  * @returns the disposer removing this observer.
@@ -356,6 +385,31 @@ controlPath(): string | undefined
  * @returns argv whose first element is the configured `ssh` client.
  */
 argvFor( alias: string, remoteCommand?: string, options: { tty?: boolean } = {}, ): string[]
+
+/**
+ * Write one machine into the person's configuration.
+ *
+ * Append-only: whatever the file already says is unchanged, and the new
+ * block goes at the end where a person will find it. Editing an existing
+ * machine is deliberately not offered — a form that parsed the file into
+ * fields and wrote it back would lose the comments and the order on the
+ * first save, and nothing would tell them until they looked.
+ * @param draft - the machine to add.
+ * @returns nothing, or the refusal that stopped it.
+ */
+add(draft: SshHostDraft): Promise<SshEditRefusal | undefined>
+
+/**
+ * Remove one machine from the person's configuration.
+ *
+ * Only a block that file declares alone: an alias sharing a `Host` line,
+ * or one that came from an included file, is refused with which it was,
+ * because either edit changes a line another machine depends on.
+ * @param alias - the machine to remove.
+ * @param declaredIn - the file the alias was read from, when known.
+ * @returns nothing, or the refusal that stopped it.
+ */
+async remove(alias: string, declaredIn?: string): Promise<SshEditRefusal | undefined>
 
 /**
  * Try one connection and report what OpenSSH said.

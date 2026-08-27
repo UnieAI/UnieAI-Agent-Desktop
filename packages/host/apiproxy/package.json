@@ -82,6 +82,7 @@
     "@unieai/uad-fs": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-machines": "workspace:^",
+    "@unieai/uad-ssh": "workspace:^",
     "@unieai/uad-terminal-operator": "workspace:^"
   },
   "devDependencies": {
@@ -93,6 +94,7 @@
     "@unieai/uad-fs-local": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-machines": "workspace:^",
+    "@unieai/uad-ssh": "workspace:^",
     "@unieai/uad-storage": "workspace:^",
     "@unieai/uad-storage-domain": "workspace:^",
     "@unieai/uad-terminal-operator": "workspace:^",

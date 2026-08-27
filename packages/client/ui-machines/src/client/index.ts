@@ -54,6 +54,24 @@ export function apply(ctx: ClientContext): void {
         ? { ok: true as const, ...response.result.value }
         : { ok: false as const, message: response.result.error.message }
     },
+    add: async (draft) => {
+      const response = await host.addMachine(draft)
+      return response.result.ok
+        ? { ok: true as const, ...response.result.value }
+        : { ok: false as const, message: response.result.error.message }
+    },
+    remove: async (machine) => {
+      const response = await host.removeMachine({ machine })
+      return response.result.ok
+        ? { ok: true as const, ...response.result.value }
+        : { ok: false as const, message: response.result.error.message }
+    },
+    probe: async (machine) => {
+      const response = await host.probeMachine({ machine })
+      return response.result.ok
+        ? response.result.value
+        : { reachable: false, message: response.result.error.message }
+    },
   })
 
   ctx.slots.inject('conversation.input.chrome', () => ctx.slots.register({
@@ -67,6 +85,9 @@ export function apply(ctx: ClientContext): void {
       hooks: { machines: view },
       refresh: () => view.refresh(),
       select: machine => view.select(machine),
+      add: draft => view.add(draft),
+      remove: machine => view.remove(machine),
+      probe: machine => view.probe(machine),
       // Editing the configuration is the person's own editor's job; the file
       // to open is the one that declared a machine, because that is the file
       // they are actually keeping their machines in.

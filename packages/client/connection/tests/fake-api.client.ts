@@ -154,6 +154,9 @@ export class FakeApiClient implements IApiClient {
     openPath: payload => this.record('host.openPath', payload, this.onOpenPath(payload)),
     listMachines: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
     selectMachine: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
+    addMachine: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
+    removeMachine: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
+    probeMachine: () => Promise.resolve(ok({ reachable: true, message: '' })),
   }
 
   readonly browser: IApiClient['browser'] = {

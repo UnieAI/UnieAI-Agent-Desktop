@@ -2712,6 +2712,9 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
         // picker that lies.
         listMachines: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
         selectMachine: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
+        addMachine: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
+        removeMachine: request => ok(request, { machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' }),
+        probeMachine: request => ok(request, { reachable: true, message: '' }),
       }
     })(),
 
@@ -3493,6 +3496,9 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'host.openPath': return this.api.host.openPath(request, new AbortController().signal)
       case 'host.listMachines': return this.api.host.listMachines(request, signal)
       case 'host.selectMachine': return this.api.host.selectMachine(request, signal)
+      case 'host.addMachine': return this.api.host.addMachine(request, signal)
+      case 'host.removeMachine': return this.api.host.removeMachine(request, signal)
+      case 'host.probeMachine': return this.api.host.probeMachine(request, signal)
       case 'workspace.list': return this.api.workspace.list(request)
       case 'workspace.create': return this.api.workspace.create(request)
       case 'workspace.rename': return this.api.workspace.rename(request)

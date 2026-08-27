@@ -112,6 +112,9 @@
     },
     {
       "path": "../../machines/machines"
+    },
+    {
+      "path": "../../ssh/ssh"
     }
   ]
 }

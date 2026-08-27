@@ -588,6 +588,8 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   InsertTextRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',
   AgentHandle: 'agent ownership handle is owned by packages/core/agent/README.md',
   MachineTarget: 'one place work can happen — this computer or an OpenSSH alias — is owned by packages/machines/machines/README.md; it is a reading of the person\'s own configuration plus the local entry, not a type this repository defines',
+  SshHostDraft: 'the fields a new machine is written down with are owned by packages/ssh/ssh/README.md; they are ssh_config option names, and the file is where they mean something',
+  SshEditRefusal: 'why an edit to the person\'s own OpenSSH configuration was refused is owned by packages/ssh/ssh/README.md; each arm names an edit that would damage a file this repository does not own',
   SshHostEntry: 'one selectable alias from the person\'s own OpenSSH configuration is owned by packages/ssh/ssh/README.md; it is a reading of their file, not a type this repository defines',
   ResolvedSshHost: 'the effective settings OpenSSH itself reports for an alias are owned by packages/ssh/ssh/README.md; the fields are ssh_config\'s, and the client is what defines them',
   OperatorTerminalId: 'the id of a terminal a PERSON drives is owned by packages/terminal/terminal-operator/README.md; the model-facing PTY catalog documents TerminalSessionId, and these are deliberately separate registries',

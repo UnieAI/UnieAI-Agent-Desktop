@@ -42,7 +42,10 @@ import {
 } from '../api/sessions.schema.ts'
 import {
   hostCreateDirectoryRequestSchema,
+  hostAddMachineRequestSchema,
   hostListMachinesRequestSchema,
+  hostProbeMachineRequestSchema,
+  hostRemoveMachineRequestSchema,
   hostListWorkspaceEntriesRequestSchema,
   hostSelectMachineRequestSchema,
   hostReadWorkspaceFileRequestSchema, hostDescribeRequestSchema,
@@ -126,6 +129,9 @@ const UNARY_ROUTES: UnaryRoutes = {
   'host.listWorkspaceEntries': { schema: hostListWorkspaceEntriesRequestSchema, invoke: (api, r, signal) => api.host.listWorkspaceEntries(r, signal) },
   'host.listMachines': { schema: hostListMachinesRequestSchema, invoke: (api, r, signal) => api.host.listMachines(r, signal) },
   'host.selectMachine': { schema: hostSelectMachineRequestSchema, invoke: (api, r, signal) => api.host.selectMachine(r, signal) },
+  'host.addMachine': { schema: hostAddMachineRequestSchema, invoke: (api, r, signal) => api.host.addMachine(r, signal) },
+  'host.removeMachine': { schema: hostRemoveMachineRequestSchema, invoke: (api, r, signal) => api.host.removeMachine(r, signal) },
+  'host.probeMachine': { schema: hostProbeMachineRequestSchema, invoke: (api, r, signal) => api.host.probeMachine(r, signal) },
   'host.readWorkspaceFile': { schema: hostReadWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.readWorkspaceFile(r, signal) },
   'host.writeWorkspaceFile': { schema: hostWriteWorkspaceFileRequestSchema, invoke: (api, r, signal) => api.host.writeWorkspaceFile(r, signal) },
   'host.openPath': { schema: hostOpenPathRequestSchema, invoke: (api, r, signal) => api.host.openPath(r, signal) },

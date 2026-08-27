@@ -2283,7 +2283,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/ssh/ssh/src/index.ts:43`](../packages/ssh/ssh/src/index.ts)
+Source: [`packages/ssh/ssh/src/index.ts:47`](../packages/ssh/ssh/src/index.ts)
 
 <a id="unieaiuad-storage-domain"></a>
 

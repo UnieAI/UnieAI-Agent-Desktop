@@ -99,3 +99,79 @@
   color: var(--dsw-alias-label-danger, #b3261e);
   font-size: 12px;
 }
+
+/* A machine's row: the name switches to it, the actions act on it. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.row .item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rowAction {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.rowAction:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.rowAction:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.itemKind[data-ok='true'] {
+  color: var(--dsw-alias-label-success, #1a7f37);
+}
+
+.itemKind[data-ok='false'] {
+  color: var(--dsw-alias-label-danger, #b3261e);
+}
+
+/* Removing edits someone's own file, so it asks first. */
+.confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-interactive-bg-hover);
+  font-size: 12px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 6px;
+}
+
+.field {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--dsw-alias-border-control, rgb(0 0 0 / 12%));
+  border-radius: var(--dsw-radius-control);
+  background: var(--dsw-alias-surface-sunken, transparent);
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+}

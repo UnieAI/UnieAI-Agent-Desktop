@@ -15,6 +15,7 @@ import { z as zod } from 'zod'
 import type { Context } from '@unieai/cordis'
 // Type-only: pulls the machine list's `ctx.machines` Context merge.
 import type {} from '@unieai/uad-machines'
+import type { SshEditRefusal } from '@unieai/uad-ssh'
 import { installModelSelection } from '@unieai/uad-agent'
 import type { Agent, ModelSelection, ModelSelectionRef, AgentOptions, AgentStatus } from '@unieai/uad-agent'
 import type {} from '@unieai/uad-agent-presets/types'
@@ -1217,6 +1218,32 @@ function changedWorkspaceView(workspaceId: string, value: unknown): WorkspaceVie
     sessionIds: [...record.sessionIds],
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
+  }
+}
+
+/**
+ * Say why an edit to the person's OpenSSH configuration was refused.
+ *
+ * Each arm names what the person can do about it: the refusals exist
+ * because the alternative was an edit that would quietly damage a file
+ * this product does not own.
+ * @param refusal - what the machine book refused, and why.
+ * @returns one sentence for a surface to show.
+ */
+function refusalMessage(refusal: SshEditRefusal): string {
+  switch (refusal.kind) {
+    case 'invalid-alias':
+      return `"${refusal.alias}" is not a machine name; a pattern like "*" would change how every machine is reached`
+    case 'duplicate':
+      return `"${refusal.alias}" is already in your SSH configuration`
+    case 'not-found':
+      return `"${refusal.alias}" is not in your SSH configuration`
+    case 'shared-line':
+      return `"${refusal.alias}" shares a Host line with other machines (${refusal.line}); edit that line yourself`
+    case 'declared-elsewhere':
+      return `"${refusal.alias}" is declared in ${refusal.source}; open that file to change it`
+    default:
+      return 'the SSH configuration could not be changed'
   }
 }
 
@@ -3368,6 +3395,54 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         }
         const listed = await machines.list()
         return ok(request, { machines: listed.map(entry => ({ ...entry })), current: machines.current })
+      },
+
+      async addMachine(request, signal) {
+        void signal
+        const machines = ctx.get('machines')
+        if (machines === undefined) {
+          return err(request, {
+            code: 'machines-unavailable',
+            message: 'host.addMachine needs the machines service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        const refusal = await machines.add(request.payload)
+        if (refusal !== undefined) {
+          return err(request, { code: 'machine-edit-refused', message: refusalMessage(refusal), details: {} })
+        }
+        const listed = await machines.list()
+        return ok(request, { machines: listed.map(entry => ({ ...entry })), current: machines.current })
+      },
+
+      async removeMachine(request, signal) {
+        void signal
+        const machines = ctx.get('machines')
+        if (machines === undefined) {
+          return err(request, {
+            code: 'machines-unavailable',
+            message: 'host.removeMachine needs the machines service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        const refusal = await machines.remove(request.payload.machine)
+        if (refusal !== undefined) {
+          return err(request, { code: 'machine-edit-refused', message: refusalMessage(refusal), details: {} })
+        }
+        const listed = await machines.list()
+        return ok(request, { machines: listed.map(entry => ({ ...entry })), current: machines.current })
+      },
+
+      async probeMachine(request, signal) {
+        const machines = ctx.get('machines')
+        if (machines === undefined) {
+          return err(request, {
+            code: 'machines-unavailable',
+            message: 'host.probeMachine needs the machines service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        return ok(request, await machines.probe(request.payload.machine, signal))
       },
 
       async selectMachine(request, signal) {

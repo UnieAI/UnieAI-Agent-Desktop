@@ -174,6 +174,15 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
       async selectMachine(request) {
         return { rpcId: request.rpcId, result: { ok: true as const, value: { machines: [], current: 'local' } } }
       },
+      async addMachine(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { machines: [], current: 'local' } } }
+      },
+      async removeMachine(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { machines: [], current: 'local' } } }
+      },
+      async probeMachine(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { reachable: true, message: '' } } }
+      },
     },
     browser: {
       async list(request) {

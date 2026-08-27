@@ -182,6 +182,51 @@ export interface HostApi {
   ): Promise<RpcResponse<MachineList>>
 
   /**
+   * Write one machine into the person's own OpenSSH configuration.
+   *
+   * Append-only, and only the fields they filled in. Editing an existing
+   * machine is deliberately absent: a form that parsed that file into fields
+   * and wrote it back would lose the comments, the order and the options it
+   * does not know about, and nothing would tell them until they looked.
+   */
+  addMachine(
+    request: RpcRequest<{
+      alias: string
+      hostName?: string
+      user?: string
+      port?: number
+      identityFile?: string
+      proxyJump?: string
+    }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<MachineList>>
+
+  /**
+   * Remove one machine from that configuration.
+   *
+   * Only a block the file declares alone. An alias sharing a `Host` line
+   * with others, or one that came from an included file, is refused with
+   * which it was: either edit changes a line another machine depends on, and
+   * the person's own editor is where that belongs.
+   */
+  removeMachine(
+    request: RpcRequest<{ machine: string }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<MachineList>>
+
+  /**
+   * Ask whether one machine answers right now.
+   *
+   * Runs in batch mode, so a machine wanting a passphrase reports as
+   * unreachable with OpenSSH's own message rather than waiting on a prompt
+   * nobody is watching.
+   */
+  probeMachine(
+    request: RpcRequest<{ machine: string }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<{ reachable: boolean; message: string }>>
+
+  /**
    * Work on another machine from now on.
    *
    * The whole execution world moves: commands, files, terminals and language

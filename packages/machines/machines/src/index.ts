@@ -17,7 +17,7 @@
 import { Context, Service } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import { settingsNamespace } from '@unieai/uad-settings'
-import type { SshHostEntry } from '@unieai/uad-ssh'
+import type { SshEditRefusal, SshHostDraft, SshHostEntry, SshHosts } from '@unieai/uad-ssh'
 import type { SettingsScope } from '@unieai/uad-settings'
 
 export type { MachineTarget } from './types.ts'
@@ -135,6 +135,56 @@ export class Machines extends Service {
       throw new Error(`unknown machine '${id}'; available: ${names}`)
     }
     await this.settings.update({ current: id })
+  }
+
+  /**
+   * Write one machine into the person's own OpenSSH configuration.
+   * @param draft - the machine to add.
+   * @returns nothing, or the refusal that stopped it.
+   * @throws when no machine book is composed, which is a composition error rather than a person's mistake.
+   */
+  add(draft: SshHostDraft): Promise<SshEditRefusal | undefined> {
+    return this.requireBook().add(draft)
+  }
+
+  /**
+   * Remove one machine from the person's own configuration.
+   *
+   * Switching back to this computer first when the machine being removed is
+   * the current one: leaving it selected would point every later command at
+   * a machine that is no longer written down anywhere.
+   * @param id - the machine to remove.
+   * @returns nothing, or the refusal that stopped it.
+   * @throws when no machine book is composed.
+   */
+  async remove(id: string): Promise<SshEditRefusal | undefined> {
+    const listed = await this.list()
+    const target = listed.find(machine => machine.id === id)
+    const refusal = await this.requireBook().remove(id, target?.source)
+    if (refusal === undefined && this.current === id) await this.settings.update({ current: LOCAL_MACHINE })
+    return refusal
+  }
+
+  /**
+   * Ask whether one machine answers right now.
+   * @param id - the machine to reach.
+   * @param signal - aborts the attempt.
+   * @returns reachability, with the client's own message when it failed.
+   * @throws when no machine book is composed.
+   */
+  probe(id: string, signal?: AbortSignal): Promise<{ reachable: boolean; message: string }> {
+    return this.requireBook().probe(id, signal)
+  }
+
+  /**
+   * The machine book, or a loud failure.
+   * @returns the book.
+   * @throws when the composition has none, which no person's action can fix.
+   */
+  private requireBook(): SshHosts {
+    const ssh = this.ctx.get('ssh')
+    if (ssh === undefined) throw new Error('machines: this deployment composes no ssh machine book')
+    return ssh
   }
 
   /**

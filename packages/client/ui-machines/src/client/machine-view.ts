@@ -16,10 +16,12 @@ export interface MachineState {
   machines: MachineEntry[]
   /** Id of the machine work happens on. */
   current: string
-  /** Whether a read or a pick is in flight. */
+  /** Whether a read, a pick or an edit is in flight. */
   busy: boolean
   /** What went wrong, in the host's own words. */
   error: string
+  /** The last reachability answer, keyed by machine. */
+  reachable: Record<string, { ok: boolean; message: string }>
 }
 
 /** A snapshot store the control binds to. */
@@ -28,12 +30,33 @@ export interface MachineView {
   subscribe(listener: () => void): () => void
 }
 
+/** What a machine call answers with: the list as it now stands, or why not. */
+export type MachineAnswer =
+  | { ok: true; machines: MachineEntry[]; current: string }
+  | { ok: false; message: string }
+
+/** A machine a person is writing down. */
+export interface MachineDraft {
+  alias: string
+  hostName?: string
+  user?: string
+  port?: number
+  identityFile?: string
+  proxyJump?: string
+}
+
 /** What the view needs from the host. */
 export interface MachineRoutes {
   /** Read the machines and the current one. */
-  list(): Promise<{ ok: true; machines: MachineEntry[]; current: string } | { ok: false; message: string }>
+  list(): Promise<MachineAnswer>
   /** Pick one, answering with the list as it now stands. */
-  select(machine: string): Promise<{ ok: true; machines: MachineEntry[]; current: string } | { ok: false; message: string }>
+  select(machine: string): Promise<MachineAnswer>
+  /** Write one into the person's own configuration. */
+  add(draft: MachineDraft): Promise<MachineAnswer>
+  /** Remove one from it. */
+  remove(machine: string): Promise<MachineAnswer>
+  /** Ask whether one answers right now. */
+  probe(machine: string): Promise<{ reachable: boolean; message: string }>
 }
 
 /** The state a control starts from, before anything has been read. */
@@ -42,6 +65,7 @@ export const INITIAL_MACHINE_STATE: MachineState = {
   current: 'local',
   busy: false,
   error: '',
+  reachable: {},
 }
 
 /**
@@ -54,6 +78,12 @@ export function createMachineView(routes: MachineRoutes): MachineView & {
   refresh(): Promise<void>
   /** Work on another machine. */
   select(machine: string): Promise<void>
+  /** Write one into the person's own configuration. */
+  add(draft: MachineDraft): Promise<boolean>
+  /** Remove one from it. */
+  remove(machine: string): Promise<void>
+  /** Ask whether one answers right now. */
+  probe(machine: string): Promise<void>
 } {
   let state = INITIAL_MACHINE_STATE
   const listeners = new Set<() => void>()
@@ -84,6 +114,27 @@ export function createMachineView(routes: MachineRoutes): MachineView & {
       if (machine === state.current) return
       publish({ busy: true, error: '' })
       apply(await routes.select(machine))
+    },
+    add: async (draft) => {
+      publish({ busy: true, error: '' })
+      const answer = await routes.add(draft)
+      apply(answer)
+      // The caller closes its form only on success: a refused draft is
+      // still the person's work, and clearing it would make them retype it
+      // to fix one field.
+      return answer.ok
+    },
+    remove: async (machine) => {
+      publish({ busy: true, error: '' })
+      apply(await routes.remove(machine))
+    },
+    probe: async (machine) => {
+      publish({ busy: true, error: '' })
+      const answer = await routes.probe(machine)
+      publish({
+        busy: false,
+        reachable: { ...state.reachable, [machine]: { ok: answer.reachable, message: answer.message } },
+      })
     },
   }
 }

@@ -48,6 +48,7 @@ export interface RpcErrorDetailsMap {
   'workspace-listing-unavailable': {}
   'machines-unavailable': {}
   'machine-unknown': {}
+  'machine-edit-refused': {}
   /**
    * The file changed since the editor read it — an agent working in the same
    * tree, another editor, or a build. The write is refused rather than made to
