@@ -35,11 +35,23 @@ export interface WorkspaceTreeProps {
   selected?: string
   /** Lowercased substring the rows are filtered by; empty shows everything. */
   filter?: string
+  /**
+   * Bumped to re-read every open level.
+   *
+   * A directory listing is a snapshot, and files appear while a person
+   * watches — the agent writes one, a build produces one. There is no
+   * watching underneath this: the seam has no file-change stream, and a
+   * machine reached over a shell has no inotify to offer one. So the
+   * container says when the tree is worth reading again, and the tree
+   * re-reads what it is actually showing rather than everything it ever
+   * loaded.
+   */
+  revision?: number
   /** Locale reader; keys live in the conversation namespace. */
   t: DetailsSlotProps['t']
 }
 
-export function WorkspaceTree({ root, list, onOpen, selected, filter, t }: WorkspaceTreeProps) {
+export function WorkspaceTree({ root, list, onOpen, selected, filter, revision = 0, t }: WorkspaceTreeProps) {
   const [levels, setLevels] = useState<Record<string, Level>>({})
   const [open, setOpen] = useState<Record<string, boolean>>({ [root]: true })
   // Which paths have been asked for, and the controller that can still cancel
@@ -53,13 +65,25 @@ export function WorkspaceTree({ root, list, onOpen, selected, filter, t }: Works
   // already-aborted signal and no level ever arrived.
   const inFlight = useRef(new Map<string, AbortController>())
 
+  // A new revision releases every path so the effect below asks again. The
+  // levels themselves stay on screen until their answers arrive: blanking
+  // the tree on every turn would make it flicker at exactly the moment
+  // someone is reading it.
+  const seenRevision = useRef(revision)
+  if (seenRevision.current !== revision) {
+    seenRevision.current = revision
+    requested.current.clear()
+  }
+
   useEffect(() => {
     for (const [path, isOpen] of Object.entries(open)) {
       if (!isOpen || requested.current.has(path)) continue
       requested.current.add(path)
       const live = new AbortController()
       inFlight.current.set(path, live)
-      setLevels(current => ({ ...current, [path]: { status: 'loading' } }))
+      // A level already on screen keeps its rows while it re-reads; only a
+      // level nobody has seen yet shows the loading state.
+      setLevels(current => (current[path] === undefined ? { ...current, [path]: { status: 'loading' } } : current))
       list(root, path, live.signal).then(
         (listing) => {
           inFlight.current.delete(path)
@@ -81,7 +105,7 @@ export function WorkspaceTree({ root, list, onOpen, selected, filter, t }: Works
         },
       )
     }
-  }, [open, list, root])
+  }, [open, list, root, revision])
 
   // Cancel whatever is still in flight, and RELEASE ITS PATH so a mount that
   // follows re-asks. React invokes an effect twice on mount in development:

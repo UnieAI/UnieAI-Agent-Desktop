@@ -181,6 +181,15 @@ export function DetailsPanel({
     s => (callId === undefined ? null : materialFor(s, callId)),
     (a, b) => shallowEqual(a, b))
   const review = useSession(collectReview, sameReview)
+  // How many tool calls this session has settled. The file tree re-reads on
+  // every change to it, because a settled call is the moment files may have
+  // appeared: the agent wrote one, a command produced one. There is nothing
+  // to watch underneath — the filesystem seam publishes no change stream,
+  // and a machine reached over a shell has no inotify to offer one — so the
+  // agent's own activity is the signal, and it costs one listing per call
+  // for the levels a person actually has open.
+  const settledCalls = useSession(s => s.nodes.reduce(
+    (count, node) => count + (node.kind === 'tool-result' ? 1 : 0), 0))
 
   /** Add a tab, or focus the one that is already showing that thing. */
   const open = (tab: PanelTab): void => {
@@ -387,7 +396,7 @@ export function DetailsPanel({
                   : (
                     <FileBrowser
                       root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile}
-                      write={writeWorkspaceFile} t={t}
+                      write={writeWorkspaceFile} t={t} revision={settledCalls}
                       {...active.kind === 'file' ? { path: active.path } : {}}
                       onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}
                       onOpenExternally={(path) => { void openFile(path) }}

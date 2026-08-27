@@ -55,6 +55,8 @@ export interface FileBrowserProps {
   write?: ((root: string, path: string, text: string, version: string) => Promise<string>) | undefined
   /** Open a file, which the container turns into its own tab. */
   onOpen: (path: string) => void
+  /** Bumped to re-read the open levels of the tree; see {@link WorkspaceTreeProps.revision}. */
+  revision?: number
   /** Hand the path to the operating system's editor. */
   onOpenExternally: (path: string) => void
   /**
@@ -77,8 +79,12 @@ function crumbsOf(root: string, path: string): string[] {
 }
 
 export function FileBrowser({
-  root, path, list, read, write, onOpen, onOpenExternally, canOpenExternally, t,
+  root, path, list, read, write, onOpen, onOpenExternally, canOpenExternally, revision = 0, t,
 }: FileBrowserProps) {
+  // Asking again by hand, on top of whatever the container decides is worth
+  // a re-read. A person watching a build finish should not have to guess
+  // which of their gestures might refresh the tree.
+  const [asked, setAsked] = useState(0)
   const [filter, setFilter] = useState('')
   // The tree is the way to the next file, so it stays open by default; a
   // reader who wants the code wide can put it away and it stays away.
@@ -353,14 +359,23 @@ export function FileBrowser({
       </div>
       {treeOpen && (
         <aside className={css.side}>
-          <input
-            type="search" className={css.filter} value={filter} placeholder={t('panel.filter')}
-            onChange={(event) => { setFilter(event.target.value) }}
-          />
+          <div className={css.sideHead}>
+            <input
+              type="search" className={css.filter} value={filter} placeholder={t('panel.filter')}
+              onChange={(event) => { setFilter(event.target.value) }}
+            />
+            <button
+              type="button" className={css.refresh} title={t('panel.refresh')} aria-label={t('panel.refresh')}
+              onClick={() => { setAsked(current => current + 1) }}
+            >
+              ⟳
+            </button>
+          </div>
           <div className={css.tree}>
             <WorkspaceTree
               root={root} list={list} onOpen={onOpen} t={t}
               filter={filter.trim().toLowerCase()}
+              revision={revision + asked}
               {...path === undefined ? {} : { selected: path }}
             />
           </div>

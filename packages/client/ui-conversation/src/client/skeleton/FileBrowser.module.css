@@ -310,3 +310,33 @@
 .saveAction:not(:disabled):hover {
   background: var(--dsw-alias-interactive-bg-hover);
 }
+
+/* The filter and the re-read control share one row above the tree. */
+.sideHead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sideHead .filter {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.refresh {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--dsw-radius-control);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.refresh:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}

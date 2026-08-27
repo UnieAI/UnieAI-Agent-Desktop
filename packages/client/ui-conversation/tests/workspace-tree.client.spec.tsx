@@ -97,3 +97,59 @@ describe('under a double-invoked mount', () => {
     expect(screen.queryByText('files.loading')).toBeNull()
   })
 })
+
+describe('re-reading a level', () => {
+  it('shows a file that appeared after the level was first read', async () => {
+    // The bug this pins: a level was requested once and never again, so a
+    // file the agent wrote never appeared — the tree was frozen for the
+    // life of the session, and nothing said so.
+    let listing: WorkspaceListing['entries'] = [{ name: 'a.ts', path: '/w/a.ts', kind: 'file' }]
+    const list = vi.fn((root: string, path?: string): Promise<WorkspaceListing> =>
+      Promise.resolve({ root, path: path ?? root, entries: listing, truncated: false }))
+
+    const view = render(<WorkspaceTree root="/w" list={list} onOpen={() => {}} t={t} revision={0} />)
+    await waitFor(() => { expect(screen.getByText('a.ts')).toBeTruthy() })
+
+    listing = [
+      { name: 'a.ts', path: '/w/a.ts', kind: 'file' },
+      { name: 'written-by-the-agent.ts', path: '/w/written-by-the-agent.ts', kind: 'file' },
+    ]
+    view.rerender(<WorkspaceTree root="/w" list={list} onOpen={() => {}} t={t} revision={1} />)
+    await waitFor(() => { expect(screen.getByText('written-by-the-agent.ts')).toBeTruthy() })
+  })
+
+  it('keeps the rows on screen while it re-reads, rather than blanking', async () => {
+    // Blanking on every settled tool call would make the tree flicker at
+    // exactly the moment someone is reading it.
+    let release: (listing: WorkspaceListing) => void = () => {}
+    const list = vi.fn((root: string, path?: string): Promise<WorkspaceListing> => {
+      const at = path ?? root
+      if (list.mock.calls.length === 1) {
+        return Promise.resolve({ root, path: at, entries: [{ name: 'a.ts', path: '/w/a.ts', kind: 'file' }], truncated: false })
+      }
+      return new Promise<WorkspaceListing>((resolve) => { release = resolve })
+    })
+
+    const view = render(<WorkspaceTree root="/w" list={list} onOpen={() => {}} t={t} revision={0} />)
+    await waitFor(() => { expect(screen.getByText('a.ts')).toBeTruthy() })
+
+    view.rerender(<WorkspaceTree root="/w" list={list} onOpen={() => {}} t={t} revision={1} />)
+    // The second read is in flight and the old rows are still there.
+    await waitFor(() => { expect(list).toHaveBeenCalledTimes(2) })
+    expect(screen.getByText('a.ts')).toBeTruthy()
+
+    release({ root: '/w', path: '/w', entries: [{ name: 'b.ts', path: '/w/b.ts', kind: 'file' }], truncated: false })
+    await waitFor(() => { expect(screen.getByText('b.ts')).toBeTruthy() })
+  })
+
+  it('does not re-read while the revision stands still', async () => {
+    const list = backendOf({ '/w': [{ name: 'a.ts', path: '/w/a.ts', kind: 'file' }] })
+    const view = render(<WorkspaceTree root="/w" list={list} onOpen={() => {}} t={t} revision={3} />)
+    await waitFor(() => { expect(screen.getByText('a.ts')).toBeTruthy() })
+    const reads = list.mock.calls.length
+
+    view.rerender(<WorkspaceTree root="/w" list={list} onOpen={() => {}} t={t} revision={3} filter="a" />)
+    await new Promise(resolve => setTimeout(resolve, 30))
+    expect(list.mock.calls.length).toBe(reads)
+  })
+})
