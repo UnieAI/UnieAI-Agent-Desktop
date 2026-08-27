@@ -46,14 +46,31 @@ const repositoryUrl = 'git+https://github.com/deepseek-harness/deepseek-harness.
  * Source home the published packages point consumers at. It differs from
  * {@link repositoryUrl}, which the Landlock packages keep because npm resolves
  * their trusted publishing against the repository that runs the workflow.
+ *
+ * This fork publishes from its own repository. Leaving upstream's URL here made
+ * every one of ~250 release members fail the check, which is the same as having
+ * no check: the run was always red, so nobody read it — and a package missing
+ * `publishConfig.access` sailed through and stopped a release at
+ * `E402 Payment Required`, 62 packages in.
  */
-const publishedRepositoryUrl = 'git+https://github.com/deepseek-ai/deepseek-harness.git'
+const publishedRepositoryUrl = 'git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git'
 /** Private packages that participate in workspace checks but not releases. */
 const experimentalPackageDirectory = /^packages\/experimental\/[^/]+$/
 /** npm namespace reserved for private experimental packages. */
 const experimentalPackageNamePrefix = '@unieai/uad-experimental-'
 /** Directories whose packages this repository publishes: one release member each. */
 const releaseMemberDirectory = /^(?:packages\/(?!experimental\/)[^/]+\/[^/]+|apps\/[^/]+|vendor\/[^/]+)$/
+
+/**
+ * Apps that live under `apps/` but are not npm packages.
+ *
+ * The desktop app ships as signed installers built by `desktop-release.yml`;
+ * there is nothing for a consumer to `npm install`, which is why it is
+ * `private`. Without naming it here the release-member rules demand it be
+ * publishable, and the whole check fails on a package nobody intends to
+ * publish — a permanently red gate is one nobody reads.
+ */
+const unpublishedApps = new Set(['@unieai/uad-desktop'])
 
 const localArtifactDirs = new Set(['node_modules'])
 const appPackageFiles: Readonly<Record<string, readonly string[]>> = {
@@ -140,6 +157,15 @@ function workspaceManifests(): WorkspaceManifest[] {
   return manifests
 }
 
+/**
+ * Licence texts a package publishes for code it vendored. Listed last, after
+ * every build artifact, because that is where a `files` array reads naturally:
+ * what the package IS, then what it must carry.
+ */
+const packageLicencePayloads: Readonly<Record<string, readonly string[]>> = {
+  '@unieai/uad-client-ui-primitives': ['src/vendor/*/LICENSE'],
+}
+
 const packageFileExtras: Readonly<Record<string, readonly string[]>> = {
   // Statically linked client libraries keep their stylesheets next to the emitted
   // JavaScript, which imports them by relative path: the compile shell runs
@@ -147,7 +173,14 @@ const packageFileExtras: Readonly<Record<string, readonly string[]>> = {
   // The glob covers whichever sheets a package emits; sourcemaps stay
   // unpublished, as everywhere else in the repository.
   '@unieai/uad-client-ui-primitives': ['lib/**/*.css'],
+  '@unieai/uad-client-ui-pet': ['lib/**/*.css'],
   '@unieai/uad-client-web': ['lib/**/*.css'],
+  // Separate entry points, each its own bundle: the browser operator's
+  // Chromium launcher and its platform probes, and the execution router's two
+  // seam implementations, which the host imports as row modules rather than
+  // through the package entry.
+  '@unieai/uad-browser-operator': ['lib/chromium.js', 'lib/probe-*.js'],
+  '@unieai/uad-execution-router': ['lib/fs.js', 'lib/subprocess.js'],
   '@unieai/uad-client-ui-theme': ['lib/styles'],
   // The CPython side ships as source .py files, published as-is rather than built.
   '@unieai/uad-code-runtime-python': ['py/**/*.py'],
@@ -210,6 +243,11 @@ function expectedDshPackageFiles(manifest: PackageManifest): readonly string[] {
     ...hasTypertRemoteNavigation(manifest)
       ? ['lib/typert.remote-client.js', 'lib/typert.remote-client.d.ts']
       : [],
+    // A vendored component's licence, last. The copy that ships is the compiled
+    // `lib/` output, so the notice beside the vendored source is the one that
+    // has to travel with it — see `isForbiddenPublicationFile`, which makes the
+    // same exception for the packed tarball.
+    ...(manifest.name ? packageLicencePayloads[manifest.name] ?? [] : []),
   ]
 }
 
@@ -275,6 +313,12 @@ function checkWorkspace({ dir, manifest }: WorkspaceManifest): string[] {
       || manifest.repository.directory !== expectedDirectory) {
       errors.push(`${label}: published Landlock package repository must use ${repositoryUrl} with directory ${expectedDirectory} for trusted publishing`)
     }
+  } else if (manifest.name !== undefined && unpublishedApps.has(manifest.name)) {
+    // Not published: it must say so, and nothing else about it is a release
+    // member's business.
+    if (manifest.private !== true) {
+      errors.push(`${label}: an app that is not published must set "private": true`)
+    }
   } else if (releaseMemberDirectory.test(dir)) {
     // Release members state that they are publishable: npm refuses a private
     // package, and the repository field is how a consumer finds the source of
@@ -314,7 +358,9 @@ function checkWorkspace({ dir, manifest }: WorkspaceManifest): string[] {
     }
   }
 
-  if (dir.startsWith('apps/') && manifest.name?.startsWith('@unieai/')) {
+  if (dir.startsWith('apps/')
+    && manifest.name?.startsWith('@unieai/')
+    && !unpublishedApps.has(manifest.name)) {
     const expectedFiles = appPackageFiles[manifest.name]
     if (expectedFiles === undefined) {
       errors.push(`${label}: app package has no publication files policy`)
