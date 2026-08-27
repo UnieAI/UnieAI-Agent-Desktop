@@ -8,8 +8,8 @@ DeepSeek Harness 的 Workspace 实体注册表（`ctx.workspaceRegistry`）：�
 
 ## 结构
 
-- `ctx.workspaceRegistry.create(path, title?)`：规范化 `path` 时使用 `fs.realpath`，拒绝不存在或非目录的路径，每个规范路径最多创建一条记录，并将新记录前置到持久 workspace 顺序。对同一路径重复调用会返回现有 workspace，且不改变其标题；不同路径可以共用显示标题。
-- `ctx.workspaceRegistry.get(id)`/`list()`/`resolveByPath(path)`：由缓存提供的查找。`list()` 为同步操作，并遵循持久注册表顺序；`resolveByPath` 为异步操作，因为它采用相同的 `realpath` 规范化方式，并会拒绝缺失路径，而不是创建路径。
+- `ctx.workspaceRegistry.create(path, title?)`：**通过 `ctx.fs`** 规范化 `path`，拒绝不存在（`FS_NOT_FOUND`）或非目录的路径，每个规范路径最多创建一条记录，并将新记录前置到持久 workspace 顺序。对同一路径重复调用会返回现有 workspace，且不改变其标题；不同路径可以共用显示标题。
+- `ctx.workspaceRegistry.get(id)`/`list()`/`resolveByPath(path)`：由缓存提供的查找。`list()` 为同步操作，并遵循持久注册表顺序；`resolveByPath` 为异步操作，因为它采用相同的规范化方式，并会拒绝缺失路径，而不是创建路径。
 - `ctx.workspaceRegistry.insertBefore(id, before?)`：在持久注册表顺序内移动一个已注册 Workspace，语义类似 DOM 的 insertBefore：插到锚点之前，省略锚点则追加到末尾。来源或锚点不在注册表中时拒绝且不写入；以自身为锚点或移动到当前位置时直接完成且不写入。返回的 id 列表是完整的已提交顺序。
 - `ctx.workspaceRegistry.delete(id)`：只移除 Workspace 注册记录、对应的持久顺序条目及会话归属记录。未知 id 返回 `false`，成功移除记录则返回 `true`。目录、用户文件、活跃会话和持久化会话日志绝不受影响，因此相关会话会进入 Ungrouped。表写入失败时会恢复原顺序和此前发布的实体。
 - `Workspace.attachSession(id)`：对照 workspace 路径验证实时或已持久化的会话头 cwd，并将新 id 前置。未知会话、缺失／无法解析／非目录的 cwd 值和不匹配情况都会在不写入的前提下被拒绝。`detachSession` 只移除候选索引条目。
@@ -21,6 +21,13 @@ DeepSeek Harness 的 Workspace 实体注册表（`ctx.workspaceRegistry`）：�
 `storageDomain` 和 `sessionPersistence` 是启动必需依赖。任一依赖服务不可用时，插件保持待处理，且不能提交空的已初始化标记。首次成功启动时，注册表调用 `SessionPersistence.list()`，仅使用头部 `id`、`cwd` 和 `createdAt` 对有效历史目录分组并持久化初始顺序；它绝不读取事件正文。已初始化标记最后写入，因此重启后可安全复用引导初始化期间的部分写入。后续仅能通过 cwd 识别的会话仍属于 Ungrouped。
 
 创建和删除操作会在记录和顺序可能分叉之前，先持久化明确的待处理变更标记。启动时只补全该标记所指明的变更，随后清除标记；没有标记的顺序／表不一致仍属于来源不明的损坏，并会明确报错。删除后重新注册同一路径会生成新的 Workspace id，且不会自动重新接纳保留下来的会话。
+
+## workspace 位于哪个文件系统上
+
+规范化的依据是挂载的文件系统接缝，而不是宿主自己的 `node:fs`。workspace 是 `ctx.fs` 所描述的那个执行世界里的一个目录，因此挂载远程 provider 之后，注册表会在**那台机器**上做规范化、检查与校验——通过 SSH 的 workspace 就是一个普通的 workspace。在这里去碰宿主的文件系统，会让每一个远程目录都变得不可达，而在本地看起来却完全正常；这正是[可移植执行世界的决策](../../../.agents/notes/implemented/architecture/2026-07-28-portable-execution-world-consumers.zh.md)从 PTY 与 LSP 中移除的那个缺陷。
+
+由于规范化归接缝所有，注册表要求必须挂载文件系统 provider：这是一个强制注入，没有它的组合根本不会启动注册表，而不是悄悄地对着错误的计算机做规范化。
+
 
 ## 模型体验
 

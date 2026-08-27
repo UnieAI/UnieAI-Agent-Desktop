@@ -89,6 +89,7 @@
     "@unieai/uad-browser-operator": "workspace:^",
     "@unieai/uad-cordis-host-runner": "workspace:^",
     "@unieai/uad-fs": "workspace:^",
+    "@unieai/uad-fs-local": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-storage": "workspace:^",
     "@unieai/uad-storage-domain": "workspace:^",

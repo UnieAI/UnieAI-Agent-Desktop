@@ -8,8 +8,8 @@ The entity/storage rationale lives in the [domain Agent Note](../../../.agents/n
 
 ## Shape
 
-- `ctx.workspaceRegistry.create(path, title?)` — canonicalizes `path` via `fs.realpath`, rejects a nonexistent or non-directory path, creates at most one record per canonical path, and prepends a new record to durable workspace order. Repeated calls for that path return the existing workspace without changing its title; different paths may share a display title.
-- `ctx.workspaceRegistry.get(id)` / `list()` / `resolveByPath(path)` — cache-served lookups. `list()` is synchronous and follows durable registry order; `resolveByPath` is async because it applies the same `realpath` canon and rejects a missing path rather than creating it.
+- `ctx.workspaceRegistry.create(path, title?)` — canonicalizes `path` **through `ctx.fs`**, rejects a nonexistent (`FS_NOT_FOUND`) or non-directory path, creates at most one record per canonical path, and prepends a new record to durable workspace order. Repeated calls for that path return the existing workspace without changing its title; different paths may share a display title.
+- `ctx.workspaceRegistry.get(id)` / `list()` / `resolveByPath(path)` — cache-served lookups. `list()` is synchronous and follows durable registry order; `resolveByPath` is async because it applies the same canon and rejects a missing path rather than creating it.
 - `ctx.workspaceRegistry.insertBefore(id, before?)` — moves a registered Workspace within durable registry order, DOM-insertBefore-like: before the anchor, or appended when the anchor is omitted. A source or anchor absent from the registry rejects without writing; a self-anchor or move to the current position resolves without writing. The returned id list is the complete committed order.
 - `ctx.workspaceRegistry.delete(id)` — removes only the Workspace registration, its durable order entry, and its session account. Unknown ids return `false`; a removed record returns `true`. The directory, user files, live Sessions, and persisted session logs are never touched, so those Sessions become Ungrouped. A table-write failure restores the prior order and published entity.
 - `Workspace.attachSession(id)` — validates a live or persisted session header cwd against the workspace path and prepends a new id. Unknown sessions, absent/unresolvable/non-directory cwd values, and mismatches reject without writing. `detachSession` removes only the candidate index entry.
@@ -21,6 +21,13 @@ The entity/storage rationale lives in the [domain Agent Note](../../../.agents/n
 `storageDomain` and `sessionPersistence` are required startup dependencies. An unavailable peer leaves the plugin pending and cannot commit an empty initialized marker. On the first successful start, the registry calls `SessionPersistence.list()` and uses only header `id`, `cwd`, and `createdAt` to group valid historical directories and persist initial order; it never reads event bodies. The initialized marker is written last, so partial bootstrap writes are reused safely after restart. Later cwd-only sessions remain Ungrouped.
 
 Create and delete persist an explicit pending-mutation marker before their record and order can diverge. Startup completes only the marked mutation, then clears the marker; an unmarked order/table mismatch remains unexplained corruption and fails loud. Deleting and re-registering the same path creates a fresh Workspace id and does not automatically re-adopt the retained Sessions.
+
+## Which filesystem a workspace lives on
+
+The canon is the mounted filesystem seam, not the host's own `node:fs`. A workspace is a directory in whatever execution world `ctx.fs` describes, so with a remote provider mounted the registry canonicalizes, checks and validates on **that machine** — a workspace over SSH is an ordinary workspace. Reaching the host's filesystem here would have made every remote directory unreachable while looking correct locally, which is the defect the [portable execution-world decision](../../../.agents/notes/implemented/architecture/2026-07-28-portable-execution-world-consumers.md) removed from PTY and LSP.
+
+Because the seam owns the canon, the registry requires a filesystem provider to be mounted; it is a mandatory injection, and a composition without one never starts the registry rather than silently canonicalizing against the wrong computer.
+
 
 ## Model Experience
 

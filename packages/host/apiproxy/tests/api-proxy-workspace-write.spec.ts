@@ -47,7 +47,11 @@ const expectOk = <T>(response: RpcResponse<T>): T => {
  * operation leans on.
  */
 const realFs = () => ({
-  resolve: (path: string) => Promise.resolve({ targetKey: path, displayPath: path }),
+  resolve: (path: string) => Promise.resolve({ targetKey: realpathSync(path), displayPath: realpathSync(path) }),
+  // The workspace registry canonicalizes through this seam, so the
+  // stand-in has to answer the identity questions too, not only the
+  // reads and writes the proxy itself makes.
+  processPath: (target: { displayPath: string }) => target.displayPath,
   stat: (target: { displayPath: string }) => {
     try {
       const info = statSync(target.displayPath)
@@ -87,9 +91,11 @@ async function harness(options: { maxBytes?: number } = {}) {
   ctx.storage.mount('domain', storageDomain)
   ctx.provide('storageDomain', storageDomain)
   ctx.provide('sessionPersistence', { list: () => Promise.resolve([]) } as never)
-  await ctx.plugin(WorkspaceRegistry)
   ctx.provide('directoryPicker', { capability: () => ({ kind: 'native', pick: async () => null }) } as never)
   ctx.provide('fs', realFs() as never)
+  // Mounted after the filesystem: the registry canonicalizes through that
+  // seam, so it cannot start before one is available.
+  await ctx.plugin(WorkspaceRegistry)
   const api = createApiProxy(ctx, {
     defaultModelSelection: () => ({ provider: 'test', model: 'test-model' }),
     cwd: root,

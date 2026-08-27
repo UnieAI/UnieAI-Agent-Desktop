@@ -6,9 +6,9 @@
  */
 
 import { randomUUID } from 'node:crypto'
-import { stat } from 'node:fs/promises'
 import { basename } from 'node:path'
 import { Context, Service } from '@unieai/cordis'
+import { FsError } from '@unieai/uad-fs'
 import type { SessionHeader, SessionId } from '@unieai/uad-session'
 import type {} from '@unieai/uad-session-persistence'
 import type { DomainGlobal, KvTable } from '@unieai/uad-storage-domain'
@@ -16,15 +16,13 @@ import { WorkspaceEntity } from './entity.ts'
 import type { WorkspaceEntityHost } from './entity.ts'
 
 export { WorkspaceMoveInvalidError } from './entity.ts'
-import { realpathNormalize } from './paths.ts'
 import { workspaceDomainSpec } from './spec.ts'
 import type { WorkspaceDomainState, WorkspaceRecord } from './spec.ts'
-import type { Workspace, WorkspaceId as WorkspaceIdBrand } from './types.ts'
+import type { CanonicalDirectory, Workspace, WorkspaceId as WorkspaceIdBrand } from './types.ts'
 
-export type { Workspace } from './types.ts'
+export type { CanonicalDirectory, Workspace } from './types.ts'
 export { workspaceDomainState, workspaceRecord, workspaceDomainSpec } from './spec.ts'
 export type { WorkspaceDomainState, WorkspaceRecord } from './spec.ts'
-export { realpathNormalize } from './paths.ts'
 
 /** Identifies one workspace record (see `src/types.ts` for the brand rationale). */
 export type WorkspaceId = WorkspaceIdBrand
@@ -90,7 +88,7 @@ const compareHeaders = (left: SessionHeader, right: SessionHeader): number =>
  * history and commit the initialized marker.
  */
 export class WorkspaceRegistry extends Service {
-  static inject = ['storageDomain', 'sessionPersistence']
+  static inject = ['storageDomain', 'sessionPersistence', 'fs']
 
   private table?: KvTable<WorkspaceId, WorkspaceRecord>
   private global?: DomainGlobal<WorkspaceDomainState>
@@ -103,6 +101,7 @@ export class WorkspaceRegistry extends Service {
 
   private readonly host: WorkspaceEntityHost = {
     table: () => this.requireTable(),
+    canonicalDirectory: path => this.canonicalDirectory(path),
     sessionPath: id => this.sessionPaths.get(id),
     readSessionHeader: id => this.readSessionHeader(id),
     rememberSessionPath: (id, path) => {
@@ -156,11 +155,45 @@ export class WorkspaceRegistry extends Service {
   // drop the parameter with its @param clause and the `create(path, title?)`
   // lines in this package's README pair.
   async create(path: string, title?: string): Promise<Workspace> {
-    const canonical = await realpathNormalize(path)
-    if (!(await stat(canonical)).isDirectory()) {
-      throw new Error(`cannot create a workspace at '${canonical}': path is not a directory`)
+    // Refused before any filesystem work: a registry that cannot record the
+    // result has no business reaching a machine to canonicalize a path.
+    this.requireTable()
+    const resolved = await this.canonicalDirectory(path)
+    if (resolved.kind === 'absent') {
+      throw new FsError(`cannot create a workspace at '${path}': no such directory`, 'FS_NOT_FOUND')
     }
-    return await this.enqueueOperation(() => this.createCanonical(canonical, title))
+    if (resolved.kind === 'not-directory') {
+      throw new Error(`cannot create a workspace at '${resolved.path}': path is not a directory`)
+    }
+    return await this.enqueueOperation(() => this.createCanonical(resolved.path, title))
+  }
+
+  /**
+   * Canonicalize one directory path in the mounted execution world.
+   *
+   * Through `ctx.fs`, not `node:fs`: the filesystem seam is what decides
+   * where files are, and a workspace over a machine reached by SSH must
+   * canonicalize on THAT machine. Reaching the host's own filesystem here
+   * would make every remote directory unreachable while looking correct
+   * locally — the same defect the [portable execution-world
+   * decision](../../../.agents/notes/implemented/architecture/2026-07-28-portable-execution-world-consumers.md)
+   * removed from PTY and LSP.
+   *
+   * The canon is unchanged: symlinks, `..` segments and trailing slashes are
+   * all resolved, and uniqueness stays string equality of canonical paths.
+   *
+   * Absent and present-but-not-a-directory stay distinct answers, because
+   * the callers say different things about them — one is "there is nothing
+   * there", the other "that is a file".
+   * @param path - the directory to canonicalize, in any spelling.
+   * @returns what the execution world says the path is.
+   */
+  private async canonicalDirectory(path: string): Promise<CanonicalDirectory> {
+    const target = await this.ctx.fs.resolve(path)
+    const info = await this.ctx.fs.stat(target)
+    if (info === undefined) return { kind: 'absent' }
+    const canonical = this.ctx.fs.processPath(target)
+    return info.type === 'directory' ? { kind: 'directory', path: canonical } : { kind: 'not-directory', path: canonical }
   }
 
   /**
@@ -275,7 +308,11 @@ export class WorkspaceRegistry extends Service {
    * @returns the workspace owning the canonical path, when one exists.
    */
   async resolveByPath(path: string): Promise<Workspace | undefined> {
-    const canonical = await realpathNormalize(path)
+    const resolved = await this.canonicalDirectory(path)
+    if (resolved.kind === 'absent') {
+      throw new FsError(`cannot resolve a workspace at '${path}': no such directory`, 'FS_NOT_FOUND')
+    }
+    const canonical = resolved.path
     for (const entity of this.entities.values()) {
       if (entity.path === canonical) return entity
     }
@@ -577,12 +614,16 @@ export class WorkspaceRegistry extends Service {
       return
     }
     try {
-      const path = await realpathNormalize(header.cwd)
-      if (!(await stat(path)).isDirectory()) {
+      const resolved = await this.canonicalDirectory(header.cwd)
+      if (resolved.kind === 'absent') {
+        this.invalidSessionPaths.set(header.id, `cwd '${header.cwd}' does not resolve`)
+        return
+      }
+      if (resolved.kind === 'not-directory') {
         this.invalidSessionPaths.set(header.id, `cwd '${header.cwd}' is not a directory`)
         return
       }
-      this.sessionPaths.set(header.id, path)
+      this.sessionPaths.set(header.id, resolved.path)
       this.invalidSessionPaths.delete(header.id)
     } catch {
       this.invalidSessionPaths.set(header.id, `cwd '${header.cwd}' does not resolve`)

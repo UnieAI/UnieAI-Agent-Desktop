@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { Context } from '@unieai/cordis'
 import Storage from '@unieai/uad-storage'
+import { LocalFileSystem } from '@unieai/uad-fs-local'
 import type { StorageBackend } from '@unieai/uad-storage'
 import { DomainFacility } from '@unieai/uad-storage-domain'
 import type { DomainChanged } from '@unieai/uad-storage-domain'
@@ -38,6 +39,10 @@ interface HarnessOptions {
 async function harness(options: HarnessOptions = {}) {
   const pool = options.pool ?? new MemoryMediaPool()
   const ctx = new Context()
+  // The registry canonicalizes through the filesystem seam, so a real
+  // provider is mounted rather than a stub: these tests assert on symlink
+  // resolution and directory checks, which are the provider's behavior.
+  await ctx.plugin(LocalFileSystem, {})
   await ctx.plugin(Storage)
   ctx.storage.backend.register('memory', options.backend ?? new MemoryStorageBackend(pool))
   const facility = new DomainFacility(ctx, { backend: 'memory', routes: {} })
@@ -82,6 +87,10 @@ async function harness(options: HarnessOptions = {}) {
 /** Boot only the storage side, for dependency-pending and startup-failure cases. */
 async function storageContext(pool: MemoryMediaPool, backend: StorageBackend = new MemoryStorageBackend(pool)) {
   const ctx = new Context()
+  // The registry canonicalizes through the filesystem seam, so a real
+  // provider is mounted rather than a stub: these tests assert on symlink
+  // resolution and directory checks, which are the provider's behavior.
+  await ctx.plugin(LocalFileSystem, {})
   await ctx.plugin(Storage)
   ctx.storage.backend.register('memory', backend)
   const facility = new DomainFacility(ctx, { backend: 'memory', routes: {} })
@@ -397,9 +406,11 @@ describe('WorkspaceRegistry create and lookup', () => {
     const file = join(parent, 'plain.txt')
     await writeFile(file, 'file')
     const { registry } = await harness()
-    await expect(registry.create(join(parent, 'missing'))).rejects.toMatchObject({ code: 'ENOENT' })
+    // The seam's vocabulary, not errno: canonicalization happens in the
+    // mounted execution world, which may be another machine.
+    await expect(registry.create(join(parent, 'missing'))).rejects.toMatchObject({ code: 'FS_NOT_FOUND' })
     await expect(registry.create(file)).rejects.toThrow(/not a directory/)
-    await expect(registry.resolveByPath(join(parent, 'missing'))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(registry.resolveByPath(join(parent, 'missing'))).rejects.toMatchObject({ code: 'FS_NOT_FOUND' })
     expect(registry.list()).toEqual([])
   })
 

@@ -37,24 +37,27 @@
   ],
   "license": "MIT",
   "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
     "@unieai/uad-brand": "workspace:^",
-    "@unieai/uad-storage-domain": "workspace:^",
+    "@unieai/uad-fs": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-session": "workspace:^",
     "@unieai/uad-session-persistence": "workspace:^",
     "@unieai/uad-storage": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/uad-storage-domain": "workspace:^"
   },
   "dependencies": {
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@unieai/cordis": "workspace:^",
     "@unieai/uad-brand": "workspace:^",
-    "@unieai/uad-storage-domain": "workspace:^",
+    "@unieai/uad-fs": "workspace:^",
+    "@unieai/uad-fs-local": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-session": "workspace:^",
     "@unieai/uad-session-persistence": "workspace:^",
     "@unieai/uad-storage": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/uad-storage-domain": "workspace:^"
   }
 }

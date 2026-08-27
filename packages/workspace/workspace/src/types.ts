@@ -15,6 +15,18 @@ import type { SessionId } from '@unieai/uad-session'
 export type WorkspaceId = Branded<'WorkspaceId'>
 
 /**
+ * What the mounted execution world says one path is.
+ *
+ * Absent and present-but-not-a-directory stay distinct arms because the
+ * callers say different things about them: one is "there is nothing there",
+ * the other "that is a file".
+ */
+export type CanonicalDirectory =
+  | { readonly kind: 'directory'; readonly path: string }
+  | { readonly kind: 'absent' }
+  | { readonly kind: 'not-directory'; readonly path: string }
+
+/**
  * One workspace: a stable id over an existing directory, a display title, and
  * an ordered candidate account of sessions. Membership requires both an id in
  * that account and a session header whose canonical cwd equals the workspace

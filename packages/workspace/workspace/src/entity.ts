@@ -11,9 +11,9 @@
 import { stat } from 'node:fs/promises'
 import type { SessionHeader, SessionId } from '@unieai/uad-session'
 import type { KvTable } from '@unieai/uad-storage-domain'
+import type { CanonicalDirectory } from './types.ts'
 import type { WorkspaceRecord } from './spec.ts'
 import type { Workspace, WorkspaceId } from './types.ts'
-import { realpathNormalize } from './paths.ts'
 
 /** An insertSessionBefore request named a session or anchor not on the account (storage failures stay plain errors). */
 export class WorkspaceMoveInvalidError extends Error {
@@ -32,6 +32,17 @@ export class WorkspaceMoveInvalidError extends Error {
  * index backing the `sessionIds` projection, and attach-time header reads.
  */
 export interface WorkspaceEntityHost {
+  /**
+   * Canonicalize one directory in the mounted execution world.
+   *
+   * The registry owns this because it owns the filesystem seam: a workspace
+   * on a machine reached by SSH canonicalizes on THAT machine, and an entity
+   * reaching `node:fs` directly would validate against the wrong computer.
+   * @param path - the directory to canonicalize, in any spelling.
+   * @returns what the execution world says the path is.
+   */
+  canonicalDirectory(path: string): Promise<CanonicalDirectory>
+
   /**
    * Resolve the open `workspaces` table.
    * @returns the table; throws while the registry has not started yet.
@@ -119,9 +130,9 @@ export class WorkspaceEntity implements Workspace {
           + 'its stored header carries no cwd to validate against',
         )
       }
-      let cwd: string
+      let cwd: CanonicalDirectory
       try {
-        cwd = await realpathNormalize(header.cwd)
+        cwd = await this.host.canonicalDirectory(header.cwd)
       } catch (error) {
         throw new Error(
           `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
@@ -129,19 +140,25 @@ export class WorkspaceEntity implements Workspace {
           { cause: error },
         )
       }
-      if (!(await stat(cwd)).isDirectory()) {
+      if (cwd.kind === 'absent') {
+        throw new Error(
+          `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
+          + `its cwd '${header.cwd}' does not resolve, so it cannot be validated`,
+        )
+      }
+      if (cwd.kind === 'not-directory') {
         throw new Error(
           `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
           + `its cwd '${header.cwd}' is not a directory`,
         )
       }
-      if (cwd !== this.record.path) {
+      if (cwd.path !== this.record.path) {
         throw new Error(
           `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
-          + `its cwd resolves to '${cwd}'`,
+          + `its cwd resolves to '${cwd.path}'`,
         )
       }
-      this.host.rememberSessionPath(sessionId, cwd)
+      this.host.rememberSessionPath(sessionId, cwd.path)
     }
     await this.mutate(record => record.sessionIds.includes(sessionId)
       ? record

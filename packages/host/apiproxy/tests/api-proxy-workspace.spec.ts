@@ -12,6 +12,7 @@ import { DomainFacility } from '@unieai/uad-storage-domain'
 import UserQuestionService from '@unieai/uad-user-questions'
 import { DirectoryPickerError } from '@unieai/uad-host-directory-picker'
 import type { DirectoryPickerCapability } from '@unieai/uad-host-directory-picker'
+import LocalFileSystem from '@unieai/uad-fs-local'
 import WorkspaceRegistry from '@unieai/uad-workspace'
 import type { HostFrame, WorkspaceId } from '@unieai/uad-host-apiproxy/api'
 import type { RpcRequest, RpcResponse } from '@unieai/uad-host-apiproxy/api/rpc'
@@ -76,6 +77,9 @@ async function harness(
   ctx.storage.mount('domain', storageDomain)
   ctx.provide('storageDomain', storageDomain)
   ctx.provide('sessionPersistence', { list: () => Promise.resolve([]) } as never)
+  // The registry canonicalizes through the filesystem seam, so a provider
+  // has to be mounted for it to start at all.
+  await ctx.plugin(LocalFileSystem, {})
   await ctx.plugin(WorkspaceRegistry)
 
   const factory: AgentFactory = {
