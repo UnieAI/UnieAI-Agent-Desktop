@@ -1,0 +1,70 @@
+# Keyless smoke for the remote-machine composition: the real headless agent
+# and its real Bash tool, with the execution world on a machine reached over
+# SSH and a mock model that issues one command reporting where it ran.
+#
+# The overlay is spelled out here rather than including `ssh.cordis.yml`,
+# because patches apply to the rows of the file they include — one level
+# only — and this fixture has to reach the agent row inside the base
+# composition to point it at the mock provider.
+- id: ssh-mock-llm
+  name: './ssh-mock-llm.ts'
+
+- id: base
+  name: '@unieai/cordis-plugin-include'
+  config:
+    path: ../../../cordis.yml
+    patches:
+      - id: llm-deepseek
+        name: '@unieai/uad-llm-deepseek'
+        disabled: true
+
+      # The local execution world goes away; the machine's takes its place.
+      - id: subprocess
+        name: '@unieai/uad-subprocess-local'
+        disabled: true
+      - id: fs-local
+        name: '@unieai/uad-fs-local'
+        disabled: true
+      - insert:
+          - id: ssh
+            name: '@unieai/uad-ssh'
+            config:
+              configPath: !!js process.env.DSH_SSH_CONFIG
+          - id: subprocess-ssh
+            name: '@unieai/uad-subprocess-ssh'
+            config:
+              machine: !!js process.env.DSH_SSH_MACHINE
+          - id: fs-ssh
+            name: '@unieai/uad-fs-ssh'
+            config:
+              machine: !!js process.env.DSH_SSH_MACHINE
+              cwd: !!js process.env.DSH_SSH_CWD ?? '.'
+          - id: sandbox-policy
+            name: '@unieai/uad-sandbox-policy'
+            config:
+              mode: danger-full-access
+              workspaceRoot: !!js process.env.DSH_SSH_CWD ?? '.'
+
+      - id: bash-local
+        config:
+          cwd: !!js process.env.DSH_SSH_CWD ?? '.'
+
+      - id: agent-spine
+        name: '@unieai/uad-agent-spine-demo'
+        config:
+          agents:
+            - id: main
+              provider: ssh-mock
+              model: ssh-mock
+              cwd: !!js process.env.DSH_SSH_CWD ?? '.'
+          workspaceContext: false
+          dshHome: './.dsh-home'
+          skills:
+            filesystem:
+              agentsHome: './.agents-home'
+          persona: 'Keyless remote-machine smoke.'
+
+      - id: persistence
+        name: '@unieai/uad-session-persistence-jsonl'
+        config:
+          root: './.sessions'

@@ -39,12 +39,7 @@ async function command(argv: string[], cwd = ROOT): Promise<string> {
 beforeAll(async () => {
   if (!ready) return
   ctx = new Context()
-  const hosts = new SshHosts(ctx, {})
-  const original = hosts.argvFor.bind(hosts)
-  hosts.argvFor = (alias, line, options) => {
-    const argv = original(alias, line, options)
-    return [argv[0] as string, '-F', CONFIG as string, ...argv.slice(1)]
-  }
+  const hosts = new SshHosts(ctx, { configPath: CONFIG as string })
   await hosts.ensureControlDir()
   subprocess = new SshSubprocessRuntime(ctx, { machine: ALIAS as string })
   fs = new SshFileSystem(ctx, { machine: ALIAS as string, cwd: ROOT })

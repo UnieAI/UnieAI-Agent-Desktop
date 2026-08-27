@@ -66,6 +66,12 @@ The multiplexing socket lives under the harness home. OpenSSH substitutes a 40-c
 
 **One process-wide remote world, like the E2B POC.** Not rejected but not sufficient: it is what this package supports today. Selecting a machine per workspace requires routing a call to a target chosen from the calling session, which `ctx.agents.currentInitiator()` makes possible and which no code here does yet — stated under Deferred rather than implied by the composition.
 
+### Composing it
+
+`packages/bundle/remote-machine` is the composition: it replaces the two execution-world rows and turns off the local sandbox rows, because seatbelt, Landlock and the sandboxed executors confine processes on THIS computer and can do nothing about one on another. `sandbox-policy` therefore states `danger-full-access` — a mode promising confinement no mounted provider can deliver would fail at the first spawn rather than at load — and what bounds the work is the machine's own account permissions plus the harness's approval prompts. `examples/headless-agent/ssh.cordis.yml` is the same composition as a runnable example.
+
+`configPath`, when set, steers both the alias list and every connection. Reading machines from one file while connecting with another is a disagreement with no upside, and the composition needs the pair to move together.
+
 ## Testing
 
 Four hermetic suites pin the substrate rules: alias enumeration including `Include` and its cycles, `ssh -G` reading, the remote command line's three shell lessons, and the connection options with the control-path measurement.
@@ -75,6 +81,8 @@ Four hermetic suites pin the substrate rules: alias enumeration including `Inclu
 The terminal's own live suite asserts what may not be delegated: that the foreground group named is a group on the MACHINE containing the person's command, that an interrupt ends that command and leaves the shell taking input, that a shell at its prompt reads as waiting and a running one does not, and that ending the session takes its background jobs with it.
 
 `fs-ssh` pins its shell text by parsing it (`sh -n`) rather than by pattern, after a `;`-plus-joiner defect produced `;;` where no `case` arm was ending. Its live suite covers all twelve seam methods against a real machine, including a filename containing a newline, permission preservation across an atomic write, a multi-byte stream split across chunks, and binary refusal. A further suite mounts both adapters together and asserts the promise that matters: a file the tools write is one the commands can run, in both directions.
+
+Above all of them sits one composition smoke: the real headless agent and the real Bash tool, with a keyless model issuing a single command that reports where it ran. The evidence is on both sides — the transcript says what the command believed, and a file left on the machine, read back over a separate connection, says the work happened there. A transcript alone could have been produced locally.
 
 A gated suite (`tests/live-connection.e2e.ts`) runs the same code against a real `sshd`: resolution, reachability and its failure message, connection reuse (asserted as the master's existence, because a duration comparison fails exactly when the machine is busy), exit-status propagation, stream separation, environment carrying an embedded quote, working directories present and missing, and multi-byte output. It reports itself skipped without `DSH_SSH_TEST_CONFIG` and `DSH_SSH_TEST_ALIAS` rather than passing hollowly, and the file documents the disposable server it expects.
 

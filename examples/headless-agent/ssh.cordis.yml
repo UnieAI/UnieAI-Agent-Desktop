@@ -1,0 +1,54 @@
+# Overlay: keep the headless agent and its model-facing tools exactly as they
+# are, but place the filesystem and process substrate on a machine reached
+# over SSH. The generic Bash, PTY and LSP consumers compose above them
+# unchanged — that is the whole point of the two seams.
+#
+# One-world invariant: `fs-ssh.cwd`, `sandbox-policy.workspaceRoot` and the
+# Bash executor's `cwd` must all name the same directory ON THE MACHINE.
+# Leave them disagreeing and every tool call resolves paths in one world and
+# runs them in another.
+#
+# Which machine comes from DSH_SSH_MACHINE, named as your own ~/.ssh/config
+# names it. Run it with:
+#   DSH_SSH_MACHINE=build-box pnpm rabi examples/headless-agent/ssh.cordis.yml "list the repo"
+- id: base
+  name: '@unieai/cordis-plugin-include'
+  config:
+    path: ./cordis.yml
+    patches:
+      - id: subprocess
+        name: '@unieai/uad-subprocess-local'
+        disabled: true
+      - id: fs-local
+        name: '@unieai/uad-fs-local'
+        disabled: true
+      - insert:
+          # The machine book: which machines exist and one shared connection
+          # to each. It holds no credential of its own — OpenSSH keeps them.
+          - id: ssh
+            name: '@unieai/uad-ssh'
+            config:
+              configPath: !!js process.env.DSH_SSH_CONFIG
+
+          - id: subprocess-ssh
+            name: '@unieai/uad-subprocess-ssh'
+            config:
+              machine: !!js process.env.DSH_SSH_MACHINE
+
+          - id: fs-ssh
+            name: '@unieai/uad-fs-ssh'
+            config:
+              machine: !!js process.env.DSH_SSH_MACHINE
+              cwd: !!js process.env.DSH_SSH_CWD ?? '.'
+
+          # A LOCAL sandbox cannot confine a process on another computer, so
+          # the policy states what is actually enforceable: the machine's own
+          # account permissions, plus the harness's approval prompts.
+          - id: sandbox-policy
+            name: '@unieai/uad-sandbox-policy'
+            config:
+              mode: danger-full-access
+              workspaceRoot: !!js process.env.DSH_SSH_CWD ?? '.'
+      - id: bash-local
+        config:
+          cwd: !!js process.env.DSH_SSH_CWD ?? '.'

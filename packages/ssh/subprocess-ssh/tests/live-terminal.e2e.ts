@@ -25,12 +25,7 @@ const COLLECT = { stdin: 'ignore', stdout: { maxBytes: 65536 }, stderr: { maxByt
 /** A provider whose client always reads the test configuration file. */
 async function provider(): Promise<SshSubprocessRuntime> {
   const ctx = new Context()
-  const hosts = new SshHosts(ctx, {})
-  const original = hosts.argvFor.bind(hosts)
-  hosts.argvFor = (alias, line, options) => {
-    const argv = original(alias, line, options)
-    return [argv[0] as string, '-F', CONFIG as string, ...argv.slice(1)]
-  }
+  const hosts = new SshHosts(ctx, { configPath: CONFIG as string })
   await hosts.ensureControlDir()
   return new SshSubprocessRuntime(ctx, { machine: ALIAS as string })
 }

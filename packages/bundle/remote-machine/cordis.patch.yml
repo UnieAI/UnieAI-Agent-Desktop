@@ -1,0 +1,62 @@
+# The remote-machine bundle: move the execution world onto a machine reached
+# over SSH, leaving everything else exactly where it was.
+#
+# `ctx.fs` and `ctx.subprocess` together define an execution world, so
+# replacing those two rows moves the Bash tool, the file tools, search,
+# language servers and terminals onto the machine — none of them changes.
+# The harness itself does not move: Cordis and plugin objects, the agent
+# loop, session state and persistence, model calls, prompts, tools and
+# authority all stay where Rabi is installed.
+#
+# Which machine comes from `DSH_SSH_MACHINE`, named as the person's own
+# OpenSSH configuration names it. There is no second machine book.
+
+- insert:
+    # The machine book: which machines exist, what an alias resolves to, and
+    # one multiplexed connection to each.
+    - id: ssh
+      name: '@unieai/uad-ssh'
+
+    # The plain Bash executor. It maps Bash semantics onto ctx.subprocess and
+    # therefore runs on the machine; the sandboxed executors below are
+    # disabled because a LOCAL sandbox cannot confine a remote process.
+    - id: bash-local
+      name: '@unieai/uad-bash-local'
+
+# Every command runs on the machine.
+- id: subprocess
+  name: '@unieai/uad-subprocess-ssh'
+  config:
+    machine: !!js process.env.DSH_SSH_MACHINE
+
+# Every file read, write and edit happens on the same machine. `cwd` is the
+# directory relative paths resolve against there; the login directory is the
+# default because that is where a fresh `ssh <alias>` puts a person.
+- id: fs-sandbox
+  name: '@unieai/uad-fs-ssh'
+  config:
+    machine: !!js process.env.DSH_SSH_MACHINE
+    cwd: !!js process.env.DSH_SSH_CWD ?? '.'
+
+# The local sandbox rows are off, and this is the security fact of the whole
+# bundle: seatbelt, Landlock and the sandboxed executors confine processes on
+# THIS computer, and there is nothing they can do about a process on another
+# one. Work on the machine is confined by that machine's own account
+# permissions — the same ones the person gets from their own terminal — and
+# by the harness's approval prompts, which still gate every tool call.
+- id: sandbox
+  disabled: true
+
+- id: bash-sandbox
+  disabled: true
+
+- id: pwsh-sandbox
+  disabled: true
+
+# Stated rather than inherited: the policy must match what is actually
+# enforceable in the execution world, and a mode promising confinement no
+# provider can deliver would fail at the first spawn instead of at load.
+- id: sandbox-policy
+  config:
+    mode: danger-full-access
+    workspaceRoot: !!js process.env.DSH_SSH_CWD ?? '.'

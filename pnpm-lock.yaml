@@ -655,6 +655,9 @@ importers:
       '@unieai/uad-fs-sandbox':
         specifier: workspace:^
         version: link:../packages/fs/fs-sandbox
+      '@unieai/uad-fs-ssh':
+        specifier: workspace:^
+        version: link:../packages/ssh/fs-ssh
       '@unieai/uad-goal':
         specifier: workspace:*
         version: link:../packages/goal/goal
@@ -772,6 +775,9 @@ importers:
       '@unieai/uad-spill-policy':
         specifier: workspace:*
         version: link:../packages/spill/spill-policy
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../packages/ssh/ssh
       '@unieai/uad-subagent':
         specifier: workspace:*
         version: link:../packages/subagent/subagent
@@ -799,6 +805,9 @@ importers:
       '@unieai/uad-subprocess-local':
         specifier: workspace:*
         version: link:../packages/subprocess/subprocess-local
+      '@unieai/uad-subprocess-ssh':
+        specifier: workspace:^
+        version: link:../packages/ssh/subprocess-ssh
       '@unieai/uad-system-prompt':
         specifier: workspace:*
         version: link:../packages/core/system-prompt
@@ -1493,6 +1502,31 @@ importers:
       '@unieai/uad-session':
         specifier: workspace:^
         version: link:../../core/session
+
+  packages/bundle/remote-machine:
+    dependencies:
+      '@unieai/uad-bash-local':
+        specifier: workspace:^
+        version: link:../../shell/bash-local
+      '@unieai/uad-fs-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/fs-ssh
+      '@unieai/uad-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/ssh
+      '@unieai/uad-subprocess-ssh':
+        specifier: workspace:^
+        version: link:../../ssh/subprocess-ssh
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-loader-smoke':
+        specifier: workspace:^
+        version: link:../../test-support/loader-smoke
 
   packages/bundle/web-app:
     dependencies:

@@ -41,7 +41,14 @@ declare module '@unieai/cordis' {
 
 /** Configuration for the machine book. */
 export interface Config {
-  /** OpenSSH configuration file the alias list is read from. */
+  /**
+   * OpenSSH configuration file this book reads and connects with.
+   *
+   * Omitted, the client uses its own defaults — `~/.ssh/config` plus the
+   * system file — which is what makes a machine reachable here exactly when
+   * it is reachable from the person's terminal. Naming a file steers BOTH
+   * the alias list and every connection, so the two can never disagree.
+   */
   configPath?: string
   /** The `ssh` client to run; a bare name is resolved on the harness PATH. */
   sshCommand?: string
@@ -216,6 +223,9 @@ export class SshHosts extends Service {
     options: { tty?: boolean } = {},
   ): string[] {
     const argv = [this.config.sshCommand ?? 'ssh']
+    // A configured file has to reach the connection too, or the book would
+    // list machines from one place and connect using another.
+    if (this.config.configPath !== undefined) argv.push('-F', this.config.configPath)
     const control = this.controlPath()
     if (control !== undefined) {
       argv.push('-o', 'ControlMaster=auto', '-o', `ControlPath=${control}`)
@@ -305,8 +315,9 @@ export class SshHosts extends Service {
    */
   private runSsh(argv: readonly string[], signal?: AbortSignal): Promise<{ stdout: string }> {
     const command = this.config.sshCommand ?? 'ssh'
+    const configured = this.config.configPath === undefined ? [] : ['-F', this.config.configPath]
     return new Promise((resolve, reject) => {
-      execFile(command, [...argv], {
+      execFile(command, [...configured, ...argv], {
         env: scrubbedParentEnv(),
         signal,
         maxBuffer: 1024 * 1024,

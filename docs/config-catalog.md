@@ -2221,7 +2221,14 @@ Source: [`packages/spill/spill-policy/src/index.ts:60`](../packages/spill/spill-
 ```ts config-catalog
 /** Configuration for the machine book. */
 export interface Config {
-  /** OpenSSH configuration file the alias list is read from. */
+  /**
+   * OpenSSH configuration file this book reads and connects with.
+   *
+   * Omitted, the client uses its own defaults — `~/.ssh/config` plus the
+   * system file — which is what makes a machine reachable here exactly when
+   * it is reachable from the person's terminal. Naming a file steers BOTH
+   * the alias list and every connection, so the two can never disagree.
+   */
   configPath?: string
   /** The `ssh` client to run; a bare name is resolved on the harness PATH. */
   sshCommand?: string
@@ -3635,6 +3642,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@unieai/uad-host-plugin-inventory` — requires `loader` ([`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts))
 - `@unieai/uad-llm` ([`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts))
 - `@unieai/uad-lsp` ([`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts))
+- `@unieai/uad-remote-machine` ([`packages/bundle/remote-machine/src/index.ts`](../packages/bundle/remote-machine/src/index.ts))
 - `@unieai/uad-schedule` — requires `agents` · `sessions` · `tools` · `sessionPersistence` ([`packages/schedule/schedule/src/index.ts`](../packages/schedule/schedule/src/index.ts))
 - `@unieai/uad-session` ([`packages/core/session/src/index.ts`](../packages/core/session/src/index.ts))
 - `@unieai/uad-session-checkpoint-policy` — requires `llm` · `sessionPersistence` · `sessions` · `tools` ([`packages/session/session-checkpoint-policy/src/index.ts`](../packages/session/session-checkpoint-policy/src/index.ts))

@@ -26,15 +26,7 @@ const ready = CONFIG !== undefined && ALIAS !== undefined
 
 /** A book whose client always reads the test configuration file. */
 function book(): SshHosts {
-  const hosts = new SshHosts(new Context(), { connectTimeoutSeconds: 10 })
-  // `-F` has to reach every invocation, including the resolutions the book
-  // makes itself, so the test never consults the developer's own config.
-  const original = hosts.argvFor.bind(hosts)
-  hosts.argvFor = (alias, remote, options) => {
-    const argv = original(alias, remote, options)
-    return [argv[0] as string, '-F', CONFIG as string, ...argv.slice(1)]
-  }
-  return hosts
+  return new SshHosts(new Context(), { configPath: CONFIG as string, connectTimeoutSeconds: 10 })
 }
 
 /** Run one remote command through the book's own argv. */
