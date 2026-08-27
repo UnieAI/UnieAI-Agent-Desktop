@@ -23,7 +23,7 @@ import type {
   UnieAiAccount, UnieAiAccountState, UnieAiInviteResult,
 } from '../src/account-contract.ts'
 import { AccountSection, type AccountSectionComponentProps } from '../src/client/AccountSection.tsx'
-import { UsageSection, type UsageSectionComponentProps } from '../src/client/UsageSection.tsx'
+import { USAGE_REFRESH_MS, UsageSection, type UsageSectionComponentProps } from '../src/client/UsageSection.tsx'
 import { InviteSection, type InviteSectionComponentProps } from '../src/client/InviteSection.tsx'
 import { zh } from '../src/client/locales.ts'
 
@@ -37,6 +37,7 @@ function setup(state: UnieAiAccountState) {
   const signIn = vi.fn()
   const signOut = vi.fn()
   const saveProfile = vi.fn(async () => ({ status: 'saved' as const }))
+  const refresh = vi.fn()
   const props = {
     t,
     useAccount: bindSnapshotSelector(store),
@@ -44,21 +45,24 @@ function setup(state: UnieAiAccountState) {
     signIn,
     signOut,
     saveProfile,
+    refresh,
   } as unknown as AccountSectionComponentProps
   const view = render(<AccountSection {...props} />)
-  return { store, signIn, signOut, saveProfile, view }
+  return { store, signIn, signOut, saveProfile, refresh, view }
 }
 
 function setupUsage(state: UnieAiAccountState) {
   const store = createSnapshotStore<UnieAiAccountState>(state)
   const signIn = vi.fn()
+  const refresh = vi.fn()
   const props = {
     t,
     useAccount: bindSnapshotSelector(store),
     signIn,
+    refresh,
   } as unknown as UsageSectionComponentProps
   const view = render(<UsageSection {...props} />)
-  return { signIn, view }
+  return { signIn, refresh, view }
 }
 
 /** `'none'` stands for a gateway that exposes no invite write at all. */
@@ -449,6 +453,7 @@ describe('the profile save, as the Account page composes it', () => {
       signIn: vi.fn(),
       signOut: vi.fn(),
       saveProfile: rejecting,
+      refresh: vi.fn(),
     } as unknown as AccountSectionComponentProps
     render(<AccountSection {...props} />)
 
@@ -456,5 +461,48 @@ describe('the profile save, as the Account page composes it', () => {
     fireEvent.click(screen.getByRole('button', { name: zh['profile.save'] }))
     await waitFor(() => { expect(screen.getByText(zh['profile.unsupportedImage'])).toBeTruthy() })
     expect(screen.queryByText(zh['profile.updateFailed'])).toBeNull()
+  })
+})
+
+/**
+ * The figures on these pages describe an account that moves while nobody is
+ * looking: a turn spends an allowance, a plan changes on the web product. The
+ * account is read once at start-up, so a page that never asked again would be
+ * showing whatever was true when the application launched.
+ */
+describe('reading the account again', () => {
+  it('asks once when the Account page opens', () => {
+    const bench = setup({ status: 'signed-in', account: ACCOUNT })
+    expect(bench.refresh).toHaveBeenCalledTimes(1)
+  })
+
+  it('asks when the Usage page opens, and keeps asking while it stays open', () => {
+    vi.useFakeTimers()
+    try {
+      const bench = setupUsage({ status: 'signed-in', account: ACCOUNT })
+      expect(bench.refresh).toHaveBeenCalledTimes(1)
+      vi.advanceTimersByTime(USAGE_REFRESH_MS * 2)
+      expect(bench.refresh).toHaveBeenCalledTimes(3)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('stops asking once the Usage page is closed', () => {
+    // A product call spent on a page nobody is on serves nobody.
+    vi.useFakeTimers()
+    try {
+      const bench = setupUsage({ status: 'signed-in', account: ACCOUNT })
+      bench.view.unmount()
+      vi.advanceTimersByTime(USAGE_REFRESH_MS * 3)
+      expect(bench.refresh).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('asks even while signed out, because signing in elsewhere is what changes that', () => {
+    const bench = setupUsage({ status: 'signed-out' })
+    expect(bench.refresh).toHaveBeenCalledTimes(1)
   })
 })

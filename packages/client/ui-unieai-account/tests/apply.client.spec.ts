@@ -123,10 +123,10 @@ describe('ui-unieai-account browser apply', () => {
     const usage = (entryOf(b.slots, 'unieai-usage')!.inject as unknown as () => UsageSectionInjected)()
     const invite = (entryOf(b.slots, 'unieai-invite')!.inject as unknown as () => InviteSectionInjected)()
 
-    expect(Object.keys(account)).toEqual(['hooks', 'signIn', 'signOut', 'saveProfile'])
-    // Usage reads and can only ask you to sign in; it neither writes a profile
-    // nor sends an invite, so neither reaches it.
-    expect(Object.keys(usage)).toEqual(['hooks', 'signIn'])
+    expect(Object.keys(account)).toEqual(['hooks', 'signIn', 'signOut', 'saveProfile', 'refresh'])
+    // Usage reads and can only ask you to sign in or read again; it neither
+    // writes a profile nor sends an invite, so neither reaches it.
+    expect(Object.keys(usage)).toEqual(['hooks', 'signIn', 'refresh'])
     expect(Object.keys(invite)).toEqual(['hooks', 'signIn', 'sendInvite'])
 
     // And all three read ONE account source, so the pages can never disagree.

@@ -24,6 +24,7 @@
  * `locale` → Language); duplicating them would give one preference two
  * controls, so the section points at them in one line instead.
  */
+import { useEffect } from 'react'
 import type {
   HostObservable, InjectFace, PropsLocale, PropsRuntime,
 } from '@unieai/uad-client-ui-slots'
@@ -59,6 +60,14 @@ export interface AccountSectionInjected {
   /** Drop the local session. */
   signOut: () => void
   /**
+   * Read the account again.
+   *
+   * Asked once when the page opens, not on a timer: a plan name and an avatar
+   * change when a person changes them, while the allowances on the Usage page
+   * move on their own and that page polls for them.
+   */
+  refresh: () => void
+  /**
    * Store a display-name or avatar change.
    * @param patch - the change to store.
    * @returns whether the supplier stored it.
@@ -77,9 +86,14 @@ export type AccountSectionComponentProps =
  * @returns the section element tree.
  */
 export function AccountSection(props: AccountSectionComponentProps) {
-  const { t, useAccount, useActiveLocale, signIn, signOut, saveProfile } = props
+  const { t, useAccount, useActiveLocale, signIn, signOut, saveProfile, refresh } = props
   const state: UnieAiAccountState = useAccount(snapshot => snapshot)
   const locale = useActiveLocale(active => active)
+
+  // The account was read when the application started; opening this page is
+  // when someone wants to know what is true now.
+  useEffect(() => { refresh() }, [refresh])
+
   return (
     <div className={css.section}>
       <h2 className={css.title}>{t('title')}</h2>

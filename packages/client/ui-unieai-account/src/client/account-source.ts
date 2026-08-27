@@ -80,6 +80,18 @@ export class AccountSource {
   }
 
   /**
+   * Ask the gateway to read the account again.
+   *
+   * A no-op with no gateway, and with a gateway that cannot re-read: a
+   * surface calls this while someone is looking at the figures, and neither
+   * absence is worth a refusal it would have to render.
+   * @returns a promise settling once the reading has been published.
+   */
+  async refresh(): Promise<void> {
+    await this.gateway?.refresh?.()
+  }
+
+  /**
    * Store a profile change through the gateway.
    *
    * With no gateway composed there is nothing to write to, and the result says

@@ -144,6 +144,7 @@ export function apply(ctx: ClientContext): void {
     signIn: () => { source.signIn() },
     signOut: () => { source.signOut() },
     saveProfile: patch => source.saveProfile(patch),
+    refresh: () => { void source.refresh() },
   })
   const gateInjected = (): SignInGateInjected => ({
     hooks: { account: source },
@@ -152,6 +153,7 @@ export function apply(ctx: ClientContext): void {
   const usageInjected = (): UsageSectionInjected => ({
     hooks: { account: source },
     signIn: () => { source.signIn() },
+    refresh: () => { void source.refresh() },
   })
   const inviteInjected = (): InviteSectionInjected => ({
     hooks: { account: source },

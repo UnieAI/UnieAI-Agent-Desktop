@@ -306,6 +306,21 @@ export interface UnieAiAccountGateway {
    * @returns what the attempt established.
    */
   sendInvite?: (email: string) => Promise<UnieAiInviteResult>
+  /**
+   * Read the account again and republish it.
+   *
+   * The account is otherwise read once, when the application starts, and
+   * republished after a write this gateway performed. Everything else about it
+   * moves elsewhere — a turn spends an allowance, a plan changes on the web
+   * product, another device signs out — and a surface showing figures from
+   * start-up presents them as if they were current.
+   *
+   * Optional because a supplier may have nothing to re-read from. A surface
+   * that has it asks while a person is looking at those figures, and one that
+   * does not shows what it was given.
+   * @returns a promise settling once the fresh reading has been published.
+   */
+  refresh?: () => Promise<void>
 }
 
 /** The cordis service name a gateway plugin provides to reach this section. */
