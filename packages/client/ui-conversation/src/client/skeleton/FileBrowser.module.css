@@ -246,22 +246,12 @@
   min-height: 0;
 }
 
-.editorArea {
+/* The editor manages its own scrolling, its own gutter and its own metrics
+   (CodeEditor.tsx); this box only gives it the height left over above the
+   save bar. */
+.editor > [data-code-editor] {
   flex: 1;
   min-height: 0;
-  padding: 10px 12px;
-  border: none;
-  background: transparent;
-  color: var(--dsw-alias-label-primary);
-  font: var(--dsw-font-markdown-code-block);
-  resize: none;
-  tab-size: 2;
-  white-space: pre;
-  overflow: auto;
-}
-
-.editorArea:focus {
-  outline: none;
 }
 
 .saveBar {

@@ -46,6 +46,14 @@ Host 带 placement 的 `session/queue` 快照也会携带待处理 steering。Qu
 
 完成的一轮会物化一个有序的 `turn-tail` Conversation Node。它由引擎维护的 `TurnLocation` 提供收尾 Assistant 和 Turn data；renderer 在该 Node 的 IconActions 之前渲染 `conversation.chat.turnTail` chain，并派发包含 Turn、收尾 seq 和 `openFile` 的 `TurnTailOwnerProps`。本包只拥有空位；`@unieai/uad-client-ui-deliverables` 把改写工具的 `locations` 累积到 Turn data，并拥有产物行、chip 上限和文案，因此把该插件从 cordis.yml 中组合掉即可关闭该交互面，空位以零成本渲染为空。收尾正文经由同一个开关参与其中：chat 视图向可选的 `chatFileMentions` service（ctx.get；由同一插件提供）索取收尾消息的行内代码词表，并把结果接进 MarkdownText 的 `fileMentions` seam——service 缺席时正文保持死文本。
 
+详情面板的 **Files（文件）**分页是一棵工作区文件树，旁边放着一个打开的文件，而文件**一打开就能改**。这里没有「先进入编辑模式」这一步：一个人打开文件来读，顺手就能把他正是为之而来的那个错字改掉——他平常用的每一个编辑器都是这样的。编辑器是 CodeMirror 6（`skeleton/CodeEditor.tsx`）：高亮、行号、撤销、括号配对与 Cmd/Ctrl+S 都在同一层里。另一条路是把高亮视图垫在一个透明 textarea 底下，那就得让两个盒子在每一次换行、每一次字体回退之下保持完全一致的度量；一旦对不齐，光标就会停在错的字符上，而没有任何东西会告诉这个人为什么。
+
+于是浏览器端刻意有了两个 tokenizer。`ui-primitives` 的 shiki 高亮器是同步地把整份文档 tokenize 一遍，这对一张只渲染一次的卡片是对的；而编辑器每敲一个键都要重新 tokenize，逐键做整份文档的工作，在大文件上就会卡。CodeMirror 的解析器是增量的。但**调色板只有一份**：编辑器的 highlight style 每一个颜色都解析到与 read 卡片同一组 `--shiki-token-*` 自定义属性，所以同一个关键字在两处是同一个颜色，而两边的代码里都没有写下颜色。
+
+语法是静态 import，而不是放在 `import()` 后面。一个 client 外挂是经由 harness 的 module table 载入的：裸 specifier 会保持 external 并在那里解析，而动态 import 会改为产出一个相对 chunk，而 module table 里没有那一行——于是整个套件都载不进来，坏掉的是整个对话界面，而不是少了几个颜色。Shell、TOML 与 Dockerfile 位于 `@codemirror/legacy-modes` 的子路径之下，会产生同样的 chunk，所以它们不在其中：这类文件是可以编辑的单色文本。
+
+保存由读取时拿到的 version 把关：一个文件如果在这份缓冲区打开期间被代理改过，写入会被拒绝，界面把这件事说出来并提供重新读取，而不是去合并。宿主扣下不给的文件（二进制，或超过大小上限）根本不会有编辑器——在一个有内容的文件上放一个空的编辑器，是一种会不小心把它清空的做法；而这个界面写不了的文件，保持只读的高亮视图。
+
 ## 模型体验
 
 无。会话 UI 在浏览器中渲染会话历史与流；这里没有任何内容进入模型请求。
@@ -55,6 +63,8 @@ Host 带 placement 的 `session/queue` 快照也会携带待处理 steering。Qu
 无；该包既不组装也不发送提供方请求。
 
 ## 已知限制与暂缓事项
+- **文件编辑器一次只开一个文件，没有搜索、没有补全、也没有跳转到定义。** 它是一个带语言配色的文本编辑器，不是一套 IDE 的语言服务：这里没有任何东西跟 language server 说话，面板里放的是一个打开的文件，而不是一排分页。这些各自都是另一道接缝（这个仓库里有 LSP client，但把它接到浏览器端的编辑器上不是本套件的下一步）。
+- **编辑器在本套件的 client bundle 里约占 1.4 MB 的解析器。** 十九种语言是静态打包进去的，因为 harness 的 module table 解析不了动态 import 产出的 chunk；要把它们改成延迟载入，需要 loader 能供应套件相对路径的 chunk，那是 client runtime 的改动，不是这里的改动。
 
 - **统计行的回退折算只覆盖窗口内消息流**：未组合 `sessionStats` 投影单元的装配中，所有数字由快照的 assistant `timing` 与工具 call/result 配对折算，落在已加载事件窗口之外的节点（更早的历史）不计入，数字随加载页数增长。
 - **详情面板没有入口**：`ChatViewInjected.openDetails` 虽已实现却无人调用，因此以原始形式显示已选择调用的那部分在组装后的应用中不可达。没有 Input/Output/Metadata 切换、Prev/Next 步进，也没有 trajectory 深链接。

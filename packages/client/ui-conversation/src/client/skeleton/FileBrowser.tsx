@@ -6,12 +6,17 @@
  * commonest thing someone does after reading one, and a viewer that replaced
  * the tree would make that a navigation instead of a click.
  *
- * EDITABLE, AND GUARDED. Saving goes back through the Host's write, which
- * carries the version the read returned: a file an agent changed while this
- * buffer sat open refuses the save rather than discarding that work. The
- * editor then says so and offers to re-read, which is the only honest move —
- * this surface cannot merge, and pretending otherwise loses someone's edit
- * either way.
+ * OPEN IS EDITABLE. A file opens in a real editor with the caret already in
+ * it, the way every IDE opens one — no mode to enter first. Highlighting,
+ * line numbers, undo and Cmd/Ctrl+S all come from the editor itself, so
+ * reading a file costs nothing by being able to change it.
+ *
+ * GUARDED. Saving goes back through the Host's write, which carries the
+ * version the read returned: a file an agent changed while this buffer sat
+ * open refuses the save rather than discarding that work. The editor then
+ * says so and offers to re-read, which is the only honest move — this
+ * surface cannot merge, and pretending otherwise loses someone's edit either
+ * way.
  *
  * A file the Host withheld (too large, or binary) has no editor: there is
  * nothing to edit, and a blank textarea over a file with content is a way to
@@ -22,6 +27,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'reac
 import { grammarLoadCount, highlightLines, subscribeGrammarLoaded } from '@unieai/uad-client-ui-primitives'
 import type { WorkspaceFile, WorkspaceListing } from '@unieai/uad-client-runtime/client'
 import type { DetailsSlotProps } from '../contract/slots.ts'
+import { CodeEditor } from './CodeEditor.tsx'
 import { WorkspaceTree } from './WorkspaceTree.tsx'
 import { fileName } from './artifacts.ts'
 import css from './FileBrowser.module.css'
@@ -94,11 +100,6 @@ export function FileBrowser({
   // typed, and the read's own text is what a save is measured against.
   const [draft, setDraft] = useState<string | undefined>(undefined)
   const [save, setSave] = useState<SaveState>({ status: 'clean' })
-  // Reading is what this surface is for, so it opens in the highlighted,
-  // line-numbered view and editing is asked for. An always-on textarea replaced
-  // that view outright, which cost the highlighting and the numbers on every
-  // file anyone merely wanted to LOOK at.
-  const [editing, setEditing] = useState(false)
   const controller = useRef<AbortController>(new AbortController())
 
   useEffect(() => {
@@ -112,7 +113,6 @@ export function FileBrowser({
         // A fresh read is a fresh buffer: keeping the old draft would show
         // one file's edits over another file's content.
         setDraft(file.text)
-        setEditing(false)
         setSave({ status: 'clean' })
       },
       (error: unknown) => {
@@ -157,6 +157,12 @@ export function FileBrowser({
       },
     )
   }
+
+  // The editor's save keymap is built once with the view, so it calls the
+  // current commit through a ref rather than the one that existed when the
+  // file opened.
+  const commitRef = useRef(commit)
+  commitRef.current = commit
 
   /** Take what is on disk now, discarding the buffer. */
   const reread = (): void => {
@@ -207,15 +213,6 @@ export function FileBrowser({
             ))}
           </div>
           <div className={css.crumbActions}>
-            {editable && !editing && (
-              <button
-                type="button" className={css.external}
-                title={t('files.edit')}
-                onClick={() => { setEditing(true) }}
-              >
-                {t('files.edit')}
-              </button>
-            )}
             {path !== undefined && (
               <button
                 type="button" className={css.external}
@@ -266,34 +263,27 @@ export function FileBrowser({
                       // The Host withheld it; saying which bound was hit beats an
                       // empty viewer that reads as an empty file.
                       ? <div className={css.note}>{t(content.file.reason === 'binary' ? 'files.binary' : 'files.tooLarge')}</div>
-                      : editable && editing
+                      : editable
                         ? (
                           <div className={css.editor}>
-                            {/* One layer, not two. A highlighted view under a
-                                transparent textarea has to keep two boxes in
-                                exact metric agreement through every wrap and
-                                every font fallback; when they drift, the
-                                caret sits on the wrong character and nothing
-                                tells the person why. Plain text always
-                                agrees with itself. */}
-                            <textarea
-                              className={css.editorArea}
+                            {/* The editor owns the highlighting, the line
+                                numbers and the caret in one layer. A
+                                highlighted view under a transparent textarea
+                                has to keep two boxes in exact metric
+                                agreement through every wrap and every font
+                                fallback; when they drift, the caret sits on
+                                the wrong character and nothing tells the
+                                person why. */}
+                            <CodeEditor
                               value={shown}
-                              spellCheck={false}
-                              aria-label={fileName(path)}
-                              onChange={(event) => {
-                                setDraft(event.target.value)
-                                setSave(event.target.value === ready.text ? { status: 'clean' } : { status: 'dirty' })
+                              path={path}
+                              readOnly={false}
+                              label={fileName(path)}
+                              onChange={(text) => {
+                                setDraft(text)
+                                setSave(text === ready.text ? { status: 'clean' } : { status: 'dirty' })
                               }}
-                              onKeyDown={(event) => {
-                                // The save gesture every editor has. Without
-                                // it the button is the only way, and a person
-                                // typing will press this anyway.
-                                if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-                                  event.preventDefault()
-                                  commit()
-                                }
-                              }}
+                              onSave={() => { commitRef.current() }}
                             />
                             <div className={css.saveBar} data-state={save.status}>
                               <span className={css.saveNote}>
@@ -301,26 +291,13 @@ export function FileBrowser({
                                   : save.status === 'failed' ? t('files.saveFailed')
                                     : save.status === 'saving' ? t('files.saving')
                                       : save.status === 'dirty' ? t('files.unsaved')
-                                        : ''}
+                                        : t('files.saved')}
                               </span>
                               {save.status === 'stale' && (
                                 <button type="button" className={css.saveAction} onClick={() => { reread() }}>
                                   {t('files.reread')}
                                 </button>
                               )}
-                              <button
-                                type="button" className={css.saveAction}
-                                onClick={() => {
-                                  // Back to reading, and back to what was read:
-                                  // a draft kept across the switch would show
-                                  // edits the highlighted view cannot render.
-                                  setDraft(ready.text)
-                                  setSave({ status: 'clean' })
-                                  setEditing(false)
-                                }}
-                              >
-                                {t('files.done')}
-                              </button>
                               <button
                                 type="button" className={css.saveAction}
                                 disabled={save.status !== 'dirty'}
