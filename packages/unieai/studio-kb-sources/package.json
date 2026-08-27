@@ -2,6 +2,9 @@
   "name": "@unieai/uad-studio-kb-sources",
   "description": "Read knowledge-base citations out of Studio's MCP tool results",
   "version": "0.1.13",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "lib/index.js",
   "exports": {
