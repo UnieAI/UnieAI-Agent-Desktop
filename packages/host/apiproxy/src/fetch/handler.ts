@@ -61,7 +61,9 @@ import {
   workspaceListRequestSchema,
   workspaceRenameRequestSchema,
 } from '../api/workspace.schema.ts'
-import { skillCatalogRequestSchema, skillListRequestSchema } from '../api/skills.schema.ts'
+import {
+  skillCatalogRequestSchema, skillInstallRequestSchema, skillListRequestSchema,
+} from '../api/skills.schema.ts'
 import {
   agentPresetCopyRequestSchema, agentPresetListRequestSchema, agentPresetOpenDocumentRequestSchema,
   agentPresetReadRequestSchema, agentPresetRemoveRequestSchema, agentPresetSelectRequestSchema,
@@ -159,6 +161,7 @@ const UNARY_ROUTES: UnaryRoutes = {
   'workspace.archiveSession': { schema: workspaceArchiveSessionRequestSchema, invoke: (api, r) => api.workspace.archiveSession(r) },
   'skill.list': { schema: skillListRequestSchema, invoke: (api, r) => api.skills.list(r) },
   'skill.catalog': { schema: skillCatalogRequestSchema, invoke: (api, r) => api.skills.catalog(r) },
+  'skill.install': { schema: skillInstallRequestSchema, invoke: (api, r, signal) => api.skills.install(r, signal) },
   'agentPreset.list': { schema: agentPresetListRequestSchema, invoke: (api, r) => api.agentPresets.list(r) },
   'agentPreset.select': { schema: agentPresetSelectRequestSchema, invoke: (api, r) => api.agentPresets.select(r) },
   'agentPreset.read': { schema: agentPresetReadRequestSchema, invoke: (api, r) => api.agentPresets.read(r) },

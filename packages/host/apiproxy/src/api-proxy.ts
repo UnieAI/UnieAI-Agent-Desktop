@@ -4,7 +4,7 @@
  */
 
 import { randomUUID } from 'node:crypto'
-import { mkdir, stat } from 'node:fs/promises'
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, relative, resolve as resolvePath } from 'node:path'
 // Type-only: the optional fs service's Context merge and its listing entry.
@@ -15,7 +15,11 @@ import { z as zod } from 'zod'
 import type { Context } from '@unieai/cordis'
 // Type-only: pulls the machine list's `ctx.machines` Context merge.
 import type {} from '@unieai/uad-machines'
+// Type-only: brings the account gate's `Context` merge, so `ctx.get('unieaiGate')`
+// is the service and not `any`. No value from that package is imported.
+import type {} from '@unieai/uad-unieai-web-gate'
 import type { SshEditRefusal } from '@unieai/uad-ssh'
+import { dshHomePath } from '@unieai/uad-home-paths'
 import { installModelSelection } from '@unieai/uad-agent'
 import type { Agent, ModelSelection, ModelSelectionRef, AgentOptions, AgentStatus } from '@unieai/uad-agent'
 import type {} from '@unieai/uad-agent-presets/types'
@@ -3980,6 +3984,63 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
           })
         } catch (error: unknown) {
           return err(request, { code: 'internal', message: `skill listing failed: ${String(error)}`, details: {} })
+        }
+      },
+
+      async install(request, signal: AbortSignal) {
+        const { slug } = request.payload
+        // Read through `ctx.get`: a deployment with no account gate is a
+        // composition without this feature, not a broken one, and the answer
+        // says so in the words a person can act on.
+        const gate = ctx.get('unieaiGate')
+        if (gate === undefined) {
+          return err(request, {
+            code: 'skill-source-unavailable',
+            message: 'this build has no UnieAI account gate, so there is no account to copy a skill from',
+            details: {},
+          })
+        }
+        // The document is fetched HERE, from the account, rather than being
+        // carried in the request: the route exists so that what lands in a
+        // skills directory came from the account and not from a page.
+        const answer = await gate.accountSkill(slug, signal)
+        if (answer === undefined) {
+          return err(request, {
+            code: 'skill-source-unavailable',
+            message: 'sign in to UnieAI to copy a skill from your account',
+            details: {},
+          })
+        }
+        if (answer === 'not-found') {
+          return err(request, {
+            code: 'skill-not-on-account',
+            message: `your UnieAI account has no skill "${slug}"`,
+            details: { slug },
+          })
+        }
+        if (answer === 'unreadable') {
+          return err(request, {
+            code: 'skill-unreadable',
+            message: `the skill "${slug}" could not be read from your UnieAI account`,
+            details: { slug },
+          })
+        }
+        // Where the harness's own discovery enumerates user skills: the
+        // harness home, on THIS computer. A skill is read by the process that
+        // composes the prompt, and that process runs here whichever machine
+        // the commands go to.
+        const directory = dshHomePath('skills', slug)
+        const file = resolvePath(directory, 'SKILL.md')
+        try {
+          // A file already there is replaced, and the answer says so — it may
+          // be one someone edited, and the surface that asked is the only
+          // place that can tell them.
+          const replaced = await readFile(file, 'utf8').then(() => true, () => false)
+          await mkdir(directory, { recursive: true })
+          await writeFile(file, answer.content, 'utf8')
+          return ok(request, { name: answer.name, path: file, replaced })
+        } catch (error: unknown) {
+          return err(request, { code: 'internal', message: `writing "${file}" failed: ${String(error)}`, details: {} })
         }
       },
     },

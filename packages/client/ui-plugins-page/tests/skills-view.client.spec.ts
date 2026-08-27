@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import type { SkillCatalogEntry } from '@unieai/uad-api-remotes/client'
 
 import { createSkillsView, groupSkills, INITIAL_SKILLS_STATE } from '../src/client/skills-view.ts'
+import { createAccountSkillsSource } from '../src/client/account-skills-source.ts'
 
 type Answer = { ok: true; skills: SkillCatalogEntry[] } | { ok: false; message: string }
 
@@ -92,5 +93,100 @@ describe('createSkillsView', () => {
     stop()
     await view.refresh()
     expect(woken).toBe(0)
+  })
+})
+
+describe('the account skill source', () => {
+  const answer = (status: number, body: unknown): Response =>
+    ({ status, json: () => Promise.resolve(body) }) as Response
+
+  it('reads a deployment older than the route as unsupported, not as a failure', async () => {
+    // A build with no account gate cannot be helped by a retry, and the
+    // section draws nothing for it.
+    const source = createAccountSkillsSource({ request: () => Promise.resolve(answer(404, {})) }, {
+      install: () => Promise.resolve({ ok: false as const, message: '' }),
+    })
+    await source.refresh()
+    expect(source.getSnapshot().state.status).toBe('unsupported')
+  })
+
+  it('reads the gate signed-out envelope as signed out', async () => {
+    const source = createAccountSkillsSource(
+      { request: () => Promise.resolve(answer(200, { status: 'signed-out' })) },
+      { install: () => Promise.resolve({ ok: false as const, message: '' }) },
+    )
+    await source.refresh()
+    expect(source.getSnapshot().state.status).toBe('signed-out')
+  })
+
+  it('reads an account with no skills as an answer, not as a failure', async () => {
+    const source = createAccountSkillsSource(
+      { request: () => Promise.resolve(answer(200, { status: 'signed-in', skills: [] })) },
+      { install: () => Promise.resolve({ ok: false as const, message: '' }) },
+    )
+    await source.refresh()
+    expect(source.getSnapshot().state).toEqual({ status: 'ready', skills: [] })
+  })
+
+  it('drops a row it cannot act on, and a second row under one slug', async () => {
+    const source = createAccountSkillsSource({
+      request: () => Promise.resolve(answer(200, {
+        status: 'signed-in',
+        skills: [
+          { slug: 'weekly', name: 'Weekly', description: 'a', origin: 'personal', attachments: [] },
+          { slug: 'weekly', name: 'Weekly again', description: 'b', origin: 'personal' },
+          { slug: '', name: 'nameless slug' },
+          { name: 'no slug at all' },
+          'not an object',
+        ],
+      })),
+    }, { install: () => Promise.resolve({ ok: false as const, message: '' }) })
+    await source.refresh()
+    const state = source.getSnapshot().state
+    expect(state.status === 'ready' && state.skills.map(skill => skill.name)).toEqual(['Weekly'])
+  })
+
+  it('builds a row field by field, so an unknown wire field cannot reach the page', async () => {
+    const source = createAccountSkillsSource({
+      request: () => Promise.resolve(answer(200, {
+        status: 'signed-in',
+        skills: [{ slug: 'weekly', name: 'Weekly', description: 'a', origin: 'personal', token: 'sk-secret' }],
+      })),
+    }, { install: () => Promise.resolve({ ok: false as const, message: '' }) })
+    await source.refresh()
+    expect(JSON.stringify(source.getSnapshot().state).includes('sk-secret')).toBe(false)
+  })
+
+  it('reports what a copy wrote, and refuses to run the same one twice at once', async () => {
+    let calls = 0
+    let release = (): void => {}
+    const source = createAccountSkillsSource(
+      { request: () => Promise.resolve(answer(200, { status: 'signed-in', skills: [] })) },
+      {
+        install: async (slug) => {
+          calls += 1
+          await new Promise<void>((resolve) => { release = resolve })
+          return { ok: true as const, outcome: { name: slug, path: `/skills/${slug}/SKILL.md`, replaced: true } }
+        },
+      },
+    )
+    const first = source.copy('weekly')
+    await source.copy('weekly')
+    expect(source.getSnapshot().copying).toEqual(['weekly'])
+    release()
+    await first
+    expect(calls).toBe(1)
+    expect(source.getSnapshot().copied['weekly']?.replaced).toBe(true)
+    expect(source.getSnapshot().copying).toEqual([])
+  })
+
+  it('keeps the host own words when a copy is refused', async () => {
+    const source = createAccountSkillsSource(
+      { request: () => Promise.resolve(answer(200, { status: 'signed-in', skills: [] })) },
+      { install: () => Promise.resolve({ ok: false as const, message: 'your UnieAI account has no skill "gone"' }) },
+    )
+    await source.copy('gone')
+    expect(source.getSnapshot().error).toBe('your UnieAI account has no skill "gone"')
+    expect(source.getSnapshot().copying).toEqual([])
   })
 })

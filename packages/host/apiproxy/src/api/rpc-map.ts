@@ -77,6 +77,7 @@ export interface RpcMethodMap {
   'workspace.archiveSession': WorkspaceApi['archiveSession']
   'skill.list': SkillsApi['list']
   'skill.catalog': SkillsApi['catalog']
+  'skill.install': SkillsApi['install']
   'agentPreset.list': AgentPresetsApi['list']
   'agentPreset.select': AgentPresetsApi['select']
   'agentPreset.read': AgentPresetsApi['read']

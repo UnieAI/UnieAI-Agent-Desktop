@@ -582,6 +582,8 @@ export const TYPE_LINK_EXEMPTIONS: Readonly<Record<string, string>> = {
   UnieaiGateSession: 'the signed-in account as the gate reports it is owned by packages/unieai/web-gate/README.md; it carries a credential and is deliberately not a documented cross-package type',
   McpServerGrant: 'a mountable MCP server WITH its bearer is owned by packages/unieai/web-gate/README.md; the browser-facing twin McpServerView is the documented one, and the grant is host-only precisely because it carries the token',
   EntitledModel: 'the account\'s entitled model as the product publishes it is owned by packages/unieai/web-gate/README.md',
+  AccountSkillDocument: 'one account skill\'s SKILL.md, as the product renders it, is owned by packages/unieai/web-gate/README.md; it is the document a host writes and never a browser-facing shape',
+  SkillDocumentFailure: 'the two ways one account skill can fail to be read (absent from the account, or unreadable) is owned by packages/unieai/web-gate/README.md, beside the route that draws the distinction',
   BeginCommandRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',
   InsertReferenceRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',
   ConsumeTokenRequest: 'event-local request contract is owned by packages/client/ui-input-trigger/src/types.ts',

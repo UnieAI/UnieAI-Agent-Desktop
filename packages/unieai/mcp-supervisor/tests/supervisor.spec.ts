@@ -88,6 +88,9 @@ function fakeGate() {
       return Promise.resolve(session === undefined ? undefined : servers)
     },
     entitledModels: () => Promise.resolve(undefined),
+    // This suite drives the relay, not the skill catalogue; the seam is
+    // satisfied with the answer a signed-out gate gives.
+    accountSkill: async () => undefined,
   }
   return {
     service,

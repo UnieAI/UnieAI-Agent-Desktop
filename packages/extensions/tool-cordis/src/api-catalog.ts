@@ -2460,6 +2460,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [{ name: 'signal', description: 'cancels the request.' }],
         returns: 'the models, or undefined when the list could not be read.',
       },
+      {
+        signature: 'accountSkill( slug: string, signal?: AbortSignal, ): Promise<AccountSkillDocument | SkillDocumentFailure | undefined>',
+        description: 'One skill\'s `SKILL.md`, as the account keeps it on the product.\n\nA host consumer reads the document here rather than taking one from a browser: the thing that writes a file onto this machine should be handed an identifier and fetch the bytes itself, not be handed the bytes.',
+        parameters: [{ name: 'slug', description: 'the skill to read, as the listing reported it.' }, { name: 'signal', description: 'cancels the request.' }],
+        returns: 'the document, `not-found` when the account has no such skill, `unreadable` when the product could not be read, and undefined while nobody is signed in.',
+      },
     ],
   },
   {
@@ -3174,6 +3180,10 @@ export const EVENT_API: readonly EventApiEntry[] = [
 
 /** Shapes of every exported type the Service and Event signatures reference (transitively), sorted by name. */
 export const TYPE_API: readonly TypeApiEntry[] = [
+  {
+    name: 'AccountSkillDocument',
+    declaration: 'export interface AccountSkillDocument {\n    slug: string;\n    name: string;\n    content: string;\n}',
+  },
   {
     name: 'AdapterRegistrationHandle',
     declaration: 'export interface AdapterRegistrationHandle {\n    (): void;\n    replace(providers: string[]): void;\n}',
@@ -4376,7 +4386,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'RpcErrorDetailsMap',
-    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'machine-edit-refused\': {};\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal-disabled\': {};\n    \'terminal-no-terminal\': {\n        terminalId: string;\n    };\n    \'terminal-too-many-terminals\': {};\n    \'terminal-no-shell\': {};\n   /* …truncated — full shape in source */',
+    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'machine-edit-refused\': {};\n    \'skill-source-unavailable\': {};\n    \'skill-not-on-account\': {\n        slug: string;\n    };\n    \'skill-unreadable\': {\n        slug: string;\n    };\n    \'workspace-file-stale\': {\n        path: string;\n    };\n    \'terminal-unavailable\': {};\n    \'terminal- /* …truncated — full shape in source */',
   },
   {
     name: 'RpcId',
@@ -4785,6 +4795,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SkillDefinition',
     declaration: 'export interface SkillDefinition extends SkillSummary {\n    readonly content: string;\n    readonly path?: string;\n    readonly metadata?: Readonly<Record<string, unknown>>;\n}',
+  },
+  {
+    name: 'SkillDocumentFailure',
+    declaration: 'export type SkillDocumentFailure = \'not-found\' | \'unreadable\';',
   },
   {
     name: 'SkillInvocationPolicy',

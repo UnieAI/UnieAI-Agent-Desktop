@@ -9,15 +9,6 @@
   ],
   "references": [
     {
-      "path": "../../goal/goal"
-    },
-    {
-      "path": "../../settings/settings"
-    },
-    {
-      "path": "../../credentials/credentials"
-    },
-    {
       "path": "../../../vendor/cordis"
     },
     {
@@ -27,13 +18,10 @@
       "path": "../../api/remotes/tsconfig.host.json"
     },
     {
-      "path": "../../util/brand"
-    },
-    {
       "path": "../../attachment/attachment"
     },
     {
-      "path": "../../llm/llm"
+      "path": "../../browser/browser-operator"
     },
     {
       "path": "../../core/agent"
@@ -42,40 +30,22 @@
       "path": "../../core/agent-default-model"
     },
     {
-      "path": "../../preset/agent-presets"
-    },
-    {
       "path": "../../core/session"
     },
     {
       "path": "../../core/tools"
     },
     {
-      "path": "../../session/session-persistence"
+      "path": "../../credentials/credentials"
     },
     {
-      "path": "../../session/session-projection"
+      "path": "../../extensions/cordis-host-runner"
     },
     {
-      "path": "../../session/session-projection-cache"
+      "path": "../../fs/fs"
     },
     {
-      "path": "../../session-query/session-query"
-    },
-    {
-      "path": "../../session/session-title"
-    },
-    {
-      "path": "../../session-query/session-query"
-    },
-    {
-      "path": "../../subagent/subagent"
-    },
-    {
-      "path": "../../skill/skill"
-    },
-    {
-      "path": "../../jobs/jobs"
+      "path": "../../goal/goal"
     },
     {
       "path": "../../interaction/commands"
@@ -87,34 +57,70 @@
       "path": "../../interaction/user-questions"
     },
     {
-      "path": "../../workspace/workspace"
+      "path": "../../jobs/jobs"
     },
     {
-      "path": "../directory-picker"
-    },
-    {
-      "path": "../../extensions/cordis-host-runner"
-    },
-    {
-      "path": "../../runtime-diagnostics/invariants"
-    },
-    {
-      "path": "../../util/native-command"
-    },
-    {
-      "path": "../../fs/fs"
-    },
-    {
-      "path": "../../terminal/terminal-operator"
-    },
-    {
-      "path": "../../browser/browser-operator"
+      "path": "../../llm/llm"
     },
     {
       "path": "../../machines/machines"
     },
     {
+      "path": "../../preset/agent-presets"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../../session-query/session-query"
+    },
+    {
+      "path": "../../session-query/session-query"
+    },
+    {
+      "path": "../../session/session-persistence"
+    },
+    {
+      "path": "../../session/session-projection"
+    },
+    {
+      "path": "../../session/session-projection-cache"
+    },
+    {
+      "path": "../../session/session-title"
+    },
+    {
+      "path": "../../settings/settings"
+    },
+    {
+      "path": "../../skill/skill"
+    },
+    {
       "path": "../../ssh/ssh"
+    },
+    {
+      "path": "../../subagent/subagent"
+    },
+    {
+      "path": "../../terminal/terminal-operator"
+    },
+    {
+      "path": "../../unieai/web-gate"
+    },
+    {
+      "path": "../../util/brand"
+    },
+    {
+      "path": "../../util/home-paths"
+    },
+    {
+      "path": "../../util/native-command"
+    },
+    {
+      "path": "../../workspace/workspace"
+    },
+    {
+      "path": "../directory-picker"
     }
   ]
 }

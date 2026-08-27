@@ -20,6 +20,8 @@ import type { SkillCatalogEntry } from '@unieai/uad-api-remotes/client'
 import { SkillsArea } from '../src/client/SkillsArea.tsx'
 import type { SkillsAreaComponentProps } from '../src/client/SkillsArea.tsx'
 import type { DirectoryRow, DirectoryState } from '../src/client/directory-source.ts'
+import { INITIAL_ACCOUNT_SKILLS } from '../src/client/account-skills-source.ts'
+import type { AccountSkillRow, AccountSkillsSnapshot } from '../src/client/account-skills-source.ts'
 import { zh } from '../src/client/locales.ts'
 
 afterEach(cleanup)
@@ -194,11 +196,18 @@ function skillsView(skills: SkillCatalogEntry[]) {
 /** The props the framework composes, with the hook it derives from `hooks`. */
 function skillsProps(overrides: Record<string, unknown>): SkillsAreaComponentProps {
   const view = skillsView((overrides.skills as SkillCatalogEntry[] | undefined) ?? [])
+  // The account section reads its own store; unless a test drives it, it holds
+  // the state a build with no account gate ends in, which draws nothing.
+  const account = (overrides.account as AccountSkillsSnapshot | undefined)
+    ?? { ...INITIAL_ACCOUNT_SKILLS, state: { status: 'unsupported' as const } }
   return {
     t,
     available: overrides.available !== false,
     refresh: overrides.refresh ?? (() => undefined),
+    refreshAccount: overrides.refreshAccount ?? (() => undefined),
+    copyFromAccount: overrides.copyFromAccount ?? (() => undefined),
     useSkills: (select: (snapshot: ReturnType<typeof view.getSnapshot>) => unknown) => select(view.getSnapshot()),
+    useAccountSkills: (select: (snapshot: AccountSkillsSnapshot) => unknown) => select(account),
     ...overrides.openPath === undefined ? {} : { openPath: overrides.openPath },
   } as unknown as SkillsAreaComponentProps
 }
@@ -239,5 +248,79 @@ describe('the skills destination', () => {
     ] })} />)
     fireEvent.click(screen.getByText(zh['skills.open']))
     expect(openPath).toHaveBeenCalledWith('/skills/mine/SKILL.md')
+  })
+})
+
+describe('the account section of the skills destination', () => {
+  const row = (over: Partial<AccountSkillRow> = {}): AccountSkillRow => ({
+    slug: 'weekly', name: 'Weekly Report', description: 'Writes the Monday summary.',
+    origin: 'personal', attachments: [], ...over,
+  })
+
+  const ready = (skills: AccountSkillRow[]): AccountSkillsSnapshot =>
+    ({ ...INITIAL_ACCOUNT_SKILLS, state: { status: 'ready', skills } })
+
+  it('draws nothing at all on a build with no account gate', () => {
+    render(<SkillsArea {...skillsProps({})} />)
+    expect(screen.queryByText(zh['skills.group.account'])).toBeNull()
+  })
+
+  it('asks for a sign-in rather than showing an empty account', () => {
+    render(<SkillsArea {...skillsProps({
+      account: { ...INITIAL_ACCOUNT_SKILLS, state: { status: 'signed-out' } },
+    })} />)
+    expect(screen.getByText(zh['skills.accountSignedOut'])).toBeTruthy()
+  })
+
+  it('says an account with no skills has none, in words', () => {
+    render(<SkillsArea {...skillsProps({ account: ready([]) })} />)
+    expect(screen.getByText(zh['skills.accountEmpty'])).toBeTruthy()
+  })
+
+  it('offers a copy, and asks the host for it by slug', () => {
+    const copied: string[] = []
+    render(<SkillsArea {...skillsProps({
+      account: ready([row()]),
+      copyFromAccount: (slug: string) => { copied.push(slug) },
+    })} />)
+    fireEvent.click(screen.getByText(zh['skills.copy']))
+    expect(copied).toEqual(['weekly'])
+  })
+
+  it('says replace, not installed, when a skill of that name is already here', () => {
+    // The two are not necessarily the same file, and this row must not claim
+    // they are — only that a copy would take the name.
+    render(<SkillsArea {...skillsProps({
+      skills: [{
+        name: 'Weekly Report', description: 'a local one', source: 'user-dsh', provider: 'filesystem',
+        path: '/home/dev/.dsh/skills/weekly/SKILL.md', modelInvocable: true, userInvocable: true,
+      }],
+      account: ready([row()]),
+    })} />)
+    expect(screen.getByText(zh['skills.replace'])).toBeTruthy()
+  })
+
+  it('names the file a finished copy wrote', () => {
+    render(<SkillsArea {...skillsProps({
+      account: {
+        ...INITIAL_ACCOUNT_SKILLS,
+        state: { status: 'ready', skills: [row()] },
+        copied: { weekly: { name: 'Weekly Report', path: '/home/dev/.dsh/skills/weekly/SKILL.md', replaced: false } },
+      },
+    })} />)
+    expect(screen.getByText('/home/dev/.dsh/skills/weekly/SKILL.md')).toBeTruthy()
+    expect(screen.getByText(zh['skills.copyAgain'])).toBeTruthy()
+  })
+
+  it('says a skill carries files a copy will not bring', () => {
+    render(<SkillsArea {...skillsProps({ account: ready([row({ attachments: ['scripts/build.sh'] })]) })} />)
+    expect(screen.getByText(zh['skills.accountAttachments'])).toBeTruthy()
+  })
+
+  it('shows the host own refusal when a copy fails', () => {
+    render(<SkillsArea {...skillsProps({
+      account: { ...INITIAL_ACCOUNT_SKILLS, state: { status: 'ready', skills: [row()] }, error: 'sign in to UnieAI' },
+    })} />)
+    expect(screen.getByText('sign in to UnieAI')).toBeTruthy()
   })
 })

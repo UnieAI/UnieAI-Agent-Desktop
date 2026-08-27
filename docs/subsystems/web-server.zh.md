@@ -92,6 +92,20 @@ mcpServers(signal?: AbortSignal): Promise<McpServerGrant[] | undefined>
  * @returns the models, or undefined when the list could not be read.
  */
 entitledModels(signal?: AbortSignal): Promise<EntitledModel[] | undefined>
+
+/**
+ * One skill's `SKILL.md`, as the account keeps it on the product.
+ *
+ * A host consumer reads the document here rather than taking one from a
+ * browser: the thing that writes a file onto this machine should be handed
+ * an identifier and fetch the bytes itself, not be handed the bytes.
+ * @param slug - the skill to read, as the listing reported it.
+ * @param signal - cancels the request.
+ * @returns the document, `not-found` when the account has no such skill,
+ * `unreadable` when the product could not be read, and undefined while
+ * nobody is signed in.
+ */
+accountSkill( slug: string, signal?: AbortSignal, ): Promise<AccountSkillDocument | SkillDocumentFailure | undefined>
 ```
 
 Source: [`packages/unieai/web-gate/src/index.ts`](../../packages/unieai/web-gate/src/index.ts)

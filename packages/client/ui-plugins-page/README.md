@@ -68,9 +68,25 @@ The destination lists every skill the deployment would give a model, grouped by 
 
 `skill.catalog` (`packages/host/apiproxy/src/api/skills.ts`) is root-scoped: it takes no `sessionId`, because this surface opens with or without a session. It answers by asking the deployment's **standing preset scope** — [`agent-presets`](../../preset/agent-presets/README.md)' `standingService('skills')` — for its snapshot, which is the same registry a turn would consult, discovered through the same mounted providers.
 
-That matters more than it sounds. Skill discovery reads files through `ctx.fs`, and which `ctx.fs` depends on which machine the session is pointed at; a route that walked directories with `node:fs` would list this computer's skills while a turn on a remote machine read that machine's. Asking the standing scope means the page and the model cannot disagree about what exists.
+That matters more than it sounds, and it is what a first attempt got wrong. `skill-filesystem` registers itself in the context it is plugged into, and a deployment plugs it in inside the preset's composition — so the registry a turn consults lives in that mount, and `ctx.skills` read from a host context is a different, empty registry. The page reported no skills while every turn had four. Asking the standing scope for the instance, rather than reading the host's own, is what keeps the page and the model describing one catalogue.
+
+Skill roots are enumerated on this computer (`node:fs`) whichever machine a session points at; only a skill's body is loaded through `ctx.fs`. So this list is what the harness's own home and the open project hold, not what a remote machine holds — a distinction the destination does not yet draw in words.
 
 **Discovery is asynchronous, so the route waits for a settled answer.** `snapshot()` reports `complete: false` while a provider is still reading, and the honest response to "what skills are there" is not a partial list that would fill in silently a moment later. The route re-reads until the snapshot settles, up to a second, and serves what it has if it does not — a bounded wait, because a directory on a slow remote machine must not hold the page open indefinitely.
+
+### The account's own skills, and copying one over
+
+Under this machine's catalogue sits what the signed-in UnieAI account keeps: read from `GET /auth/skills`, the same gate seam the Studio MCP area uses, so the API key that authenticates the product never reaches a page.
+
+The two lists are **stacked rather than merged**, because they answer different questions. The catalogue above is what a turn here will use; this is what exists somewhere else and could be brought over. A merged list would have to say which of the two each row was, on every row.
+
+**Copying sends a slug and nothing else.** `skill.install` fetches the document on the host, through the account gate, and writes it into the harness's skills directory — so a page cannot choose what a skill says, and a skill is instructions a model will follow. What comes back is the file that was written and whether it replaced one; the row names that file afterwards, and the catalogue above re-reads, because a copy changes what this machine has.
+
+A row whose name already exists here says **Replace the one here** rather than *Installed*: the two are not necessarily the same file, and this surface cannot know that they are. What it can say truthfully is that a copy would take the name.
+
+Auxiliary files are named and not fetched. A skill's scripts and templates stay on the account, so a skill that has them says so before a copy rather than failing in the middle of a turn.
+
+The four answers the account list can give stay four, the same way the MCP area's do: a build older than the route draws **nothing at all**, a signed-out browser is asked to sign in, a failed read says so, and an account with no skills says that in words.
 
 ### It lists; it does not write
 

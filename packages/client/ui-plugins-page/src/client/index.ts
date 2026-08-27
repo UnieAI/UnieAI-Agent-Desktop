@@ -48,6 +48,7 @@ import { PluginsPageController } from './page-store.ts'
 import { DirectoryArea, type DirectoryAreaInjected } from './DirectoryArea.tsx'
 import { DirectorySource } from './directory-source.ts'
 import { SkillsArea, type SkillsAreaInjected } from './SkillsArea.tsx'
+import { createAccountSkillsSource } from './account-skills-source.ts'
 import { createSkillsView } from './skills-view.ts'
 import { StudioMcpArea, type StudioMcpAreaInjected } from './StudioMcpArea.tsx'
 import { StudioEntry, type StudioEntryInjected } from './StudioEntry.tsx'
@@ -151,6 +152,23 @@ export function apply(ctx: ClientContext): void {
     },
   })
 
+  // The account's own skills, and the copy gesture. The listing is read from
+  // the gate over this origin; the copy goes to the host, which fetches the
+  // document from the account itself — so the bytes that land in a skills
+  // directory never pass through this page.
+  const accountSkills = createAccountSkillsSource(
+    { request: (path, init) => globalThis.fetch(path, init) },
+    {
+      install: async (slug) => {
+        if (connection === undefined) return { ok: false as const, message: '' }
+        const response = await connection.api.skills.install({ slug })
+        return response.result.ok
+          ? { ok: true as const, outcome: { ...response.result.value } }
+          : { ok: false as const, message: response.result.error.message }
+      },
+    },
+  )
+
   const directory = new DirectorySource({ request: (path, init) => globalThis.fetch(path, init) })
   ctx.effect(() => () => { directory.dispose() }, 'ui-plugins-page: plugin directory source')
 
@@ -253,9 +271,18 @@ export function apply(ctx: ClientContext): void {
     order: 0,
     locale: NS,
     inject: (): SkillsAreaInjected => ({
-      hooks: { skills },
+      hooks: { skills, accountSkills },
       available: connection !== undefined,
       refresh: () => { void skills.refresh() },
+      refreshAccount: () => { void accountSkills.refresh() },
+      copyFromAccount: (slug: string) => {
+        void accountSkills.copy(slug).then(() => {
+          // A copy changes what this machine has, and the catalogue above is
+          // the list of exactly that. Re-reading is how the copied skill
+          // appears where a turn would find it.
+          void skills.refresh()
+        })
+      },
       ...connection === undefined
         ? {}
         : { openPath: (path: string) => { void connection.api.host.openPath({ path }) } },

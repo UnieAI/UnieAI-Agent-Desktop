@@ -33,10 +33,20 @@ export interface SkillCatalogEntry extends SkillEntry {
   readonly userInvocable: boolean
 }
 
+/** What one install wrote, so a surface can name the file and re-read. */
+export interface SkillInstallResult {
+  /** The skill's own name, as the account stores it. */
+  readonly name: string
+  /** Absolute file this host wrote. */
+  readonly path: string
+  /** Whether a file was already there and has been replaced. */
+  readonly replaced: boolean
+}
+
 /**
- * Skill-domain unary methods (the map key skill.* of RpcMethodMap). Listing
- * is the domain's only RPC: invocation itself is a plain `session.prompt`
- * whose leading `/name` token the host recognizes at the pre-step boundary
+ * Skill-domain unary methods (the map key skill.* of RpcMethodMap). Reading
+ * and copying only: invocation itself is a plain `session.prompt` whose
+ * leading `/name` token the host recognizes at the pre-step boundary
  * (`dsh-tool-skill` injects the rendered body there), so every client shares
  * one deterministic path with no dedicated invocation wire.
  */
@@ -59,4 +69,22 @@ export interface SkillsApi {
    * the person's editor and the agent both already work on.
    */
   catalog(request: RpcRequest<{ cwd?: string }>): Promise<RpcResponse<{ skills: readonly SkillCatalogEntry[] }>>
+
+  /**
+   * Copy one skill from the signed-in UnieAI account onto this machine.
+   *
+   * The client sends a slug and nothing else. The document is fetched here,
+   * through the account gate that holds the API key, so a browser cannot
+   * choose what gets written into a skills directory — the whole point of the
+   * route is that the bytes come from the account rather than from the page.
+   *
+   * A copy, not a link: the file becomes this machine's, editing it here
+   * changes nothing on the account, and installing again replaces it. That
+   * last fact is reported rather than hidden, because the file it replaces
+   * may be one someone edited.
+   */
+  install(
+    request: RpcRequest<{ slug: string }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<SkillInstallResult>>
 }

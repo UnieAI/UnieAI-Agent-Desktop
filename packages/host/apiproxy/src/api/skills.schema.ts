@@ -7,7 +7,7 @@ import { z } from 'zod'
 import type { RequestPayload, ResponseValue } from './rpc-map.ts'
 import type { Wire } from './rpc.schema.ts'
 import { sessionIdSchema } from './sessions.schema.ts'
-import type { SkillCatalogEntry, SkillEntry } from './skills.ts'
+import type { SkillCatalogEntry, SkillEntry, SkillInstallResult } from './skills.ts'
 
 /** SkillEntry row of skill.list. */
 export const skillEntrySchema = z.object({
@@ -48,3 +48,21 @@ export const skillCatalogRequestSchema = z.object({
 export const skillCatalogValueSchema = z.object({
   skills: z.array(skillCatalogEntrySchema),
 }) satisfies z.ZodType<Wire<ResponseValue<'skill.catalog'>>>
+
+/**
+ * skill.install request payload.
+ *
+ * One plain path segment, because this value becomes a directory name on the
+ * machine: the pattern refuses a separator, a leading dot, and the two names
+ * (`.`, `..`) that resolve somewhere other than where they are joined.
+ */
+export const skillInstallRequestSchema = z.object({
+  slug: z.string().min(1).max(64).regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/u),
+}) satisfies z.ZodType<Wire<RequestPayload<'skill.install'>>>
+
+/** skill.install response value. */
+export const skillInstallValueSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  replaced: z.boolean(),
+}) satisfies z.ZodType<Wire<SkillInstallResult>>

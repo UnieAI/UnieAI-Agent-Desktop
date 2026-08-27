@@ -40,6 +40,8 @@ import { fetchAccountProfile, updateAccountProfile, type ProfilePatch } from './
 import {
   createProvider, deleteProvider, fetchProviders, readProviderDraft, readProviderPatch, updateProvider,
 } from './providers.ts'
+import { fetchAccountSkill, fetchAccountSkills, isPlainSegment } from './skills.ts'
+import type { AccountSkillDocument, SkillDocumentFailure } from './skills.ts'
 import { fetchDesktopStats } from './stats.ts'
 
 export type { BootstrapAnswer, BootstrapPart, BootstrapPartReader } from './bootstrap.ts'
@@ -48,6 +50,7 @@ export type { AccountMeter, AccountSnapshot } from './account.ts'
 export type { InviteSendOutcome, SentInvite } from './invite.ts'
 export type { McpServerGrant, McpServerView } from './mcp.ts'
 export type { EntitledModel } from './models.ts'
+export type { AccountSkill, AccountSkillDocument, SkillDocumentFailure } from './skills.ts'
 export type { AccountProfile, ProfileRefusal, ProfilePatch, ProfileWriteOutcome } from './profile.ts'
 export type {
   ProviderCreateOutcome, ProviderDeleteOutcome, ProviderDraft, ProviderPatch, ProviderSummary,
@@ -112,6 +115,22 @@ export interface UnieaiGate {
    * @returns the models, or undefined when the list could not be read.
    */
   entitledModels(signal?: AbortSignal): Promise<EntitledModel[] | undefined>
+  /**
+   * One skill's `SKILL.md`, as the account keeps it on the product.
+   *
+   * A host consumer reads the document here rather than taking one from a
+   * browser: the thing that writes a file onto this machine should be handed
+   * an identifier and fetch the bytes itself, not be handed the bytes.
+   * @param slug - the skill to read, as the listing reported it.
+   * @param signal - cancels the request.
+   * @returns the document, `not-found` when the account has no such skill,
+   * `unreadable` when the product could not be read, and undefined while
+   * nobody is signed in.
+   */
+  accountSkill(
+    slug: string,
+    signal?: AbortSignal,
+  ): Promise<AccountSkillDocument | SkillDocumentFailure | undefined>
 }
 
 declare module '@unieai/cordis' {
@@ -279,6 +298,8 @@ const PROVIDER_NOT_DELETED = 'The UnieAI provider could not be deleted.'
 const STATS_UNREADABLE = 'The UnieAI activity statistics could not be read.'
 /** Companion of {@link PROVIDERS_UNREADABLE} for the mountable MCP servers. */
 const MCP_UNREADABLE = 'The UnieAI MCP servers could not be read.'
+const SKILLS_UNREADABLE = 'The skills on your UnieAI account could not be read.'
+const SKILL_GONE = 'That skill is no longer on your UnieAI account.'
 /**
  * Companion of {@link PROVIDERS_UNREADABLE} for the account snapshot. English
  * by construction like the others: the browser half substitutes its own
@@ -446,6 +467,10 @@ export function apply(ctx: Context, config: Config): void {
     entitledModels: async (signal) => {
       const session = hostSession()
       return session === undefined ? undefined : fetchEntitledModels(productUrl, session.apiKey, signal)
+    },
+    accountSkill: async (slug, signal) => {
+      const session = hostSession()
+      return session === undefined ? undefined : fetchAccountSkill(productUrl, session.apiKey, slug, signal)
     },
   } satisfies UnieaiGate)
 
@@ -946,6 +971,62 @@ export function apply(ctx: Context, config: Config): void {
       json(res, 200, await mcpBody(session.apiKey))
     },
   }), 'unieai-web-gate: mountable MCP servers')
+
+  // The skills the account keeps in the web product, for a person choosing
+  // which to copy onto this machine. A listing only: what a copy actually
+  // writes comes from the route below, one skill at a time, because an account
+  // with fifty skills has fifty documents nobody asked for.
+  ctx.effect(() => ctx.webServer.register({
+    kind: 'exact',
+    path: '/auth/skills',
+    handler: async (req, res) => {
+      const session = currentSession(req)
+      if (session === undefined) {
+        json(res, 200, { status: 'signed-out' })
+        return
+      }
+      const skills = await fetchAccountSkills(productUrl, session.apiKey)
+      // An account that has written none is an answer; a failed read is not.
+      json(res, 200, skills === undefined
+        ? { status: 'failed', message: SKILLS_UNREADABLE }
+        : { status: 'signed-in', skills })
+    },
+  }), 'unieai-web-gate: account skills')
+
+  // One skill's SKILL.md. A prefix route, because the slug is the product's
+  // own identifier and belongs in the path; the exact table above is consulted
+  // first, so the listing keeps `/auth/skills` itself.
+  ctx.effect(() => ctx.webServer.register({
+    kind: 'prefix',
+    path: '/auth/skills',
+    handler: async (req, res) => {
+      const path = new URL(req.url ?? '/', 'http://x').pathname
+      const tail = path.slice('/auth/skills/'.length)
+      // One plain segment. The slug becomes a directory name on this machine,
+      // so a deeper path — or one carrying a parent reference — is refused
+      // here as well as at the product, because this side is where a path
+      // eventually gets built out of it.
+      if (!isPlainSegment(tail)) {
+        json(res, 404, { status: 'failed', message: SKILL_GONE })
+        return
+      }
+      const session = currentSession(req)
+      if (session === undefined) {
+        json(res, 200, { status: 'signed-out' })
+        return
+      }
+      const answer = await fetchAccountSkill(productUrl, session.apiKey, tail)
+      if (answer === 'not-found') {
+        json(res, 404, { status: 'failed', message: SKILL_GONE })
+        return
+      }
+      if (answer === 'unreadable') {
+        json(res, 200, { status: 'failed', message: SKILLS_UNREADABLE })
+        return
+      }
+      json(res, 200, { status: 'signed-in', skill: answer })
+    },
+  }), 'unieai-web-gate: one account skill')
 
   ctx.effect(() => ctx.webServer.register({
     kind: 'exact',

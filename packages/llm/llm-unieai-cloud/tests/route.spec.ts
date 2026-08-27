@@ -40,6 +40,9 @@ function fakeGate() {
     session: () => session,
     mcpServers: () => Promise.resolve(undefined),
     entitledModels: () => Promise.resolve(session === undefined ? undefined : models),
+    // This suite drives the relay, not the skill catalogue; the seam is
+    // satisfied with the answer a signed-out gate gives.
+    accountSkill: async () => undefined,
   }
   return {
     service,

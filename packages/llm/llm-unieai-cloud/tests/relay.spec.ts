@@ -85,6 +85,9 @@ function gateOver(productUrl: string): UnieaiGate {
     session: () => session,
     mcpServers: () => Promise.resolve(undefined),
     entitledModels: () => Promise.resolve([MODEL]),
+    // This suite drives the relay, not the skill catalogue; the seam is
+    // satisfied with the answer a signed-out gate gives.
+    accountSkill: async () => undefined,
   }
 }
 

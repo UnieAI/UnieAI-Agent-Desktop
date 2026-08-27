@@ -364,6 +364,12 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
       async catalog(request) {
         return { rpcId: request.rpcId, result: { ok: true, value: { skills: [] } } }
       },
+      async install(request) {
+        return {
+          rpcId: request.rpcId,
+          result: { ok: true, value: { name: request.payload.slug, path: '/skills/x/SKILL.md', replaced: false } },
+        }
+      },
     },
     goals: {
       async create(request) {

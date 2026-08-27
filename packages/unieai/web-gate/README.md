@@ -103,9 +103,19 @@ The browser gets `McpServerView` — `id`, `label`, `origin`, `expiresAt`, `tool
 
 `expiresAt` does travel, because it is a fact about the server rather than a credential: a plugins page showing a server as connected after its grant lapsed would be showing something that is no longer true.
 
+## The skills routes
+
+`GET /auth/skills` lists the skills the account keeps in the web product, and `GET /auth/skills/<slug>` answers one of them as a whole `SKILL.md`. The listing is a page's; the document is a **host's**, and the split is the design. A skill is instructions a model will follow, so the bytes that land in a skills directory must come from the account rather than from a browser: the page sends a slug to the host, and the host reads the document through `ctx.unieaiGate.accountSkill` and writes it.
+
+**The slug is a directory name, not just an identifier.** It is joined onto a skills directory on this machine, so a value carrying a separator, a leading dot, or the two names that resolve elsewhere (`.`, `..`) is refused here as well as at the product, and a listing row carrying one is dropped rather than shown. Two places check the same rule because this is the side where the path is finally built.
+
+A copy is a copy: the file becomes that machine's, editing it there changes nothing on the account, and copying again replaces it. Nothing on either side records that a machine has a skill.
+
+The document route keeps 404 apart from a failed read, because they lead to different sentences: a skill the account no longer has means a listing read a moment ago has gone stale, and a failed read is worth retrying. An empty document is refused as a failure — a skill file with no text teaches the model nothing and would replace one that did.
+
 ## The host-side gate service
 
-`ctx.unieaiGate` is the gate's other half: not a route, but the seam by which host plugins act on the signed-in account's behalf. It exposes `productUrl`, `session()` — the account and its API key — and two proxied reads, `mcpServers()` and `entitledModels()`, which return what the product sent BEFORE the browser projection narrows it. `@unieai/uad-unieai-mcp-supervisor` mounts the account's MCP servers through the first; `@unieai/uad-llm-unieai-cloud` builds the account's runnable model route on the second.
+`ctx.unieaiGate` is the gate's other half: not a route, but the seam by which host plugins act on the signed-in account's behalf. It exposes `productUrl`, `session()` — the account and its API key — and three proxied reads, `mcpServers()`, `entitledModels()` and `accountSkill()`, which return what the product sent BEFORE the browser projection narrows it. `@unieai/uad-unieai-mcp-supervisor` mounts the account's MCP servers through the first; `@unieai/uad-llm-unieai-cloud` builds the account's runnable model route on the second; `skill.install` in `@unieai/uad-host-apiproxy` writes a skill file with the third, which is why that route takes a slug and no content.
 
 The service exists because the session table is the only place on this host that holds a product credential, and a host plugin that needs one must not reach into that table. `unieai-gate/session` is emitted when a sign-in produces a session and when the last one is lost to a sign-out — not when a session lapses on idleness, which is evaluated on read and therefore observed by nobody at the moment it happens. A consumer holding something on the account's behalf re-reads on its own schedule.
 

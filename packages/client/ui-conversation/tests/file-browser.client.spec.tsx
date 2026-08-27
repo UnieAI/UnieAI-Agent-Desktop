@@ -69,9 +69,10 @@ describe('FileBrowser', () => {
     const { container } = mount(served())
     await waitFor(() => { expect(container.querySelector('[data-code-editor]')).not.toBeNull() })
     expect(editorOf(container).state.doc.toString()).toBe('const a = 1\n')
-    // The old surface asked for an Edit gesture before it would accept typing.
-    expect([...container.querySelectorAll('button')].map(button => button.textContent))
-      .not.toContain(zh['files.edit' as keyof typeof zh])
+    // The old surface asked for an Edit gesture before it would accept
+    // typing; the buffer now takes an edit the moment it is on screen.
+    expect(editorOf(container).state.readOnly).toBe(false)
+    expect(container.querySelector('.cm-content')?.getAttribute('contenteditable')).toBe('true')
   })
 
   it('saves what was typed, guarded by the version the read returned', async () => {

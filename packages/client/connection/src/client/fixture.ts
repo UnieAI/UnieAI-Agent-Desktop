@@ -3169,6 +3169,13 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
           },
         ],
       }),
+      // A copy from the account, reported as a first write rather than a
+      // replacement: the fixture has no account and nothing on disk.
+      install: request => ok(request, {
+        name: request.payload.slug,
+        path: `/fixture/skills/${request.payload.slug}/SKILL.md`,
+        replaced: false,
+      }),
       list: (request) => {
         const missing = requireSession(request)
         if (missing !== undefined) return missing
@@ -3525,6 +3532,7 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'workspace.archiveSession': return this.api.workspace.archiveSession(request)
       case 'skill.list': return this.api.skills.list(request)
       case 'skill.catalog': return this.api.skills.catalog(request)
+      case 'skill.install': return this.api.skills.install(request, signal)
       case 'agentPreset.list': return this.api.agentPresets.list(request)
       case 'agentPreset.select': return this.api.agentPresets.select(request)
       case 'agentPreset.read': return this.api.agentPresets.read(request)

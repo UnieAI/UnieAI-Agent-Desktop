@@ -50,6 +50,20 @@ export interface RpcErrorDetailsMap {
   'machine-unknown': {}
   'machine-edit-refused': {}
   /**
+   * There is no UnieAI account to copy a skill from: this build composes no
+   * account gate, or nobody is signed in. Separate from a failed read because
+   * a retry cannot help and a sign-in can.
+   */
+  'skill-source-unavailable': {}
+  /**
+   * The account has no skill under that slug — a listing read a moment ago and
+   * acted on now, with the skill deleted in between. The surface re-reads
+   * rather than retrying.
+   */
+  'skill-not-on-account': { slug: string }
+  /** The account could be reached and this skill's document could not be read. */
+  'skill-unreadable': { slug: string }
+  /**
    * The file changed since the editor read it — an agent working in the same
    * tree, another editor, or a build. The write is refused rather than made to
    * win, because the alternative discards someone's work silently.
