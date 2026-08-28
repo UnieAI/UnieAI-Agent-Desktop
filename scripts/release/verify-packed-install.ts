@@ -14,9 +14,16 @@
  * What this proves is that `files` selected a complete payload and that the
  * published dependency ranges resolve. A workspace link or a stale `lib/` in the
  * checkout cannot stand in for a missing file here.
+ *
+ * IT BOOTS THE TREE, not just the binary. `--version` returns before the loader
+ * mounts anything, so a package whose entry cannot import its own chunk passes
+ * it — which is how `@unieai/uad-execution-router` shipped twice unable to
+ * import `lib/types-<hash>.js`, a chunk `files` never published. The boot step
+ * applies every entry in the composition, which is where that surfaces.
  */
 
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+import { closeSync, mkdtempSync, openSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -24,6 +31,9 @@ import { parseArgs } from 'node:util'
 import { releaseFamily } from './families.ts'
 import { capture, isEntry } from './process.ts'
 import { packedIdentity } from './tarball.ts'
+
+/** How long the installed tree has to announce its address before this fails. */
+const BOOT_TIMEOUT_MS = 120_000
 
 /**
  * Environment for the installed artifact: no host Node hooks, no host DeepSeek
@@ -67,6 +77,70 @@ function packedDependencies(directories: readonly string[]): Map<string, { url: 
 }
 
 /** Install every tarball under `--from` and drive the `--family` entry. */
+
+/**
+ * Boot the installed tree far enough to apply every loader entry.
+ *
+ * The web profile is the composition this product ships, so it is the one whose
+ * entries must all import. Port 0 lets the OS pick, `--no-open` keeps a browser
+ * out of a release job, and the child is killed as soon as it announces its
+ * address — the question is whether the tree mounts, not whether it serves.
+ *
+ * The child writes to a FILE and this polls it with synchronous reads. Every
+ * other step here is blocking, and a blocking wait starves the event loop, so
+ * `stdout.on('data')` would never fire: the first version of this check timed
+ * out with an empty transcript against a tree that boots fine.
+ *
+ * A DSH home inside the throwaway consumer keeps the run from reading or
+ * healing the operator's own `~/.dsh`.
+ * @param consumerRoot - the throwaway consumer directory.
+ * @param bin - absolute path of the installed executable.
+ * @param environment - the child environment.
+ */
+function verifyTreeBoots(consumerRoot: string, bin: string, environment: NodeJS.ProcessEnv): void {
+  const logPath = join(consumerRoot, 'boot.log')
+  const log = openSync(logPath, 'w')
+  const child = spawn(process.execPath, [bin, 'web', '--no-open', '--port', '0'], {
+    cwd: consumerRoot,
+    env: { ...environment, DSH_HOME: join(consumerRoot, 'dsh-home') },
+    stdio: ['ignore', log, log],
+  })
+  closeSync(log)
+
+  const deadline = Date.now() + BOOT_TIMEOUT_MS
+  let booted = false
+  let alive = true
+  while (!booted && alive && Date.now() < deadline) {
+    booted = /http:\/\/127\.0\.0\.1:\d+/u.test(readFileSync(logPath, 'utf8'))
+    if (booted) break
+    try {
+      // Signal 0 tests for the process without touching it.
+      if (child.pid !== undefined) process.kill(child.pid, 0)
+      else alive = false
+    } catch {
+      alive = false
+    }
+    if (alive) sleepSync(250)
+  }
+  if (child.pid !== undefined && alive) child.kill('SIGTERM')
+
+  if (!booted) {
+    throw new Error(
+      `release verify-packed-install: the installed tree did not boot within ${String(BOOT_TIMEOUT_MS / 1000)}s.\n`
+      + readFileSync(logPath, 'utf8'),
+    )
+  }
+  console.log('release verify-packed-install: the installed tree boots and applies every loader entry')
+}
+
+/**
+ * Block this thread for a while, without a subprocess or a busy loop.
+ * @param ms - milliseconds to wait.
+ */
+function sleepSync(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+}
+
 function main(): void {
   const { values } = parseArgs({
     options: { family: { type: 'string' }, from: { type: 'string', multiple: true } },
@@ -99,12 +173,15 @@ function main(): void {
 
     const environment = consumerEnvironment(consumerRoot)
     console.log(`release verify-packed-install: installing ${String(packed.size)} tarball(s) into ${consumerRoot}`)
-    // Optional dependencies are omitted: the Landlock platform packages behind
-    // them need a musl toolchain and one build per architecture, and a consumer
-    // that cannot install them must still start — which is what optional means
-    // here. Their entry package is a plain dependency of dsh-sandbox-local, so
-    // its tarball is supplied through --from.
-    capture('npm', ['install', '--no-audit', '--no-fund', '--package-lock=false', '--omit=optional'],
+    // Optional dependencies are INCLUDED, because a real consumer installs
+    // them: npm fetches the ones whose `os`/`cpu` match and silently skips the
+    // rest, which is what optional means. Omitting them made this tree stricter
+    // than any user's — `sharp` lost its platform binary and the boot step
+    // below failed on a library no product change had touched. The Landlock
+    // platform packages are published per architecture, so a runner installs
+    // its own or none; their entry package is a plain dependency of
+    // dsh-sandbox-local and its tarball is supplied through --from.
+    capture('npm', ['install', '--no-audit', '--no-fund', '--package-lock=false'],
       { cwd: consumerRoot, env: environment })
 
     const bin = join(consumerRoot, 'node_modules', ...entry.packageName.split('/'), entry.binPath)
@@ -113,6 +190,7 @@ function main(): void {
       throw new Error(`installed ${entry.packageName} --version reported ${JSON.stringify(version)}, expected ${expected.version}`)
     }
     console.log(`release verify-packed-install: installed ${entry.packageName} reports ${version}`)
+    verifyTreeBoots(consumerRoot, bin, environment)
   } finally {
     rmSync(consumerRoot, { recursive: true, force: true })
   }
