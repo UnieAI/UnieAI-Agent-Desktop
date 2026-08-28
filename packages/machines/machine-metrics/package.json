@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-machine-metrics",
   "description": "What a machine is doing right now: processor, memory, disk, and accelerators",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "publishConfig": {
     "access": "public"
   },

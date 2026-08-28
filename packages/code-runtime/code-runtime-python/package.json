@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-code-runtime-python",
   "description": "CPython subprocess implementation of the DeepSeek Harness code-execution seam",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "publishConfig": {
     "access": "public"
   },
