@@ -24,14 +24,14 @@
 
 import { createRequire } from 'node:module'
 import {
-  existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, symlinkSync, unlinkSync, writeFileSync,
+  existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync, writeFileSync,
 } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import type { EntryOptions } from '@unieai/cordis-plugin-loader'
 import { applyEntryPatches, type PatchOptions } from '@unieai/cordis-plugin-include'
 import { resolveDshHome } from '@unieai/uad-home-paths'
 import { loadOverlayPatches } from './index.ts'
-import { legacyNameFor } from '@unieai/uad-upstream-names'
+import { legacyNameFor, productNameFor } from '@unieai/uad-upstream-names'
 import {
   declaresDefaultExport, FORWARDER_MARKER, forwarderFiles, forwardable,
   type ForwardedSubpath,
@@ -172,7 +172,32 @@ export function initProfile(dir: string, bundles: readonly string[]): void {
   if (!existsSync(workspacePath)) writeFileSync(workspacePath, PROFILE_PNPM_WORKSPACE)
 }
 
-/** Ensure `link` is a symlink to `target`, replacing a wrong or dangling link; a real directory throws. */
+/**
+ * Whether a directory is a forwarder this product generated, rather than an
+ * installed package.
+ *
+ * The manifest marker is what tells them apart, and it is the same one
+ * {@link ensureLegacyForwarder} refuses to overwrite without: an installed
+ * package at a legacy name is somebody's real dependency and is never removed
+ * on its behalf.
+ * @param dir - the directory to classify.
+ * @returns true when the directory carries the generated-forwarder marker.
+ */
+function isGeneratedForwarder(dir: string): boolean {
+  try {
+    const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as Record<string, unknown>
+    return manifest[FORWARDER_MARKER] === true
+  } catch {
+    // No readable manifest: not something this code wrote, so not ours to remove.
+    return false
+  }
+}
+
+/**
+ * Ensure `link` is a symlink to `target`, replacing a wrong or dangling link, or
+ * a forwarder this product generated at that path; any other real directory
+ * throws.
+ */
 function ensureSymlink(link: string, target: string): void {
   let stat
   try {
@@ -184,7 +209,16 @@ function ensureSymlink(link: string, target: string): void {
   }
   if (stat !== undefined) {
     if (!stat.isSymbolicLink()) {
-      throw new Error(`dsh: ${link} exists and is not a symlink; remove it so dsh can manage the installation fallback`)
+      // A generated forwarder is ours, and the closure now claims this name for
+      // a real package: replace it. Leaving it would make a directory THIS code
+      // wrote a permanent hard stop that only a human with a shell can clear —
+      // and the person meeting it has done nothing wrong.
+      if (!isGeneratedForwarder(link)) {
+        throw new Error(`dsh: ${link} exists and is not a symlink; remove it so dsh can manage the installation fallback`)
+      }
+      rmSync(link, { recursive: true, force: true })
+      symlinkSync(target, link, 'junction')
+      return
     }
     if (readlinkSync(link) === target) return
     // unlink deletes the reparse point itself on Windows too; rmSync treats a
@@ -203,6 +237,38 @@ function ensureSymlink(link: string, target: string): void {
       || !lstatSync(link).isSymbolicLink() || readlinkSync(link) !== target) {
       throw error
     }
+  }
+}
+
+/**
+ * Drop upstream packages nobody asked for: a duplicate of one of ours that the
+ * closure reached only because some plugin's peer dependencies name it.
+ *
+ * A community plugin published against the upstream harness declares peers like
+ * `@deepseek-ai/dsh-client-runtime`. npm and bun both INSTALL missing peers, so
+ * an install of this product quietly downloads a second, complete harness — and
+ * the closure walk then finds those packages and would link them into the shared
+ * fallback under the very names the forwarders exist to answer.
+ *
+ * Linking them is not a near-miss, it is the failure the forwarders prevent: the
+ * plugin would import a different `Context` class and a different service
+ * registry from the harness it was loaded into, so `instanceof` fails and no
+ * service resolves.
+ *
+ * DELIBERATENESS IS THE TEST, and the app manifest is where it is recorded. An
+ * upstream package the app itself depends on was chosen — it keeps its name, and
+ * the forwarder stays out of its way. One that appears only further down the
+ * graph was chosen by nobody: a package manager satisfying somebody else's peer
+ * range. A name with no product counterpart is untouched either way; it is a
+ * real dependency, not a duplicate of ours.
+ * @param links - the closure being linked, edited in place.
+ * @param declaredByApp - dependency names the app manifest states directly.
+ */
+function dropForeignUpstreamCopies(links: Map<string, string>, declaredByApp: ReadonlySet<string>): void {
+  for (const name of [...links.keys()]) {
+    if (declaredByApp.has(name)) continue
+    const product = productNameFor(name)
+    if (product !== undefined && links.has(product)) links.delete(name)
   }
 }
 
@@ -252,6 +318,10 @@ export function healProfilesModuleFallback(installAnchor: string, home: string =
       queue.push({ anchor: manifestPath, manifest: JSON.parse(readFileSync(manifestPath, 'utf8')) as ProfileManifest })
     }
   }
+  dropForeignUpstreamCopies(links, new Set([
+    ...Object.keys(appManifest.dependencies ?? {}),
+    ...Object.keys(appManifest.peerDependencies ?? {}),
+  ]))
   for (const [packageName, target] of links) {
     const link = join(modulesDir, packageName)
     mkdirSync(dirname(link), { recursive: true })

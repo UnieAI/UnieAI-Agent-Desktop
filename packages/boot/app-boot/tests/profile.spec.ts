@@ -242,6 +242,105 @@ describe('healProfilesModuleFallback', () => {
     expect(before).toContain('dep-of-a')
   })
 
+  it('leaves an upstream name to its forwarder when a peer install dragged in a second copy', () => {
+    // `bunx @unieai/rabi web` on 0.1.13: the bundled community plugin declares
+    // `@deepseek-ai/dsh-*` peers, npm and bun install missing peers, and a whole
+    // second harness arrives beside ours. Linking those into the shared fallback
+    // would hand the plugin a different Context class and an empty service
+    // registry — the exact failure the forwarders exist to prevent.
+    const root = tmp()
+    const appDir = join(root, 'app')
+    const modules = join(appDir, 'node_modules')
+    const install = (name: string, manifest: Record<string, unknown> = {}): void => {
+      const dir = join(modules, name)
+      mkdirSync(dir, { recursive: true })
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name, version: '0.0.0', ...manifest }))
+    }
+
+    install('@unieai/uad-client-runtime')
+    install('community-plugin', { peerDependencies: { '@deepseek-ai/dsh-client-runtime': '*' } })
+    // The peer auto-install: the real upstream package, beside ours.
+    install('@deepseek-ai/dsh-client-runtime')
+    writeFileSync(join(appDir, 'package.json'), JSON.stringify({
+      name: 'dsh-app',
+      dependencies: { '@unieai/uad-client-runtime': '0.0.0', 'community-plugin': '0.0.0' },
+    }))
+
+    const home = tmp()
+    healProfilesModuleFallback(join(appDir, 'package.json'), home)
+    const fallback = join(home, 'profiles', 'node_modules')
+    // Our package is linked, and the upstream name is a forwarder onto it —
+    // not a link to the foreign copy.
+    expect(lstatSync(join(fallback, '@unieai/uad-client-runtime')).isSymbolicLink()).toBe(true)
+    const legacy = join(fallback, '@deepseek-ai/dsh-client-runtime')
+    expect(lstatSync(legacy).isDirectory()).toBe(true)
+    expect(lstatSync(legacy).isSymbolicLink()).toBe(false)
+    const manifest = JSON.parse(readFileSync(join(legacy, 'package.json'), 'utf8')) as Record<string, unknown>
+    expect(manifest['dshLegacyForwarder']).toBe(true)
+  })
+
+  it('links an upstream package this product has no counterpart for', () => {
+    // Only a DUPLICATE of ours is dropped. A genuine upstream dependency with
+    // no product counterpart is this installation's, and shadowing it with
+    // nothing would break the install that declared it.
+    const root = tmp()
+    const appDir = join(root, 'app')
+    const dir = join(appDir, 'node_modules', '@deepseek-ai/dsh-unmatched')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@deepseek-ai/dsh-unmatched', version: '0.0.0' }))
+    writeFileSync(join(appDir, 'package.json'), JSON.stringify({
+      name: 'dsh-app',
+      dependencies: { '@deepseek-ai/dsh-unmatched': '0.0.0' },
+    }))
+    const home = tmp()
+    healProfilesModuleFallback(join(appDir, 'package.json'), home)
+    expect(lstatSync(join(home, 'profiles', 'node_modules', '@deepseek-ai/dsh-unmatched')).isSymbolicLink()).toBe(true)
+  })
+
+  it('replaces a forwarder it generated when the closure claims that name for a real package', () => {
+    // The forwarder is ours and carries our marker; a name the closure genuinely
+    // claims must not be blocked forever by a directory this code wrote.
+    const root = tmp()
+    const appDir = join(root, 'app')
+    const dir = join(appDir, 'node_modules', '@deepseek-ai/dsh-unmatched')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: '@deepseek-ai/dsh-unmatched', version: '0.0.0' }))
+    writeFileSync(join(appDir, 'package.json'), JSON.stringify({
+      name: 'dsh-app',
+      dependencies: { '@deepseek-ai/dsh-unmatched': '0.0.0' },
+    }))
+    const home = tmp()
+    const stale = join(home, 'profiles', 'node_modules', '@deepseek-ai/dsh-unmatched')
+    mkdirSync(stale, { recursive: true })
+    writeFileSync(join(stale, 'package.json'), JSON.stringify({ name: '@deepseek-ai/dsh-unmatched', dshLegacyForwarder: true }))
+
+    healProfilesModuleFallback(join(appDir, 'package.json'), home)
+    expect(lstatSync(stale).isSymbolicLink()).toBe(true)
+    expect(readlinkSync(stale)).toBe(dir)
+  })
+
+  it('refuses to remove an installed package that is not a forwarder it wrote', () => {
+    // Someone else's directory at that path is their data, not ours to delete.
+    const root = tmp()
+    const appDir = join(root, 'app')
+    const dir = join(appDir, 'node_modules', 'plain-lib')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'plain-lib', version: '0.0.0' }))
+    writeFileSync(join(appDir, 'package.json'), JSON.stringify({
+      name: 'dsh-app', dependencies: { 'plain-lib': '0.0.0' },
+    }))
+    const home = tmp()
+    const occupied = join(home, 'profiles', 'node_modules', 'plain-lib')
+    mkdirSync(occupied, { recursive: true })
+    writeFileSync(join(occupied, 'package.json'), JSON.stringify({ name: 'plain-lib', version: '9.9.9' }))
+
+    expect(() => { healProfilesModuleFallback(join(appDir, 'package.json'), home) })
+      .toThrow(/exists and is not a symlink/u)
+    // And it is still there, untouched.
+    const untouched = JSON.parse(readFileSync(join(occupied, 'package.json'), 'utf8')) as { version: string }
+    expect(untouched.version).toBe('9.9.9')
+  })
+
   it('links the unpacked twin of a package the search found inside an asar archive', () => {
     // A packaged Electron app: `app.asar` is a FILE, and Electron's patched fs
     // reads THROUGH it, so resolution lands on a path inside the archive. Node
