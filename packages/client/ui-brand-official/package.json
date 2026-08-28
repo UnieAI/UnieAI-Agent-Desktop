@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-ui-brand-official",
   "description": "Official DeepSeek Harness brand occupants for the Web client's sidebar and conversation Hero slots",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "publishConfig": {
     "access": "public"
   },
