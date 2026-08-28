@@ -46,12 +46,24 @@ Error: dsh: /Users/…/.dsh/profiles/node_modules/@deepseek-ai/dsh-client-runtim
 
 **不要讓 `peerDependencies` 進入閉包。** 它們在那裡是有原因的，而且記在 `healProfilesModuleFallback` 裡：樹外插件要拿到 Service Definition 套件（`dsh-compaction`、`dsh-invariants`），只能透過實作它們的 provider 的 peer 邊。砍掉這條邊，等於讓整套機制要服務的那些插件解析不到。
 
-**把那個插件 vendor 進來，或從 bundle 裡拿掉。** 這兩種做法會同時消掉重複下載和這次的碰撞，而且都還開著：安裝仍然是肥的，因為那些 peer 不管有沒有東西連結它們都會被裝。那是關於某一個依賴的封裝決定，不是解析規則，所以這裡把它記成未完成，而不是當成已回答。
+**把那個插件從 bundle 裡拿掉。** 用移除功能的方式移除重複下載。否決：bundle 帶著它就是為了 GenUI。
 
 ## 驗證
 
 `profile.spec.ts` 涵蓋了失敗的那個形狀以及它周圍的每一條邊界：被 peer 裝進來的重複品留給 forwarder、沒有對應套件的上游名稱照樣連結、閉包真的認領某個名稱時取代自己產生的 forwarder、以及那個路徑上已安裝的套件照樣被拒絕且內容完好。把修法的任何一半拿掉，都會有一個變紅。
 
-## 這件事還留下什麼
+## 插件被 vendor 進來了，所以那份重複根本不會被下載
 
-安裝這個產品仍然會下載一整份沒有任何東西會載入的上游 harness。現在沒有東西會解析到它，但每個使用者還是付了那份下載和磁碟空間。答案是一個關於 `@changfenhuang/dsh-genui` 的封裝決定 —— vendor 它、fork 它的 manifest、或從預設 bundle 拿掉 —— 而那不在這裡決定。
+上面那條解析規則讓安裝變**正確**，但沒有讓它變小。那些 peer 不管有沒有東西連結它們都會被裝，所以 `bunx` 這個產品仍然要付 184 個套件的代價，其中 73 個是第二份 harness。
+
+於是 `@changfenhuang/dsh-genui` 現在被 vendor 進來了：`vendor/genui/`，釘住的原始碼，以 `@unieai/genui` 重新發布，import 全部 rescope 過。已經沒有任何東西宣告上游 peer，`pnpm-lock.yaml` 裡的 `@deepseek-ai/` 條目是零。
+
+**放 `vendor/` 而不是 `packages/`** —— 不是因為社群插件算框架，而是因為那個目錄真正的判準是「這不是這個 repo 該去改形狀的程式碼」。`packages/` 上的閘門是為我們自己寫的程式碼設計的：每檔 100% 覆蓋率、export JSDoc、invariant companion。把第三方原始碼放進去，只有兩條路：改動別人 47 個檔案來滿足它們（這正是讓下一次上游同步變貴的原因），或者堆一疊豁免。`vendor/` 本來就不在那些閘門的範圍內，而它的 release family 也本來就照上游版本線發布。`vendor/README.md` 記下了這個放寬後的定位。
+
+**同步是一支腳本，不是一段程序。** `pnpm run sync-vendor-genui <version>` 抓下某個已發布版本、整份替換那份拷貝、再套用改寫。其中兩處改寫是會致命的，所以用斷言而不是靠信任：host 在 `ASSET_ROUTE_PATH` 提供延遲載入的 mermaid/three/echarts bundle，client 從 `PLUGIN_ID` 去抓它們，而這兩個常數位在不同的 face、各自把套件名字寫死在裡面。只 rescope 其中一個，fence 會照樣畫出它輕量的那一半，而每一個重量級渲染器都 404 —— 這正是我第一次手動執行這個改寫時發生的事，也正是那個斷言現在拒絕讓它出貨的東西。
+
+這份拷貝是 0.9.6，不是 bundle 原本依賴的 0.9.3：同步最便宜的時機，就是正在寫同步工具的那一刻。
+
+### 驗證
+
+對著一個跑起來的 `rabi web`：送出的 HTML 預載了該插件的 `client.js`、那個 bundle 回 200 且位元組就是這個 repo 建出來的、三個引擎 bundle 都在 `/plugins/@unieai/genui/assets/` 底下回 200、而上游名稱的路由回 404。每一個建置產物都跟上游同版本發布的大小相差不到 0.1%，那個差額正是被 rescope 的 import 名稱。

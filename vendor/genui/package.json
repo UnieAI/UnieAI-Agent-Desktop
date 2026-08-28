@@ -1,0 +1,72 @@
+{
+  "name": "@unieai/genui",
+  "version": "0.9.7",
+  "description": "GenUI for DeepSeek Harness: interactive UI components rendered inline in assistant replies via the ```dsh-ui fence — layout, charts, plots, forms, quizzes, mermaid, 3D scenes, and an action event loop back to the model. Ships the fence-teaching host plugin, the browser renderer (client half), and the genui skill.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "vendor/genui"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./invariant": "./lib/invariant.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/assets/mermaid.js",
+    "lib/assets/three.js",
+    "lib/assets/echarts.js",
+    "cordis.patch.yml",
+    "SKILL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "dependencies": {
+    "react": "^18.3.1"
+  },
+  "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-client-ui-input-trigger": "workspace:^",
+    "@unieai/uad-client-ui-primitives": "workspace:^",
+    "@unieai/uad-client-ui-slots": "workspace:^",
+    "@unieai/uad-client-ui-tool": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-session": "workspace:^",
+    "@unieai/uad-system-prompt": "workspace:^",
+    "@unieai/uad-tools": "workspace:^",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "echarts": "^5.6.0",
+    "lightningcss": "^1.25.0",
+    "mermaid": "11.16.0",
+    "three": "^0.180.0"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0",
+    "pnpm": ">=11.7.0 <12"
+  }
+}

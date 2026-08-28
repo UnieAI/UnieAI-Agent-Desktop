@@ -46,12 +46,24 @@ That second half is a safety net rather than the fix. With the closure filter in
 
 **Stop `peerDependencies` from entering the closure.** They are there for a reason recorded in `healProfilesModuleFallback`: out-of-tree plugins reach Service Definition packages (`dsh-compaction`, `dsh-invariants`) only as peers of the providers that implement them. Dropping the edge would unresolve the plugins this whole mechanism exists to serve.
 
-**Vendor the plugin, or drop it from the bundle.** Both remove the duplicate download as well as the collision, and both are still open: the install remains fat, because the peers are installed whether or not anything links them. That is a packaging question about one dependency, not a resolution rule, and it is recorded here as unfinished rather than answered.
+**Drop the plugin from the bundle.** Removes the duplicate download by removing the feature. Rejected: GenUI is why the bundle carries it.
 
 ## Verification
 
 `profile.spec.ts` covers the shape that failed and each boundary around it: a peer-installed duplicate left to its forwarder, an upstream name with no counterpart still linked, a generated forwarder replaced when the closure genuinely claims that name, and an installed package at that path still refused with its contents intact. Removing either half of the fix turns one of them red.
 
-## What this leaves open
+## The plugin is vendored, so the duplicate is never downloaded
 
-Installing this product still downloads a whole upstream harness that nothing loads. Nothing resolves through it now, but it costs every user the download and the disk. The answer is a packaging decision about `@changfenhuang/dsh-genui` — vendor it, fork its manifest, or drop it from the default bundle — and it is not made here.
+The resolution rule above makes the install CORRECT; it does not make it small. The peers are installed whether or not anything links them, so a `bunx` of this product still paid for 184 packages, 73 of them a second harness.
+
+So `@changfenhuang/dsh-genui` is now vendored: `vendor/genui/`, pinned source, republished as `@unieai/genui` with its imports rescoped. Nothing declares an upstream peer any more, and `pnpm-lock.yaml` holds zero `@deepseek-ai/` entries.
+
+**`vendor/` rather than `packages/`** — not because a community plugin is framework, but because the deciding property of that directory is code this repository does not shape. The gates on `packages/` are written for code we author: per-file coverage, export JSDoc, the invariant companion. Putting third-party source there means either editing 47 files of somebody else's code to satisfy them — which is what makes the next upstream sync expensive — or accumulating exemptions. `vendor/` is already out of scope for those, and its release family already publishes on the upstream version line. `vendor/README.md` states the broadened charter.
+
+**The sync is a script, not a procedure.** `pnpm run sync-vendor-genui <version>` fetches a published version, replaces the copy wholesale, and applies the rewrite. Two of its rewrites are load-bearing and are asserted rather than trusted: the host serves the lazily fetched mermaid/three/echarts bundles at `ASSET_ROUTE_PATH`, the client fetches them from `PLUGIN_ID`, and the two constants live in different faces with the package name spelled into each. Rescoping one and not the other leaves the fence drawing its light half while every heavy renderer 404s — which is exactly what the first hand-run of this rewrite did, and what the assertion now refuses to ship.
+
+The copy is 0.9.6, not the 0.9.3 the bundle depended on: a sync is cheapest at the moment the tooling for it is being written.
+
+### Verification
+
+Against a running `rabi web`: the served HTML preloads the plugin's `client.js`, that bundle answers 200 with the bytes this repository built, all three engine bundles answer 200 under `/plugins/@unieai/genui/assets/`, and the upstream-named route answers 404. Every built artifact is within 0.1% of the size upstream publishes for the same version, which is what the rescoped import names account for.

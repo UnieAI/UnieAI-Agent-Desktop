@@ -31,6 +31,10 @@ const vendoredPackages = new Set([
   '@unieai/cordis-plugin-timer',
   '@unieai/cordis-plugin-hmr',
   '@unieai/cordis-plugin-logger-console',
+  // Not the framework layer: a community plugin, vendored for the same reason
+  // the framework is — pinned third-party source this repository does not
+  // shape, so the rules written for code we author do not apply to it.
+  '@unieai/genui',
 ])
 const publicLandlockPackages = new Set([
   '@unieai/node-addon-landlock-run',

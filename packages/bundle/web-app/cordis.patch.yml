@@ -629,7 +629,7 @@
 # written for the upstream ecosystem runs unmodified on this fork.
 - insert:
     - id: genui
-      name: '@changfenhuang/dsh-genui'
+      name: '@unieai/genui'
 
 # The execution world is routed now: these two rows are what it routes to,
 # built privately per machine rather than mounted once here.
