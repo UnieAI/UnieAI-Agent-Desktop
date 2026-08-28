@@ -627,6 +627,14 @@ function hygieneLeafGates(options: { artifactNeeds?: string[] } = {}): Gate[] {
     pnpmScript('dsh-package-licenses', 'verify-dsh-package-licenses', { label: 'DSH package licenses' }),
     pnpmScript('package-invariants', 'verify-package-invariants', { label: 'package invariants' }),
     builtPackageInvariantsGate(options.artifactNeeds),
+    // Reads the built tree, like its neighbours above: what a package emits and
+    // what its manifest publishes are written in different places, and a file
+    // emitted but not published is an installed package that cannot import its
+    // own entry.
+    pnpmScript('published-emitted-files', 'verify-published-emitted-files', {
+      label: 'published emitted files',
+      ...artifactOptions,
+    }),
     pnpmScript('node-next-types', 'verify-node-next-types', {
       label: 'node-next types',
       ...artifactOptions,

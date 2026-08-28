@@ -184,7 +184,10 @@ const packageFileExtras: Readonly<Record<string, readonly string[]>> = {
   // seam implementations, which the host imports as row modules rather than
   // through the package entry.
   '@unieai/uad-browser-operator': ['lib/chromium.js', 'lib/probe-*.js'],
-  '@unieai/uad-execution-router': ['lib/fs.js', 'lib/subprocess.js'],
+  // The routed seams are their own entries, and `shared.js` is the module they
+  // share under a fixed name — a hashed chunk name cannot be published, and an
+  // unpublished chunk is an installed tree that cannot import its own entry.
+  '@unieai/uad-execution-router': ['lib/fs.js', 'lib/subprocess.js', 'lib/shared.js'],
   '@unieai/uad-client-ui-theme': ['lib/styles'],
   // The CPython side ships as source .py files, published as-is rather than built.
   '@unieai/uad-code-runtime-python': ['py/**/*.py'],
