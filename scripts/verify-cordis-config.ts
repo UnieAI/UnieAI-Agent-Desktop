@@ -17,6 +17,23 @@ import ts from 'typescript'
 import { cordisConfigFiles } from './cordis-config-files.ts'
 import { isCordisGroupEntry, isJsExpr, loadCordisYaml } from './cordis-yaml.ts'
 
+/**
+ * Vendored plugins that legitimately have no workspace source to resolve to.
+ *
+ * The rule below exists so a source launch does not silently depend on a built
+ * `lib/`. A package vendored as a PREBUILT ARTIFACT is the one case where that
+ * dependency is the point: `@unieai/univer-office` ships upstream's own build
+ * plus 143 MB of prebuilt assets taken from the published tarball, and the
+ * fork's divergence lives in `vendor/univer-office/patch/` — applied to a
+ * temporary checkout by `sync-vendor-univer-office`, never kept in this tree.
+ * (`@unieai/genui` is different and is NOT here: its bundles were rescoped, so
+ * its source is vendored and resolves.)
+ *
+ * An entry here is a claim that the package has no in-tree TypeScript, which
+ * the sync procedure for that package must keep true.
+ */
+const PREBUILT_VENDORED_PLUGINS: ReadonlySet<string> = new Set(['@unieai/univer-office'])
+
 export interface PackageManifest {
   name?: string
   dependencies?: Record<string, string>
@@ -358,6 +375,7 @@ export function bundlePluginDependencyErrors(
   )
 }
 
+
 /**
  * Every configured specifier of a local workspace package must resolve through
  * the tsconfig `paths` facade to a `.ts`/`.tsx` source file. The `rabi` source
@@ -402,6 +420,7 @@ function validateSourcePlaneResolution(): string[] {
     locationsBySpecifier.set(reference.name, locations)
   }
   for (const [specifier, locations] of locationsBySpecifier) {
+    if (PREBUILT_VENDORED_PLUGINS.has(specifier)) continue
     const resolved = ts.resolveModuleName(specifier, containingFile, options, host).resolvedModule
     if (resolved !== undefined && sourceExtensions.has(resolved.extension)) continue
     violations.push(`${[...locations].join(', ')}: ${specifier} does not resolve to workspace source through tsconfig.base.json paths (add a mapping so the tsx source launch does not depend on built lib/)`)

@@ -1,0 +1,51 @@
+{
+  "name": "@unieai/uad-connector",
+  "version": "0.1.15",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    }
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/shared.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-authorization": "workspace:^",
+    "@unieai/uad-credentials": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
+  },
+  "devDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/uad-authorization": "workspace:^",
+    "@unieai/uad-credentials": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^"
+  },
+  "license": "MIT",
+  "types": "lib/types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "packages/connector/connector"
+  }
+}

@@ -189,6 +189,10 @@ const packageFileExtras: Readonly<Record<string, readonly string[]>> = {
   // share under a fixed name — a hashed chunk name cannot be published, and an
   // unpublished chunk is an installed tree that cannot import its own entry.
   '@unieai/uad-execution-router': ['lib/fs.js', 'lib/subprocess.js', 'lib/shared.js'],
+  // The seam and its invariant companion are two entries sharing the reader
+  // that decides whether a stored grant is this package's; a fixed chunk name
+  // is what makes it nameable in `files`.
+  '@unieai/uad-connector': ['lib/shared.js'],
   '@unieai/uad-client-ui-theme': ['lib/styles'],
   // The CPython side ships as source .py files, published as-is rather than built.
   '@unieai/uad-code-runtime-python': ['py/**/*.py'],

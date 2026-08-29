@@ -118,6 +118,78 @@ async begin(request: AuthorizationRequest): Promise<AuthorizationOutcome>
 
 Source: [`packages/credentials/authorization/src/index.ts`](../../packages/credentials/authorization/src/index.ts)
 
+<a id="ctxconnectors--connectors"></a>
+
+### `ctx.connectors` — `Connectors`
+
+The connector book: which services can be connected, which are, and the token to reach one with.
+
+```ts cordis-catalog
+/**
+ * Offer one connector.
+ *
+ * Registration is an effect: the connector disappears with the plugin that
+ * offered it, and a grant already stored survives, because a person's
+ * approval is not this process's to discard.
+ * @param provider - the connector to offer.
+ * @returns the disposer.
+ */
+register(provider: ConnectorProvider): () => void
+
+/**
+ * Every connector, connected or not.
+ * @returns one status per offered connector, in registration order.
+ */
+async list(): Promise<readonly ConnectorStatus[]>
+
+/**
+ * One connector's state.
+ * @param id - the provider id.
+ * @returns its status.
+ * @throws when no such connector is offered.
+ */
+async status(id: string): Promise<ConnectorStatus>
+
+/**
+ * A token that is valid right now, refreshing first when the stored one has
+ * expired.
+ *
+ * The refresh runs inside `modifyRecord`, so two callers that both find an
+ * expired token do not both spend the refresh token — the second sees what
+ * the first wrote.
+ * @param id - the provider id.
+ * @param signal - abandons a refresh in flight.
+ * @returns the bearer token.
+ * @throws when the connector is not connected, or the provider refused the refresh.
+ */
+async token(id: string, signal: AbortSignal): Promise<string>
+
+/**
+ * Connect one connector: run the approval, and store what it returned.
+ *
+ * The conversation is `ctx.authorization`'s — this method contributes the
+ * protocol and nothing about how the person is asked, so a surface that can
+ * render one authorization renders this one.
+ * @param id - the provider id.
+ * @param signal - abandons the attempt when the person withdraws.
+ * @returns the connector's state once the grant is stored.
+ * @throws when the provider refuses, or the deployment registered no client id.
+ */
+async connect(id: string, signal: AbortSignal): Promise<ConnectorStatus>
+
+/**
+ * Forget one connector's grant.
+ *
+ * Local only: the approval still stands with the provider until the person
+ * withdraws it there, and saying otherwise would be a claim this program
+ * cannot keep.
+ * @param id - the provider id.
+ */
+async disconnect(id: string): Promise<void>
+```
+
+Source: [`packages/connector/connector/src/index.ts`](../../packages/connector/connector/src/index.ts)
+
 <a id="ctxcredentials--credentialprovider-abstract-seam"></a>
 
 ### `ctx.credentials` — `CredentialProvider` (abstract seam)
@@ -235,6 +307,35 @@ One authorization attempt has finished and released its key. Fires for every ter
 ```
 
 Source: [`packages/credentials/authorization/src/index.ts`](../../packages/credentials/authorization/src/index.ts)
+
+<a id="connectors-events"></a>
+
+### `connectors/*` events
+
+<a id="connectorsauthorize--emit"></a>
+
+#### `connectors/authorize` — emit
+
+A connector's approval page is ready to be opened.
+
+Emitted rather than opened here: which surface shows a URL — a browser, a notice in a chat, a printed line in a terminal — is the shell's answer, and a seam that opened a browser itself would be wrong everywhere it is not one.
+
+```ts cordis-catalog
+/**
+ * A connector's approval page is ready to be opened.
+ *
+ * Emitted rather than opened here: which surface shows a URL — a browser,
+ * a notice in a chat, a printed line in a terminal — is the shell's answer,
+ * and a seam that opened a browser itself would be wrong everywhere it is
+ * not one.
+ * @param provider - the connector being connected.
+ * @param url - the provider's authorization page, complete with this attempt's state.
+ * @mode emit
+ */
+'connectors/authorize'(provider: string, url: string): void
+```
+
+Source: [`packages/connector/connector/src/index.ts`](../../packages/connector/connector/src/index.ts)
 
 <a id="credentials-events"></a>
 

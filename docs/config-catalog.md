@@ -590,6 +590,35 @@ export interface ToolResultPruneConfig {
 
 Source: [`packages/compaction/compaction-tool-result-pruner/src/types.ts:4`](../packages/compaction/compaction-tool-result-pruner/src/types.ts)
 
+<a id="unieaiuad-connector"></a>
+
+## `@unieai/uad-connector`
+
+Requires: `credentials`
+
+```ts config-catalog
+/** Configuration for the connector seam. */
+export interface Config {
+  /**
+   * The OAuth client id registered for each provider, keyed by provider id.
+   *
+   * A deployment fact, not a constant: the client id identifies the
+   * application on the consent screen, and a fork or a self-hosted build is a
+   * different application. A provider with no client id here is listed and
+   * refuses to connect, naming what is missing — silently hiding it would look
+   * like the connector does not exist.
+   */
+  readonly clientIds?: Readonly<Record<string, string>>
+  /**
+   * How this application names itself when it registers with a provider that
+   * issues clients on demand. Shown to the person on the consent screen.
+   */
+  readonly clientName?: string
+}
+```
+
+Source: [`packages/connector/connector/src/index.ts:150`](../packages/connector/connector/src/index.ts)
+
 <a id="unieaiuad-cordis-host-runner"></a>
 
 ## `@unieai/uad-cordis-host-runner`
@@ -3770,6 +3799,7 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 - `@unieai/uad-sdk-protocol` ([`packages/sdk/protocol/src/index.ts`](../packages/sdk/protocol/src/index.ts))
 - `@unieai/uad-session-telemetry` ([`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts))
 - `@unieai/uad-session-title-llm` ([`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts))
+- `@unieai/uad-ssh-server` ([`packages/test-support/ssh-server/src/index.ts`](../packages/test-support/ssh-server/src/index.ts))
 - `@unieai/uad-studio-kb-sources` ([`packages/unieai/studio-kb-sources/src/index.ts`](../packages/unieai/studio-kb-sources/src/index.ts))
 - `@unieai/uad-subagent-in-process-driver` ([`packages/subagent/subagent-in-process-driver/src/index.ts`](../packages/subagent/subagent-in-process-driver/src/index.ts))
 - `@unieai/uad-timeout` ([`packages/util/timeout/src/index.ts`](../packages/util/timeout/src/index.ts))

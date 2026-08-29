@@ -198,6 +198,15 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Configuration carries references to secrets; providers own the values. Consumers resolve per operation, so a rotated credential reaches the very next request; the web gateway exposes value-free views and write-only storage.',
   },
   {
+    key: 'connectors',
+    pkg: 'connector',
+    title: 'Connector seam',
+    mode: 'seam',
+    implementations: [],
+    consumers: [],
+    note: 'Which external services this harness has access to, and a token that is valid right now. It owns no protocol: the human conversation is the authorization seam\'s, the durable grant is a credentials GrantRecord, and what a connector is for belongs to whatever registers tools against it.',
+  },
+  {
     key: 'authorization',
     pkg: 'authorization',
     title: 'Authorization flow registry',

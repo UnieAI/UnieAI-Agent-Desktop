@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-29-a-connector-is-held-access.md
+2026-08-29-a-connector-is-held-access.md: 4fec19b1248535c46a572b5a0fb0e421062a1ff1
+2026-08-29-a-connector-is-held-access.zh.md: fa884604e709fcd2568733ad9ab89687d0c31cf6
