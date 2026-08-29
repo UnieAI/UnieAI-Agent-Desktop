@@ -67,3 +67,9 @@ Error: dsh: /Users/…/.dsh/profiles/node_modules/@deepseek-ai/dsh-client-runtim
 ### 驗證
 
 對著一個跑起來的 `rabi web`：送出的 HTML 預載了該插件的 `client.js`、那個 bundle 回 200 且位元組就是這個 repo 建出來的、三個引擎 bundle 都在 `/plugins/@unieai/genui/assets/` 底下回 200、而上游名稱的路由回 404。每一個建置產物都跟上游同版本發布的大小相差不到 0.1%，那個差額正是被 rescope 的 import 名稱。
+
+## Consequences
+
+一個真的依賴上游套件的樹外插件仍然拿得到它：決定性的事實現在寫在 app manifest 裡——是人放上去的——而不是在連結那一步用猜的。代價是 manifest 變得比以前吃重：一個明明有上游依賴卻忘了宣告的 app，會看到 forwarder 勝出，而症狀是插件解析到我們的套件，不是崩潰。
+
+Vendor 換回每次安裝 184 個套件與 73 MB 的第二份 harness，代價是一支同步腳本與一份會變舊的釘選複本。它套用的改寫是被斷言的，不是被信任的，所以上游一改，失敗的形式是同步被拒絕，而不是一個悄悄改到一半的 bundle。

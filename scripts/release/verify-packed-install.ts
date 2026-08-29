@@ -110,7 +110,7 @@ function verifyTreeBoots(consumerRoot: string, bin: string, environment: NodeJS.
   const deadline = Date.now() + BOOT_TIMEOUT_MS
   let booted = false
   let alive = true
-  while (!booted && alive && Date.now() < deadline) {
+  while (alive && Date.now() < deadline) {
     booted = /http:\/\/127\.0\.0\.1:\d+/u.test(readFileSync(logPath, 'utf8'))
     if (booted) break
     try {

@@ -34,9 +34,12 @@ export function apply(ctx: ClientContext): void {
     order: 400,
     locale: UNIVER_LOCALE_NAMESPACE,
     // UnieAI fork divergence: the dock asks the shell to open and close the
-    // right column. Read through an optional face so an older shell without
-    // ctx.layout still mounts the plugin and floats its windows.
-    inject: () => ({ getViewerLocale, layout: (ctx as { layout?: unknown }).layout }),
+    // right column. `reflect.get(name, false)` is cordis's non-throwing
+    // optional service lookup: plain `ctx.layout` THROWS on a context that did
+    // not declare `layout` in `inject`, which crashed this entry and took the
+    // composer's whole dock row with it. Read this way, an older shell without
+    // a layout service still mounts the plugin and floats its windows.
+    inject: () => ({ getViewerLocale, layout: ctx.reflect.get('layout', false) }),
   }, UniverDock)), 'univer: worktree dock')
 
   // UnieAI fork divergence: the right-column host the dock portals into. A

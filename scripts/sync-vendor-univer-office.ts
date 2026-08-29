@@ -56,6 +56,61 @@ const COPIED_FROM_TARBALL = ['artifacts', 'skills', 'docs', 'cordis.patch.yml', 
  */
 const LOADER_ID_LINE = `id: "${SCOPED}",`
 
+/**
+ * The plugin name inside `cordis.patch.yml`.
+ *
+ * LOAD-BEARING, and taken from the tarball, so every sync reverts it. The
+ * patch file is what mounts this plugin into a composition; left at the
+ * upstream name it names a package that does not exist here, and the entry
+ * either fails to resolve or resolves to an upstream copy.
+ */
+const PATCH_NAME_LINE = `name: '${SCOPED}'`
+
+/**
+ * Upstream package names the built bundles import, and what they are here.
+ *
+ * LOAD-BEARING, and the reason is not the workspace. Inside this repository the
+ * manifest's npm aliases answer these names, so a rescope looks unnecessary —
+ * and it is, right up until the app is PACKAGED. electron-builder resolves a
+ * dependency tree by copying it, and a `workspace:` alias has no directory to
+ * copy: the build says `cannot find path for dependency` and ships anyway, and
+ * the installed app dies on
+ * `Cannot find package '@deepseek-ai/schemastery'` before the harness is ready.
+ * A bundle that imports our names needs no alias to survive being copied.
+ */
+const RESCOPE: ReadonlyArray<readonly [string, string]> = [
+  ['@deepseek-ai/cordis', '@unieai/cordis'],
+  ['@deepseek-ai/schemastery', '@unieai/schemastery'],
+  ['@deepseek-ai/dsh-attachment', '@unieai/uad-attachment'],
+  ['@deepseek-ai/dsh-host-webserver', '@unieai/uad-host-webserver'],
+  ['@deepseek-ai/dsh-llm', '@unieai/uad-llm'],
+  ['@deepseek-ai/dsh-session', '@unieai/uad-session'],
+  ['@deepseek-ai/dsh-skill', '@unieai/uad-skill'],
+  ['@deepseek-ai/dsh-tools', '@unieai/uad-tools'],
+]
+
+/**
+ * Rewrite every upstream import in one built bundle, and prove none survived.
+ * @param file - the bundle to rewrite in place.
+ */
+function rescopeBundle(file: string): void {
+  let text = readFileSync(file, 'utf8')
+  for (const [upstream, ours] of RESCOPE) {
+    text = text.replaceAll(`"${upstream}"`, `"${ours}"`).replaceAll(`'${upstream}'`, `'${ours}'`)
+  }
+  // Only a SPECIFIER matters: esbuild leaves `// node_modules/<pkg>/…` banner
+  // comments for every module it inlined, and an inlined module is not
+  // something the packaged tree has to resolve.
+  const left = /["'](@deepseek-ai\/[a-z-]+)["']/u.exec(text)
+  if (left !== null) {
+    throw new Error(
+      `sync-vendor-univer-office: ${file} still imports ${left[1] ?? ''} after the rescope. `
+      + 'A packaged app cannot resolve an upstream name, so add it to RESCOPE with the package it is here.',
+    )
+  }
+  writeFileSync(file, text)
+}
+
 /** Every file under `dir`, recursively, skipping links. */
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -101,6 +156,23 @@ function main(): void {
       rmSync(join(target, entry), { recursive: true, force: true })
       cpSync(join(unpacked, entry), join(target, entry), { recursive: true })
     }
+
+    // Every file above came from upstream and spells upstream's name; the two
+    // places that decide what this package IS have to be repointed at ours.
+    const patchPath = join(target, 'cordis.patch.yml')
+    const repointedPatch = readFileSync(patchPath, 'utf8').replace(`name: '${UPSTREAM}'`, PATCH_NAME_LINE)
+    if (!repointedPatch.includes(PATCH_NAME_LINE)) {
+      throw new Error(
+        `sync-vendor-univer-office: cordis.patch.yml does not name ${SCOPED} after the rewrite. `
+        + 'A patch file naming the upstream package mounts a plugin that is not vendored here. '
+        + "Re-read the entry upstream writes and update this script's rewrite.",
+      )
+    }
+    writeFileSync(patchPath, repointedPatch)
+
+    // The bundles ship; the aliases that used to answer for them do not
+    // survive packaging, so the names are rewritten here instead.
+    for (const bundle of ['index.js', 'client.js']) rescopeBundle(join(target, 'lib', bundle))
 
     const clientPath = join(target, 'lib', 'client.js')
     const client = readFileSync(clientPath, 'utf8')

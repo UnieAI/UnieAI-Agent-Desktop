@@ -67,3 +67,9 @@ The copy is 0.9.6, not the 0.9.3 the bundle depended on: a sync is cheapest at t
 ### Verification
 
 Against a running `rabi web`: the served HTML preloads the plugin's `client.js`, that bundle answers 200 with the bytes this repository built, all three engine bundles answer 200 under `/plugins/@unieai/genui/assets/`, and the upstream-named route answers 404. Every built artifact is within 0.1% of the size upstream publishes for the same version, which is what the rescoped import names account for.
+
+## Consequences
+
+An out-of-tree plugin that genuinely depends on an upstream package still gets it: the deciding fact is now written in the app manifest, where a person put it, instead of being guessed at the linking step. The cost is that the manifest is load-bearing in a way it was not before — an app that forgets to declare an upstream dependency it really has will see the forwarder win, and the symptom is a plugin resolving against our package rather than a crash.
+
+Vendoring bought back 184 packages and 73 MB of second harness per install, and cost a sync script plus a pinned copy that ages. The rewrite it applies is asserted rather than trusted, so the failure mode of an upstream change is a refused sync rather than a silently half-rescoped bundle.

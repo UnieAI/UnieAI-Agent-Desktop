@@ -1,7 +1,7 @@
 {
   "name": "@unieai/univer-office",
   "version": "0.2.11",
-  "description": "DSH × Univer integration with a bundled collaboration Gateway and Viewer: inline previews, live floating Worktree windows, and session-end review actions in DeepSeek Harness.",
+  "description": "DSH \u00d7 Univer integration with a bundled collaboration Gateway and Viewer: inline previews, live floating Worktree windows, and session-end review actions in DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
   "publishConfig": {
@@ -46,19 +46,19 @@
   },
   "dependencies": {
     "@puppeteer/browsers": "^3.2.0",
+    "@unieai/cordis": "workspace:^",
+    "@unieai/schemastery": "workspace:^",
+    "@unieai/uad-attachment": "workspace:^",
+    "@unieai/uad-host-webserver": "workspace:^",
+    "@unieai/uad-llm": "workspace:^",
+    "@unieai/uad-session": "workspace:^",
+    "@unieai/uad-skill": "workspace:^",
+    "@unieai/uad-tools": "workspace:^",
     "@univerjs-pro/cli-assets": "0.1.0",
     "@univerjs-pro/engine-formula-rust-binding": "1.0.0-insiders.20260819-8209aa8",
     "@univerjs-pro/exchange-node-binding": "0.1.0",
     "libsql": "^0.5.29",
-    "puppeteer-core": "^25.7.0",
-    "@deepseek-ai/cordis": "workspace:@unieai/cordis@*",
-    "@deepseek-ai/schemastery": "workspace:@unieai/schemastery@*",
-    "@deepseek-ai/dsh-attachment": "workspace:@unieai/uad-attachment@*",
-    "@deepseek-ai/dsh-host-webserver": "workspace:@unieai/uad-host-webserver@*",
-    "@deepseek-ai/dsh-llm": "workspace:@unieai/uad-llm@*",
-    "@deepseek-ai/dsh-session": "workspace:@unieai/uad-session@*",
-    "@deepseek-ai/dsh-skill": "workspace:@unieai/uad-skill@*",
-    "@deepseek-ai/dsh-tools": "workspace:@unieai/uad-tools@*"
+    "puppeteer-core": "^25.7.0"
   },
   "engines": {
     "node": ">=22.19.0"

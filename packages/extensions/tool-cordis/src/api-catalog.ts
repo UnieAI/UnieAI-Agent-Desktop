@@ -636,6 +636,51 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'connectors',
+    summary: 'The connector book: which services can be connected, which are, and the token to reach one with.',
+    description: 'The connector book: which services can be connected, which are, and the token to reach one with.',
+    methods: [
+      {
+        signature: 'register(provider: ConnectorProvider): () => void',
+        description: 'Offer one connector.\n\nRegistration is an effect: the connector disappears with the plugin that offered it, and a grant already stored survives, because a person\'s approval is not this process\'s to discard.',
+        parameters: [{ name: 'provider', description: 'the connector to offer.' }],
+        returns: 'the disposer.',
+      },
+      {
+        signature: 'async list(): Promise<readonly ConnectorStatus[]>',
+        description: 'Every connector, connected or not.',
+        parameters: [],
+        returns: 'one status per offered connector, in registration order.',
+      },
+      {
+        signature: 'async status(id: string): Promise<ConnectorStatus>',
+        description: 'One connector\'s state.',
+        parameters: [{ name: 'id', description: 'the provider id.' }],
+        returns: 'its status.',
+        throws: ['when no such connector is offered.'],
+      },
+      {
+        signature: 'async token(id: string, signal: AbortSignal): Promise<string>',
+        description: 'A token that is valid right now, refreshing first when the stored one has expired.\n\nThe refresh runs inside `modifyRecord`, so two callers that both find an expired token do not both spend the refresh token — the second sees what the first wrote.',
+        parameters: [{ name: 'id', description: 'the provider id.' }, { name: 'signal', description: 'abandons a refresh in flight.' }],
+        returns: 'the bearer token.',
+        throws: ['when the connector is not connected, or the provider refused the refresh.'],
+      },
+      {
+        signature: 'async connect(id: string, signal: AbortSignal): Promise<ConnectorStatus>',
+        description: 'Connect one connector: run the approval, and store what it returned.\n\nThe conversation is `ctx.authorization`\'s — this method contributes the protocol and nothing about how the person is asked, so a surface that can render one authorization renders this one.',
+        parameters: [{ name: 'id', description: 'the provider id.' }, { name: 'signal', description: 'abandons the attempt when the person withdraws.' }],
+        returns: 'the connector\'s state once the grant is stored.',
+        throws: ['when the provider refuses, or the deployment registered no client id.'],
+      },
+      {
+        signature: 'async disconnect(id: string): Promise<void>',
+        description: 'Forget one connector\'s grant.\n\nLocal only: the approval still stands with the provider until the person withdraws it there, and saying otherwise would be a claim this program cannot keep.',
+        parameters: [{ name: 'id', description: 'the provider id.' }],
+      },
+    ],
+  },
+  {
     key: 'credentials',
     summary: 'Abstract credential service over two key spaces that answer two questions.',
     description: 'Abstract credential service over two key spaces that answer two questions.\n\nA CredentialRef answers "what is behind this environment-variable name", layered over the process environment, the provider-managed store, and `.env` files. One seam-wide rule binds that half: an empty stored value is absent everywhere — `resolve` skips it, `describe` reports it unconfigured — so a blank never masquerades as a configured secret.\n\nA CredentialKey answers "what credential does this plugin hold for this id". Nothing can layer here — an authorization grant has no environment to be read from — so presence of the record is the whole fact, and modifyRecord is the only write path because a correct write depends on the current value (a token refresh is read-decide-replace under one lock).',
@@ -2797,6 +2842,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [],
   },
   {
+    name: 'connectors/authorize',
+    mode: 'emit',
+    signature: '\'connectors/authorize\'(provider: string, url: string): void',
+    summary: 'A connector\'s approval page is ready to be opened.',
+    description: 'A connector\'s approval page is ready to be opened.\n\nEmitted rather than opened here: which surface shows a URL — a browser, a notice in a chat, a printed line in a terminal — is the shell\'s answer, and a seam that opened a browser itself would be wrong everywhere it is not one.',
+    parameters: [{ name: 'provider', description: 'the connector being connected.' }, { name: 'url', description: 'the provider\'s authorization page, complete with this attempt\'s state.' }],
+  },
+  {
     name: 'cordis/dynamic-package',
     mode: 'emit',
     signature: '\'cordis/dynamic-package\'(pkg: DynamicCordisPackage): void',
@@ -3493,6 +3546,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type ConfinedSandboxMode = Exclude<SandboxMode, \'danger-full-access\'>;',
   },
   {
+    name: 'ConnectorProvider',
+    declaration: 'export interface ConnectorProvider {\n    readonly id: string;\n    readonly label: string;\n    readonly auth: OAuth2Descriptor | DiscoveredDescriptor;\n    readonly scopes: readonly string[];\n}',
+  },
+  {
+    name: 'ConnectorStatus',
+    declaration: 'export interface ConnectorStatus {\n    readonly id: string;\n    readonly label: string;\n    readonly connected: boolean;\n    readonly account?: string;\n    readonly scopes: readonly string[];\n    readonly expiresAt?: string;\n    readonly renewable: boolean;\n}',
+  },
+  {
     name: 'ContentBlockMap',
     declaration: 'export interface ContentBlockMap {\n    \'text\': TextBlock;\n    \'reasoning\': ReasoningBlock;\n    \'image\': ImageBlock;\n    \'tool-call\': ToolCallBlock;\n    \'tool-result\': ToolResultBlock;\n}',
   },
@@ -3631,6 +3692,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'DirectoryRegistrationHandle',
     declaration: 'export interface DirectoryRegistrationHandle {\n    (): void;\n    replace(entries: readonly LlmConfigurableProvider[]): void;\n}',
+  },
+  {
+    name: 'DiscoveredDescriptor',
+    declaration: 'export interface DiscoveredDescriptor {\n    readonly kind: \'discovered\';\n    readonly issuer: string;\n    readonly scopes?: readonly string[];\n}',
   },
   {
     name: 'Domain',
@@ -4195,6 +4260,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ModelModalityMap',
     declaration: 'export interface ModelModalityMap {\n    text: \'text\';\n    image: \'image\';\n}',
+  },
+  {
+    name: 'OAuth2Descriptor',
+    declaration: 'export interface OAuth2Descriptor {\n    readonly kind: \'oauth2\';\n    readonly authorizationUrl: string;\n    readonly tokenUrl: string;\n    readonly authorizationParams?: Readonly<Record<string, string>>;\n    readonly registrationUrl?: string;\n}',
   },
   {
     name: 'ObjectJsonSchema',

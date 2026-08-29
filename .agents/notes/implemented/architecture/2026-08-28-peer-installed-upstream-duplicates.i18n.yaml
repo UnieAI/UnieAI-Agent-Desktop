@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-28-peer-installed-upstream-duplicates.md
-2026-08-28-peer-installed-upstream-duplicates.md: 8b72813f0a68b0088e4705a7a970ad01e6d67d1f
-2026-08-28-peer-installed-upstream-duplicates.zh.md: 614f3176813e52b375b414649813932b202ea6f5
+2026-08-28-peer-installed-upstream-duplicates.md: da7acf189b75671474729e9766d67804925f48f9
+2026-08-28-peer-installed-upstream-duplicates.zh.md: fd6bc79620649dbb6f508671ef92b81ef729bf1d

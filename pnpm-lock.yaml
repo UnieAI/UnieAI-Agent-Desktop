@@ -4220,6 +4220,21 @@ importers:
         specifier: workspace:^
         version: link:../../llm/token-meter
 
+  packages/connector/connector:
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-authorization':
+        specifier: workspace:^
+        version: link:../../credentials/authorization
+      '@unieai/uad-credentials':
+        specifier: workspace:^
+        version: link:../../credentials/credentials
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+
   packages/context/agent-instructions:
     dependencies:
       '@unieai/schemastery':
@@ -6709,6 +6724,9 @@ importers:
       '@unieai/uad-ssh':
         specifier: workspace:^
         version: link:../../ssh/ssh
+      '@unieai/uad-ssh-server':
+        specifier: workspace:^
+        version: link:../../test-support/ssh-server
 
   packages/machines/machine-metrics:
     dependencies:
@@ -8305,6 +8323,9 @@ importers:
       '@unieai/uad-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-ssh-server':
+        specifier: workspace:^
+        version: link:../../test-support/ssh-server
       '@unieai/uad-subprocess-ssh':
         specifier: workspace:^
         version: link:../subprocess-ssh
@@ -8327,6 +8348,9 @@ importers:
       '@unieai/uad-invariants':
         specifier: workspace:^
         version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-ssh-server':
+        specifier: workspace:^
+        version: link:../../test-support/ssh-server
 
   packages/ssh/subprocess-ssh:
     dependencies:
@@ -9256,6 +9280,15 @@ importers:
       '@unieai/uad-session':
         specifier: workspace:^
         version: link:../../core/session
+
+  packages/test-support/ssh-server:
+    devDependencies:
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
 
   packages/todo/tool-todo:
     dependencies:
@@ -10401,33 +10434,33 @@ importers:
 
   vendor/univer-office:
     dependencies:
-      '@deepseek-ai/cordis':
-        specifier: workspace:@unieai/cordis@*
-        version: link:../cordis
-      '@deepseek-ai/dsh-attachment':
-        specifier: workspace:@unieai/uad-attachment@*
-        version: link:../../packages/attachment/attachment
-      '@deepseek-ai/dsh-host-webserver':
-        specifier: workspace:@unieai/uad-host-webserver@*
-        version: link:../../packages/host/webserver
-      '@deepseek-ai/dsh-llm':
-        specifier: workspace:@unieai/uad-llm@*
-        version: link:../../packages/llm/llm
-      '@deepseek-ai/dsh-session':
-        specifier: workspace:@unieai/uad-session@*
-        version: link:../../packages/core/session
-      '@deepseek-ai/dsh-skill':
-        specifier: workspace:@unieai/uad-skill@*
-        version: link:../../packages/skill/skill
-      '@deepseek-ai/dsh-tools':
-        specifier: workspace:@unieai/uad-tools@*
-        version: link:../../packages/core/tools
-      '@deepseek-ai/schemastery':
-        specifier: workspace:@unieai/schemastery@*
-        version: link:../schemastery
       '@puppeteer/browsers':
         specifier: ^3.2.0
         version: 3.2.1
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../cordis
+      '@unieai/schemastery':
+        specifier: link:../schemastery
+        version: link:../schemastery
+      '@unieai/uad-attachment':
+        specifier: workspace:^
+        version: link:../../packages/attachment/attachment
+      '@unieai/uad-host-webserver':
+        specifier: workspace:^
+        version: link:../../packages/host/webserver
+      '@unieai/uad-llm':
+        specifier: workspace:^
+        version: link:../../packages/llm/llm
+      '@unieai/uad-session':
+        specifier: workspace:^
+        version: link:../../packages/core/session
+      '@unieai/uad-skill':
+        specifier: workspace:^
+        version: link:../../packages/skill/skill
+      '@unieai/uad-tools':
+        specifier: workspace:^
+        version: link:../../packages/core/tools
       '@univerjs-pro/cli-assets':
         specifier: 0.1.0
         version: 0.1.0
