@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-locale",
   "description": "Locale plugin: Host-backed zh/en preference, browser-derived fallback, locale snapshots, and typed namespace dictionaries",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "publishConfig": {
     "access": "public"
   },
