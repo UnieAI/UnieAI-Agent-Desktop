@@ -8,15 +8,40 @@ All notable changes from `desktop-v0.1.9` through `desktop-v0.1.13`.
 
 ---
 
-## Unreleased
+## 0.1.16 — 2026-08-29
+
+**If you picked a remote machine once, this release is the fix.** A remembered machine turned every launch into a stall: startup asked that machine about every remembered session — eleven ssh connections before the window had loaded, on a measured profile — and each was free to ask for a password on whatever terminal the app inherited. For a windowed app that is nobody's terminal, so the harness waited for a keystroke that never came and a conversation could not be started at all.
+
+### Fixed
+
+**Nothing asks for a password on a terminal nobody is watching.** Every ssh invocation except a real terminal session now runs in batch mode. Piping the child's stdin did not prevent this — OpenSSH opens `/dev/tty` — so the failure is now the client's own `Permission denied (publickey)`, which a surface can show and you can act on by adding your key to your agent.
+
+**Startup never reaches a machine nobody asked for.** Indexing remembered sessions no longer canonicalizes their paths through a remote machine. That was also the wrong question: a session's directory was recorded on the machine it ran on, and the machine selected now is not necessarily that one. Measured: eleven ssh invocations at startup before, zero after.
+
+**The packaged desktop app could not start at all.** The vendored Univer bundles imported upstream package names answered by manifest aliases — which resolve inside the workspace and do not survive packaging, because electron-builder resolves a dependency tree by copying it. Every packaged build since Univer landed showed a failure page. The bundles now carry our names, and the sync asserts it.
+
+**New chat did nothing.** It reuses a workspace's blank session rather than minting hidden duplicates, so it usually resolved to the session already open and moved nothing on screen — leaving an unsent draft in the composer, which was the whole difference between "a new chat" and what you were already looking at.
 
 ### Added
 
-**Univer Office opens in the right column.** Spreadsheets, docs and slides render in the shell's right sidebar rather than in floating windows over the conversation: a document is where the work happens for as long as it is open, and a window covering the transcript makes you choose between reading what the agent said and looking at what it produced. The column holds one occupant at a time — a document while one is open, tool details otherwise — and stays open with no session current, because a document outlives the turn that produced it.
+**A tour, once, the first time you open it.** Four steps for the four things you have to do in the first minute — pick a folder, ask in ordinary words, look at what it wants to change, and that it can run on another computer. Each is a small mock of the real interface with a cursor that performs the action.
 
-The plugin is vendored, so installing this product does not download a second copy of the upstream harness through its peer dependencies. Three of its runtime dependencies publish no licence at all; they are disclosed as such in `THIRD_PARTY_NOTICES.md` while their terms are confirmed with the publisher.
+**Words a person already knows.** A workspace is a folder, a session is a chat, and the access mode says what the agent may *do* rather than naming the permission: `workspace-write` reads as "Change files in this folder".
+
+**Adding and removing a machine are dialogs**, written for someone who has never heard of SSH: a picture of what connecting means, three fields with a plain sentence each, and port, key file and the configuration preview behind one disclosure. The preview shows exactly the lines that will be appended — a field left empty produces none, which is what the writer has always done and nothing had ever shown.
+
+**Univer Office opens in the right column.** Spreadsheets, docs and slides render in the shell's right sidebar rather than in floating windows over the conversation. The plugin is vendored, so installing this product does not download a second copy of the upstream harness. Three of its runtime dependencies publish no licence at all; they are disclosed as such in `THIRD_PARTY_NOTICES.md` while their terms are confirmed with the publisher.
+
+**The desktop app has real icons.** macOS gets Apple's 824-of-1024 grid baked into the artwork; the other platforms get it full-bleed, because they draw what they are given.
+
+**A connector seam.** `ctx.connectors` holds access to external services: loopback and PKCE, endpoints read from each provider's own metadata, and clients registered on demand where the provider offers it — so Notion, Linear and Sanity connect on a fresh install with no application registered anywhere. Google and Microsoft wait for a client id and say so. There is no UI for it yet.
+
+### Release engineering
+
+**Thirty-two remote tests now run on every e2e run.** The suites proving remote machines work were gated on two environment variables naming a hand-built server, so in every ordinary run — and in CI — they skipped silently, and the remote path shipped with no coverage. They start their own disposable sshd now; the only remaining reason to skip is server software that is not installed, and it says so.
 
 ---
+
 
 ## 0.1.15 — 2026-08-28
 
