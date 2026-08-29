@@ -61,6 +61,16 @@ export interface GaugesView {
   subscribe(listener: () => void): () => void
   /** Begin polling; returns the stop for the caller to run on unmount. */
   start(): () => void
+  /**
+   * Read again now, discarding the reading on screen.
+   *
+   * For the one event that makes the last reading WRONG rather than merely
+   * old: work moved to another machine. Waiting out the interval would leave
+   * one machine's figures standing under another machine's name, and keeping
+   * them — which is right for a missed sample — would say the new machine
+   * looks exactly like the old one. Does nothing while nobody is watching.
+   */
+  resample(): void
 }
 
 /**
@@ -116,6 +126,24 @@ export function createGaugesView(routes: GaugesRoutes, environment: GaugesEnviro
     subscribe: (listener) => {
       listeners.add(listener)
       return () => { listeners.delete(listener) }
+    },
+    resample: () => {
+      // No reader means no timer to displace and no strip to update; the next
+      // start() reads fresh anyway.
+      if (readers === 0) return
+      // A new generation abandons the poll in flight, whose answer describes
+      // the machine that is no longer selected.
+      generation += 1
+      if (timer !== undefined) environment.clearTimeout(timer)
+      timer = undefined
+      // The key is dropped rather than set to undefined: "no reading yet" is
+      // the absence of the property, which is what the strip's first-poll
+      // rendering already reads, and `exactOptionalPropertyTypes` keeps the
+      // two apart.
+      const { reading: _abandoned, ...withoutReading } = state
+      state = { ...withoutReading, error: '' }
+      for (const listener of listeners) listener()
+      void poll(generation)
     },
     start: () => {
       readers += 1

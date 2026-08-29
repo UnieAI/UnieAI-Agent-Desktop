@@ -123,6 +123,43 @@ describe('the polling view', () => {
     stop()
   })
 
+  it('drops the reading and reads again when work moves to another machine', async () => {
+    // A reading describes the machine it was taken on. After a switch it is
+    // not stale, it is about somewhere else — and keeping it (right for a
+    // missed sample) would put one machine's figures under another's name.
+    const environment = clock()
+    const answers: MachineMetricsView[] = [reading({ machine: 'local' }), reading({ machine: 'build-box' })]
+    let calls = 0
+    const view = createGaugesView({
+      read: () => {
+        const next = answers[calls] ?? answers[answers.length - 1]
+        calls += 1
+        return Promise.resolve({ ok: true as const, reading: next as MachineMetricsView })
+      },
+    }, environment)
+
+    const stop = view.start()
+    await vi.waitFor(() => { expect(view.getSnapshot().reading?.machine).toBe('local') })
+
+    view.resample()
+    // The old machine's figures are gone the instant the move is known, not
+    // when the next answer lands.
+    expect(view.getSnapshot().reading).toBeUndefined()
+    await vi.waitFor(() => { expect(view.getSnapshot().reading?.machine).toBe('build-box') })
+    stop()
+  })
+
+  it('does not read on a machine nobody is watching', () => {
+    const environment = clock()
+    let calls = 0
+    const view = createGaugesView({
+      read: () => { calls += 1; return Promise.resolve({ ok: true as const, reading: reading() }) },
+    }, environment)
+
+    view.resample()
+    expect(calls).toBe(0)
+  })
+
   it('stops when the last reader leaves, and not before', async () => {
     const environment = clock()
     let calls = 0

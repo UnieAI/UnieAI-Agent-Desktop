@@ -171,6 +171,18 @@ export function apply(ctx: Context): void {
   // ctx.conversation.input by the service below sharing this one instance).
   const inputHub = new InputHub(ctx, t)
 
+  // New Session reuses a workspace's existing blank session rather than
+  // minting hidden duplicates, so it usually resolves to the session already
+  // open and selecting it moves nothing on screen. An unsent draft is then the
+  // whole difference between "a new chat" and what the person was already
+  // looking at, and leaving it there is what makes the button read as dead.
+  // Only an already-built machine is touched: a freshly created session has no
+  // composer yet, and another session's draft is its own to keep.
+  ctx.on('workspaces/new-session', (sessionId) => {
+    if (sessionId === undefined) return
+    inputHub.existing(sessionId)?.setDraft('')
+  })
+
   // The composer-block registry: a plugin that knows a session cannot send —
   // ui-model-selection, when no adapter serves the session's route — raises a block
   // here, and the bar reads its own session's store. It cannot flow the other
@@ -208,6 +220,7 @@ export function apply(ctx: Context): void {
       'conversation.composer.dock': { kind: 'list', scope: 'session' },
       'conversation.input.left': { kind: 'list', scope: 'session' },
       'conversation.input.chrome': { kind: 'list', scope: 'root' },
+      'conversation.input.chrome.end': { kind: 'list', scope: 'root' },
       'conversation.input.right': { kind: 'list', scope: 'session' },
       'conversation.hero.brand.mark': { kind: 'single', scope: 'root' },
       'conversation.hero.workspace': { kind: 'single', scope: 'root' },

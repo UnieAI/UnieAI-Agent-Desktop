@@ -258,6 +258,16 @@ declare module '@unieai/uad-client-ui-slots' {
      */
     'conversation.input.chrome': { kind: 'list'; scope: 'root'; owner: Record<string, never> }
     /**
+     * The same resident chrome at the OTHER end of the tool row — the icon
+     * cluster next to send, where a control belongs when it is a standing
+     * fact about the composer rather than something to read on the way in.
+     *
+     * Root scope for the same reason as `conversation.input.chrome`: what is
+     * true before a session exists cannot sit in a session-scoped seat. The
+     * two differ only in which end of the row they render at.
+     */
+    'conversation.input.chrome.end': { kind: 'list'; scope: 'root'; owner: Record<string, never> }
+    /**
      * The right end of the same tool row, before the primary send button —
      * the seat for a control the user reaches on the way to sending (the
      * model select sits in its own named seat just left of here). Same
@@ -597,6 +607,8 @@ export interface ComposerBarOwnerProps {
   leftItems?: ReactNode
   /** input.right slot entries (tool row, before the primary button). */
   rightItems?: ReactNode
+  /** input.chrome.end slot entries (tool row, in the icon cluster beside send). */
+  endItems?: ReactNode
   /** composer.dock entries (stats line), rendered under the card inside the bar's width column. */
   footer?: ReactNode
 }
@@ -695,6 +707,7 @@ export type ConversationSlotProps =
     | 'conversation.input.overlay'
     | 'conversation.input.dock' | 'conversation.composer.dock'
     | 'conversation.input.left' | 'conversation.input.right' | 'conversation.input.chrome'
+    | 'conversation.input.chrome.end'
     | 'conversation.hero.brand.mark'
     | 'conversation.hero.workspace'
     | 'conversation.hero.agentPreset'

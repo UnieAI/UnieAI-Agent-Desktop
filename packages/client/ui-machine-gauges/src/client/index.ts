@@ -59,6 +59,12 @@ export function apply(ctx: ClientContext): void {
     visible: () => globalThis.document.visibilityState !== 'hidden',
   })
 
+  // The reading on screen describes the machine it was taken on. When work
+  // moves, that reading is not stale, it is about somewhere else — so the
+  // strip drops it and reads the new machine at once instead of finishing out
+  // its interval under the wrong name.
+  ctx.on('machines/changed', () => { view.resample() })
+
   ctx.slots.inject('conversation.session.header.gauges', () => ctx.slots.register({
     name: 'conversation.session.header.gauges',
     id: 'machine-gauges',

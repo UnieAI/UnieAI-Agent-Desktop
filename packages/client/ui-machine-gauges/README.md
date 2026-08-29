@@ -28,6 +28,8 @@ The lifecycle is the view's rather than the component's, and it counts its reade
 
 **A failed poll keeps the last reading** and dims the strip. What was true a moment ago is still the best answer anyone has, and blanking on a dropped connection would make a hiccup look like a machine that went away. Opening the panel then says the figures are from before the failure.
 
+**A move to another machine drops the reading and reads again at once.** That is the one event the paragraph above does not cover: the figures on screen are not stale, they describe somewhere else, and keeping them would say the new machine looks exactly like the old one. The strip hears it as `machines/changed` (declared by the client runtime, so this package still knows nothing about machines) and re-reads instead of finishing out its interval under the wrong name. Nobody watching means nothing to do — the next mount reads fresh anyway.
+
 **A deployment that cannot measure anything draws nothing and stops asking.** `metrics-unavailable` is answered once, and the strip returns null rather than standing in the header as a control that never answers.
 
 ## Model Experience

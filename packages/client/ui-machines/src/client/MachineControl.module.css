@@ -3,14 +3,19 @@
   display: inline-flex;
 }
 
+/* Sized as the row's other icon buttons (commands, voice) so the cluster reads
+   as one set; it grows into a pill only when it has a machine name to carry. */
 .chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  height: 28px;
-  padding: 0 10px;
+  flex: none;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
   border: 0;
-  border-radius: var(--dsw-radius-control);
+  border-radius: 999px;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
   font-size: 12px;
@@ -30,14 +35,6 @@
   background: var(--dsw-alias-interactive-bg-active);
 }
 
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.7;
-}
-
 .name {
   max-width: 140px;
   overflow: hidden;
@@ -45,17 +42,53 @@
   white-space: nowrap;
 }
 
+/* Surface tokens AND metrics match the Menu primitive card (ui-primitives
+   Menu.module.css), as the model picker's own card does: every dropdown in
+   this row reads as the same material in both themes. `--dsw-specific-menu`
+   is theme-bound; a literal or an undefined token would leave this card white
+   on a dark shell. The card is the scroll container's frame — the machine
+   list scrolls inside it while the form and hints below stay put. */
 .menu {
   position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  bottom: auto;
   z-index: 40;
-  min-width: 220px;
-  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: min(320px, calc(100vw - 32px));
+  max-width: min(420px, calc(100vw - 32px));
+  max-height: min(420px, calc(100vh - 96px));
+  overflow: hidden;
   padding: 4px;
-  border-radius: var(--dsw-radius-card, 10px);
-  background: var(--dsw-alias-surface-raised, #fff);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 18%);
+  border: 1px solid var(--dsw-alias-border-inverted);
+  border-radius: 6px;
+  background: var(--dsw-specific-menu);
+  box-shadow: var(--dsw-shadow-lv3);
+  color: var(--dsw-alias-label-primary);
+  /* Elevated surface: the thumb takes the l2 elevation tokens, declared on the
+     card so the choice sits with the surface and inherits to whatever scrolls
+     (see ui-theme styles/scrollbar.css). */
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+/* Once a conversation is live the composer is docked at the floor and this
+   menu opens upward. Keyed on the shell's phase and NOT on measured space:
+   the transcript column grows to whatever the composer needs, so a downward
+   menu always "fits" and then covers the control that opened it. */
+:global([data-phase='active']) :global([data-composer]) .menu,
+:global([data-phase='settling']) :global([data-composer]) .menu {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+
+/* Only the machines scroll. A person with thirty hosts still reaches "add a
+   machine" without scrolling past all of them. */
+.list {
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .item {
@@ -96,7 +129,7 @@
 
 .error {
   padding: 6px 10px;
-  color: var(--dsw-alias-label-danger, #b3261e);
+  color: var(--dsw-alias-state-error-primary);
   font-size: 12px;
 }
 
@@ -134,44 +167,271 @@
 }
 
 .itemKind[data-ok='true'] {
-  color: var(--dsw-alias-label-success, #1a7f37);
+  color: var(--dsw-alias-state-success-primary);
 }
 
 .itemKind[data-ok='false'] {
-  color: var(--dsw-alias-label-danger, #b3261e);
+  color: var(--dsw-alias-state-error-primary);
 }
 
-/* Removing edits someone's own file, so it asks first. */
-.confirm {
+
+
+
+
+/* ---------------------------------------------------------------------------
+   The two dialogs. Both write to the person's own SSH configuration, so both
+   state what they will write before they write it.
+   --------------------------------------------------------------------------- */
+
+/* Wider than the Modal default: labelled fields with a hint line each do not
+   fit the 380px card the confirmation uses. */
+.addDialog {
+  width: min(440px, 100%);
+}
+
+/* This computer, a connection, and the machine being added. The words below
+   assume a person knows what adding a machine means; this says it first. */
+.pic {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: var(--dsw-radius-control);
-  background: var(--dsw-alias-interactive-bg-hover);
-  font-size: 12px;
+  justify-content: center;
+  padding: 4px 0 0;
 }
 
-.form {
+.picNode {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 6px;
-  padding: 8px 10px;
+  width: 96px;
 }
 
-.fieldRow {
+.picNode span {
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.picBox {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--dsw-alias-border-l3);
+  border-radius: 12px;
+  background: var(--dsw-alias-markdown-code-block);
+  color: var(--dsw-alias-label-secondary);
+}
+
+.picWire {
+  position: relative;
+  flex: 1 1 auto;
+  max-width: 76px;
+  height: 20px;
+}
+
+.picWire::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  border-top: 1.5px dashed var(--dsw-alias-border-l3);
+}
+
+.picPulse {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  background: var(--dsw-alias-label-tertiary);
+  animation: machine-wire 2.6s ease-in-out infinite;
+}
+
+@keyframes machine-wire {
+  0% { left: 2%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: 92%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picPulse { animation: none; left: 46%; }
+}
+
+.dialogIntro {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.fields {
   display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+/* Label above, hint below. A placeholder disappears exactly when someone
+   starts typing, which is when they still need to know what the field is. */
+.fieldLabel {
+  display: flex;
+  align-items: baseline;
   gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dsw-alias-label-primary);
+}
+
+.fieldOptional {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--dsw-alias-label-dimmed);
+}
+
+.fieldInput {
+  display: flex;
+  width: 100%;
+  height: 34px;
+}
+
+.fieldHint {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--dsw-alias-label-tertiary);
 }
 
 .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Port, key file and the written lines: true, and not what a first machine
+   needs. The summary names what is inside so it stays findable. */
+.advanced {
+  padding-top: 12px;
+  border-top: 1px solid var(--dsw-alias-border-l2);
+}
+
+.advancedSummary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  list-style: none;
+}
+
+.advancedSummary::-webkit-details-marker {
+  display: none;
+}
+
+.chevron {
+  display: inline-flex;
+  transition: transform 160ms var(--ds-ease-in-out, ease);
+}
+
+.advanced[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.advancedBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 14px;
+}
+
+/* Exactly the lines `addHost` will append: a field left empty produces none. */
+.preview {
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.previewHead {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+  background: var(--dsw-alias-markdown-code-block);
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+
+.previewBody {
+  margin: 0;
+  padding: 10px;
+  background: var(--dsw-alias-markdown-code-block);
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--ds-font-family-code);
+  font-size: 11.5px;
+  line-height: 19px;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.dialogError {
+  margin-top: 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--dsw-alias-interactive-bg-hover-danger);
+  color: var(--dsw-alias-state-error-primary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.warnPic {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 12px;
+}
+
+.warnBadge {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--dsw-alias-interactive-bg-hover-danger);
+  color: var(--dsw-alias-state-error-primary);
+}
+
+/* Which alias, and which file it was declared in — the list already carries
+   both, and a person may keep several included files. */
+.target {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--dsw-alias-markdown-code-block);
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--ds-font-family-code);
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.target span {
+  display: block;
+  margin-top: 4px;
+  color: var(--dsw-alias-label-tertiary);
+  font-family: var(--dsw-font-family);
+  font-size: 11px;
+}
+
+/* A machine row now leads with what kind of machine it is. */
+.itemGlyph {
+  flex: none;
+  display: inline-flex;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.itemName {
   flex: 1 1 auto;
   min-width: 0;
-  height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--dsw-alias-border-control, rgb(0 0 0 / 12%));
-  border-radius: var(--dsw-radius-control);
-  background: var(--dsw-alias-surface-sunken, transparent);
-  color: var(--dsw-alias-label-primary);
-  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

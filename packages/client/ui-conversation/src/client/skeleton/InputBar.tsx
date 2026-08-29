@@ -88,7 +88,7 @@ export function InputBar({
   renderSlot, useNotices, useLexicon, useMenuLauncher,
   useProjection, sessionId, variant, disabled: inert = false, blocked,
   workspacePickerOpen = false, onRequestWorkspace,
-  placeholder, accessory, overlay, leftItems, rightItems, footer,
+  placeholder, accessory, overlay, leftItems, rightItems, endItems, footer,
 }: InputBarProps) {
   const input = useInput(s => s)
   const notice = useNotices(s => s)
@@ -849,6 +849,10 @@ export function InputBar({
                 </button>
               </Tooltip>
             )}
+            {/* Resident chrome joins the icon cluster rather than the labelled
+                controls left of it: what it says is true of the composer
+                itself, not of the turn about to be sent. */}
+            {endItems}
             {/* No mic where speech recognition does not exist (Firefox, and
                 any non-secure origin): a control that cannot work is worse
                 than an absent one. */}

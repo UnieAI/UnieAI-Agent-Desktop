@@ -6,11 +6,19 @@ The machine a conversation's work happens on, shown and chosen where the work is
 
 ## Where it sits
 
-The composer's tool row, beside the workspace chip, because the machine belongs to the same question as the working directory: *where does what I am about to ask actually run.*
+The **end** of the composer's tool row, in the icon cluster next to send, because where work runs is a standing fact about the composer rather than something to read on the way into a turn.
 
-It takes the **resident** seat (`conversation.input.chrome`) rather than the session-scoped one. That seat exists for this: a person choosing a machine has not necessarily started a conversation yet, and on a remote machine which folders they can even pick depends on the answer.
+It takes a **resident** seat (`conversation.input.chrome.end`) rather than the session-scoped one. That seat exists for this: a person choosing a machine has not necessarily started a conversation yet, and on a remote machine which folders they can even pick depends on the answer. Its twin at the other end of the row (`conversation.input.chrome`) is the same seat in every respect but which end it renders at.
 
-A remote machine looks different from this computer without opening anything. Work leaving someone's own computer is not a detail to discover in a menu.
+A remote machine looks different from this computer without opening anything: the trigger is a bare laptop icon on this computer and grows the machine's name the moment work is leaving it. Work leaving someone's own computer is not a detail to discover in a menu, and an icon alone cannot say which machine.
+
+The menu is the same card as every other dropdown in that row — the model picker's material and metrics — so it belongs to the same set in either theme. It opens downward from the hero composer and upward once the composer is docked at the floor, keyed on the shell's phase rather than on measured space: the transcript column grows to whatever the composer needs, so a downward menu always "fits" and then covers the control that opened it. Long machine lists scroll inside it while *Add a machine* and the hints below stay in place.
+
+## What it announces
+
+A change of machine is a fact about the whole client, not about this control: it is announced as `machines/changed` (declared by the client runtime, so neither this package nor its listeners depend on the other) and only when the machine actually moved. A refused switch and a re-pick of the machine already in use both leave the execution world where it was.
+
+The [gauges strip](../ui-machine-gauges/README.md) is the listener that matters today. Its reading describes the machine it was taken on, so after a move that reading is not stale — it is about somewhere else.
 
 ## What it reads, and when
 
@@ -20,7 +28,13 @@ A failed read keeps the machines already on screen. Someone who can still see th
 
 ## Adding, removing, and everything else
 
+Both are **dialogs**, not rows that grow inside the menu. Both write to the person's own SSH configuration, which is a different kind of act from picking where the next command runs: a five-field form unfolding inside a list of machines pushes the machines it is about off the bottom, and a confirmation rendered as one more row is dismissed by the same outside click that dismisses the menu. Opening either closes the menu.
+
 **Adding** appends a block to the person's configuration. Only the fields they filled in are written — an option written with its default looks like a decision, and the next reader cannot tell it from one — and nothing already in the file changes.
+
+The dialog is written for someone who has never heard of SSH. It opens with a picture — this computer, a connection, the machine being added — because the fields below assume a person already knows what adding a machine *means*. Three fields are visible (name, address, account, each with a label above and a plain sentence below rather than a placeholder that vanishes on the first keystroke); port, key file, and the configuration preview sit behind one disclosure whose summary names what is inside, so the person who wants them still finds them.
+
+**The preview is the rule made visible.** It renders exactly the lines the write would append, updating as the fields change, and a field left empty produces no line at all. `previewLines` is the exported function that decides it, and it is the same rule the writer follows.
 
 **Removing** takes that machine's whole block, and refuses when it cannot do so cleanly: an alias sharing a `Host` line with other machines, or one declared in an included file, is refused *with which it was*, because either edit changes a line another machine depends on. It asks before it writes, since the file is the person's.
 

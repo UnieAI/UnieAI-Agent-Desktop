@@ -442,6 +442,47 @@ describe('WorkspaceRuntime', () => {
     expect(clear).toHaveBeenCalledOnce()
   })
 
+  it('announces the session New Session settled on, including the one already open', async () => {
+    // New Session reuses a workspace's blank session, so the ordinary case
+    // resolves to the session already current and moves nothing on screen.
+    // Surfaces holding per-session state a person calls part of "the chat" —
+    // an unsent composer draft — have no other way to learn they were asked
+    // for a fresh one.
+    const ctx = new Context()
+    const api = new FakeApiClient()
+    const sessions = new SessionRuntime(ctx, api, fakeRemote())
+    const workspaces = new WorkspaceRuntime(ctx, api, sessions)
+    api.onWorkspaceList = () => Promise.resolve(ok({
+      items: [workspace('home', [sid('blank')])] as never[],
+    }))
+    api.onList = () => Promise.resolve(ok({ items: [
+      { sessionId: sid('blank'), updatedAt: 1, running: false, blank: true },
+    ] as never[] }))
+    await Promise.all([workspaces.refresh(), sessions.refresh()])
+    await Promise.resolve()
+    sessions.open(sid('blank'))
+
+    const announced: (SessionId | undefined)[] = []
+    ctx.on('workspaces/new-session', (sessionId) => { announced.push(sessionId) })
+    vi.spyOn(workspaces, 'connectWorkspace').mockResolvedValue(sid('blank'))
+
+    workspaces.startSession()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(announced).toEqual([sid('blank')])
+
+    // Nothing to connect: the selection clears, and that is still an outcome
+    // the same listeners have to see.
+    const emptyCtx = new Context()
+    const emptyApi = new FakeApiClient()
+    const emptySessions = new SessionRuntime(emptyCtx, emptyApi, fakeRemote())
+    const emptyWorkspaces = new WorkspaceRuntime(emptyCtx, emptyApi, emptySessions)
+    const cleared: (SessionId | undefined)[] = []
+    emptyCtx.on('workspaces/new-session', (sessionId) => { cleared.push(sessionId) })
+    emptyWorkspaces.startSession()
+    expect(cleared).toEqual([undefined])
+  })
+
   it('archives a session, projects the set from the response, list, and frame, and clears only the current one', async () => {
     const ctx = new Context()
     const api = new FakeApiClient()

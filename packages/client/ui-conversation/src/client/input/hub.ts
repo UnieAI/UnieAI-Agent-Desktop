@@ -121,6 +121,20 @@ export class InputHub implements SessionInputResolver {
   }
 
   /**
+   * The facade for one session, only if one was already built.
+   *
+   * A caller reacting to something that happened TO a session must not
+   * materialize its input machine as a side effect of looking: a session
+   * nobody has composed in has no draft to act on, and building one would
+   * bind a mirror to a composer that is not mounted.
+   * @param id - the session to look up.
+   * @returns the resident facade, or undefined when none exists.
+   */
+  existing(id: SessionId): SessionInputShell | undefined {
+    return this.shells.get(id)
+  }
+
+  /**
    * Resident shell by session id (service-face path; the provide channel has
    * normally created it already — this covers direct id-addressed access).
    * @param id - session id.

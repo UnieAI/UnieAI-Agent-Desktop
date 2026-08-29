@@ -74,17 +74,24 @@ export function apply(ctx: ClientContext): void {
     },
   })
 
-  ctx.slots.inject('conversation.input.chrome', () => ctx.slots.register({
-    name: 'conversation.input.chrome',
+  ctx.slots.inject('conversation.input.chrome.end', () => ctx.slots.register({
+    name: 'conversation.input.chrome.end',
     id: 'machine',
-    // Before the wider controls: where work runs is read at a glance, and a
-    // glance goes left first.
+    // First in the icon cluster, so the send button stays the row's last
+    // control and the machine reads as chrome rather than as an action.
     order: 5,
     locale: NS,
     inject: (): MachineControlInjected => ({
       hooks: { machines: view },
       refresh: () => view.refresh(),
-      select: machine => view.select(machine),
+      select: async (machine) => {
+        const before = view.getSnapshot().current
+        await view.select(machine)
+        const after = view.getSnapshot().current
+        // Only a real move is announced: a refused switch and a re-pick of the
+        // machine already in use both leave the world where it was.
+        if (after !== before) ctx.emit('machines/changed', after)
+      },
       add: draft => view.add(draft),
       remove: machine => view.remove(machine),
       probe: machine => view.probe(machine),

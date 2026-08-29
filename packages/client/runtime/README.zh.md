@@ -42,6 +42,8 @@ SlotRegistry 分别为 renderer 提供 `useSessions` 与 `useWorkspaces` 的裸 
 
 `Session.composerPhase` 把任何可见的非命令 Chat Node 视为对话内容，因此客户端插件可以在不打开轮次的情况下投影持久用户输入，而仅包含通用命令行的窗口仍保持 Host blank 状态。列表隐藏和空白会话复用仍遵循 Host blank 位。缺少插件输入 Node 的历史窗口会恢复该空白状态，直到加载更早页面后该 Node 恢复。
 
+`startSession` 会以 `workspaces/new-session(sessionId | undefined)` 宣告它落在哪里——对每一种结果都发，包括最常见的那一种：重用解析到已经是当前的 session，屏幕上什么都不动。一个持有 per-session 状态、而那状态在人眼里属于「这段对话」的介面（未送出的输入框草稿），没有别的办法得知有人要了一段新的；少了它，新聊天读起来就是一个死按钮。`machines/changed(machine)` 是执行世界那一侧同一类的 client 层级事实，宣告在这里，好让「描述机器的介面」与「改变机器的控件」彼此不相依；[`ui-machines`](../ui-machines/README.zh.md) 发出它，而今天的听众是 [`ui-machine-gauges`](../ui-machine-gauges/README.zh.md)。
+
 ## 待处理队列投影
 
 `ConversationSnapshot.queue` 是 Host 提供的 `agent.inbox.nextTurn` 权威瞬态快照；待处理的 next-step steering（中途引导）不进入此投影。每行携带其 `MessageId`、所有内容块均为文本时的完整可编辑文本，以及扁平化预览。Host 根据持久 `agent/inbox/spliced` 变更派生完整 `session/queue` 快照，并在重连时发送基线；面向单条消息的 `agent/inbox/inserted`、`claimed` 与 `discarded` 通知不用于重建该投影。`Session.updateQueue()` 经 Host 侧 `Inbox.splice()` 发送编辑／移除操作，客户端不做乐观变更，因此下一份 Host 快照是唯一可见的提交结果，claim 竞态则可能呈现 `queue-item-not-found`。

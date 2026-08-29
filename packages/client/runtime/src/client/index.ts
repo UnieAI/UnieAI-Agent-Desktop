@@ -174,6 +174,19 @@ declare module '@unieai/cordis' {
      * @mode emit
      */
     'connection/reset'(): void
+    /**
+     * Work moved to another machine, and the host agreed.
+     *
+     * Declared here rather than by the machine picker so that neither the
+     * surface that changes the machine nor the surfaces that describe one have
+     * to depend on the other: what moved is the execution world, which is a
+     * fact about the client, not about any one control. Announced only on a
+     * real move — a refused switch and a re-pick of the machine in use both
+     * leave the world where it was.
+     * @mode emit
+     * @param machine - the machine now selected, `local` for this computer.
+     */
+    'machines/changed'(machine: string): void
   }
   interface Context {
     slots: import('./slots.ts').SlotRegistry

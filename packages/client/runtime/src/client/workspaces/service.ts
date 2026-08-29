@@ -31,6 +31,26 @@ export interface WorkspaceListState {
   recentWorkspaceId: WorkspaceId | undefined
 }
 
+declare module '@unieai/cordis' {
+  interface Events {
+    /**
+     * New Session ran and settled on a session to show.
+     *
+     * Emitted for EVERY outcome, including the one where nothing moved: New
+     * Session reuses a workspace's existing blank session rather than minting
+     * hidden duplicates, so the common case resolves to the session already
+     * open and selecting it changes nothing on screen. A surface holding
+     * per-session state that a person would call part of "the chat" — an
+     * unsent composer draft above all — has no other way to learn that they
+     * asked for a fresh one, and without this the button reads as dead.
+     * @param sessionId - the session New Session settled on; absent when there
+     *   was no Workspace to connect and the selection was cleared instead.
+     * @mode emit
+     */
+    'workspaces/new-session'(sessionId: SessionId | undefined): void
+  }
+}
+
 /** Structured create failure for UI flows that distinguish Host business errors. */
 export class WorkspaceCreateError extends Error {
   constructor(readonly rpcError: RpcError) {
@@ -59,11 +79,11 @@ export class WorkspaceRuntime implements IWorkspaces {
   private initialSelectionStarted = false
 
   /**
-   * @param ctx - client root context.
+   * @param ctx - client root context; also the bus New Session announces on.
    * @param api - shared wire client.
    * @param sessions - cross-domain sessions face used for recency and blank-session reuse.
    */
-  constructor(ctx: Context, private readonly api: IApiClient, private readonly sessions: SessionsPort) {
+  constructor(private readonly ctx: Context, private readonly api: IApiClient, private readonly sessions: SessionsPort) {
     this.manager = new WorkspaceManager(api)
     this.list = createSnapshotStore<WorkspaceListState>({
       items: [], archivedSessionIds: [], state: 'idle', phase: 'pending', error: null,
@@ -183,10 +203,14 @@ export class WorkspaceRuntime implements IWorkspaces {
     const target = workspaceId ?? currentWorkspaceId ?? workspace.recentWorkspaceId
     if (target === undefined) {
       this.sessions.clear()
+      this.ctx.emit('workspaces/new-session', undefined)
       return
     }
     void this.connectWorkspace(target).then(
-      (sessionId) => { this.sessions.open(sessionId) },
+      (sessionId) => {
+        this.sessions.open(sessionId)
+        this.ctx.emit('workspaces/new-session', sessionId)
+      },
       (reason: unknown) => { console.warn('new session failed:', reason) },
     )
   }
