@@ -1,6 +1,6 @@
 {
   "name": "@unieai/univer-office",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "DSH \u00d7 Univer integration with a bundled collaboration Gateway and Viewer: inline previews, live floating Worktree windows, and session-end review actions in DeepSeek Harness.",
   "license": "Apache-2.0",
   "type": "module",
