@@ -677,13 +677,13 @@ describe('DetailsPanel Output section', () => {
     // The panel used to spend this state telling someone to go and click
     // something. It offers the menu instead — the same one `+` shows.
     const view = mount(snapshot(), null)
-    expect(view.getByText('审阅')).toBeTruthy()
+    expect(view.getByText('它改了什么')).toBeTruthy()
     expect(view.getByText('文件')).toBeTruthy()
   })
 
   it('a step selection without a callId offers the same menu', () => {
     const view = mount(snapshot(), { turnSeq: 3, stepSeq: 1 })
-    expect(view.getByText('审阅')).toBeTruthy()
+    expect(view.getByText('它改了什么')).toBeTruthy()
   })
 
   it('the close button reaches closeDetails', () => {

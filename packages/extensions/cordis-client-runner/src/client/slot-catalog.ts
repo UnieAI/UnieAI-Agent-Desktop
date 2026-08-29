@@ -1896,6 +1896,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     slotInject: '',
     declaredBy: 'an entry in \'root\' (client-ui-layout), so it exists while that entry is mounted',
     occupants: [
+      'client-ui-first-run FirstRunTour id \'first-run\'',
       'client-ui-pet PetDock id \'pet-dock\'',
       'client-ui-plugins-page PluginsPage id \'plugins-page\'',
       'client-ui-unieai-account SignInGate id \'sign-in-gate\'',

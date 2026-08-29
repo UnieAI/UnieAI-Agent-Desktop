@@ -287,6 +287,12 @@
 
     # Which machine the work runs on, in the composer's tool row. Its node
     # half registers nothing: the machine list is the host's own service.
+    # Four steps the first time somebody opens this, and never again. Its node
+    # half registers nothing: the tour is drawn in the browser and the one
+    # thing it remembers is a durable setting.
+    - id: ui-first-run
+      name: '@unieai/uad-client-ui-first-run'
+
     - id: ui-machines
       name: '@unieai/uad-client-ui-machines'
 

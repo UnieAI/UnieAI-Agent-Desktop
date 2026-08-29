@@ -155,11 +155,11 @@ describe('WorkspaceBrowser', () => {
     expect(screen.getByText('分组方式')).toBeTruthy() // the menu heading label
     expect(screen.getByRole('separator')).toBeTruthy()
     expect(screen.getAllByRole('menuitem').map(item => item.textContent)).toEqual([
-      '按工作区', '单列表', '手动排序', '最近更新',
+      '按文件夹', '全部排在一起', '手动排序', '最近更新',
     ])
-    expect(screen.getByRole('menuitem', { name: '按工作区' }).querySelector('svg')).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: '按文件夹' }).querySelector('svg')).toBeTruthy()
     expect(screen.getByRole('menuitem', { name: '手动排序' }).querySelector('svg')).toBeTruthy()
-    fireEvent.click(screen.getByRole('menuitem', { name: '单列表' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '全部排在一起' }))
     // Store-driven flip: title changes, rows flatten newest-first, headers gone.
     expect(b.store.getSnapshot().groupBy).toBe('flat')
     expect(screen.getByText('会话')).toBeTruthy()
@@ -170,7 +170,7 @@ describe('WorkspaceBrowser', () => {
     // Back to workspace grouping through the same menu.
     fireEvent.click(screen.getByRole('button', { name: '视图选项' }))
     expect(screen.getByRole('menuitem', { name: '手动排序' }).hasAttribute('disabled')).toBe(false)
-    fireEvent.click(screen.getByRole('menuitem', { name: '按工作区' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '按文件夹' }))
     expect(b.store.getSnapshot().groupBy).toBe('workspace')
     expect(screen.getByText('工作区')).toBeTruthy()
 
@@ -194,7 +194,7 @@ describe('WorkspaceBrowser', () => {
       insertSessionBefore,
     })
     fireEvent.click(screen.getByRole('button', { name: '视图选项' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: '单列表' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '全部排在一起' }))
     await waitFor(() => {
       expect(b.store.getSnapshot().sessionOrderByAccount[FLAT_SESSION_ORDER_KEY])
         .toEqual(['one', 'two', 'three'])
@@ -353,7 +353,7 @@ describe('WorkspaceBrowser', () => {
     rerender(b, { useWorkspaces: hook(workspaceState([workspace('alpha', ['kept-s', 'gone-s'])], [sid('gone-s')])) })
     expect(screen.queryByText('gone-s')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: '视图选项' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: '单列表' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '全部排在一起' }))
     expect(screen.getByText('kept-s')).toBeTruthy()
     expect(screen.queryByText('gone-s')).toBeNull()
   })
@@ -456,7 +456,7 @@ describe('WorkspaceBrowser', () => {
     expect(screen.queryByText('b')).toBeNull()
   })
 
-  it('shows only the current blank session as the localized New Session, excluded from search', () => {
+  it('shows only the current blank session as the localized New chat, excluded from search', () => {
     const currentBlank = summary('alpha-blank', 9, { blank: true })
     const staleBlank = summary('beta-blank', 8, { blank: true })
     const sessions = sessionState(
@@ -469,24 +469,24 @@ describe('WorkspaceBrowser', () => {
         workspace('alpha', ['alpha-blank']), workspace('beta', ['beta-blank']),
       ])),
     })
-    expect(screen.getByText('新会话')).toBeTruthy()
+    expect(screen.getByText('新对话')).toBeTruthy()
     expect(screen.queryByText('alpha-blank')).toBeNull()
     expect(screen.queryByText('beta-blank')).toBeNull()
 
     rerender(b, { useSessions: hook({ ...sessions, current: staleBlank.id }) })
-    expect(screen.getAllByText('新会话')).toHaveLength(1)
+    expect(screen.getAllByText('新对话')).toHaveLength(1)
     b.store.actions.setGroupBy('flat')
     rerender(b, {})
-    expect(screen.getAllByText('新会话')).toHaveLength(1)
+    expect(screen.getAllByText('新对话')).toHaveLength(1)
     // Search excludes blank rows entirely — neither the canonical stored
     // title nor the localized display label participates in matching.
     fireEvent.change(screen.getByPlaceholderText('搜索会话…'), { target: { value: 'new session' } })
-    expect(screen.queryByText('新会话')).toBeNull()
-    fireEvent.change(screen.getByPlaceholderText('搜索会话…'), { target: { value: '新会话' } })
-    expect(screen.queryByText('新会话')).toBeNull()
+    expect(screen.queryByText('新对话')).toBeNull()
+    fireEvent.change(screen.getByPlaceholderText('搜索会话…'), { target: { value: '新对话' } })
+    expect(screen.queryByText('新对话')).toBeNull()
   })
 
-  it('promotes the blank selected by New Session in its grouped and flat orders', async () => {
+  it('promotes the blank selected by New chat in its grouped and flat orders', async () => {
     const items = [
       summary('old', 100),
       summary('blank', 150, { blank: true }),
@@ -530,7 +530,7 @@ describe('WorkspaceBrowser', () => {
     await waitFor(() => {
       expect(b.store.getSnapshot().sessionOrderByAccount.alpha).toEqual(['blank', 'old', 'mid'])
     })
-    const blank = screen.getByText('新会话').closest('[role="treeitem"]') as HTMLElement
+    const blank = screen.getByText('新对话').closest('[role="treeitem"]') as HTMLElement
     const mid = screen.getByText('mid').closest('[role="treeitem"]') as HTMLElement
     mid.getBoundingClientRect = () => ({
       top: 150, bottom: 184, left: 0, right: 200, width: 200, height: 34, x: 0, y: 150, toJSON: () => ({}),

@@ -1590,6 +1590,9 @@ importers:
       '@unieai/uad-client-ui-directory-picker-native':
         specifier: workspace:^
         version: link:../../client/ui-directory-picker-native
+      '@unieai/uad-client-ui-first-run':
+        specifier: workspace:^
+        version: link:../../client/ui-first-run
       '@unieai/uad-client-ui-goal':
         specifier: workspace:^
         version: link:../../client/ui-goal
@@ -2481,6 +2484,49 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
+
+  packages/client/ui-first-run:
+    dependencies:
+      '@unieai/schemastery':
+        specifier: link:../../../vendor/schemastery
+        version: link:../../../vendor/schemastery
+    devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@unieai/uad-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@unieai/uad-client-test-runtime':
+        specifier: workspace:^
+        version: link:../../test-support/client-runtime
+      '@unieai/uad-client-ui-layout':
+        specifier: workspace:^
+        version: link:../ui-layout
+      '@unieai/uad-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@unieai/uad-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
+      '@unieai/uad-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
+      '@unieai/uad-settings':
+        specifier: workspace:^
+        version: link:../../settings/settings
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
 
   packages/client/ui-goal:
     devDependencies:

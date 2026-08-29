@@ -47,6 +47,11 @@ asarUnpack:
   - node_modules/**
 
 mac:
+  # macOS does not round an app icon for you: the rounded square IS the
+  # artwork, at 824x824 inside a 1024 canvas. `gen-desktop-icons` bakes that
+  # grid in; the other platforms draw what they are given and get the
+  # full-bleed file instead.
+  icon: build/icon-mac.png
   target:
     - dmg
     - zip
@@ -58,6 +63,7 @@ mac:
   identity: null
 
 win:
+  icon: build/icon.png
   # No `arch` list, for the reason mac has none: the arch comes from the CLI
   # flag each `package:win:*`/`publish:win:*` script passes, and the release
   # workflow gives each
@@ -75,6 +81,7 @@ win:
 # name — which for a scoped package comes out as `@unieaiuad-desktop`. Saying it
 # here is what makes the binary `rabi` on all three.
 linux:
+  icon: build/icon.png
   executableName: rabi
   category: Development
 

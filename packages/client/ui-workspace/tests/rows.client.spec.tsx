@@ -369,7 +369,7 @@ describe('workspace browser rows', () => {
     expect(screen.queryByRole('button', { name: /工作区/ })).toBeNull()
   })
 
-  it('blank New Session rows carry no menu, no time label, and no hover-card time', () => {
+  it('blank New chat rows carry no menu, no time label, and no hover-card time', () => {
     vi.useFakeTimers()
     try {
       const node: SessionNode = {
@@ -385,7 +385,7 @@ describe('workspace browser rows', () => {
       const wrapper = screen.getByRole('treeitem').parentElement as HTMLElement
       fireEvent.pointerEnter(wrapper)
       act(() => { vi.advanceTimersByTime(500) })
-      expect(screen.getAllByText('新会话').length).toBeGreaterThanOrEqual(2)
+      expect(screen.getAllByText('新对话').length).toBeGreaterThanOrEqual(2)
       expect(screen.getByText('空闲')).toBeTruthy()
       expect(screen.queryByText('刚刚')).toBeNull()
       expect(screen.getByText('空闲').closest('[role="button"]')).toBeNull()

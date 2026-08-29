@@ -42,6 +42,7 @@ const NO_MODEL_EXPERIENCE_SECTION: Readonly<Record<string, string>> = {
  * blocks. A package moves on or off this list with its context behavior.
  */
 const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
+  'packages/client/ui-first-run': { kind: 'none', reason: 'A browser surface shown once; its node half owns only the durable section holding whether it has been shown.' },
   'packages/connector/connector': { kind: 'none', reason: 'The seam holds access to external services; whatever spends that access registers its own tools, and nothing here reaches a model request.' },
   'packages/test-support/ssh-server': { kind: 'none', reason: 'A test fixture that starts a real sshd; it is not composed into any product runtime.' },
   'packages/attachment/attachment': { kind: 'indirect', reason: 'The storage seam delegates model request rendering to provider adapters.' },

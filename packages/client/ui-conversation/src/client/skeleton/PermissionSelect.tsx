@@ -56,8 +56,23 @@ function displayName(name: string): string {
   return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
+/**
+ * What the shipped modes are called where a person reads them.
+ *
+ * The machine names say what the permission IS (`workspace-write`); these say
+ * what it lets the agent DO, which is the question someone deciding between
+ * them is actually asking. A name this product does not ship — a
+ * host-configured mode — is not in here and keeps the title-case transform,
+ * because inventing a sentence for it would be a guess.
+ */
+const SHIPPED_MODE_LABELS: Readonly<Record<string, string>> = {
+  'read-only': 'Look, don\'t touch',
+  'workspace-write': 'Change files in this folder',
+}
+
 function optionLabel(option: PermissionSelectValue['options'][number]): string {
-  return option.value === FULL_ACCESS ? 'Full access' : displayName(option.name)
+  if (option.value === FULL_ACCESS) return 'Full access'
+  return SHIPPED_MODE_LABELS[option.name] ?? displayName(option.name)
 }
 
 export interface PermissionSelectProps {

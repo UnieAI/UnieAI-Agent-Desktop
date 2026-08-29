@@ -1,0 +1,48 @@
+/* Wider than the Modal default: a 268px scene plus the card's own 22px sides
+   is what decides this number, not a preference. */
+.dialog { width: min(420px, 100%); }
+
+.stage {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
+}
+
+.heading {
+  margin: 18px 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding: 18px 0 0;
+}
+
+.dot, .dotOn {
+  height: 5px;
+  border-radius: 999px;
+  transition: width 160ms var(--ds-ease-in-out, ease), background-color 160ms;
+}
+
+.dot { width: 5px; background: var(--dsw-alias-border-l3); }
+.dotOn { width: 14px; background: var(--dsw-alias-label-primary); }
+
+/* The step count sits with the controls rather than above them: it is the
+   answer to "how much more of this", which is asked at the buttons. */
+.count {
+  margin-right: auto;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+}

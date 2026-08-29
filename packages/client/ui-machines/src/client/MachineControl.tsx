@@ -25,7 +25,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Button, IconChevronDownOutline14, IconTrashOutline16, Input, Modal } from '@unieai/uad-client-ui-primitives'
+import {
+  Button, IconChevronDownOutline14, IconKeyOutline16, IconLaptopOutline16, IconServerOutline16,
+  IconTrashOutline16, Input, Modal,
+} from '@unieai/uad-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 // Type-only: the composer seat is declared by the conversation package.
 import type {} from '@unieai/uad-client-ui-conversation/client'
@@ -59,27 +62,6 @@ export type MachineControlProps =
   PropsRuntime<'conversation.input.chrome.end'> & PropsLocale<'conversation.machine'>
   & InjectFace<MachineControlInjected>
 
-/** A laptop, at the row's icon size. Local work: this computer. */
-function GlyphHere({ size = 16 }: { size?: number }): ReactNode {
-  return (
-    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2.5" y="3" width="11" height="7.5" rx="1.2" />
-      <path d="M1.2 13h13.6" />
-    </svg>
-  )
-}
-
-/** Two stacked bays: a machine that is not this one. */
-function GlyphThere({ size = 16 }: { size?: number }): ReactNode {
-  return (
-    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="2.5" width="12" height="4.5" rx="1.2" />
-      <rect x="2" y="9" width="12" height="4.5" rx="1.2" />
-      <path d="M4.4 4.75h.01M4.4 11.25h.01" />
-    </svg>
-  )
-}
-
 /** A network address. */
 function GlyphAddress({ size = 15 }: { size?: number }): ReactNode {
   return (
@@ -97,16 +79,6 @@ function GlyphAccount({ size = 15 }: { size?: number }): ReactNode {
     <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" aria-hidden="true">
       <circle cx="8" cy="5.4" r="2.9" />
       <path d="M2.6 13.6c.9-2.6 2.9-3.9 5.4-3.9s4.5 1.3 5.4 3.9" />
-    </svg>
-  )
-}
-
-/** A key file. */
-function GlyphKey({ size = 15 }: { size?: number }): ReactNode {
-  return (
-    <svg viewBox="0 0 16 16" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="10.3" cy="5.7" r="3.3" />
-      <path d="M8 8l-6 6v1.4h2.4v-1.6h1.6v-1.6h1.6" />
     </svg>
   )
 }
@@ -136,12 +108,12 @@ function AddIllustration({ t }: { t: MachineControlProps['t'] }): ReactNode {
   return (
     <div className={css['pic']}>
       <div className={css['picNode']}>
-        <div className={css['picBox']}><GlyphHere size={22} /></div>
+        <div className={css['picBox']}><IconLaptopOutline16 size={22} /></div>
         <span>{t('addHere')}</span>
       </div>
       <div className={css['picWire']} aria-hidden="true"><i className={css['picPulse']} /></div>
       <div className={css['picNode']}>
-        <div className={css['picBox']}><GlyphThere size={22} /></div>
+        <div className={css['picBox']}><IconServerOutline16 size={22} /></div>
         <span>{t('addThere')}</span>
       </div>
     </div>
@@ -261,7 +233,7 @@ export function MachineControl(props: MachineControlProps): ReactNode {
         aria-label={`${t('label')}: ${name}`}
         onClick={toggle}
       >
-        {remote ? <GlyphThere /> : <GlyphHere />}
+        {remote ? <IconServerOutline16 /> : <IconLaptopOutline16 />}
         {(remote || state.busy) && <span className={css['name']}>{state.busy ? t('busy') : name}</span>}
       </button>
       {open && (
@@ -280,7 +252,7 @@ export function MachineControl(props: MachineControlProps): ReactNode {
                   }}
                 >
                   <span className={css['itemGlyph']}>
-                    {machine.kind === 'local' ? <GlyphHere size={14} /> : <GlyphThere size={14} />}
+                    {machine.kind === 'local' ? <IconLaptopOutline16 size={14} /> : <IconServerOutline16 size={14} />}
                   </span>
                   <span className={css['itemName']}>{machine.id === 'local' ? t('local') : machine.label}</span>
                   {state.reachable[machine.id] !== undefined && (
@@ -317,7 +289,7 @@ export function MachineControl(props: MachineControlProps): ReactNode {
           )}
           {state.error !== '' && <div className={css['error']}>{state.error}</div>}
           <button type="button" role="menuitem" className={css['item']} onClick={openAdd}>
-            <span className={css['itemGlyph']}><GlyphThere size={14} /></span>
+            <span className={css['itemGlyph']}><IconServerOutline16 size={14} /></span>
             <span className={css['itemName']}>{t('add')}</span>
           </button>
           {openConfig !== undefined && (
@@ -359,7 +331,7 @@ export function MachineControl(props: MachineControlProps): ReactNode {
         <AddIllustration t={t} />
         <p className={css['dialogIntro']}>{t('addIntro')}</p>
         <div className={css['fields']}>
-          {field('addAlias', 'addAliasHint', <GlyphThere size={15} />, draft.alias,
+          {field('addAlias', 'addAliasHint', <IconServerOutline16 size={15} />, draft.alias,
             (next) => { setDraft({ ...draft, alias: next }) }, { autoFocus: true })}
           {field('addHostName', 'addHostNameHint', <GlyphAddress />, draft.hostName ?? '',
             (next) => { setDraft({ ...draft, hostName: next }) })}
@@ -382,7 +354,7 @@ export function MachineControl(props: MachineControlProps): ReactNode {
                   const { port: _dropped, ...rest } = draft
                   setDraft(Number.isFinite(port) ? { ...rest, port } : rest)
                 }, { optional: true, numeric: true })}
-              {field('addKey', 'addKeyHint', <GlyphKey />, draft.identityFile ?? '',
+              {field('addKey', 'addKeyHint', <IconKeyOutline16 size={15} />, draft.identityFile ?? '',
                 (next) => { setDraft({ ...draft, identityFile: next }) }, { optional: true })}
               <div className={css['preview']}>
                 <div className={css['previewHead']}>{t('addPreview')}</div>

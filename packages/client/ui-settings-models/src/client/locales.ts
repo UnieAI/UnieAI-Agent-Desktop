@@ -6,7 +6,7 @@ import { WELCOME_NOTICE_COPY } from '../onboarding-copy.ts'
 export const en = {
   nav: 'Models',
   title: 'Models',
-  intro: 'Enter your API keys to use models from the following providers.',
+  intro: 'Connect an AI service. Each one needs a key from its provider.',
   edit: 'Edit',
   editProvider: 'Edit {provider}',
   remove: 'Delete',
@@ -112,7 +112,7 @@ export type ModelsKey = keyof typeof en
 export const zh: { [Key in keyof typeof en]: string } = {
   nav: '模型',
   title: '模型',
-  intro: '填入各提供方的 API 密钥即可使用其模型。',
+  intro: '连接一个 AI 服务。每一个都需要来自它的供应商的密钥。',
   edit: '编辑',
   editProvider: '编辑 {provider}',
   remove: '删除',
@@ -215,7 +215,7 @@ export const zh: { [Key in keyof typeof en]: string } = {
 export const zhTW: { [Key in keyof typeof en]: string } = {
   nav: '模型',
   title: '模型',
-  intro: '填入各提供方的 API 金鑰即可使用其模型。',
+  intro: '連接一個 AI 服務。每一個都需要來自它的供應商的金鑰。',
   edit: '編輯',
   editProvider: '編輯 {provider}',
   remove: '刪除',
@@ -318,7 +318,7 @@ export const zhTW: { [Key in keyof typeof en]: string } = {
 export const ja: { [Key in keyof typeof en]: string } = {
   nav: 'モデル',
   title: 'モデル',
-  intro: '各プロバイダーの API キーを入力すると、そのモデルを使えます。',
+  intro: 'AI サービスに接続します。それぞれに提供元の鍵が必要です。',
   edit: '編集',
   editProvider: '{provider} を編集',
   remove: '削除',

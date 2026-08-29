@@ -1,0 +1,78 @@
+{
+  "name": "@unieai/uad-client-ui-first-run",
+  "version": "0.1.16",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "dsh": {
+    "client": {
+      "inject": [
+        "@unieai/uad-client-runtime",
+        "@unieai/uad-client-locale",
+        "@unieai/uad-client-ui-layout",
+        "@unieai/uad-client-ui-settings"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "packages/client/ui-first-run"
+  },
+  "types": "lib/types/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
+    "@unieai/schemastery": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
+    "@unieai/uad-client-ui-settings": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-settings": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "~18.3.1",
+    "@unieai/cordis": "workspace:^",
+    "@unieai/schemastery": "workspace:^",
+    "@unieai/uad-client-locale": "workspace:^",
+    "@unieai/uad-client-runtime": "workspace:^",
+    "@unieai/uad-client-test-runtime": "workspace:^",
+    "@unieai/uad-client-ui-layout": "workspace:^",
+    "@unieai/uad-client-ui-primitives": "workspace:^",
+    "@unieai/uad-client-ui-settings": "workspace:^",
+    "@unieai/uad-client-ui-slots": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-settings": "workspace:^",
+    "react": "^18.3.1"
+  }
+}

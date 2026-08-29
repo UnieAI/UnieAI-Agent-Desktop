@@ -926,3 +926,44 @@ export const IconArchiveOutline20 = ({ size = 20, className }: IconProps) => (
     <path d="M12.7962 12.5661V11.0832H7.20548V12.5661L12.7962 12.5661Z" fill="currentColor" />
   </svg>
 )
+
+/** A laptop: this computer, where work runs unless someone chose otherwise.
+ *  Authored here rather than extracted, because the design set has no machine
+ *  glyphs; drawn as filled contours at the set's own weight so it sits beside
+ *  the extracts without reading as a different family. */
+export const IconLaptopOutline16 = ({ size = 16, className }: IconProps) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M3.4 2.75h9.2c.76 0 1.38.62 1.38 1.38v6.12h-1.3V4.4a.35.35 0 0 0-.35-.35H3.67a.35.35 0 0 0-.35.35v5.85h-1.3V4.13c0-.76.62-1.38 1.38-1.38Z"
+      fill="currentColor"
+    />
+    <path d="M1 11.15h14v.72c0 .76-.62 1.38-1.38 1.38H2.38A1.38 1.38 0 0 1 1 11.87v-.72Z" fill="currentColor" />
+  </svg>
+)
+
+/** Two stacked bays: a machine that is not this one. */
+export const IconServerOutline16 = ({ size = 16, className }: IconProps) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M2.6 2.1h10.8c.83 0 1.5.67 1.5 1.5v2.7c0 .83-.67 1.5-1.5 1.5H2.6a1.5 1.5 0 0 1-1.5-1.5V3.6c0-.83.67-1.5 1.5-1.5Zm-.2 1.5v2.7c0 .11.09.2.2.2h10.8a.2.2 0 0 0 .2-.2V3.6a.2.2 0 0 0-.2-.2H2.6a.2.2 0 0 0-.2.2Zm.2 4.6h10.8c.83 0 1.5.67 1.5 1.5v2.7c0 .83-.67 1.5-1.5 1.5H2.6a1.5 1.5 0 0 1-1.5-1.5V9.7c0-.83.67-1.5 1.5-1.5Zm-.2 1.5v2.7c0 .11.09.2.2.2h10.8a.2.2 0 0 0 .2-.2V9.7a.2.2 0 0 0-.2-.2H2.6a.2.2 0 0 0-.2.2Z"
+      fill="currentColor"
+    />
+    <path d="M4.55 4.35a.6.6 0 1 1 0 1.2.6.6 0 0 1 0-1.2Zm0 6.1a.6.6 0 1 1 0 1.2.6.6 0 0 1 0-1.2Z" fill="currentColor" />
+  </svg>
+)
+
+/** A key: the file a machine wants when the agent alone will not do. */
+export const IconKeyOutline16 = ({ size = 16, className }: IconProps) => (
+  <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M10.15 1.2a4.65 4.65 0 0 1 2.5 8.57 4.65 4.65 0 0 1-4.6.28l-.72.72H6.2v1.13H5.07v1.13H3.94v1.12a.6.6 0 0 1-.6.6H1.6a.6.6 0 0 1-.6-.6v-1.9c0-.16.06-.31.18-.43l4.83-4.83a4.65 4.65 0 0 1 4.14-5.79Zm0 1.3a3.35 3.35 0 0 0-2.98 4.87.65.65 0 0 1-.12.75L2.3 12.87v1.05h1.04v-1.12c0-.36.29-.65.65-.65h1.13v-1.13c0-.36.29-.65.65-.65h1.13V9.24c0-.17.07-.34.19-.46l.5-.5a.65.65 0 0 1 .75-.12 3.35 3.35 0 1 0 1.81-6.16Zm1.09 2.05a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3Z"
+      fill="currentColor"
+    />
+  </svg>
+)

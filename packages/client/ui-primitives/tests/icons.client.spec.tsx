@@ -16,7 +16,7 @@ const icons = Object.fromEntries(
 const iconNames = Object.keys(icons)
 
 describe('ic_ds_ icon set', () => {
-  it('exports the full icon set (46 deepsuite + 20 figma extracts + seven product glyphs outside those sets)', () => {
+  it('exports the full icon set (46 deepsuite + 20 figma extracts + ten product glyphs outside those sets)', () => {
     // The seven: the sparkle approximation, the three the harness draws itself,
     // the sidebar nav row's compose and blocks marks — hand-authored on this
     // set's 16 grid to carry the same metaphors as the UnieAI web product's own
@@ -24,7 +24,14 @@ describe('ic_ds_ icon set', () => {
     // plugin directory's row control has to say "remove" as plainly as it says
     // "add", and it is drawn as the plus's own horizontal bar so the two read
     // as one pair rather than as two glyphs that happen to sit in one column.
-    expect(iconNames.length).toBe(73)
+    //
+    // Three more are the machine glyphs — a laptop, a two-bay server, a key.
+    // The design set has none: it was drawn for a product with no notion of
+    // running work somewhere else, and a machine picker needs to say which
+    // kind of machine a row is at a glance. Authored on this set's own 16 grid
+    // as filled contours, so they sit beside the extracts rather than reading
+    // as a second family.
+    expect(iconNames.length).toBe(76)
   })
 
   it.each(iconNames)('%s renders an svg with currentColor fills and no hardcoded palette', (name) => {

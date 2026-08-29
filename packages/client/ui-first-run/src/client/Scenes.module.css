@@ -1,0 +1,385 @@
+/* Every scene runs on one six-second cycle so the cursor and what it presses
+   cannot drift apart. Percentages are the timeline: move, press, respond. */
+
+.scene {
+  position: relative;
+  width: 268px;
+  height: 160px;
+  overflow: hidden;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 12px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-size: 10px;
+}
+
+.cursor {
+  position: absolute;
+  z-index: 30;
+  width: 13px;
+  height: 13px;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 35%));
+}
+
+.cursor path {
+  fill: var(--dsw-alias-label-primary);
+  stroke: var(--dsw-alias-bg-layer-1);
+  stroke-width: 1.1px;
+}
+
+/* ---- step one: pick a folder ---- */
+.hero {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.heroText { color: var(--dsw-alias-label-secondary); font-size: 11px; }
+
+.heroButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-label-primary-inverted);
+  font-size: 10px;
+  font-weight: 500;
+  animation: press 6s infinite;
+}
+
+@keyframes press {
+  0%, 20% { transform: scale(1); }
+  24% { transform: scale(0.93); }
+  28%, 100% { transform: scale(1); }
+}
+
+.sheet {
+  position: absolute;
+  z-index: 10;
+  inset: 14px 16px;
+  padding: 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: var(--dsw-shadow-lv3);
+  opacity: 0;
+  animation: sheet 6s infinite;
+}
+
+@keyframes sheet {
+  0%, 26% { opacity: 0; transform: translateY(10px); }
+  32%, 76% { opacity: 1; transform: translateY(0); }
+  84%, 100% { opacity: 0; transform: translateY(10px); }
+}
+
+.sheetHead { padding: 1px 4px 6px; color: var(--dsw-alias-label-tertiary); font-size: 9px; }
+
+.sheetRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.sheetRow i { display: block; width: 62px; height: 5px; border-radius: 999px; background: var(--dsw-alias-border-l3); }
+
+.sheetPick { animation: highlight 6s infinite; }
+
+@keyframes highlight {
+  0%, 54% { background: transparent; }
+  60%, 74% { background: var(--dsw-alias-interactive-bg-hover); }
+  80%, 100% { background: transparent; }
+}
+
+.cursorFolder { animation: cursor-folder 6s infinite; }
+
+@keyframes cursor-folder {
+  0% { transform: translate(190px, 128px); }
+  20% { transform: translate(128px, 82px); }
+  26% { transform: translate(128px, 82px) scale(0.8); }
+  32% { transform: translate(128px, 82px); }
+  54% { transform: translate(96px, 74px); }
+  60% { transform: translate(96px, 74px) scale(0.8); }
+  66%, 100% { transform: translate(96px, 74px); }
+}
+
+/* ---- step two: ask something ---- */
+.chat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 10px;
+}
+
+.reply {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 74%;
+  padding: 8px 9px;
+  border-radius: 12px 12px 12px 3px;
+  background: var(--dsw-alias-markdown-code-block);
+  opacity: 0;
+  animation: reply 7s infinite;
+}
+
+.reply i { height: 5px; border-radius: 999px; background: var(--dsw-alias-border-l3); }
+.reply i:nth-child(1) { width: 88%; }
+.reply i:nth-child(2) { width: 66%; }
+.reply i:nth-child(3) { width: 40%; }
+
+@keyframes reply { 0%, 60% { opacity: 0; } 68%, 92% { opacity: 1; } 100% { opacity: 0; } }
+
+.mine {
+  align-self: flex-end;
+  max-width: 78%;
+  padding: 6px 9px;
+  border-radius: 12px 12px 3px 12px;
+  background: var(--dsw-alias-interactive-bg-hover);
+  opacity: 0;
+  animation: mine 7s infinite;
+}
+
+@keyframes mine {
+  0%, 44% { opacity: 0; transform: translateY(6px); }
+  50%, 92% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(6px); }
+}
+
+.composer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 6px 6px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 14px;
+  background: var(--dsw-specific-input-major, var(--dsw-alias-bg-layer-1));
+}
+
+/* The caret is the right edge of a box that grows, so the text appears to be
+   typed without a per-character timer. */
+.typed {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1.5px solid var(--dsw-alias-label-primary);
+  white-space: nowrap;
+  animation: type 7s steps(24, end) infinite, caret 0.7s steps(2, end) infinite;
+}
+
+@keyframes type { 0% { width: 0; } 34%, 44% { width: 12.5em; } 46%, 100% { width: 0; } }
+@keyframes caret { 0%, 100% { border-color: var(--dsw-alias-label-primary); } 50% { border-color: transparent; } }
+
+.send {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-label-primary-inverted);
+  animation: send 7s infinite;
+}
+
+@keyframes send { 0%, 38% { transform: scale(1); } 42% { transform: scale(0.86); } 46%, 100% { transform: scale(1); } }
+
+.cursorAsk { animation: cursor-ask 7s infinite; }
+
+@keyframes cursor-ask {
+  0%, 30% { transform: translate(120px, 150px); }
+  38% { transform: translate(238px, 133px); }
+  42% { transform: translate(238px, 133px) scale(0.8); }
+  48%, 100% { transform: translate(238px, 133px); }
+}
+
+/* ---- step three: see it before it changes anything ---- */
+.fileHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-secondary);
+}
+
+.diff {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  font-family: var(--ds-font-family-code);
+  font-size: 9px;
+}
+
+.removed, .added { padding: 2px 6px; border-radius: 4px; }
+.removed { background: var(--dsw-alias-interactive-bg-hover-danger); color: var(--dsw-alias-state-error-primary); }
+
+.added {
+  background: var(--dsw-alias-state-success-tertiary);
+  color: var(--dsw-alias-state-success-primary);
+  opacity: 0;
+  animation: added 6.5s infinite;
+}
+
+@keyframes added {
+  0%, 14% { opacity: 0; transform: translateY(-3px); }
+  22%, 100% { opacity: 1; transform: none; }
+}
+
+.actions { position: absolute; right: 10px; bottom: 10px; left: 10px; display: flex; gap: 6px; justify-content: flex-end; }
+
+.ghost, .primary { padding: 4px 11px; border-radius: 999px; font-size: 9.5px; }
+.ghost { border: 1px solid var(--dsw-alias-border-l3); color: var(--dsw-alias-label-secondary); }
+
+.primary {
+  background: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-label-primary-inverted);
+  animation: press-yes 6.5s infinite;
+}
+
+@keyframes press-yes { 0%, 52% { transform: scale(1); } 57% { transform: scale(0.9); } 62%, 100% { transform: scale(1); } }
+
+.settled {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-state-success-primary);
+  font-size: 10.5px;
+  opacity: 0;
+  animation: settled 6.5s infinite;
+}
+
+@keyframes settled { 0%, 64% { opacity: 0; } 72%, 90% { opacity: 1; } 100% { opacity: 0; } }
+
+.cursorReview { animation: cursor-review 6.5s infinite; }
+
+@keyframes cursor-review {
+  0%, 34% { transform: translate(60px, 40px); }
+  52% { transform: translate(224px, 136px); }
+  57% { transform: translate(224px, 136px) scale(0.8); }
+  64%, 100% { transform: translate(224px, 136px); }
+}
+
+/* ---- step four: run it somewhere else ---- */
+.menu {
+  position: absolute;
+  right: 10px;
+  bottom: 46px;
+  z-index: 15;
+  width: 152px;
+  padding: 4px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1);
+  box-shadow: var(--dsw-shadow-lv3);
+  opacity: 0;
+  animation: menu 6.5s infinite;
+}
+
+@keyframes menu {
+  0%, 26% { opacity: 0; transform: translateY(6px); }
+  32%, 68% { opacity: 1; transform: none; }
+  76%, 100% { opacity: 0; transform: translateY(6px); }
+}
+
+.menuRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 5px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.menuPick { animation: highlight 6.5s infinite; }
+
+.row {
+  position: absolute;
+  right: 10px;
+  bottom: 12px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 14px;
+  background: var(--dsw-specific-input-major, var(--dsw-alias-bg-layer-1));
+}
+
+.rowText { flex: 1 1 auto; color: var(--dsw-alias-label-dimmed); }
+
+.rowChip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background: var(--dsw-alias-interactive-bg-hover);
+  font-size: 9.5px;
+  white-space: nowrap;
+  opacity: 0;
+  animation: chip 6.5s infinite;
+}
+
+@keyframes chip { 0%, 76% { opacity: 0; } 84%, 96% { opacity: 1; } 100% { opacity: 0; } }
+
+.rowIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  color: var(--dsw-alias-label-secondary);
+  animation: icon-open 6.5s infinite;
+}
+
+@keyframes icon-open {
+  0%, 22% { background: transparent; }
+  26% { background: var(--dsw-alias-interactive-bg-hover); transform: scale(0.9); }
+  32%, 74% { background: var(--dsw-alias-interactive-bg-hover); transform: none; }
+  80%, 100% { background: transparent; }
+}
+
+.cursorMachine { animation: cursor-machine 6.5s infinite; }
+
+@keyframes cursor-machine {
+  0% { transform: translate(80px, 60px); }
+  22% { transform: translate(238px, 136px); }
+  26% { transform: translate(238px, 136px) scale(0.8); }
+  32% { transform: translate(238px, 136px); }
+  50% { transform: translate(180px, 92px); }
+  56% { transform: translate(180px, 92px) scale(0.8); }
+  62%, 100% { transform: translate(180px, 92px); }
+}
+
+/* A tour that moves by itself is the one thing someone who asked for less
+   motion did not ask for; the scenes still read as their final frame. */
+@media (prefers-reduced-motion: reduce) {
+  .scene * { animation: none !important; }
+  .sheet, .mine, .reply, .added, .menu, .rowChip { opacity: 1 !important; transform: none !important; }
+  .typed { width: 12.5em !important; border-right-color: transparent !important; }
+  .settled { opacity: 0 !important; }
+}
