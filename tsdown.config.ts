@@ -16,7 +16,12 @@ function isBuildFaceClient(value: unknown): boolean {
 export default defineConfig(({ env }) => {
   const client = isBuildFaceClient(env?.DSH_BUILD_FACE)
   return {
-    workspace: ['vendor/*', 'packages/*/*', 'apps/cli'],
+    // `vendor/univer-office` is a PREBUILT payload: upstream ships its bundles
+    // and its 143 MB of artifacts, and this repository rebuilds them only
+    // through `sync-vendor-univer-office`, which runs upstream's own build.
+    // Left in the workspace it would be handed the default entry and fail on
+    // a `lib/types/` tree it has no reason to have.
+    workspace: ['vendor/*', '!vendor/univer-office', 'packages/*/*', 'apps/cli'],
     entry: client ? '' : ['lib/types/{index,invariant,startup}.js'],
     outDir: 'lib',
     format: ['esm'],
