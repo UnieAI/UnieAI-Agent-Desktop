@@ -17,7 +17,7 @@
 
 import { execFile } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
-import { homedir } from 'node:os'
+import { homedir, userInfo } from 'node:os'
 import { join } from 'node:path'
 import { Context, Service } from '@unieai/cordis'
 import z from '@unieai/schemastery'
@@ -154,6 +154,28 @@ export function remoteCommandLine(
 }
 
 /**
+ * The home directory OpenSSH expands `~` against.
+ *
+ * OpenSSH reads it from the password database and ignores `HOME`, so a process
+ * launched with a different `HOME` — a container, `sudo`, some desktop
+ * launchers — makes `os.homedir()` name a file the client will never open. The
+ * book would then list aliases that cannot be connected to, and the connection
+ * fails with a DNS error naming the alias, because to the client the alias was
+ * only ever a hostname.
+ * @returns the password-database home, falling back to `os.homedir()` where
+ *   the running uid has no entry.
+ */
+function sshUserHome(): string {
+  try {
+    return userInfo().homedir
+  } catch {
+    // No passwd entry for this uid (some container images): nothing better
+    // than the environment is available, and OpenSSH itself fails the same way.
+    return homedir()
+  }
+}
+
+/**
  * The machine book: which machines exist, what they resolve to, and the
  * connection every adapter shares.
  */
@@ -168,7 +190,7 @@ export class SshHosts extends Service {
 
   /** OpenSSH configuration file this book reads. */
   get configPath(): string {
-    return this.config.configPath ?? join(homedir(), '.ssh', 'config')
+    return this.config.configPath ?? join(sshUserHome(), '.ssh', 'config')
   }
 
   /** Directory holding the multiplexing sockets. */
@@ -236,6 +258,19 @@ export class SshHosts extends Service {
       argv.push('-o', `ControlPersist=${String(this.config.controlPersistSeconds ?? 600)}`)
     }
     argv.push('-o', `ConnectTimeout=${String(this.config.connectTimeoutSeconds ?? 10)}`)
+    // NOTHING MAY PROMPT ON A TERMINAL NOBODY IS LOOKING AT. Without
+    // `BatchMode`, a machine that wants a password or a key passphrase makes
+    // the client ask for it on whatever stdio this process inherited — which
+    // for an app launched from a dock is nowhere, and for one launched from a
+    // shell is a terminal the person was not working in. Either way the
+    // command stops until something types, and the surface that asked for it
+    // shows nothing.
+    //
+    // Batch mode turns that into OpenSSH's own refusal, which a surface can
+    // show and a person can act on (`ssh-add` their key). The exception is a
+    // real terminal session: the person IS looking at that one, and a
+    // passphrase prompt there is the connection working.
+    if (options.tty !== true) argv.push('-o', 'BatchMode=yes')
     // A terminal is allocated only where one is wanted: with `-tt` the remote
     // end translates newlines and folds stderr into stdout, which would
     // corrupt collected output.

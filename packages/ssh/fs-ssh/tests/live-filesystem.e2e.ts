@@ -12,15 +12,21 @@
  */
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { testMachine } from '@unieai/uad-ssh-server'
 import { Context } from '@unieai/cordis'
 import { FsError } from '@unieai/uad-fs'
 import { SshHosts } from '@unieai/uad-ssh'
 import { SshFileSystem } from '../src/index.ts'
 import { runRemote } from '../src/exec.ts'
 
-const CONFIG = process.env['DSH_SSH_TEST_CONFIG']
-const ALIAS = process.env['DSH_SSH_TEST_ALIAS']
-const ready = CONFIG !== undefined && ALIAS !== undefined
+// A machine this suite starts for itself unless someone named one. Skipping
+// used to be the default here, which is how this whole path came to ship
+// without coverage; now the only reason to skip is software that is not
+// installed, and it says which.
+const machine = await testMachine()
+const ready = machine.absent === undefined
+const CONFIG = machine.configPath
+const ALIAS = machine.alias
 
 /** A scratch directory on the machine, removed when the suite ends. */
 const ROOT = `/tmp/dsh-fs-ssh-${randomUUID()}`
@@ -30,7 +36,7 @@ let fs: SshFileSystem
 
 /** Run one command on the machine, outside the provider. */
 async function remote(line: string): Promise<string> {
-  const result = await runRemote(hosts, ALIAS as string, line)
+  const result = await runRemote(hosts, ALIAS, line)
   return Buffer.from(result.stdout).toString('utf8')
 }
 

@@ -12,6 +12,12 @@ Reading it is not the same as agreeing with it. `Host` patterns, `Match` blocks,
 
 That also settles authentication. Agent keys, hardware tokens, `ProxyJump`, `known_hosts` policy and every other credential path are OpenSSH's, unchanged, and Rabi never holds a secret it would have to store.
 
+### Which file, exactly
+
+The book reads the file the client will open, which is not always the one `HOME` names: OpenSSH expands `~` from the password database and ignores the environment. A process launched with a different `HOME` — a container, `sudo`, some desktop launchers — would otherwise list aliases from one file while the connection read another, and the failure reads as `Could not resolve hostname <alias>`, because to a client that never saw the alias it was only ever a hostname.
+
+Naming a file in the configuration steers **both** the list and every connection, so those two can never disagree either. It is left unnamed by default, and the client then also reads the system-wide file, which an explicit `-F` would suppress.
+
 ## What it offers
 
 - **`list()`** — the aliases in the configuration file, following `Include`. Patterns (`Host *`, `Host !prod`, `Host *.internal`) are left out: they configure connections rather than name one. Unmemoized, so a machine added while Rabi runs is selectable immediately.
@@ -19,6 +25,16 @@ That also settles authentication. Agent keys, hardware tokens, `ProxyJump`, `kno
 - **`argvFor(alias, remoteCommand?, { tty })`** — the client invocation an adapter runs.
 - **`probe(alias)`** — whether the machine answers, with the client's own message when it does not. `BatchMode` is what makes this answerable at all: a machine wanting a passphrase would otherwise wait for a prompt nobody is watching.
 - **`disconnect(alias)`** — close the shared connection.
+
+## Nothing may ask for a password on a terminal nobody is watching
+
+Every invocation except a terminal session carries `BatchMode=yes`.
+
+Without it, a machine that wants a password or a key passphrase makes the client ask for one — and **piping the child's stdin does not stop this**: OpenSSH opens `/dev/tty` directly. So an app launched from a shell asks in a terminal the person was not working in, and one launched from a dock asks somewhere nobody can answer. Either way the command stops until something types, and the surface that asked for it shows nothing at all. The person sees a program that hung.
+
+Batch mode turns that into the client's own refusal — `Permission denied (publickey)` — which a surface can show and a person can act on by adding their key to their agent.
+
+The exception is a real terminal session (`-tt`): the person is looking at that one, and a passphrase prompt there is the connection working.
 
 ## Multiplexing
 

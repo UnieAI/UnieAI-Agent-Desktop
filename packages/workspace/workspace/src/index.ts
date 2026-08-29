@@ -168,6 +168,21 @@ export class WorkspaceRegistry extends Service {
     return await this.enqueueOperation(() => this.createCanonical(resolved.path, title))
   }
 
+
+  /**
+   * Whether the execution world is this computer.
+   *
+   * Read through cordis' non-throwing lookup rather than a declared injection:
+   * a composition with no machine book has no other machine to be on, and
+   * requiring the service would refuse to mount this one everywhere routing is
+   * not composed.
+   * @returns true on this computer, or wherever nothing says otherwise.
+   */
+  private worldIsLocal(): boolean {
+    const machines = this.ctx.reflect.get('machines', false) as { current?: string } | undefined
+    return machines?.current === undefined || machines.current === 'local'
+  }
+
   /**
    * Canonicalize one directory path in the mounted execution world.
    *
@@ -611,6 +626,22 @@ export class WorkspaceRegistry extends Service {
     this.sessionPaths.delete(header.id)
     if (header.cwd === undefined) {
       this.invalidSessionPaths.set(header.id, 'header has no cwd')
+      return
+    }
+    // INDEXING NEVER REACHES A MACHINE NOBODY ASKED FOR. This runs for every
+    // remembered session at startup, and canonicalizing through a routed
+    // filesystem means one connection each: a person who once picked a build
+    // box then has their laptop phone it on every launch, before they have
+    // done anything — and each of those can hang, or ask for a passphrase.
+    //
+    // It is also the wrong question. A header's cwd was recorded on the
+    // machine that session ran on, and the machine selected now is not
+    // necessarily that one; `/srv/app` names different directories on two
+    // computers. Until a header records its own machine, the honest answer for
+    // a remote world is the path as written, marked as not canonicalized.
+    if (!this.worldIsLocal()) {
+      this.sessionPaths.set(header.id, header.cwd)
+      this.invalidSessionPaths.delete(header.id)
       return
     }
     try {

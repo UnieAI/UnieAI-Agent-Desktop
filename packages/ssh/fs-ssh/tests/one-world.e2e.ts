@@ -12,14 +12,20 @@
  */
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { testMachine } from '@unieai/uad-ssh-server'
 import { Context } from '@unieai/cordis'
 import { SshHosts } from '@unieai/uad-ssh'
 import { SshSubprocessRuntime } from '@unieai/uad-subprocess-ssh'
 import { SshFileSystem } from '../src/index.ts'
 
-const CONFIG = process.env['DSH_SSH_TEST_CONFIG']
-const ALIAS = process.env['DSH_SSH_TEST_ALIAS']
-const ready = CONFIG !== undefined && ALIAS !== undefined
+// A machine this suite starts for itself unless someone named one. Skipping
+// used to be the default here, which is how this whole path came to ship
+// without coverage; now the only reason to skip is software that is not
+// installed, and it says which.
+const machine = await testMachine()
+const ready = machine.absent === undefined
+const CONFIG = machine.configPath
+const ALIAS = machine.alias
 const ROOT = `/tmp/dsh-one-world-${randomUUID()}`
 
 let ctx: Context

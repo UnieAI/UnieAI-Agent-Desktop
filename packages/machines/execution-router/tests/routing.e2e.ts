@@ -14,15 +14,21 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { testMachine } from '@unieai/uad-ssh-server'
 import { Context } from '@unieai/cordis'
 import FileSettingsProvider from '@unieai/uad-settings-file'
 import { SshHosts } from '@unieai/uad-ssh'
 import { LOCAL_MACHINE, Machines } from '@unieai/uad-machines'
 import { RoutedFileSystem, RoutedSubprocessRuntime } from '../src/index.ts'
 
-const CONFIG = process.env['DSH_SSH_TEST_CONFIG']
-const ALIAS = process.env['DSH_SSH_TEST_ALIAS']
-const ready = CONFIG !== undefined && ALIAS !== undefined
+// A machine this suite starts for itself unless someone named one. Skipping
+// used to be the default here, which is how this whole path came to ship
+// without coverage; now the only reason to skip is software that is not
+// installed, and it says which.
+const machine = await testMachine()
+const ready = machine.absent === undefined
+const CONFIG = machine.configPath
+const ALIAS = machine.alias
 const homes: string[] = []
 
 afterEach(async () => {
@@ -38,7 +44,7 @@ async function routed() {
   homes.push(home)
   const ctx = new Context()
   await ctx.plugin(FileSettingsProvider, { path: join(home, 'settings.yaml'), watch: false })
-  const hosts = new SshHosts(ctx, { configPath: CONFIG as string })
+  const hosts = new SshHosts(ctx, { configPath: CONFIG })
   await hosts.ensureControlDir()
   const machines = new Machines(ctx, {})
   return {
@@ -78,7 +84,7 @@ describe.skipIf(!ready)('working on one machine, then another', () => {
     const { machines, subprocess } = await routed()
     const before = await connectionOf(subprocess)
 
-    await machines.select(ALIAS as string)
+    await machines.select(ALIAS)
     const after = await connectionOf(subprocess)
 
     // The routed command crossed the test server's port; the earlier one did
@@ -92,15 +98,15 @@ describe.skipIf(!ready)('working on one machine, then another', () => {
     const here = await fs.resolve('/tmp')
     expect(String(here.targetKey)).not.toContain('ssh:')
 
-    await machines.select(ALIAS as string)
+    await machines.select(ALIAS)
     const there = await fs.resolve('/tmp')
-    expect(String(there.targetKey)).toBe(`ssh:${ALIAS as string}:/tmp`)
+    expect(String(there.targetKey)).toBe(`ssh:${ALIAS}:/tmp`)
   })
 
   it('keeps an already-resolved target on its own machine after the switch', async () => {
     const { machines, fs } = await routed()
     const local = await fs.resolve('/tmp')
-    await machines.select(ALIAS as string)
+    await machines.select(ALIAS)
 
     // The point of reading the machine out of the target: this must still be
     // the local directory, not the remote one with the same path.
@@ -112,7 +118,7 @@ describe.skipIf(!ready)('working on one machine, then another', () => {
   it('answers containment across machines with a plain no', async () => {
     const { machines, fs } = await routed()
     const local = await fs.resolve('/tmp')
-    await machines.select(ALIAS as string)
+    await machines.select(ALIAS)
     const remote = await fs.resolve('/tmp')
     expect(fs.contains(local, remote)).toBe(false)
     expect(fs.contains(remote, remote)).toBe(true)
@@ -120,7 +126,7 @@ describe.skipIf(!ready)('working on one machine, then another', () => {
 
   it('reads a file from the machine it belongs to', async () => {
     const { machines, fs, subprocess } = await routed()
-    await machines.select(ALIAS as string)
+    await machines.select(ALIAS)
     const marker = `/tmp/dsh-routing-${String(process.pid)}.txt`
     const written = subprocess.spawn({
       argv: ['sh', '-c', `printf remote > ${marker}`],

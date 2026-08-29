@@ -182,7 +182,19 @@ export class SshFileSystem extends FileSystem {
     const result = await this.run(canonicalizeCommand(path, cwd), { signal: opts?.signal, maxBytes: 65536 })
     const canonical = Buffer.from(result.stdout).toString('utf8').trim()
     if (result.code !== 0 || canonical === '') {
-      throw new FsError(`cannot resolve "${path}" on ${this.fsConfig.machine}`, 'FS_NOT_FOUND')
+      // The remote's own words. Without them this reads as "the path is not
+      // there" for every cause there is: a refused connection, a missing
+      // key, a starting directory that exists here and not there. The exit
+      // codes are the command's own — 3 could not enter the starting
+      // directory, 4 could not enter the path.
+      const reason = result.stderr.trim().split('\n').slice(-2).join(' ')
+      const cause = result.code === 3
+        ? `cannot enter the starting directory ${JSON.stringify(cwd)}`
+        : result.code === 4 ? 'no such directory' : `exit ${String(result.code)}`
+      throw new FsError(
+        `cannot resolve ${JSON.stringify(path)} on ${this.fsConfig.machine}: ${cause}${reason === '' ? '' : ` — ${reason}`}`,
+        'FS_NOT_FOUND',
+      )
     }
     return this.targetFor(canonical)
   }

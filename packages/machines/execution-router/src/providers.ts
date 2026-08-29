@@ -39,6 +39,7 @@ import { SandboxedFileSystem } from '@unieai/uad-fs-sandbox'
 import { LocalSubprocessRuntime } from '@unieai/uad-subprocess-local'
 import { SshFileSystem } from '@unieai/uad-fs-ssh'
 import { SshSubprocessRuntime } from '@unieai/uad-subprocess-ssh'
+import type { SshHosts } from '@unieai/uad-ssh'
 import type { FileSystem } from '@unieai/uad-fs'
 import type { SubprocessRuntime } from '@unieai/uad-subprocess'
 
@@ -86,7 +87,23 @@ export async function buildFileSystem(
  */
 export function buildSubprocess(ctx: Context, machine: string): SubprocessRuntime {
   const world = ctx.isolate('subprocess')
-  return machine === LOCAL_MACHINE
-    ? new LocalSubprocessRuntime(world)
-    : new SshSubprocessRuntime(world, { machine })
+  if (machine === LOCAL_MACHINE) return new LocalSubprocessRuntime(world)
+  // HANDED IN, NOT READ. This provider is constructed rather than mounted, so
+  // its `static inject = ['ssh']` never runs — and the isolated world it is
+  // built on refuses an undeclared read with `cannot get property "ssh"
+  // without inject`. That refusal reaches a person as EVERY command failing,
+  // including a local `echo`, because a routed world sends all of them through
+  // here once a remote machine is picked.
+  //
+  // `reflect.get(name, false)` is cordis' non-throwing lookup, so a
+  // composition with no machine book is refused by its own name instead of by
+  // a message about injection.
+  const hosts = ctx.reflect.get('ssh', false) as SshHosts | undefined
+  if (hosts === undefined) {
+    throw new Error(
+      `machine '${machine}' cannot be reached: this composition mounts no machine book (ctx.ssh), `
+      + 'so there is nothing that knows how to connect to it.',
+    )
+  }
+  return new SshSubprocessRuntime(world, { machine }, hosts)
 }

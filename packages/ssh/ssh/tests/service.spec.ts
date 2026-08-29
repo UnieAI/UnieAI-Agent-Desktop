@@ -5,6 +5,8 @@
  * local and one that pays a handshake per command, so what disables it is
  * as important as what enables it.
  */
+import { tmpdir, userInfo } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Context } from '@unieai/cordis'
 import { SshHosts } from '../src/index.ts'
@@ -58,5 +60,39 @@ describe('the multiplexing socket', () => {
     // fails at connect time with "ControlPath too long".
     const path = book().controlPath()
     if (path !== undefined) expect(path.length - 2 + 40).toBeLessThanOrEqual(100)
+  })
+})
+
+describe('the configuration file the book reads', () => {
+  it('is the one OpenSSH will open, not the one HOME names', () => {
+    // OpenSSH expands `~` from the password database and ignores HOME. A book
+    // that read HOME instead would list aliases the client cannot resolve, and
+    // the connection would fail with "Could not resolve hostname <alias>".
+    const original = process.env.HOME
+    process.env.HOME = join(tmpdir(), 'not-the-passwd-home')
+    try {
+      expect(book().configPath).toBe(join(userInfo().homedir, '.ssh', 'config'))
+    } finally {
+      if (original === undefined) delete process.env.HOME
+      else process.env.HOME = original
+    }
+  })
+
+  it('is the configured file when one is named, which also steers every connection', () => {
+    expect(book({ configPath: '/etc/rabi/ssh_config' }).configPath).toBe('/etc/rabi/ssh_config')
+    expect(book({ configPath: '/etc/rabi/ssh_config' }).argvFor('build')).toContain('-F')
+  })
+})
+
+describe('who is allowed to be asked for a password', () => {
+  it('never lets a command prompt, because the terminal it would use is not one anybody is watching', () => {
+    // Without this the client asks on inherited stdio: nowhere for an app
+    // launched from a dock, and someone else's terminal for one launched from
+    // a shell. The command then waits for a keystroke that never comes.
+    expect(book().argvFor('build', 'exec true')).toContain('BatchMode=yes')
+  })
+
+  it('lets a real terminal session prompt, because the person is looking at that one', () => {
+    expect(book().argvFor('build', undefined, { tty: true })).not.toContain('BatchMode=yes')
   })
 })

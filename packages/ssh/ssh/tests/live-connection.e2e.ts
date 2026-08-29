@@ -16,22 +16,28 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { describe, expect, it } from 'vitest'
+import { testMachine } from '@unieai/uad-ssh-server'
 import { Context } from '@unieai/cordis'
 import { SshHosts, remoteCommandLine } from '../src/index.ts'
 
 const run = promisify(execFile)
-const CONFIG = process.env['DSH_SSH_TEST_CONFIG']
-const ALIAS = process.env['DSH_SSH_TEST_ALIAS']
-const ready = CONFIG !== undefined && ALIAS !== undefined
+// A machine this suite starts for itself unless someone named one. Skipping
+// used to be the default here, which is how this whole path came to ship
+// without coverage; now the only reason to skip is software that is not
+// installed, and it says which.
+const machine = await testMachine()
+const ready = machine.absent === undefined
+const CONFIG = machine.configPath
+const ALIAS = machine.alias
 
 /** A book whose client always reads the test configuration file. */
 function book(): SshHosts {
-  return new SshHosts(new Context(), { configPath: CONFIG as string, connectTimeoutSeconds: 10 })
+  return new SshHosts(new Context(), { configPath: CONFIG, connectTimeoutSeconds: 10 })
 }
 
 /** Run one remote command through the book's own argv. */
 async function remote(hosts: SshHosts, line: string): Promise<{ code: number; stdout: string; stderr: string }> {
-  const [command, ...argv] = hosts.argvFor(ALIAS as string, line)
+  const [command, ...argv] = hosts.argvFor(ALIAS, line)
   try {
     const { stdout, stderr } = await run(command as string, argv, { encoding: 'utf8' })
     return { code: 0, stdout, stderr }
@@ -44,7 +50,7 @@ async function remote(hosts: SshHosts, line: string): Promise<{ code: number; st
 describe.skipIf(!ready)('the machine book against a real server', () => {
   it('resolves an alias to what the client would connect to', async () => {
     const hosts = book()
-    const resolved = await hosts.resolve(ALIAS as string)
+    const resolved = await hosts.resolve(ALIAS)
     expect(resolved.alias).toBe(ALIAS)
     expect(resolved.hostName).not.toBe('')
     expect(resolved.port).toBeGreaterThan(0)
@@ -53,7 +59,7 @@ describe.skipIf(!ready)('the machine book against a real server', () => {
   it('reaches the machine, and says so in the client\'s own words when it cannot', async () => {
     const hosts = book()
     await hosts.ensureControlDir()
-    expect(await hosts.probe(ALIAS as string)).toMatchObject({ reachable: true })
+    expect(await hosts.probe(ALIAS)).toMatchObject({ reachable: true })
 
     const missing = await hosts.probe('dsh-no-such-host.invalid')
     expect(missing.reachable).toBe(false)
@@ -70,11 +76,11 @@ describe.skipIf(!ready)('the machine book against a real server', () => {
     // exactly when a person is running commands.
     const control = hosts.controlPath()
     expect(control).toBeDefined()
-    const check = await run('ssh', ['-F', CONFIG as string, '-o', `ControlPath=${control as string}`,
-      '-O', 'check', ALIAS as string], { encoding: 'utf8' }).then(() => true, () => false)
+    const check = await run('ssh', ['-F', CONFIG, '-o', `ControlPath=${control as string}`,
+      '-O', 'check', ALIAS], { encoding: 'utf8' }).then(() => true, () => false)
     expect(check).toBe(true)
 
-    await hosts.disconnect(ALIAS as string)
+    await hosts.disconnect(ALIAS)
   })
 
   it('carries the exit status, and keeps the streams apart', async () => {
