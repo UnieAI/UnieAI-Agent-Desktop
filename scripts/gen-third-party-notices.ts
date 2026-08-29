@@ -88,6 +88,44 @@ const REVIEWED_COPYLEFT_RUNTIME: Record<string, string> = {
 }
 
 /**
+ * Runtime dependencies whose publisher states NO terms at all, with the
+ * decision that let them ship anyway.
+ *
+ * Distinct from {@link REVIEWED_COPYLEFT_RUNTIME}: there the licence is known
+ * and demanding, here it is absent. A package that publishes neither a
+ * `license` field nor a LICENSE file has granted nothing in writing, so
+ * shipping it is a decision about risk rather than about compliance — and the
+ * entry records who made it and what is still outstanding, because "we shipped
+ * it and nobody remembers why" is the state this exists to prevent.
+ *
+ * An entry does NOT claim a licence. The notices render these in their own
+ * section, named as unstated.
+ */
+const UNSTATED_TERMS_RUNTIME: Record<string, string> = {
+  // Univer's commercial line, reached through the vendored Office plugin
+  // (vendor/univer-office). dream-num publishes these to the public registry
+  // with no `license` field and no LICENSE file; the plugin that depends on
+  // them is Apache-2.0, but that licence covers the plugin, not these.
+  //
+  // Shipped on the repository owner's instruction, 2026-08-29, with written
+  // confirmation from dream-num still outstanding. Revisit when it arrives:
+  // if the terms turn out to forbid redistribution, the plugin moves out of
+  // the default bundle and becomes an opt-in install.
+  '@univerjs-pro/cli-assets': 'no terms published; shipped on the owner\'s instruction pending confirmation',
+  '@univerjs-pro/engine-formula-rust-binding': 'no terms published; shipped on the owner\'s instruction pending confirmation',
+  '@univerjs-pro/exchange-node-binding': 'no terms published; shipped on the owner\'s instruction pending confirmation',
+}
+
+/**
+ * Whether a runtime dependency with unstated terms has a recorded decision.
+ * @param name - exact npm package identity.
+ * @returns true when {@link UNSTATED_TERMS_RUNTIME} records one.
+ */
+export function isUnstatedTermsRuntime(name: string): boolean {
+  return Object.hasOwn(UNSTATED_TERMS_RUNTIME, name)
+}
+
+/**
  * Whether a non-permissive runtime license has a recorded review.
  * @param name - exact npm package identity.
  * @returns true when {@link REVIEWED_COPYLEFT_RUNTIME} records one.
@@ -110,6 +148,16 @@ const OVERRIDES: Record<string, { license?: string; repo?: string }> = {
   '@modelcontextprotocol/server-filesystem': { license: 'MIT / Apache-2.0', repo: 'https://github.com/modelcontextprotocol/servers' },
   // No repository field in the published manifest.
   'node-addon-require-builtin': { repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+
+  // Univer's commercial line, pulled in by the vendored Office plugin. These
+  // publish NO `license` field and carry no LICENSE file, so the terms are
+  // genuinely unstated rather than merely unparsed — recorded as such instead
+  // of guessed, because a notices file that names terms nobody published is
+  // worse than one that says the question is open. Shipping them needs an
+  // answer from dream-num; until then this is the visible flag.
+  '@univerjs-pro/cli-assets': { license: 'unstated by the publisher', repo: 'https://github.com/dream-num/univer' },
+  '@univerjs-pro/engine-formula-rust-binding': { license: 'unstated by the publisher', repo: 'https://github.com/dream-num/univer' },
+  '@univerjs-pro/exchange-node-binding': { license: 'unstated by the publisher', repo: 'https://github.com/dream-num/univer' },
 
   // Per-platform native payloads the DESKTOP closure pins so electron-builder
   // collects them: npm installs only the pair matching the build machine, so on
@@ -454,6 +502,8 @@ export interface VendoredRow {
   /** The name this package carries upstream; MIT attribution names the fork's origin, not our scope. */
   upstreamName: string
   upstream: string
+  /** The vendored package's own licence, read from its manifest. */
+  license?: string
 }
 
 /**
@@ -481,6 +531,7 @@ export function parseVendoredRows(text: string): VendoredRow[] {
  * rather than a package that quietly vanishes from the notices.
  */
 function collectVendored(): VendoredRow[] {
+  const licenses = new Map<string, string>()
   const rows = parseVendoredRows(readFileSync(resolve(root, 'vendor/README.md'), 'utf8'))
   const onDisk = new Map<string, string>()
   for (const entry of readdirSync(resolve(root, 'vendor'), { withFileTypes: true })) {
@@ -497,12 +548,17 @@ function collectVendored(): VendoredRow[] {
   for (const row of rows) {
     const dir = onDisk.get(row.npmName)
     if (dir === undefined) throw new Error(`gen-third-party-notices: vendored package ${row.npmName} from vendor/README.md has no vendor/ directory.`)
+    // The licence is READ, not assumed. `vendor/` held only MIT framework
+    // packages until a community plugin arrived under Apache-2.0; a section
+    // that prints one licence for every row would then have been quietly
+    // wrong about somebody else's terms.
     const license = readManifest(`vendor/${dir}/package.json`).license
-    if (license !== 'MIT') {
-      throw new Error(`gen-third-party-notices: vendored ${row.npmName} declares license ${JSON.stringify(license)}; the vendored section assumes MIT throughout.`)
+    if (typeof license !== 'string' || license.length === 0) {
+      throw new Error(`gen-third-party-notices: vendored ${row.npmName} declares no license; its terms cannot be disclosed.`)
     }
+    licenses.set(row.npmName, license)
   }
-  return rows
+  return rows.map(row => ({ ...row, license: licenses.get(row.npmName) ?? 'unknown' }))
 }
 
 /** Whether a parsed TOML value is a table rather than an array or scalar. */
@@ -775,6 +831,27 @@ Its complete source, and the build scripts that produce these binaries, are publ
 `
 }
 
+/**
+ * Render the unstated-terms section: what shipped, and that the question is
+ * open. Separate from every other section, because a reader scanning for what
+ * this project distributes must not have to infer that three of the rows come
+ * with no permission in writing.
+ * @param deps - runtime dependencies whose publisher states no terms.
+ * @returns the markdown section, empty when there are none.
+ */
+function renderUnstatedTerms(deps: ExternalDep[]): string {
+  if (deps.length === 0) return ''
+  return `
+## Runtime dependencies with no published terms
+
+These ship with the harness and their publisher states **no licence** — neither a \`license\` field nor a LICENSE file. They are listed separately because nothing here grants permission in writing, and reading the table above would otherwise suggest otherwise.
+
+${renderNpmTable(deps)}
+
+They reach an install through the vendored [Univer Office plugin](vendor/univer-office), which is itself Apache-2.0 — that licence covers the plugin, not these packages. Their terms are being confirmed with [dream-num](https://github.com/dream-num); until that lands, they ship on the repository owner's recorded instruction and this section is the disclosure.
+`
+}
+
 /** Render one npm dependency table. */
 function renderNpmTable(deps: ExternalDep[]): string {
   const lines = ['| Package | License |', '| --- | --- |']
@@ -822,13 +899,15 @@ export function render(): string {
   const nonPermissiveDev = devDeps.filter(dep => !isPermissive(dep.license))
   // A copyleft license reaching a shipped surface is a distribution decision,
   // not a rendering detail; the notices cannot quietly absorb it.
+  const unstatedTerms = runtimeDeps.filter(dep => isUnstatedTermsRuntime(dep.name))
   const reviewedCopyleft = runtimeDeps.filter(dep =>
     !isPermissive(dep.license) && isReviewedCopyleftRuntime(dep.name),
   )
   const nonPermissiveRuntime = runtimeDeps.filter(dep =>
     !isPermissive(dep.license)
     && !isOwnerAuthorizedRuntime(dep.name)
-    && !isReviewedCopyleftRuntime(dep.name),
+    && !isReviewedCopyleftRuntime(dep.name)
+    && !isUnstatedTermsRuntime(dep.name),
   )
   if (nonPermissiveRuntime.length > 0) {
     throw new Error(`gen-third-party-notices: runtime ${nonPermissiveRuntime.map(dep => `${dep.name} (${dep.license})`).join(', ')} is not a permissive license; review the distribution terms and record the decision before regenerating.`)
@@ -848,11 +927,11 @@ The complete npm transitive closure, including the Landlock launcher workspace, 
 
 ## Vendored source (\`vendor/\`)
 
-The Cordis framework and its foundation libraries are source-vendored into this repository rather than consumed from npm, and republished under the \`@unieai\` scope. All are MIT-licensed; each directory preserves its upstream \`LICENSE\` file. Exact upstream commits and local modifications are recorded in [\`vendor/README.md\`](vendor/README.md).
+Third-party packages source-vendored into this repository rather than consumed from npm, and republished under the \`@unieai\` scope: the Cordis framework and its foundation libraries, and the bundled community plugins. Each directory preserves its upstream \`LICENSE\` file, and the licence below is read from the vendored package's own manifest. Exact upstream commits and local modifications are recorded in [\`vendor/README.md\`](vendor/README.md).
 
 | Package | Upstream name | Upstream | License |
 | --- | --- | --- | --- |
-${vendored.map(row => `| \`${row.npmName}\` | \`${row.upstreamName}\` | [${row.upstream.replace('https://', '')}](${row.upstream}) | MIT |`).join('\n')}
+${vendored.map(row => `| \`${row.npmName}\` | \`${row.upstreamName}\` | [${row.upstream.replace('https://', '')}](${row.upstream}) | ${row.license ?? 'unknown'} |`).join('\n')}
 ${renderVendoredSource(collectVendoredSource())}
 ## Runtime npm dependencies
 
@@ -860,6 +939,7 @@ External packages that a workspace package resolves at runtime. The tier covers 
 
 ${renderNpmTable(runtimeDeps)}
 ${renderCopyleftRuntime(reviewedCopyleft)}
+${renderUnstatedTerms(unstatedTerms)}
 
 pnpm applies local patches to the following packages at install time, so shipped artifacts carry modified copies; each patch file is the complete record of the modification:
 

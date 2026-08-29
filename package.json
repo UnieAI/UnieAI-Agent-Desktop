@@ -105,6 +105,7 @@
     "verify-vendored-links": "tsx scripts/verify-vendored-links.ts",
     "verify-cordis-config": "tsx scripts/verify-cordis-config.ts",
     "sync-vendor-genui": "tsx scripts/sync-vendor-genui.ts",
+    "sync-vendor-univer-office": "tsx scripts/sync-vendor-univer-office.ts",
     "rescope-vendor": "tsx scripts/rescope-vendor.ts",
     "rescope-vendor:check": "tsx scripts/rescope-vendor.ts --check",
     "verify-client-domain-graph": "tsx scripts/verify-client-domain-graph.ts",

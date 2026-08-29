@@ -26,6 +26,14 @@ type LayoutState = {
   narrow: boolean
   narrowExpanded: boolean
   /**
+   * Whether the right column is showing a document rather than tool details.
+   * One column, two possible occupants: a document is a place to work, tool
+   * details are a place to look, and showing both at once on a laptop leaves
+   * neither usable. The document wins while it is open, and closing it
+   * returns the column to details.
+   */
+  document: boolean
+  /**
    * Width the details panel held before it was maximized, so the toggle has
    * somewhere to go back to. Absent whenever the panel is not maximized; a
    * drag while maximized clears it, because the drag IS the new preference.
@@ -44,6 +52,8 @@ type LayoutActions = {
   setNarrow: (draft: LayoutState, narrow: boolean) => void
   openDetails: (draft: LayoutState) => void
   closeDetails: (draft: LayoutState) => void
+  openDocument: (draft: LayoutState) => void
+  closeDocument: (draft: LayoutState) => void
   toggleDetails: (draft: LayoutState) => void
   toggleDetailsMaximized: (draft: LayoutState) => void
 }
@@ -60,7 +70,9 @@ type LayoutActions = {
  */
 export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutActions>  {
   const handle = defineStore({
-    init: (): LayoutState => ({ sidebar: SIDEBAR_DEFAULT, details: 0, narrow: false, narrowExpanded: false }),
+    init: (): LayoutState => ({
+      sidebar: SIDEBAR_DEFAULT, details: 0, narrow: false, narrowExpanded: false, document: false,
+    }),
     actions: {
       setSidebar: (d, px: number) => { d.sidebar = clampWidth(px, SIDEBAR_MIN, SIDEBAR_MAX) },
       setDetails: (d, px: number) => {
@@ -104,6 +116,20 @@ export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutAction
         d.details = DETAILS_MAX
       },
       closeDetails: (d) => { d.details = 0 },
+      // Opening a document opens the column it needs; the width contract is
+      // the details column's, because it IS that column.
+      openDocument: (d) => {
+        d.document = true
+        if (d.details === 0) d.details = DETAILS_DEFAULT
+      },
+      // The document owned the column while it was open, so closing it closes
+      // the column: returning to an empty details panel would leave a blank
+      // third of the screen behind a document nobody asked to keep.
+      closeDocument: (d) => {
+        d.document = false
+        d.details = 0
+        delete d.detailsRestore
+      },
     },
   })
   return handle

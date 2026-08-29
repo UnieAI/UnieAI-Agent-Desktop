@@ -40,7 +40,7 @@ type FrameStyle = CSSProperties & { [SIDEBAR_WIDTH_PROPERTY]: string }
 /** Full composed props: runtime share + child-slot render share + store share. */
 export type AppFrameProps =
   & PropsRuntime<'root'>
-  & PropsRenderSlots<'sidebar' | 'conversation' | 'details' | 'shell.overlay'>
+  & PropsRenderSlots<'sidebar' | 'conversation' | 'details' | 'document' | 'shell.overlay'>
   & PropsStore<ReturnType<typeof createLayoutStore>>
 
 /** Center column grid item (session-body building block). */
@@ -111,6 +111,10 @@ export function AppFrame({
   renderSlot,
 }: AppFrameProps) {
   const panels = useStore(s => s)
+  // The right column's occupant: a document while one is open, tool details
+  // otherwise. Read from the same store the widths come from, so the column
+  // and its contents can never disagree about which is showing.
+  const documentOpen = panels.document
   const detailsSession = useSessions((s) => {
     const current = s.current
     return current !== undefined && s.byId[current]?.blank === false ? current : undefined
@@ -161,10 +165,14 @@ export function AppFrame({
     : panels.sidebar === 0 ? SIDEBAR_DEFAULT : panels.sidebar
   // `detailsRestore` is set only while the panel is maximized, so it doubles
   // as the flag for which center floor this frame solves against.
+  // The right column closes itself when no session is current, because tool
+  // details are a session's. A document is not: it outlives the turn that
+  // produced it, so while one is open the column keeps its width.
+  const rightColumn = documentOpen || detailsSession !== undefined ? panels.details : 0
   const cols = computeColumns(
     viewport,
     sidebarPreference,
-    detailsSession === undefined ? 0 : panels.details,
+    rightColumn,
     panels.detailsRestore !== undefined,
   )
   const colsRef = useRef(cols)
@@ -219,7 +227,12 @@ export function AppFrame({
             is session-maybe; the strict details entry naturally renders
             empty while no session is current. */}
         <CenterColumn>{renderSlot('conversation', {})}</CenterColumn>
-        <DetailsColumn>{renderSlot('details', {})}</DetailsColumn>
+        {/* One right column, two possible occupants. A document holds it while
+            open and tool details take it back when the document closes, so a
+            laptop never has to fit both. */}
+        <DetailsColumn>
+          {documentOpen ? renderSlot('document', { width: cols.details }) : renderSlot('details', {})}
+        </DetailsColumn>
       </>
       <div className={css.overlayLayer} data-shell-overlay>
         {renderSlot('shell.overlay', {})}

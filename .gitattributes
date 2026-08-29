@@ -11,3 +11,13 @@
 # Pairing records are generated from the three confirmed owner-blob pairs.
 # The worktree-local installer registers the fail-closed driver command.
 *.i18n.yaml merge=dsh-translation-pairing
+
+# Vendored third-party payloads are pinned copies, not this repository's text
+# to reformat: the whitespace gate (`git diff --cached --check`, pre-commit)
+# would otherwise refuse a faithful copy over trailing spaces inside somebody
+# else's built bundle. Their content is checked by being byte-identical to
+# what upstream published, which is the stronger claim.
+vendor/*/artifacts/** -whitespace
+vendor/*/lib/** -whitespace
+vendor/*/docs/** -whitespace
+vendor/*/skills/** -whitespace

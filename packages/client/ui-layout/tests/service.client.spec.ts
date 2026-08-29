@@ -18,10 +18,28 @@ function fakePanels(): PanelActions {
     closeDetails: vi.fn(),
     toggleDetails: vi.fn(),
     toggleDetailsMaximized: vi.fn(),
+    openDocument: vi.fn(),
+    closeDocument: vi.fn(),
   }
 }
 
 describe('LayoutController', () => {
+  it('forwards the document actions, which own the right column while open', () => {
+    const service = new LayoutController()
+    const panels = fakePanels()
+    service.attachPanels(panels)
+
+    service.openDocument()
+    service.closeDocument()
+
+    expect(panels.openDocument).toHaveBeenCalledTimes(1)
+    expect(panels.closeDocument).toHaveBeenCalledTimes(1)
+    // A document is not a detail: opening one must not reach the details
+    // actions, or the two occupants would fight over the same column.
+    expect(panels.openDetails).not.toHaveBeenCalled()
+    expect(panels.toggleDetails).not.toHaveBeenCalled()
+  })
+
   it('forwards the three panel actions to the attached set', () => {
     const service = new LayoutController()
     const panels = fakePanels()

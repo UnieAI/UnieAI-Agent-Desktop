@@ -71,6 +71,18 @@ declare module '@unieai/uad-client-ui-slots' {
      */
     'details': { kind: 'single'; scope: 'session'; owner: DetailsOwnerProps }
     /**
+     * A document surface in the same right column, shown INSTEAD of details
+     * while `ctx.layout.openDocument()` holds it open. One column with two
+     * possible occupants rather than two columns: a document is a place to
+     * work and tool details are a place to look, and side by side on a laptop
+     * leaves neither usable.
+     *
+     * Current-session-optional, because a document outlives the turn that
+     * produced it: a viewer that unmounted whenever the session went away
+     * would close itself mid-edit.
+     */
+    'document': { kind: 'single'; scope: 'session-maybe'; owner: DocumentOwnerProps }
+    /**
      * Frame-wide floating layer, above every column and outside their scroll
      * containers. Deliberately generic and unowned by any feature: a badge, a
      * toast stack or a status pill all belong here, and entries order among
@@ -109,6 +121,12 @@ export interface ConvOwnerProps {}
 /** Details owner share: empty — sessionId arrives as a framework-standard prop. */
 export interface DetailsOwnerProps {}
 
+/** Document owner share: the rendered column width, so a viewer can lay itself out. */
+export interface DocumentOwnerProps {
+  /** Rendered column width in px. */
+  width: number
+}
+
 /** Required services (cordis fiber inject — the loader passes all module exports as an object plugin). */
 export const inject = ['slots', 'theme']
 
@@ -128,6 +146,7 @@ export function apply(ctx: ClientContext): void {
         'sidebar': { kind: 'single', scope: 'root' },
         'conversation': { kind: 'single', scope: 'session-maybe' },
         'details': { kind: 'single', scope: 'session' },
+        'document': { kind: 'single', scope: 'session-maybe' },
         'shell.overlay': { kind: 'list', scope: 'root' },
       },
       // Exclusive store: the factory itself — the framework instantiates per

@@ -35,6 +35,7 @@ const vendoredPackages = new Set([
   // the framework is — pinned third-party source this repository does not
   // shape, so the rules written for code we author do not apply to it.
   '@unieai/genui',
+  '@unieai/univer-office',
 ])
 const publicLandlockPackages = new Set([
   '@unieai/node-addon-landlock-run',

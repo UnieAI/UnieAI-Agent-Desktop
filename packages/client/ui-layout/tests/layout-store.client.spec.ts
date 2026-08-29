@@ -19,7 +19,7 @@ beforeEach(() => { localStorage.clear() })
 describe('createLayoutStore', () => {
   it('initializes the sidebar at its default width, details closed, wide viewport assumed', () => {
     const { store } = createLayoutStore().create()
-    expect(store.getSnapshot()).toEqual({ sidebar: SIDEBAR_DEFAULT, details: 0, narrow: false, narrowExpanded: false })
+    expect(store.getSnapshot()).toEqual({ sidebar: SIDEBAR_DEFAULT, details: 0, narrow: false, narrowExpanded: false, document: false })
   })
 
   it('each create() is an independent instance (factory is not a singleton)', () => {
@@ -55,7 +55,7 @@ describe('createLayoutStore', () => {
     actions.setSidebar(400)
     actions.setNarrow(true)
     actions.toggleSidebar()
-    expect(store.getSnapshot()).toEqual({ sidebar: 400, details: 0, narrow: true, narrowExpanded: true })
+    expect(store.getSnapshot()).toEqual({ sidebar: 400, details: 0, narrow: true, narrowExpanded: true, document: false })
     actions.toggleSidebar()
     expect(store.getSnapshot().narrowExpanded).toBe(false)
     expect(store.getSnapshot().sidebar).toBe(400)
@@ -98,6 +98,29 @@ describe('createLayoutStore', () => {
       details: 0,
       narrow: false,
       narrowExpanded: false,
+      document: false,
     })
+  })
+
+  it('a document opens the right column and owns it until it closes', () => {
+    // The column is the details column: one column, two possible occupants.
+    const { store, actions } = createLayoutStore().create()
+    actions.openDocument()
+    expect(store.getSnapshot()).toMatchObject({ document: true, details: DETAILS_DEFAULT })
+
+    actions.closeDocument()
+    // Closing the document closes the column with it: returning to an empty
+    // details panel would leave a blank third of the screen behind.
+    expect(store.getSnapshot()).toMatchObject({ document: false, details: 0 })
+  })
+
+  it('a document opened over an already-open column keeps the width it had', () => {
+    // The person sized that column; a document arriving is not a reason to
+    // resize it under them.
+    const { store, actions } = createLayoutStore().create()
+    actions.openDetails()
+    actions.setDetails(520)
+    actions.openDocument()
+    expect(store.getSnapshot()).toMatchObject({ document: true, details: 520 })
   })
 })

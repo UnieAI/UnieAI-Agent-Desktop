@@ -34,6 +34,14 @@ export interface ILayout {
    * before. A no-op while the panel is closed: there is nothing to widen.
    */
   toggleDetailsMaximized(): void
+  /**
+   * Show a document in the right column, opening the column if it is closed.
+   * The document replaces tool details while it is open — one column, and a
+   * document is a place to work rather than a place to look.
+   */
+  openDocument(): void
+  /** Return the right column to tool details and close it. */
+  closeDocument(): void
 }
 
 /** Cross-plugin panel-action face (ctx.layout). */
@@ -77,6 +85,16 @@ export class LayoutController implements ILayout {
    */
   toggleDetailsMaximized(): void {
     this.#require().toggleDetailsMaximized()
+  }
+
+  /** Show a document in the right column, opening the column if it is closed. */
+  openDocument(): void {
+    this.#require().openDocument()
+  }
+
+  /** Return the right column to tool details and close it. */
+  closeDocument(): void {
+    this.#require().closeDocument()
   }
 
   #require(): PanelActions {

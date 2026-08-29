@@ -630,6 +630,8 @@
 - insert:
     - id: genui
       name: '@unieai/genui'
+    - id: univer
+      name: '@unieai/univer-office'
 
 # The execution world is routed now: these two rows are what it routes to,
 # built privately per machine rather than mounted once here.

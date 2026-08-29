@@ -11,7 +11,7 @@ The complete npm transitive closure, including the Landlock launcher workspace, 
 
 ## Vendored source (`vendor/`)
 
-The Cordis framework and its foundation libraries are source-vendored into this repository rather than consumed from npm, and republished under the `@unieai` scope. All are MIT-licensed; each directory preserves its upstream `LICENSE` file. Exact upstream commits and local modifications are recorded in [`vendor/README.md`](vendor/README.md).
+Third-party packages source-vendored into this repository rather than consumed from npm, and republished under the `@unieai` scope: the Cordis framework and its foundation libraries, and the bundled community plugins. Each directory preserves its upstream `LICENSE` file, and the licence below is read from the vendored package's own manifest. Exact upstream commits and local modifications are recorded in [`vendor/README.md`](vendor/README.md).
 
 | Package | Upstream name | Upstream | License |
 | --- | --- | --- | --- |
@@ -25,6 +25,7 @@ The Cordis framework and its foundation libraries are source-vendored into this 
 | `@unieai/cordis-plugin-hmr` | `@cordisjs/plugin-hmr` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
 | `@unieai/cordis-plugin-logger-console` | `@cordisjs/plugin-logger-console` | [github.com/deepseek-harness/cordis](https://github.com/deepseek-harness/cordis) | MIT |
 | `@unieai/genui` | `@changfenhuang/dsh-genui` | [github.com/omdsh-dev/dsh-genui](https://github.com/omdsh-dev/dsh-genui) | MIT |
+| `@unieai/univer-office` | `dsh-univer-office` | [github.com/dream-num/dsh-univer-office](https://github.com/dream-num/dsh-univer-office) | Apache-2.0 |
 
 ## Vendored source (inside a package)
 
@@ -88,10 +89,14 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`@opentelemetry/otlp-exporter-base`](https://github.com/open-telemetry/opentelemetry-js) | Apache-2.0 |
 | [`@opentelemetry/resources`](https://github.com/open-telemetry/opentelemetry-js) | Apache-2.0 |
 | [`@opentelemetry/sdk-logs`](https://github.com/open-telemetry/opentelemetry-js) | Apache-2.0 |
+| [`@puppeteer/browsers`](https://github.com/puppeteer/puppeteer/tree/main/packages/browsers) | Apache-2.0 |
 | [`@shikijs/langs`](https://github.com/shikijs/shiki) | MIT |
 | [`@standard-schema/spec`](https://github.com/standard-schema/standard-schema) | MIT |
 | [`@tanstack/react-virtual`](https://github.com/TanStack/virtual) | MIT |
 | [`@types/mdast`](https://github.com/DefinitelyTyped/DefinitelyTyped) | MIT |
+| [`@univerjs-pro/cli-assets`](https://github.com/dream-num/univer) | unstated by the publisher |
+| [`@univerjs-pro/engine-formula-rust-binding`](https://github.com/dream-num/univer) | unstated by the publisher |
+| [`@univerjs-pro/exchange-node-binding`](https://github.com/dream-num/univer) | unstated by the publisher |
 | [`@vscode/ripgrep`](https://github.com/microsoft/vscode-ripgrep) | MIT |
 | [`@vscode/ripgrep-darwin-arm64`](https://github.com/microsoft/vscode-ripgrep) | MIT |
 | [`@vscode/ripgrep-darwin-x64`](https://github.com/microsoft/vscode-ripgrep) | MIT |
@@ -113,6 +118,7 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`js-yaml`](https://github.com/nodeca/js-yaml) | MIT |
 | [`katex`](https://github.com/KaTeX/KaTeX) | MIT |
 | [`koffi`](https://github.com/Koromix/koffi) | MIT |
+| [`libsql`](https://github.com/tursodatabase/libsql-js) | MIT |
 | [`mdast-util-from-markdown`](https://github.com/syntax-tree/mdast-util-from-markdown) | MIT |
 | [`mdast-util-gfm`](https://github.com/syntax-tree/mdast-util-gfm) | MIT |
 | [`mdast-util-math`](https://github.com/syntax-tree/mdast-util-math) | MIT |
@@ -134,6 +140,7 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`node-pty`](https://github.com/microsoft/node-pty) | MIT |
 | [`open`](https://github.com/sindresorhus/open) | MIT |
 | [`picomatch`](https://github.com/micromatch/picomatch) | MIT |
+| [`puppeteer-core`](https://github.com/puppeteer/puppeteer/tree/main/packages/puppeteer-core) | Apache-2.0 |
 | [`react`](https://github.com/facebook/react) | MIT |
 | [`react-dom`](https://github.com/facebook/react) | MIT |
 | [`sharp`](https://github.com/lovell/sharp) | Apache-2.0 |
@@ -161,6 +168,19 @@ These ship with the harness under a **copyleft** licence rather than a permissiv
 `libvips` is the image-processing library `sharp` is a binding to. It is distributed as a **separate shared library** (`libvips-cpp.so` and its per-platform equivalents) that the binding loads dynamically, not as code compiled into any artifact of this project — so it may be replaced with another build of the same library without rebuilding anything here, which is the freedom LGPL-3.0 exists to preserve.
 
 Its complete source, and the build scripts that produce these binaries, are published at [github.com/lovell/sharp-libvips](https://github.com/lovell/sharp-libvips); libvips itself is at [github.com/libvips/libvips](https://github.com/libvips/libvips). The licence text is [LGPL-3.0](https://www.gnu.org/licenses/lgpl-3.0.html), and a copy travels inside each payload package.
+
+
+## Runtime dependencies with no published terms
+
+These ship with the harness and their publisher states **no licence** — neither a `license` field nor a LICENSE file. They are listed separately because nothing here grants permission in writing, and reading the table above would otherwise suggest otherwise.
+
+| Package | License |
+| --- | --- |
+| [`@univerjs-pro/cli-assets`](https://github.com/dream-num/univer) | unstated by the publisher |
+| [`@univerjs-pro/engine-formula-rust-binding`](https://github.com/dream-num/univer) | unstated by the publisher |
+| [`@univerjs-pro/exchange-node-binding`](https://github.com/dream-num/univer) | unstated by the publisher |
+
+They reach an install through the vendored [Univer Office plugin](vendor/univer-office), which is itself Apache-2.0 — that licence covers the plugin, not these packages. Their terms are being confirmed with [dream-num](https://github.com/dream-num); until that lands, they ship on the repository owner's recorded instruction and this section is the disclosure.
 
 
 pnpm applies local patches to the following packages at install time, so shipped artifacts carry modified copies; each patch file is the complete record of the modification:

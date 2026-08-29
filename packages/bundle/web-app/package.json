@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@unieai/genui": "workspace:^",
+    "@unieai/univer-office": "workspace:^",
     "@unieai/schemastery": "workspace:^",
     "@unieai/uad-agent-presets": "workspace:^",
     "@unieai/uad-api-remotes": "workspace:^",

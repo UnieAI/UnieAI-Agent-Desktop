@@ -1,0 +1,66 @@
+{
+  "name": "@unieai/univer-office",
+  "version": "0.2.11",
+  "description": "DSH × Univer integration with a bundled collaboration Gateway and Viewer: inline previews, live floating Worktree windows, and session-end review actions in DeepSeek Harness.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UnieAI/UnieAI-Agent-Desktop.git",
+    "directory": "vendor/univer-office"
+  },
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "docs",
+    "skills",
+    "artifacts",
+    "scripts/copy-gateway-dependencies.mjs",
+    "README.md",
+    "LICENSE",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "dependencies": {
+    "@puppeteer/browsers": "^3.2.0",
+    "@univerjs-pro/cli-assets": "0.1.0",
+    "@univerjs-pro/engine-formula-rust-binding": "1.0.0-insiders.20260819-8209aa8",
+    "@univerjs-pro/exchange-node-binding": "0.1.0",
+    "libsql": "^0.5.29",
+    "puppeteer-core": "^25.7.0",
+    "@deepseek-ai/cordis": "workspace:@unieai/cordis@*",
+    "@deepseek-ai/schemastery": "workspace:@unieai/schemastery@*",
+    "@deepseek-ai/dsh-attachment": "workspace:@unieai/uad-attachment@*",
+    "@deepseek-ai/dsh-host-webserver": "workspace:@unieai/uad-host-webserver@*",
+    "@deepseek-ai/dsh-llm": "workspace:@unieai/uad-llm@*",
+    "@deepseek-ai/dsh-session": "workspace:@unieai/uad-session@*",
+    "@deepseek-ai/dsh-skill": "workspace:@unieai/uad-skill@*",
+    "@deepseek-ai/dsh-tools": "workspace:@unieai/uad-tools@*"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

@@ -61,6 +61,7 @@ function mountFrame() {
     if (key === 'sidebar') return <div data-testid="sidebar-content" />
     if (key === 'conversation') return <div data-testid="center-content" />
     if (key === 'details') return <div data-testid="details-content" />
+    if (key === 'document') return <div data-testid="document-content" />
     if (key === 'conversation.empty') return <div data-testid="empty-content" />
     return <div data-testid="other-content" />
   }) as AppFrameProps['renderSlot']
@@ -173,6 +174,38 @@ describe('AppFrame', () => {
     expect(keys).not.toContain('conversation.empty')
     expect(slotCalls.find(c => c.key === 'conversation')!.props).toEqual({})
     expect(slotCalls.find(c => c.key === 'details')!.props).toEqual({})
+  })
+
+  it('gives the right column to a document, and takes it back when the document closes', () => {
+    // One column, two occupants: a document is a place to work and tool
+    // details are a place to look, so they never share the width.
+    const { instance, rerenderFrame, queryByTestId } = mountFrame()
+    expect(queryByTestId('details-content')).not.toBeNull()
+    expect(queryByTestId('document-content')).toBeNull()
+
+    act(() => { instance.actions.openDocument() })
+    rerenderFrame()
+    expect(queryByTestId('document-content')).not.toBeNull()
+    expect(queryByTestId('details-content')).toBeNull()
+
+    act(() => { instance.actions.closeDocument() })
+    rerenderFrame()
+    expect(queryByTestId('details-content')).not.toBeNull()
+    expect(queryByTestId('document-content')).toBeNull()
+  })
+
+  it('keeps the right column open for a document while no session is current', () => {
+    // The column closes itself when no session is current, because tool
+    // details are a session's. A document outlives the turn that produced it,
+    // so that rule must not close it mid-edit.
+    selectedSession.current = undefined
+    const { instance, frame, rerenderFrame } = mountFrame()
+    act(() => { instance.actions.openDocument() })
+    rerenderFrame()
+    // The width lives in the frame's grid template, third track.
+    const track = frame.style.gridTemplateColumns.split(' ').at(-1)
+    expect(track).toBeDefined()
+    expect(Number.parseInt(track ?? '0', 10)).toBeGreaterThan(0)
   })
 
   it('keeps the conversation slot mounted while no session is current', () => {
