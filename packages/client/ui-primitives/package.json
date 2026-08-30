@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-ui-primitives",
   "description": "Pure React atoms for the rabi web UI: controls, icons, markdown, and JSON inspectors (zero cordis)",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "publishConfig": {
     "access": "public"
   },

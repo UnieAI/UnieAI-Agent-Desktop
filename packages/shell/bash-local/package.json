@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-bash-local",
   "description": "Local-subprocess implementation of the DeepSeek Harness bash executor seam",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "publishConfig": {
     "access": "public"
   },

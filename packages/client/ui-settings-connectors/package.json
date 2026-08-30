@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-ui-settings-connectors",
   "description": "Connections settings section: the external accounts this app has been given access to, and the button that grants or withdraws one",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "publishConfig": {
     "access": "public"
   },
