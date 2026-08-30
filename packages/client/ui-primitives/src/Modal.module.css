@@ -26,18 +26,33 @@
   flex-direction: column;
   gap: 20px;
   width: min(380px, 100%);
+  /* Never taller than the window. A dialog that grows past the viewport puts
+     its own footer — the buttons that dismiss it — off the bottom of the
+     screen, which is what an expanded disclosure inside one did. */
+  max-height: calc(100vh - 48px);
   padding: 0 0 24px;
   overflow: hidden;
   border: 1px solid var(--dsw-alias-border-inverted);
   border-radius: 24px;
   background: var(--dsw-alias-bg-layer-2);
   box-shadow: var(--dsw-shadow-lv3);
+  /* Elevated surface: now that the body scrolls, its thumb takes the l2
+     elevation tokens. Declared on the card so the choice sits with the surface
+     and inherits to whatever scrolls (see ui-theme styles/scrollbar.css). */
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
+/* Header and body share the height that is left after the footer, and may
+   shrink: `min-height: 0` is what lets the body below actually scroll instead
+   of forcing the card taller than its own cap. */
 .content {
   display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
   flex-direction: column;
   width: 100%;
+  overflow: hidden;
 }
 
 /* Header row (figma Title row): pad l24/t22/r14/b12, SPACE_BETWEEN —
@@ -86,12 +101,16 @@
   color: var(--dsw-alias-label-primary);
 }
 
+/* The one part that scrolls: the title stays put and the footer's buttons stay
+   reachable however much content a dialog puts between them. */
 .body {
   display: flex;
-  flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  flex-direction: column;
   margin-top: 20px;
   padding: 0 24px;
+  overflow-y: auto;
 }
 
 .footer {

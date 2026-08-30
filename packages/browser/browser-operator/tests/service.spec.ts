@@ -5,6 +5,9 @@
  * are the contract, and a test that needed Chromium to check them would not
  * run on a machine that has none.
  */
+import { chmodSync, mkdtempSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { Context } from '@unieai/cordis'
 import { describe, expect, it } from 'vitest'
 import { OperatorBrowserService } from '../src/index.ts'
@@ -84,4 +87,28 @@ describe('config validation', () => {
     expect(() => service({ chromePath: '/opt/chrome' })).not.toThrow()
     expect(() => service({ chromePath: 'C:\\Chrome\\chrome.exe' })).not.toThrow()
   })
+})
+
+describe('a browser that cannot be executed', () => {
+  /** A file that is not executable, standing in for a payload extracted 0644. */
+  function unrunnable(): string {
+    const dir = mkdtempSync(join(tmpdir(), 'rabi-operator-test-'))
+    const path = join(dir, 'browser-stub')
+    writeFileSync(path, '#!/bin/sh\nexit 3\n')
+    chmodSync(path, 0o644)
+    return path
+  }
+
+  it('fails the call instead of taking the process down, and repairs the mode', async () => {
+    // The regression: `spawn` emits 'error' and NOT 'exit' when the executable
+    // cannot be run, and an unhandled 'error' event is a process-level throw.
+    // Reported from a bunx install whose carried Chromium arrived without its
+    // executable bit: `page_screenshot` killed rabi instead of failing.
+    const path = unrunnable()
+    const registry = service({ chromePath: path })
+    await expect(registry.open(opening('https://example.com'))).rejects.toThrow()
+    // The retry's repair ran: the next attempt is allowed to get as far as
+    // discovering the file is not a browser, which is a different answer.
+    expect(statSync(path).mode & 0o111).not.toBe(0)
+  }, 30_000)
 })

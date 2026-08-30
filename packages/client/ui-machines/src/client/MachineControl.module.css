@@ -59,7 +59,10 @@
   width: max-content;
   min-width: min(320px, calc(100vw - 32px));
   max-width: min(420px, calc(100vw - 32px));
-  max-height: min(420px, calc(100vh - 96px));
+  /* Never taller than the space above or below the trigger. 160px is the
+     chrome the menu can never overlap: the row it opens from plus the card or
+     the page edge beyond it. */
+  max-height: min(420px, calc(100vh - 160px));
   overflow: hidden;
   padding: 4px;
   border: 1px solid var(--dsw-alias-border-inverted);
@@ -79,7 +82,12 @@
    the transcript column grows to whatever the composer needs, so a downward
    menu always "fits" and then covers the control that opened it. */
 :global([data-phase='active']) :global([data-composer]) .menu,
-:global([data-phase='settling']) :global([data-composer]) .menu {
+:global([data-phase='settling']) :global([data-composer]) .menu,
+/* The hero seat is the row BELOW the card — lower on the screen than the card
+   itself — so a downward menu runs off the bottom of the viewport. It is not
+   inside `[data-composer]`, which is the card's own subtree, so it needs its
+   own hook. */
+:global([data-hero-chrome]) .menu {
   top: auto;
   bottom: calc(100% + 8px);
 }

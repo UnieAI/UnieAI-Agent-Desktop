@@ -98,7 +98,10 @@ export function ConversationRoot({
           : workspaceLabel(cwd)))
 
   const heroWorkspaceRow = (
-    <div className={css.heroWorkspaceRow}>
+    // `data-hero-chrome` marks this row for a popup's side resolution, the way
+    // `data-composer` marks the card: a menu opened from here sits low on the
+    // screen, so it must open upward or it runs off the bottom.
+    <div className={css.heroWorkspaceRow} data-hero-chrome="">
       <WorkspaceChip
         buttonRef={pickerAnchor}
         label={chipTitle}

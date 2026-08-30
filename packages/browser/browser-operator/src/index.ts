@@ -25,7 +25,7 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import { accessSync, chmodSync, constants, mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, sep } from 'node:path'
 import { Context, Service } from '@unieai/cordis'
 import z from '@unieai/schemastery'
 import { CdpConnection, endpointFrom } from './cdp.ts'
@@ -181,10 +181,24 @@ export class OperatorBrowserService extends Service {
     const width = clampSize(spec.width)
     const height = clampSize(spec.height)
     const profileDir = mkdtempSync(join(tmpdir(), 'rabi-browser-'))
-    const child = spawn(chrome, chromeArgs(profileDir, width, height), { stdio: ['ignore', 'ignore', 'pipe'] })
+    let child = spawn(chrome, chromeArgs(profileDir, width, height), { stdio: ['ignore', 'ignore', 'pipe'] })
     let cdp: CdpConnection
     try {
-      const endpoint = await this.awaitEndpoint(child)
+      let endpoint: string
+      try {
+        endpoint = await this.awaitEndpoint(child)
+      } catch (error: unknown) {
+        // `repairCarriedModes` runs before every open, but it finds the payload
+        // by RESOLVING the platform package's manifest, and an installer whose
+        // layout that resolution cannot see (bunx's temp tree is the one this
+        // was reported from) leaves the modes untouched. The path we were about
+        // to spawn is known either way, so repair from there and try once more.
+        if (!isNotExecutable(error)) throw error
+        child.kill('SIGKILL')
+        repairModesAround(chrome)
+        child = spawn(chrome, chromeArgs(profileDir, width, height), { stdio: ['ignore', 'ignore', 'pipe'] })
+        endpoint = await this.awaitEndpoint(child)
+      }
       cdp = new CdpConnection(endpoint)
       await cdp.ready()
     } catch (error: unknown) {
@@ -448,6 +462,17 @@ export class OperatorBrowserService extends Service {
         clearTimeout(timer)
         reject(new OperatorBrowserError('NO_CHROME', `the browser exited with code ${String(code)}: ${buffered.slice(-400)}`))
       })
+      // A spawn that never starts emits 'error' and NOT 'exit'. Node throws an
+      // unhandled 'error' event, so without this listener a browser that
+      // cannot be executed does not fail the tool call — it takes the whole
+      // process down, which is what an EACCES on the carried payload did.
+      child.once('error', (error: NodeJS.ErrnoException) => {
+        clearTimeout(timer)
+        reject(new OperatorBrowserError(
+          'NO_CHROME',
+          `the browser could not be started (${error.code ?? 'spawn failed'}): ${error.message}`,
+        ))
+      })
     })
   }
 
@@ -496,17 +521,8 @@ export class OperatorBrowserService extends Service {
     )
     if (manifestPath === undefined) return
     const payload = join(dirname(manifestPath), 'browser')
-    const walk = (dir: string): void => {
-      for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        const path = join(dir, entry.name)
-        // Symlinks are followed by neither branch: a macOS framework's links
-        // point at files this walk reaches by their real path anyway.
-        if (entry.isDirectory()) walk(path)
-        else if (entry.isFile()) chmodSync(path, 0o755)
-      }
-    }
     try {
-      walk(payload)
+      chmodTree(payload)
     } catch {
       // Partially repaired is still better than not; spawn reports the rest.
     }
@@ -597,6 +613,69 @@ function assertNavigable(url: string): void {
 function clampSize(value: number): number {
   if (!Number.isFinite(value)) return 1
   return Math.max(1, Math.trunc(value))
+}
+
+/**
+ * Make every regular file under a directory executable.
+ *
+ * Every file rather than a list of names: Chromium's launchable pieces are the
+ * browser, its crashpad handler, its sandbox helper, its wrapper script and —
+ * on macOS — nine more inside the .app's `MacOS`, `Helpers` and `Libraries`
+ * directories, and a list that missed one would fail only on the platform
+ * nobody tested. The bit on a `.pak` is inert. Symlinks are skipped by both
+ * branches: a macOS framework's links point at files this walk reaches by
+ * their real path anyway.
+ * @param root - directory to walk.
+ */
+function chmodTree(root: string): void {
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name)
+    if (entry.isDirectory()) chmodTree(path)
+    else if (entry.isFile()) chmodSync(path, 0o755)
+  }
+}
+
+/**
+ * Whether a failed launch was a permission problem rather than a bad browser.
+ *
+ * Read off the message the spawn error carried into {@link OperatorBrowserError}:
+ * the errno is what distinguishes "the payload arrived without its executable
+ * bit" from "this is not a browser", and only the first is worth repairing.
+ * @param error - the failure `awaitEndpoint` rejected with.
+ * @returns true when the executable could not be executed.
+ */
+function isNotExecutable(error: unknown): boolean {
+  return error instanceof OperatorBrowserError && /\bEACCES\b|\bEPERM\b/.test(error.message)
+}
+
+/**
+ * Put the executable bit back on a carried payload, found from its executable.
+ *
+ * {@link OperatorBrowserService.repairCarriedModes} finds the payload by
+ * resolving the platform package's manifest; this one starts from the path that
+ * just refused to run and walks up to the `browser/` directory the payload is
+ * published under, so it works in an install layout that resolution cannot see.
+ * Every regular file gets the bit for the reason the manifest walk does: a list
+ * of names that missed one of Chromium's helpers would fail only on the
+ * platform nobody tested.
+ *
+ * Failure is swallowed. A read-only or root-owned install cannot be repaired
+ * from here, and the retry that follows reports that more precisely.
+ * @param executable - the path whose spawn answered EACCES.
+ */
+function repairModesAround(executable: string): void {
+  try {
+    const segments = executable.split(sep)
+    const index = segments.lastIndexOf('browser')
+    const root = index === -1 ? undefined : segments.slice(0, index + 1).join(sep)
+    if (root === undefined) {
+      chmodSync(executable, 0o755)
+      return
+    }
+    chmodTree(root)
+  } catch {
+    // Unrepairable here; the retry's own failure names the cause.
+  }
 }
 
 export default OperatorBrowserService

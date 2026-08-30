@@ -9,6 +9,7 @@
  */
 
 import type { MachineEntry } from '@unieai/uad-api-remotes/client'
+import { LOCAL_MACHINE } from '../machine-settings.ts'
 
 /** What the control renders from. */
 export interface MachineState {
@@ -113,6 +114,30 @@ export function createMachineView(routes: MachineRoutes): MachineView & {
     select: async (machine) => {
       if (machine === state.current) return
       publish({ busy: true, error: '' })
+      // A machine is listed because it is CONFIGURED, not because it answers,
+      // so the choice is where reachability gets tested. Switching to a host
+      // that is down otherwise succeeds here and then fails every command
+      // afterwards, far from the choice that caused it — and the person is
+      // left on a machine they cannot use with no way to tell that is why.
+      //
+      // A refused switch is not a fallback: nothing was selected, so the
+      // machine they were on is still the current one.
+      //
+      // `local` is this process. It is always reachable, and probing it would
+      // spend a round trip proving so.
+      if (machine !== LOCAL_MACHINE) {
+        const answer = await routes.probe(machine)
+        publish({
+          reachable: { ...state.reachable, [machine]: { ok: answer.reachable, message: answer.message } },
+        })
+        if (!answer.reachable) {
+          publish({
+            busy: false,
+            error: answer.message === '' ? `${machine} did not answer` : answer.message,
+          })
+          return
+        }
+      }
       apply(await routes.select(machine))
     },
     add: async (draft) => {

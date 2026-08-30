@@ -125,7 +125,15 @@ export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutAction
       // The document owned the column while it was open, so closing it closes
       // the column: returning to an empty details panel would leave a blank
       // third of the screen behind a document nobody asked to keep.
+      //
+      // Only when a document actually held it. A viewer that reports "no
+      // windows open" is not closing anything, and taking the column from
+      // whoever else opened it is how the details panel became impossible to
+      // open at all: univer's document host runs this on an effect keyed on
+      // its own props, so on a page with no document it fired on every render
+      // and zeroed the width the details toggle had just set.
       closeDocument: (d) => {
+        if (!d.document) return
         d.document = false
         d.details = 0
         delete d.detailsRestore

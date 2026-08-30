@@ -5,8 +5,10 @@
  * namespace would otherwise make the machine memory write to nowhere.
  */
 import { describe, expect, it } from 'vitest'
-import { MACHINES_SETTINGS_NAMESPACE as HOST_NAMESPACE, MachineSettingsSchema } from '@unieai/uad-machines'
-import { MACHINES_SETTINGS_NAMESPACE, WORKSPACE_BY_MACHINE_FIELD } from '../src/machine-settings.ts'
+import {
+  LOCAL_MACHINE as HOST_LOCAL, MACHINES_SETTINGS_NAMESPACE as HOST_NAMESPACE, MachineSettingsSchema,
+} from '@unieai/uad-machines'
+import { LOCAL_MACHINE, MACHINES_SETTINGS_NAMESPACE, WORKSPACE_BY_MACHINE_FIELD } from '../src/machine-settings.ts'
 
 describe('machine settings names', () => {
   it('names the same namespace the host service registers', () => {
@@ -15,5 +17,9 @@ describe('machine settings names', () => {
 
   it('names a field the host schema actually declares', () => {
     expect(Object.keys(MachineSettingsSchema.dict ?? {})).toContain(WORKSPACE_BY_MACHINE_FIELD)
+  })
+
+  it('names the same local machine the host service always lists first', () => {
+    expect(LOCAL_MACHINE).toBe(HOST_LOCAL)
   })
 })

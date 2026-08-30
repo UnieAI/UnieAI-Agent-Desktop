@@ -124,3 +124,27 @@ describe('createLayoutStore', () => {
     expect(store.getSnapshot()).toMatchObject({ document: true, details: 520 })
   })
 })
+
+describe('closeDocument only closes a column a document held', () => {
+  it('leaves a details column opened by someone else alone', () => {
+    // The regression this guards: univer's document host calls closeDocument
+    // from an effect whenever its window count is zero, and that effect is
+    // keyed on its own props, so on a page with no document it fires on every
+    // render. Without the guard it zeroed the width the details toggle had
+    // just set, and the panel could never be opened at all.
+    const store = createLayoutStore().create()
+    store.actions.toggleDetails()
+    expect(store.getSnapshot().details).toBe(DETAILS_DEFAULT)
+    store.actions.closeDocument()
+    expect(store.getSnapshot().details).toBe(DETAILS_DEFAULT)
+    expect(store.getSnapshot().document).toBe(false)
+  })
+
+  it('still closes the column when a document did hold it', () => {
+    const store = createLayoutStore().create()
+    store.actions.openDocument()
+    expect(store.getSnapshot()).toMatchObject({ document: true, details: DETAILS_DEFAULT })
+    store.actions.closeDocument()
+    expect(store.getSnapshot()).toMatchObject({ document: false, details: 0 })
+  })
+})

@@ -16,7 +16,10 @@ function routes(partial: Partial<MachineRoutes>): MachineRoutes {
   const unused = vi.fn().mockResolvedValue({ ok: false, message: 'not part of this test' })
   return {
     list: unused, select: unused, add: unused, remove: unused,
-    probe: vi.fn().mockResolvedValue({ reachable: false, message: 'not part of this test' }),
+    // Reachable by default: picking a machine now TESTS it first, so a double
+    // that refuses would make every switch case in this file a refusal case.
+    // The cases that are about refusal say so by overriding this.
+    probe: vi.fn().mockResolvedValue({ reachable: true, message: '' }),
     ...partial,
   }
 }
@@ -77,11 +80,51 @@ describe('picking one', () => {
     const seen = vi.fn()
     const stop = view.subscribe(seen)
     await view.select('build-box')
-    // Once for the pending state, once for the answer.
-    expect(seen).toHaveBeenCalledTimes(2)
+    // Once for the pending state, once for what the reachability test found,
+    // once for the answer. The middle one is why a slow machine shows its
+    // result before the switch settles rather than after.
+    expect(seen).toHaveBeenCalledTimes(3)
     stop()
     await view.select('local')
-    expect(seen).toHaveBeenCalledTimes(2)
+    expect(seen).toHaveBeenCalledTimes(3)
+  })
+
+  it('refuses a machine that does not answer, and stays where it was', async () => {
+    // A machine is listed because it is CONFIGURED, not because it answers.
+    // Switching to one that is down used to succeed and then fail every
+    // command afterwards, far from the choice that caused it.
+    const select = vi.fn()
+    const probe = vi.fn().mockResolvedValue({ reachable: false, message: 'ssh: connect: host is down' })
+    const view = createMachineView(routes({ select, probe }))
+    await view.select('build-box')
+    expect(select).not.toHaveBeenCalled()
+    expect(view.getSnapshot()).toMatchObject({
+      current: 'local',
+      busy: false,
+      error: 'ssh: connect: host is down',
+    })
+    // And the reachability it just learned is kept, so the row can say so.
+    expect(view.getSnapshot().reachable['build-box']).toMatchObject({ ok: false })
+  })
+
+  it('names the machine when the refusal came with no words', async () => {
+    const probe = vi.fn().mockResolvedValue({ reachable: false, message: '' })
+    const view = createMachineView(routes({ probe }))
+    await view.select('build-box')
+    expect(view.getSnapshot().error).toBe('build-box did not answer')
+  })
+
+  it('does not spend a round trip testing this computer', async () => {
+    // `local` is this process: it is always reachable, and probing it would
+    // pay an SSH round trip to prove so.
+    const probe = vi.fn().mockResolvedValue({ reachable: true, message: '' })
+    const select = vi.fn().mockImplementation((machine: string) =>
+      Promise.resolve({ ok: true, machines: [LOCAL, BUILD], current: machine }))
+    const view = createMachineView(routes({ probe, select }))
+    await view.select('build-box')
+    await view.select('local')
+    expect(probe).toHaveBeenCalledTimes(1)
+    expect(probe).toHaveBeenCalledWith('build-box')
   })
 })
 

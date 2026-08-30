@@ -27,6 +27,9 @@ function connectionFake(): { api: { host: Record<string, unknown> }; isLoopback:
     api: {
       host: {
         listMachines: () => Promise.resolve(listing()),
+        // Picking a machine tests it first; these cases are about what happens
+        // AFTER a switch the host agreed to.
+        probeMachine: () => Promise.resolve({ result: { ok: true, value: { reachable: true, message: '' } } }),
         selectMachine: ({ machine }: { machine: string }) => {
           current = machine
           return Promise.resolve(listing())
