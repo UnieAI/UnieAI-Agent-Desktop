@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-commands",
   "description": "Plugin-owned human command registry for DeepSeek Harness UIs",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "publishConfig": {
     "access": "public"
   },

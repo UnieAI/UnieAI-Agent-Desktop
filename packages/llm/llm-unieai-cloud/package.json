@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-llm-unieai-cloud",
   "description": "Registers the UnieAI account's entitled models as a runnable LLM route through the web product's metered inference relay",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
