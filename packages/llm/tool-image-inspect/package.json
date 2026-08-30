@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-tool-image-inspect",
   "description": "The image_inspect tool: the main model hands one picture and one question to a vision model and gets an answer back",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "publishConfig": {
     "access": "public"
   },
