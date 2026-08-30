@@ -165,7 +165,7 @@ function tabFor(id: PanelItemId): PanelTab {
 }
 
 export function DetailsPanel({
-  useSession, useSessions, sessionId, useStore, actions, renderSlot, closeDetails,
+  useSession, useSessions, useWorkspaces, sessionId, useStore, actions, renderSlot, closeDetails,
   toggleDetailsMaximized, listWorkspaceEntries, readWorkspaceFile, writeWorkspaceFile,
   openFile, canOpenFileHere,
   terminals, browsers, t,
@@ -176,6 +176,17 @@ export function DetailsPanel({
 
   const selection = useStore(s => s.selection)
   const sessionCwd = useSessions(list => list.byId[sessionId]?.cwd)
+  // The host fences the listing to a REGISTERED workspace root — a page that
+  // names anything else gets `workspace-invalid-path` — so the file view has to
+  // ask with the workspace, not with wherever this session happens to be
+  // sitting. They are the same string only while a session's cwd is exactly its
+  // workspace root; a session one directory in answered "this directory could
+  // not be read" for the whole tree.
+  const workspaceRoot = useWorkspaces(list =>
+    list.items.find(workspace => workspace.sessionIds.includes(sessionId))?.path)
+  // Falling back to the cwd keeps a session the registry does not account for
+  // (a bare `rabi` run outside any workspace) showing what it can.
+  const fileRoot = workspaceRoot ?? sessionCwd
   const callId = selection?.callId
   const material = useSession(
     s => (callId === undefined ? null : materialFor(s, callId)),
@@ -391,11 +402,11 @@ export function DetailsPanel({
                   />
                 )
               : active.kind === 'files' || active.kind === 'file'
-                ? sessionCwd === undefined
+                ? fileRoot === undefined
                   ? <div className={css.note}>{t('files.noWorkspace')}</div>
                   : (
                     <FileBrowser
-                      root={sessionCwd} list={listWorkspaceEntries} read={readWorkspaceFile}
+                      root={fileRoot} list={listWorkspaceEntries} read={readWorkspaceFile}
                       write={writeWorkspaceFile} t={t} revision={settledCalls}
                       {...active.kind === 'file' ? { path: active.path } : {}}
                       onOpen={(path) => { open({ key: `file:${path}`, kind: 'file', path }) }}

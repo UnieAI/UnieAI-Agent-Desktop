@@ -4,9 +4,14 @@
  *
  * Grouped by origin, because origin is what a person can act on. The ones
  * they wrote are theirs to edit; a project's belong to that repository and
- * travel with it; the ones this build ships are not theirs at all. A row
- * names the file so the answer to "which of these two is being used" is on
- * screen rather than inferred.
+ * travel with it; the ones this build ships are not theirs at all.
+ *
+ * One card per skill, and nothing on the card but its name. A list that put
+ * the description and the absolute path on every row was three lines of prose
+ * per skill and unreadable at a glance — the page's job is "what do I have",
+ * and the answer to that is a name. Everything else is one click away, in a
+ * dialog that has room to say it properly: what it is for, when to use it,
+ * where it came from, which file, and the button that opens that file.
  *
  * Read when the destination opens and when someone asks again — skills are
  * files edited outside Rabi, by an editor or by the agent, and there is no
@@ -16,7 +21,8 @@
  * things that already write files well are the person's editor and the
  * agent — which is also how a skill gets created here: ask for one.
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Button, Modal } from '@unieai/uad-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@unieai/uad-client-ui-slots'
 import { groupSkills } from './skills-view.ts'
 import type { SkillsState, SkillsView } from './skills-view.ts'
@@ -59,6 +65,10 @@ export function SkillsArea({
   t, useSkills, useAccountSkills, available, refresh, openPath, refreshAccount, copyFromAccount,
 }: SkillsAreaComponentProps) {
   const state: SkillsState = useSkills(snapshot => snapshot)
+  // The card that was clicked, or none. Held here rather than in the view:
+  // which skill a person is reading is this screen's business, not the
+  // catalogue's, and it must not survive a refresh that drops the row.
+  const [detail, setDetail] = useState<SkillsState['skills'][number] | undefined>(undefined)
   const fromAccount: AccountSkillsSnapshot = useAccountSkills(snapshot => snapshot)
 
   useEffect(() => { if (available) refresh() }, [available, refresh])
@@ -93,28 +103,64 @@ export function SkillsArea({
           <div className={css.groupLabel}>{t(`skills.group.${group.key}` as 'skills.group.personal')}</div>
           <ul className={css.list}>
             {group.skills.map(skill => (
-              <li key={`${skill.provider}:${skill.name}`} className={css.row}>
-                <div className={css.rowMain}>
+              <li key={`${skill.provider}:${skill.name}`}>
+                <button
+                  type="button"
+                  className={css.card}
+                  onClick={() => { setDetail(skill) }}
+                >
                   <span className={css.name}>{skill.name}</span>
-                  <span className={css.description}>{skill.description}</span>
-                  {skill.path !== undefined && <span className={css.path}>{skill.path}</span>}
-                </div>
-                {!skill.modelInvocable && <span className={css.tag}>{t('skills.userOnly')}</span>}
-                {skill.path !== undefined && openPath !== undefined && (
-                  <button
-                    type="button"
-                    className={css.action}
-                    onClick={() => { openPath(skill.path as string) }}
-                  >
-                    {t('skills.open')}
-                  </button>
-                )}
+                  {!skill.modelInvocable && <span className={css.tag}>{t('skills.userOnly')}</span>}
+                </button>
               </li>
             ))}
           </ul>
         </div>
       ))}
       <p className={css.note}>{t('skills.write')}</p>
+      <Modal
+        open={detail !== undefined}
+        onClose={() => { setDetail(undefined) }}
+        title={detail?.name ?? ''}
+        closeLabel={t('skills.close')}
+        footer={detail?.path !== undefined && openPath !== undefined
+          ? (
+            <Button
+              variant="primary"
+              onClick={() => { openPath(detail.path as string) }}
+            >
+              {t('skills.open')}
+            </Button>
+          )
+          : undefined}
+      >
+        {detail === undefined ? null : (
+          <div className={css.detail}>
+            <p className={css.detailDescription}>{detail.description}</p>
+            {detail.whenToUse !== undefined && detail.whenToUse !== '' && (
+              <div className={css.detailField}>
+                <span className={css.detailLabel}>{t('skills.detail.whenToUse')}</span>
+                <span className={css.detailValue}>{detail.whenToUse}</span>
+              </div>
+            )}
+            <div className={css.detailField}>
+              <span className={css.detailLabel}>{t('skills.detail.source')}</span>
+              <span className={css.detailValue}>{detail.provider}</span>
+            </div>
+            {detail.path !== undefined && (
+              <div className={css.detailField}>
+                <span className={css.detailLabel}>{t('skills.detail.file')}</span>
+                {/* The whole path, wrapped: it is the answer to "which of these
+                    two is being used", and a truncated one answers nothing. */}
+                <span className={css.detailPath}>{detail.path}</span>
+              </div>
+            )}
+            {!detail.modelInvocable && (
+              <p className={css.detailNote}>{t('skills.detail.modelHidden')}</p>
+            )}
+          </div>
+        )}
+      </Modal>
       <AccountSkills
         t={t} snapshot={fromAccount} local={state.skills.map(skill => skill.name)}
         copy={copyFromAccount}

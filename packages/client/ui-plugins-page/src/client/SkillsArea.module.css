@@ -39,9 +39,9 @@
 }
 
 .list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -115,5 +115,70 @@
 
 .error {
   color: var(--dsw-alias-state-error-primary);
+  font-size: 12px;
+}
+
+/* One skill, one card, and nothing on it but the name: the page answers
+   "what do I have", and prose on every row buried that answer. */
+.card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.card:hover {
+  border-color: var(--dsw-alias-border-l1);
+  background: var(--dsw-alias-bg-layer-2);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detailDescription {
+  margin: 0;
+  color: var(--dsw-alias-label-primary);
+  line-height: 20px;
+}
+
+.detailField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailLabel {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+}
+
+.detailValue {
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* Wrapped, not truncated: a half path names no file. */
+.detailPath {
+  color: var(--dsw-alias-label-secondary);
+  font-family: var(--ds-font-family-code);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.detailNote {
+  margin: 0;
+  color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
 }

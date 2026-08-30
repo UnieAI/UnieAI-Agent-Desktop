@@ -1791,9 +1791,6 @@ importers:
       '@unieai/uad-tool-image-inspect':
         specifier: workspace:^
         version: link:../../llm/tool-image-inspect
-      '@unieai/uad-tool-page-capture':
-        specifier: workspace:^
-        version: link:../../browser/tool-page-capture
       '@unieai/uad-unieai-mcp-supervisor':
         specifier: workspace:^
         version: link:../../unieai/mcp-supervisor
@@ -10054,9 +10051,6 @@ importers:
       '@unieai/uad-brand':
         specifier: workspace:^
         version: link:../../packages/util/brand
-      '@unieai/uad-browser-operator':
-        specifier: workspace:^
-        version: link:../../packages/browser/browser-operator
       '@unieai/uad-code-runtime':
         specifier: workspace:^
         version: link:../../packages/code-runtime/code-runtime
@@ -10294,9 +10288,6 @@ importers:
       '@unieai/uad-tool-jobs':
         specifier: workspace:^
         version: link:../../packages/jobs/tool-jobs
-      '@unieai/uad-tool-page-capture':
-        specifier: workspace:^
-        version: link:../../packages/browser/tool-page-capture
       '@unieai/uad-tool-ralph':
         specifier: workspace:^
         version: link:../../packages/workflow/tool-ralph

@@ -36,7 +36,7 @@ const FILE_REFERENCE_PROMPT = fileURLToPath(new URL(
 /**
  * The `standard` preset's catalog.
  *
- * `page_screenshot`, GenUI's two and Univer Office's fourteen joined it when
+ * GenUI's two and Univer Office's fourteen joined it when
  * they moved out of the HOST composition: a host row registers a model-facing
  * tool into the process-global catalog, where every agent inherits it —
  * including `minimal`, whose definition is two tools. They are the same tools
@@ -55,7 +55,6 @@ const EXPECTED_TOOLS = [
   'job_list',
   'job_output',
   'list_agents',
-  'page_screenshot',
   'ralph',
   'read',
   'read_image',

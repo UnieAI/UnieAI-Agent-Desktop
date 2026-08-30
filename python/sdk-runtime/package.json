@@ -100,8 +100,6 @@
     "@unieai/uad-tool-fs": "workspace:^",
     "@unieai/uad-tool-fs-search": "workspace:^",
     "@unieai/uad-tool-goal": "workspace:^",
-    "@unieai/uad-browser-operator": "workspace:^",
-    "@unieai/uad-tool-page-capture": "workspace:^",
     "@unieai/uad-tool-ralph": "workspace:^",
     "@unieai/uad-tool-skill": "workspace:^",
     "@unieai/uad-tool-str-replace-editor": "workspace:^",

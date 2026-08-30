@@ -251,17 +251,6 @@
     fetch: false
     searchTimeoutMs: 60000
 
-# `page_screenshot`: the MODEL asks what a page looks like. Deliberately not
-# the operator browser, which is a person's, is loopback-pinned, and outlives
-# the panel showing it; this launches a browser for one call and throws it
-# away, so one page's cookies never reach another's picture.
-#
-# Here rather than in the host composition for the reason the header states:
-# it is a model-facing tool, and a host row puts it in every agent's catalog
-# regardless of preset.
-- id: tool-page-capture
-  name: '@unieai/uad-tool-page-capture'
-
 # ── community plugins ───────────────────────────────────────────────────────
 
 # Univer Office lives HERE, not in the host composition, because its TOOLS are

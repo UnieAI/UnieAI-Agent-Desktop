@@ -152,6 +152,27 @@ export function previewLines(draft: MachineDraft): readonly string[] {
  * @param props - composed slot props.
  * @returns the chip, its menu while open, and whichever dialog is showing.
  */
+/**
+ * The menu's tallest.
+ *
+ * Half what it used to be. The list scrolls, so height buys nothing past the
+ * point where a person can see enough rows to recognise the machine they
+ * want — and the tall menu was what ran off the screen.
+ */
+const MENU_MAX_HEIGHT = 210
+
+/**
+ * The height below which opening downward is not worth it.
+ *
+ * Under this the menu flips instead of shrinking further: a few pixels of list
+ * is unusable in a different way from a menu on the other side.
+ */
+const MENU_MIN_HEIGHT = 140
+
+/** Gap between the trigger and the menu, and the margin kept off the window edge. */
+const MENU_GAP = 8
+const MENU_MARGIN = 12
+
 export function MachineControl(props: MachineControlProps): ReactNode {
   const { t, useMachines, refresh, select, add, remove, probe, openConfig } = props
   const state: MachineState = useMachines(snapshot => snapshot)
@@ -160,6 +181,13 @@ export function MachineControl(props: MachineControlProps): ReactNode {
   const [draft, setDraft] = useState<MachineDraft>({ alias: '' })
   const [confirming, setConfirming] = useState('')
   const box = useRef<HTMLDivElement>(null)
+  // Measured, not guessed. Which side has room depends on where this control
+  // sits, and it moves: the same seat renders in the row under the hero card
+  // and in the composer's own row once a conversation is running. A CSS rule
+  // keyed on an ancestor cannot see the window, so it opened upward into a gap
+  // that was smaller than the menu and the list lost its top.
+  const [placement, setPlacement] = useState<{ side: 'top' | 'bottom'; maxHeight: number }>(
+    { side: 'bottom', maxHeight: MENU_MAX_HEIGHT })
 
   const current = state.machines.find(machine => machine.id === state.current)
   const remote = state.current !== 'local'
@@ -182,6 +210,24 @@ export function MachineControl(props: MachineControlProps): ReactNode {
 
   useEffect(() => {
     if (!open) return undefined
+    const place = (): void => {
+      const anchor = box.current?.getBoundingClientRect()
+      if (anchor === undefined) return
+      const below = window.innerHeight - anchor.bottom - MENU_GAP - MENU_MARGIN
+      const above = anchor.top - MENU_GAP - MENU_MARGIN
+      // Downward by default — that is where a menu is expected, and on the new
+      // chat page there is room for it. It flips only when the gap below is too
+      // cramped to be worth opening AND the one above is roomier; otherwise it
+      // stays down and the list scrolls. Height then follows the gap that side
+      // actually has, which is the half no CSS rule could know.
+      const side = below >= MENU_MIN_HEIGHT || below >= above ? 'bottom' : 'top'
+      const room = side === 'bottom' ? below : above
+      setPlacement({ side, maxHeight: Math.max(MENU_MIN_HEIGHT, Math.min(MENU_MAX_HEIGHT, room)) })
+    }
+    place()
+    window.addEventListener('resize', place)
+    // Capture: an ancestor scrolling moves the trigger without scrolling the window.
+    window.addEventListener('scroll', place, true)
     const onPointerDown = (event: MouseEvent): void => {
       if (!box.current?.contains(event.target as Node)) setOpen(false)
     }
@@ -189,6 +235,8 @@ export function MachineControl(props: MachineControlProps): ReactNode {
     document.addEventListener('mousedown', onPointerDown)
     document.addEventListener('keydown', onKeyDown)
     return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
       document.removeEventListener('mousedown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
@@ -237,7 +285,12 @@ export function MachineControl(props: MachineControlProps): ReactNode {
         {(remote || state.busy) && <span className={css['name']}>{state.busy ? t('busy') : name}</span>}
       </button>
       {open && (
-        <div className={css['menu']} role="menu">
+        <div
+          className={css['menu']}
+          role="menu"
+          data-side={placement.side}
+          style={{ maxHeight: `${String(placement.maxHeight)}px` }}
+        >
           <div className={css['list']}>
             {state.machines.map(machine => (
               <div key={machine.id} className={css['row']}>

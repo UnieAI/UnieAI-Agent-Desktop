@@ -228,9 +228,19 @@ describe('the skills destination', () => {
     ] })} />)
     expect(screen.getByText(zh['skills.group.personal'])).toBeTruthy()
     expect(screen.getByText(zh['skills.group.bundled'])).toBeTruthy()
+    // A card carries its name and nothing else: the page answers "what do I
+    // have", and a description and an absolute path on every row buried that.
     expect(screen.getByText('mine')).toBeTruthy()
-    // The file is on screen, so "which of these two is being used" is read,
-    // not inferred.
+    expect(screen.getByText('shipped')).toBeTruthy()
+    expect(screen.queryByText('/home/dev/.dsh/skills/mine/SKILL.md')).toBeNull()
+  })
+
+  it('opening a card says which file it is, so two of a name can be told apart', () => {
+    render(<SkillsArea {...skillsProps({ skills: [
+      { name: 'mine', description: 'one I wrote', source: 'user-dsh', provider: 'filesystem', path: '/home/dev/.dsh/skills/mine/SKILL.md', modelInvocable: true, userInvocable: true },
+    ] })} />)
+    fireEvent.click(screen.getByText('mine'))
+    expect(screen.getByText('one I wrote')).toBeTruthy()
     expect(screen.getByText('/home/dev/.dsh/skills/mine/SKILL.md')).toBeTruthy()
   })
 
@@ -246,6 +256,9 @@ describe('the skills destination', () => {
     render(<SkillsArea {...skillsProps({ openPath, skills: [
       { name: 'mine', description: 'one I wrote', source: 'user-dsh', provider: 'filesystem', path: '/skills/mine/SKILL.md', modelInvocable: true, userInvocable: true },
     ] })} />)
+    // The file button lives in the dialog now, not on the card.
+    expect(screen.queryByText(zh['skills.open'])).toBeNull()
+    fireEvent.click(screen.getByText('mine'))
     fireEvent.click(screen.getByText(zh['skills.open']))
     expect(openPath).toHaveBeenCalledWith('/skills/mine/SKILL.md')
   })

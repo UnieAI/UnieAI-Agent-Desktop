@@ -59,6 +59,33 @@ describe('web e2e: machine control placement', () => {
     expect(inHeroRow, 'the hero seat renders in the workspace row below the card').toBe(true)
   }, 60_000)
 
+  it('opens downward on the hero, inside the window, first row included', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-machine-menu-fits'))
+    // Why this matters beyond looks: "This computer" is the FIRST row, so a
+    // menu that overflows the top edge takes the way back to local with it —
+    // the machine you can always reach becomes the one you cannot pick.
+    await controls(page).first().click()
+    const menu = page.getByRole('menu')
+    await menu.waitFor({ timeout: 10_000 })
+    const fit = await menu.evaluate((el) => {
+      const box = el.getBoundingClientRect()
+      const first = el.querySelector('[role="menuitem"]')?.getBoundingClientRect()
+      return {
+        side: el.getAttribute('data-side'),
+        overflowsTop: box.top < 0,
+        overflowsBottom: box.bottom > window.innerHeight,
+        tallerThanCap: box.height > 210,
+        firstRowVisible: first !== undefined && first.top >= 0 && first.bottom <= window.innerHeight,
+      }
+    })
+    expect(fit).toEqual({
+      side: 'bottom',
+      overflowsTop: false,
+      overflowsBottom: false,
+      tallerThanCap: false,
+      firstRowVisible: true,
+    })
+  }, 60_000)
   it('an open conversation keeps the control reachable in the composer', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-machine-control-session'))
     const search = page.getByRole('button', { name: 'Search sessions' })
@@ -77,4 +104,5 @@ describe('web e2e: machine control placement', () => {
     }))
     expect(placement).toEqual({ heroRow: false, composer: true })
   }, 60_000)
+
 })
