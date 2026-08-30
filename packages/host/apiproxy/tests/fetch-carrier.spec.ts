@@ -189,6 +189,18 @@ function fakeApi(overrides: Partial<{ muxFrames: MuxFrame[]; hostFrames: HostFra
           result: { ok: true as const, value: { machine: 'local', at: '2026-08-27T00:00:00.000Z', gpus: [], npus: [] } },
         }
       },
+      async listConnectors(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { connectors: [] } } }
+      },
+      async connectConnector(request) {
+        return {
+          rpcId: request.rpcId,
+          result: { ok: true as const, value: { id: 'x', label: 'X', connected: true, scopes: [], renewable: false, requiresClientId: false } },
+        }
+      },
+      async disconnectConnector(request) {
+        return { rpcId: request.rpcId, result: { ok: true as const, value: { connectors: [] } } }
+      },
     },
     browser: {
       async list(request) {

@@ -27,7 +27,7 @@ import { mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import type { Page } from 'playwright'
+import type { Locator, Page } from 'playwright'
 import { expect } from 'vitest'
 import { Context } from '@unieai/cordis'
 import Loader from '@unieai/cordis-plugin-loader'
@@ -75,6 +75,12 @@ import { REPO_ROOT, requireDist } from './support.ts'
 //   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE,
 //   WELCOME_NOTICE_VERSION, WELCOME_NOTICE_COPY,
 // } from '@unieai/uad-client-ui-settings-models'
+// Mirrored from packages/client/ui-first-run/src/first-run-settings.ts, for
+// the same reason as the welcome notice above: a host-side graph cannot import
+// a browser package. Drift stops the tour being pre-dismissed, and every
+// scenario's first click then lands on its mask.
+const FIRST_RUN_SETTINGS_NAMESPACE = 'first-run'
+const FIRST_RUN_SEEN_FIELD = 'seen'
 export const WELCOME_NOTICE_SETTINGS_NAMESPACE = 'ui-onboarding'
 export const WELCOME_NOTICE_ACK_FIELD = 'welcomeNoticeVersion'
 export const WELCOME_NOTICE_VERSION = '2026-08-22.unieai.1'
@@ -261,6 +267,12 @@ export interface LaunchOptions {
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
   /**
+   * Leave the first-run tour unseen, so it opens over the frame. Only a
+   * scenario about the tour itself wants this; every other one would have its
+   * first click land on the tour's mask.
+   */
+  firstRunTourPending?: boolean
+  /**
    * Patch the shipped DeepSeek search row to a deterministic endpoint and
    * credential reference. Browser search scenarios keep the real provider and
    * credentials seam while avoiding external search traffic and ambient keys.
@@ -405,6 +417,13 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     ...basePatches,
     ...surfacePatches,
     ...extraOverlayPatches,
+    // The shipped Web surface serves every page behind the UnieAI sign-in
+    // gate, which redirects an unauthenticated browser to `/auth/login`
+    // before any client bundle loads. No scenario here has an account to
+    // sign in with, and none of them is about the fence: its own coverage
+    // lives with `@unieai/uad-unieai-web-gate`. Left enforcing, every
+    // scenario in this directory waits out its frame timeout on a login page.
+    { id: 'unieai-web-gate', disabled: true },
     // The roster's `roots` is an assembly fact AppCLIEntry resolves and patches
     // in, exactly like `distIndex` on the webserver row — the shipped preset
     // directory sits beside the composition that names it, and no config author
@@ -561,6 +580,15 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     if (options.welcomeNoticePending !== true) {
       await ctx.settings.mutate(settingsNamespace(WELCOME_NOTICE_SETTINGS_NAMESPACE), [{
         op: 'set', path: [WELCOME_NOTICE_ACK_FIELD], value: WELCOME_NOTICE_VERSION,
+      }])
+    }
+    // The first-run tour opens a modal over everything on a home this scaffold
+    // just created, and every scenario's first click would land on its mask.
+    // Seeded for the same reason as the welcome notice above; the tour's own
+    // coverage lives with `@unieai/uad-client-ui-first-run`.
+    if (options.firstRunTourPending !== true) {
+      await ctx.settings.mutate(settingsNamespace(FIRST_RUN_SETTINGS_NAMESPACE), [{
+        op: 'set', path: [FIRST_RUN_SEEN_FIELD], value: true,
       }])
     }
     const boundPort = ctx.get('webServer')?.port
@@ -929,12 +957,16 @@ function normalizeAria(snapshot: string, workspaceCwd: string): string {
  * consecutive normalized captures are equal — a single-shot capture races the
  * last React commits.
  * @param page - the page under test.
- * @param selector - the region locator selector.
+ * @param selector - the region: a CSS selector, or a Locator already narrowed
+ * to it (a menu told apart from a sibling menu by what it contains cannot be
+ * written as a selector).
  * @param workspaceCwd - normalization input.
  * @returns the stable normalized snapshot.
  */
-export async function captureStableAria(page: Page, selector: string, workspaceCwd: string): Promise<string> {
-  const region = page.locator(selector).first()
+export async function captureStableAria(
+  page: Page, selector: string | Locator, workspaceCwd: string,
+): Promise<string> {
+  const region = (typeof selector === 'string' ? page.locator(selector) : selector).first()
   let previous = normalizeAria(await region.ariaSnapshot(), workspaceCwd)
   await expect.poll(async () => {
     const current = normalizeAria(await region.ariaSnapshot(), workspaceCwd)
@@ -1006,6 +1038,24 @@ export function watchConsole(page: Page): { warnings: string[]; pageErrors: stri
  * @param tripwire - the live console-warning collector.
  * @param warningStart - warning count captured immediately before reloading.
  */
+/**
+ * Drop the transport errors a TRUSTED NON-LOOPBACK browser is expected to log.
+ *
+ * `terminal.*` and `browser.*` are loopback-pinned — they run commands as the
+ * host account, so a remote browser is refused with HTTP 403. The client asks
+ * for both lists on every load regardless of its own trust level, so the
+ * refusals reach the console as transport errors. They are the documented
+ * consequence of the pin rather than a fault, and anything else in the channel
+ * still fails the caller's assertion.
+ * @param tripwire - the console watcher whose errors are filtered in place.
+ */
+export function acknowledgeLoopbackPinnedRefusals(tripwire: ReturnType<typeof watchConsole>): void {
+  const kept = tripwire.pageErrors.filter(text =>
+    !/transport failure for \/api\/(?:terminal|browser)\.list: HTTP 403/.test(text))
+  tripwire.pageErrors.length = 0
+  tripwire.pageErrors.push(...kept)
+}
+
 export function acknowledgeReloadConnectionLoss(
   tripwire: ReturnType<typeof watchConsole>,
   warningStart: number,

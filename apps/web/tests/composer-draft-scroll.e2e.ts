@@ -279,10 +279,11 @@ describe('web e2e: composer draft scrolling', () => {
     await page.mouse.wheel(0, -2000)
     await expect.poll(async () => (await measureComposer(page)).scrollTop, { timeout: 10_000 }).toBe(0)
     const metrics = await measureComposer(page)
-    // The cap is the composer seat's `--dsh-composer-text-max-height` (336px =
-    // 14 x 24px lines). The count, not the pixels: it is the figma constant and
-    // survives a device-pixel-ratio change.
-    expect(metrics.visibleLines).toBe(14)
+    // The cap is the composer seat's `--dsh-composer-text-max-height` (220px =
+    // 9 x 24px lines, floor). The count, not the pixels: it is the reference
+    // constant and survives a device-pixel-ratio change. It was 336px/14 lines
+    // before the UnieAI rebrand took the web product's `max-h-[220px]`.
+    expect(metrics.visibleLines).toBe(9)
     // One scrolling box: the textarea is as tall as the draft, so there is no
     // second offset for the caret to hold while the glyphs hold another.
     expect(metrics.inputScrollable).toBe(0)
@@ -328,10 +329,19 @@ describe('web e2e: composer draft scrolling', () => {
     const input = page.locator('textarea:enabled').first()
     await input.hover()
     const resting = (await measureComposer(page)).caretGlyphGap
-    // One delta past the whole draft: the box clamps at its own end, and the
-    // wheel-chaining handler leaves it native because the box is not yet at its
-    // edge when the gesture starts (the chaining itself is owned by the unit spec).
-    await page.mouse.wheel(0, 2000)
+    // Wheel until the box stops moving, rather than assuming one delta covers
+    // the draft: the scrollport caps at 220px now (it was 336px), so the same
+    // draft has a longer scrollable range than one 2000px gesture spans. The
+    // box clamps at its own end, and the wheel-chaining handler leaves the
+    // gesture native while the box is not yet at its edge (the chaining itself
+    // is owned by the unit spec).
+    let previousTop = -1
+    for (let gesture = 0; gesture < 10; gesture += 1) {
+      await page.mouse.wheel(0, 2000)
+      const { scrollTop } = await measureComposer(page)
+      if (scrollTop === previousTop) break
+      previousTop = scrollTop
+    }
     await expect.poll(async () => (await measureComposer(page)).scrollTop, { timeout: 10_000 })
       .toBeGreaterThan(0)
     const metrics = await measureComposer(page)

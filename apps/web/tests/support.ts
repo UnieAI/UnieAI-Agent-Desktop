@@ -3,7 +3,7 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { Browser, Page } from 'playwright'
+import type { Browser, Locator, Page } from 'playwright'
 
 /** The built page under test; `pnpm run test:web` rebuilds it before running. */
 export const DIST_INDEX = fileURLToPath(new URL('../dist/index.html', import.meta.url))
@@ -83,7 +83,7 @@ export async function connectFreshWorkspace(page: Page, root: string, name = 'wo
   await dialog.getByRole('button', { name: 'Open', exact: true }).click()
   // The pick connected the workspace: the blank session's live composer
   // replaces the locked placeholder and enables.
-  await page.locator('textarea:enabled[placeholder="Describe what you want to build"]')
+  await page.locator('textarea:enabled[placeholder="Ask anything…"]')
     .waitFor({ timeout: 15_000 })
 }
 
@@ -133,4 +133,43 @@ export async function saveFailureShot(page: Page, name: string): Promise<void> {
  */
 export function conversationContextKey(kind: string, id: string): string {
   return `${kind.length}:${kind}${id}`
+}
+
+/**
+ * Switch the conversation to the Trajectory view.
+ *
+ * The Chat/Trajectory tablist became ONE toggle button carrying the alternate
+ * view's name: the header offers a single alternate rather than a strip of
+ * peers, and pressing it again returns to the transcript. So this presses it
+ * only while the transcript is showing, which keeps it safe on the pages these
+ * scenarios share.
+ * @param page - the page to drive.
+ */
+export async function showTrajectory(page: Page): Promise<void> {
+  const toggle = viewToggle(page)
+  await toggle.waitFor({ timeout: 30_000 })
+  if (await toggle.getAttribute('aria-pressed') !== 'true') await toggle.click()
+}
+
+/**
+ * The header's view toggle.
+ *
+ * Also the readiness signal a `Chat` tab used to be: the header draws it
+ * whenever a session is open, and there is no `Chat` control any more — the
+ * transcript is what the toggle returns to.
+ * @param page - the page to read.
+ * @returns the toggle locator.
+ */
+export function viewToggle(page: Page): Locator {
+  return page.getByRole('button', { name: 'Trajectory', exact: true })
+}
+
+/**
+ * Switch the conversation back to the transcript.
+ * @param page - the page to drive.
+ */
+export async function showChat(page: Page): Promise<void> {
+  const toggle = viewToggle(page)
+  await toggle.waitFor({ timeout: 30_000 })
+  if (await toggle.getAttribute('aria-pressed') === 'true') await toggle.click()
 }

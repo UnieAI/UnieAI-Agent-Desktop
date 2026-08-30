@@ -1,29 +1,40 @@
-- dialog "设置":
-  - navigation:
-    - text: 设置
-    - button "通用设置":
-      - img
-      - text: 通用设置
-    - button "模型":
-      - img
-      - text: 模型
-    - button "插件":
-      - img
-      - text: 插件
-    - button "Agent 预设":
-      - img
-      - text: Agent 预设
-  - button "打开配置文件"
-  - button "关闭":
+- region "插件设置":
+  - tablist:
+    - tab "插件"
+    - tab "技能"
+  - button "重新读取":
     - img
-    - text: 关闭
-  - heading "插件" [level=2]
+  - button "插件设置" [pressed]:
+    - img
+  - button "返回":
+    - img
+  - heading "插件设置" [level=1]
+  - paragraph: 此账号连接的 MCP 服务器，以及本次构建载入并可配置的插件。
+  - region "Studio MCP":
+    - heading "Studio MCP" [level=2]
+    - paragraph: 通过 Model Context Protocol (MCP) 连接的外部服务与工具。
+    - paragraph: 本版本还无法读取账号的 MCP 服务器。
+    - paragraph: 本部署尚未提供 MCP 路由。请在 UnieAI Studio 中添加和管理 MCP 服务器；提供该路由的版本会在这里列出它们。
+  - region "插件目录":
+    - group:
+      - heading "插件目录" [level=2]
+      - paragraph: 本次构建加载的全部插件，按 Cordis Loader 的报告列出。
+  - heading "部署插件" [level=2]
   - paragraph: 配置和查看本部署已安装的插件。
   - tablist "插件视图":
     - tab "插件配置" [selected]
-    - tab "插件列表"
   - tabpanel "插件配置":
     - list:
+      - listitem:
+        - text: 桌面宠物
+        - checkbox "显示"
+        - text: 显示
+        - paragraph: 窗口角落里的一个小伙伴。它会跟着 agent 在做的事情变化——思考、执行工具、等你回应——除此之外不做任何事。
+        - list "桌面宠物":
+          - listitem:
+            - button "Box Cat" [disabled]
+          - listitem:
+            - button "Bitty" [disabled]
       - listitem:
         - 'button "展开设置: 终端"':
           - text: 终端 限制 agent 运行的每一条命令。
@@ -34,5 +45,5 @@
           - img
       - listitem:
         - 'button "展开设置: 网页搜索"':
-          - text: 网页搜索 DeepSeek 搜索提供方。
+          - text: 网页搜索 为 Agent 提供的网页搜索，由 DeepSeek 搜索 API 提供服务。
           - img

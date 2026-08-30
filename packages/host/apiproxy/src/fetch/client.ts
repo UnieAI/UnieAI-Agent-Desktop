@@ -27,6 +27,8 @@ import { hostFrameSchema, muxFrameSchema } from '../api/events.schema.ts'
 import {
   hostCreateDirectoryValueSchema,
   hostListWorkspaceEntriesValueSchema,
+  hostConnectorListValueSchema,
+  hostConnectorValueSchema,
   hostMachineListValueSchema,
   hostMachineMetricsValueSchema,
   hostProbeMachineValueSchema,
@@ -138,6 +140,9 @@ export interface IApiClient {
     readWorkspaceFile(payload: RequestPayload<'host.readWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.readWorkspaceFile'>>>
     writeWorkspaceFile(payload: RequestPayload<'host.writeWorkspaceFile'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.writeWorkspaceFile'>>>
     openPath(payload: RequestPayload<'host.openPath'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.openPath'>>>
+    listConnectors(payload: RequestPayload<'host.listConnectors'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.listConnectors'>>>
+    connectConnector(payload: RequestPayload<'host.connectConnector'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.connectConnector'>>>
+    disconnectConnector(payload: RequestPayload<'host.disconnectConnector'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'host.disconnectConnector'>>>
   }
   browser: {
     list(payload: RequestPayload<'browser.list'>, signal?: AbortSignal): Promise<RpcResponse<ResponseValue<'browser.list'>>>
@@ -255,6 +260,9 @@ const UNARY_VALUE_SCHEMAS: { [K in keyof RpcMethodMap]: z.ZodType<Wire<ResponseV
   'host.listDirectory': hostListDirectoryValueSchema,
   'host.createDirectory': hostCreateDirectoryValueSchema,
   'host.listWorkspaceEntries': hostListWorkspaceEntriesValueSchema,
+  'host.listConnectors': hostConnectorListValueSchema,
+  'host.connectConnector': hostConnectorValueSchema,
+  'host.disconnectConnector': hostConnectorListValueSchema,
   'host.listMachines': hostMachineListValueSchema,
   'host.selectMachine': hostMachineListValueSchema,
   'host.machineMetrics': hostMachineMetricsValueSchema,
@@ -512,6 +520,14 @@ export abstract class AbstractApiClient implements IApiClient {
     pickDirectory: (payload, signal) => this.callUnary(
       'host.pickDirectory', payload, signal, 'caller-signal-only',
     ),
+    listConnectors: (payload, signal) => this.callUnary('host.listConnectors', payload, signal),
+    // The person approves in a browser window at their own pace, so the only
+    // deadline this attempt has is theirs: they close the tab, or press
+    // Cancel, and the caller's signal ends it.
+    connectConnector: (payload, signal) => this.callUnary(
+      'host.connectConnector', payload, signal, 'caller-signal-only',
+    ),
+    disconnectConnector: (payload, signal) => this.callUnary('host.disconnectConnector', payload, signal),
     listDirectory: (payload, signal) => this.callUnary('host.listDirectory', payload, signal),
     createDirectory: (payload, signal) => this.callUnary('host.createDirectory', payload, signal),
     listWorkspaceEntries: (payload, signal) => this.callUnary('host.listWorkspaceEntries', payload, signal),

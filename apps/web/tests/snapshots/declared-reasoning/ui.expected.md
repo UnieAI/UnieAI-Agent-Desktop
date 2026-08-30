@@ -1,4 +1,14 @@
 - menu "模型与推理等级":
+  - group "DeepSeek":
+    - text: DeepSeek
+    - menuitemradio "DeepSeek-V4-Flash"
+  - group "Acme Gateway":
+    - text: Acme Gateway
+    - menuitemradio "Acme Think" [checked]:
+      - text: Acme Think
+      - img
+  - separator
+  - text: 推理等级
   - menuitemradio "Default" [checked]:
     - text: Default
     - img

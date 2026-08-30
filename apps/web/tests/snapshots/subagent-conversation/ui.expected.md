@@ -8,12 +8,9 @@
       - img
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
-  - tablist:
-    - tab "Chat" [selected]
-    - tab "Trajectory"
+  - button "MEM DISK"
+  - button "Trajectory"
+  - button "Open the details panel"
 - text: Explain event sourcing in one sentence. {{clock}}
 - button "Copy":
   - img
@@ -21,6 +18,10 @@
   - img
   - img
   - text: Context injection @unieai/uad-system-prompt
+- button "Context injection skill-catalog":
+  - img
+  - img
+  - text: Context injection skill-catalog
 - button "Think The user is asking for a one-sentence description of event sourcing. This is a straightforward knowledge question that doesn't require any skill loading or tool calls.":
   - img
   - img
@@ -51,10 +52,16 @@
 - button "Branch into a new conversation":
   - img
 - text: {{clock}} Ran for {{duration}} TTFT {{duration}} {{throughput}} tok/s
-- textbox "Message the agent"
-- button "Commands":
+- textbox "Ask anything…"
+- button "Commands"
+- 'button "What it may do, currently: Custom"': Custom
+- button "Standard mode":
   - img
-- 'button "Access mode, current: Custom"': Custom
+  - text: Standard mode
+  - img
 - button "6% of context used"
+- 'button "Machine: This computer"':
+  - img
+- button "Voice input"
 - button "Send message" [disabled]
-- text: 2 turns · 2 steps LLM {{duration}} TTFT avg {{duration}} · {{throughput}} tok/s Cache hit 99% Input 15.6K tok · Output 158 tok
+- paragraph: AI can make mistakes. Verify important information.

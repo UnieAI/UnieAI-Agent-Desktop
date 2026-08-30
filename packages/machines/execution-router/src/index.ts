@@ -29,6 +29,7 @@ import type {
   FsWriteIntent,
   FsWriteOutcome,
 } from '@unieai/uad-fs'
+import type { SandboxMode } from '@unieai/uad-sandbox'
 import { SubprocessRuntime } from '@unieai/uad-subprocess'
 import type {
   SubprocessHandle,
@@ -101,6 +102,31 @@ export class RoutedFileSystem extends FileSystem {
       this.built.set(machine, provider)
       return provider
     })
+  }
+
+  /**
+   * Whether this deployment's filesystem confines, and to what default mode.
+   *
+   * FORWARDED, not inherited. The base `FileSystem` answers `undefined` — "this
+   * backend does not confine" — and a router that keeps that answer tells
+   * `dsh-tool-fs` there is nothing to confine. The tool then stamps NO policy
+   * onto its mutations, so the per-machine `SandboxedFileSystem` falls back to
+   * its own configured default and the SESSION's mode never reaches it: a
+   * read-only session could still write inside its workspace, and a real
+   * denial arrived at the model as an internal TypeError instead of the
+   * `[sandbox: …]` marker and its escalation hint.
+   *
+   * Answered from the composition rather than from a built world, because the
+   * getter is synchronous and `dsh-tool-fs` reads it at mount, before any call
+   * has built one: `buildFileSystem` mounts `SandboxedFileSystem` for the local
+   * machine exactly when a sandbox policy is mounted, and that provider's own
+   * answer is that policy's default mode. Machine-independent on purpose — a
+   * remote world applies no local fence, and a policy it does not use is inert
+   * there, while gating on the current machine would go stale the moment
+   * someone switched machines after the tool layer had read this once.
+   */
+  override get sandboxMode(): SandboxMode | undefined {
+    return this.ctx.get('sandboxPolicy')?.defaultMode
   }
 
   /** The world a path-addressed or ambient call belongs to. */

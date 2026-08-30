@@ -1,22 +1,37 @@
 - dialog "设置":
-  - navigation:
-    - text: 设置
-    - button "通用设置":
-      - img
-      - text: 通用设置
-    - button "模型":
-      - img
-      - text: 模型
-    - button "插件":
-      - img
-      - text: 插件
-    - button "Agent 预设":
-      - img
-      - text: Agent 预设
+  - heading "设置" [level=1]
+  - paragraph: 管理你的账号，以及这个应用的行为
   - button "打开配置文件"
   - button "关闭":
     - img
     - text: 关闭
+  - navigation:
+    - text: 个人
+    - button "账户":
+      - img
+      - text: 账户
+    - button "剩余用量":
+      - img
+      - text: 剩余用量
+    - button "邀请好友":
+      - img
+      - text: 邀请好友
+    - button "通用设置":
+      - img
+      - text: 通用设置
+    - text: 对话
+    - button "模型":
+      - img
+      - text: 模型
+    - button "Agent 预设":
+      - img
+      - text: Agent 预设
+    - button "通知":
+      - img
+      - text: 通知
+    - button "连接":
+      - img
+      - text: 连接
   - heading "Agent 预设" [level=2]
   - paragraph: 预设即一个会话的 Agent 所运行的插件组装 —— 它的工具、提示词与能力。复制一份既有预设改成自己的，或用「创造模式」让 Agent 帮你创建。
   - heading "内置" [level=3]

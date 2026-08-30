@@ -4,7 +4,8 @@ import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
-  acknowledgeReloadConnectionLoss, launchWebScaffold, watchConsole, webSnapshotMode,
+  acknowledgeLoopbackPinnedRefusals, acknowledgeReloadConnectionLoss, launchWebScaffold,
+  watchConsole, webSnapshotMode,
   WELCOME_NOTICE_COPY,
   type WebScaffold,
 } from './scaffold.ts'
@@ -55,6 +56,7 @@ describe.skipIf(MODE === 'record')('web e2e: remote welcome notice', () => {
     acknowledgeReloadConnectionLoss(tripwire, reloadWarnings)
     await welcome.waitFor({ timeout: 15_000 })
     expect(tripwire.warnings).toEqual([])
+    acknowledgeLoopbackPinnedRefusals(tripwire)
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 })

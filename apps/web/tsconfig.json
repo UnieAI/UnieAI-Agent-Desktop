@@ -54,6 +54,7 @@
     "tests/stats-paged-history.e2e.ts",
     "tests/sidebar-scrollbar.e2e.ts",
     "tests/rail-search-expand.e2e.ts",
+    "tests/connector-settings.e2e.ts",
     "tests/conversation-column-overflow.e2e.ts",
     "tests/code-mode-round.e2e.ts",
     "tests/composer-draft-scroll.e2e.ts",

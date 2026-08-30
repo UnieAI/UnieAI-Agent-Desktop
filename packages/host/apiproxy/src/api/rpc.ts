@@ -46,6 +46,10 @@ export interface RpcErrorDetailsMap {
   'directory-create-failed': { path: string }
   'directory-picker-unavailable': { capability: string }
   'workspace-listing-unavailable': {}
+  /** This deployment composes no connector seam, so there is nothing to connect. */
+  'connectors-unavailable': {}
+  /** The provider, or this deployment's own configuration, refused the connection. */
+  'connector-refused': {}
   'machines-unavailable': {}
   'machine-unknown': {}
   'machine-edit-refused': {}

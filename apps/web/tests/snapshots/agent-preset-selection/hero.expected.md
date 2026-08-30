@@ -1,7 +1,5 @@
-- button "Choose workspace":
-  - img
-  - text: workspace
-  - img
+- button "Commands"
+- 'button "What it may do, currently: Change files in this folder"': Change files in this folder
 - button "Standard mode":
   - img
   - text: Standard mode

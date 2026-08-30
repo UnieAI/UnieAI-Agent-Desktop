@@ -1,9 +1,15 @@
-- button "New session"
+- button "New chat"
 - button "Collapse sidebar":
   - img
-- button "New session":
+- button "New chat":
   - img
-  - text: New Session
+  - text: New chat
+- button "Search":
+  - img
+  - text: Search
+- button "Plugins":
+  - img
+  - text: Plugins
 - text: Workspaces
 - button "Search sessions":
   - img
@@ -16,28 +22,38 @@
   - treeitem "workspace" [expanded]:
     - img
     - text: workspace
-  - treeitem "New Session" [selected]
+  - treeitem "New chat" [selected]
+- button "Try again"
 - button "Settings":
   - img
   - text: Settings
-- text: Into the Unknown Preview
-- button "Choose workspace":
-  - img
-  - text: workspace
-  - img
+- text: What do you want to do in your workspace?
+- textbox "Ask anything…"
+- button "Commands"
+- 'button "What it may do, currently: Change files in this folder"': Change files in this folder
+- button "Plan mode on, press to turn off": Plan
 - button "Standard mode":
   - img
   - text: Standard mode
   - img
-- textbox "Describe what you want to build"
-- button "Commands":
-  - img
-- 'button "Access mode, current: Workspace Write"': Workspace Write
-- button "Plan mode on, press to turn off": Plan
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
+- 'button "Machine: This computer"':
+  - img
+- button "Voice input"
 - button "Send message" [disabled]
-- text: Details
+- button "Choose workspace":
+  - img
+  - text: workspace
+  - img
+- paragraph: AI can make mistakes. Verify important information.
+- tablist
+- button "Open…": +
+- button "Widen or restore the panel"
 - button "Close details"
-- text: Click a tool row in the message flow to view its details
+- menu:
+  - menuitem "What it changed"
+  - menuitem "Files"
+  - menuitem "Commands"
+  - menuitem "Web"

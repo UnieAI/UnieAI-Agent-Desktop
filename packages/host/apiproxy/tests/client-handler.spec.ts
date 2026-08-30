@@ -89,6 +89,9 @@ function scriptedApi(overrides: {
       removeMachine: r => ok(r, { machines: [], current: 'local' }),
       probeMachine: r => ok(r, { reachable: true, message: '' }),
       machineMetrics: r => ok(r, { machine: 'local', at: '2026-08-27T00:00:00.000Z', gpus: [], npus: [] }),
+      listConnectors: r => ok(r, { connectors: [] }),
+      connectConnector: r => ok(r, { id: 'x', label: 'X', connected: true, scopes: [], renewable: false, requiresClientId: false }),
+      disconnectConnector: r => ok(r, { connectors: [] }),
       ...overrides.host,
     },
     browser: {

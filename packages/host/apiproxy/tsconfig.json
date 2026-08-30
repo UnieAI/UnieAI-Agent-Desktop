@@ -66,6 +66,9 @@
       "path": "../../machines/machine-metrics"
     },
     {
+      "path": "../../connector/connector"
+    },
+    {
       "path": "../../machines/machines"
     },
     {

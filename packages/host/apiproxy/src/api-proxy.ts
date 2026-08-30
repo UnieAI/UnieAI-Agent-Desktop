@@ -18,6 +18,11 @@ import type {} from '@unieai/uad-machines'
 // Type-only: brings the sampler's `Context` merge so `ctx.get('machineMetrics')`
 // is the service rather than `any`.
 import type {} from '@unieai/uad-machine-metrics'
+// Type-only: brings the connector seam's `Context` merge, so `ctx.get('connectors')`
+// is the service rather than `any`.
+import type {} from '@unieai/uad-connector'
+import type { ConnectorStatus } from '@unieai/uad-connector'
+import type { ConnectorView } from './api/host.ts'
 // Type-only: brings the account gate's `Context` merge, so `ctx.get('unieaiGate')`
 // is the service and not `any`. No value from that package is imported.
 import type {} from '@unieai/uad-unieai-web-gate'
@@ -141,7 +146,7 @@ import {
   hasApiRemoteSubagentOwner,
   inspectApiRemoteSession,
 } from '@unieai/uad-api-remotes'
-import { canOpenNativePath, openNativePath, openNativeTextFile } from './native-path-opener.ts'
+import { canOpenNativePath, openNativePath, openNativeTextFile, openNativeUrl } from './native-path-opener.ts'
 
 /** Page size when history is called without maxMessages. */
 const DEFAULT_MAX_MESSAGES = 50
@@ -798,6 +803,14 @@ export interface ApiProxyDefaults {
    * falls back to platform detection ({@link canOpenNativePath}).
    */
   canOpenPath?: () => boolean
+  /**
+   * How a connector's approval page reaches the person's browser.
+   *
+   * Absent, the platform's own opener ({@link openNativeUrl}). Injected by
+   * tests, and by a shell that would rather hand the address to its own
+   * window than to the desktop.
+   */
+  openUrl?: (url: string, signal: AbortSignal) => Promise<void>
 }
 
 /** The tool/call payload fields the presenter path reads. */
@@ -1251,6 +1264,28 @@ function refusalMessage(refusal: SshEditRefusal): string {
       return `"${refusal.alias}" is declared in ${refusal.source}; open that file to change it`
     default:
       return 'the SSH configuration could not be changed'
+  }
+}
+
+/**
+ * One connector as the browser half reads it.
+ *
+ * Names and state only. The token, the refresh token and the client id stay on
+ * this side: a view carrying them would publish the access itself to anything
+ * that can read the page.
+ * @param status - the seam's own status.
+ * @returns the wire view.
+ */
+function connectorView(status: ConnectorStatus): ConnectorView {
+  return {
+    id: status.id,
+    label: status.label,
+    connected: status.connected,
+    ...status.account === undefined ? {} : { account: status.account },
+    scopes: [...status.scopes],
+    ...status.expiresAt === undefined ? {} : { expiresAt: status.expiresAt },
+    renewable: status.renewable,
+    requiresClientId: status.requiresClientId,
   }
 }
 
@@ -3385,6 +3420,75 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         } catch (error: unknown) {
           return err(request, directoryError(error))
         }
+      },
+
+      async listConnectors(request, signal) {
+        void signal
+        // Optional service, read through `ctx.get`: a deployment that composes
+        // no connectors has none to list rather than a broken page.
+        const connectors = ctx.get('connectors')
+        if (connectors === undefined) return ok(request, { connectors: [] })
+        return ok(request, { connectors: (await connectors.list()).map(connectorView) })
+      },
+
+      async connectConnector(request, signal) {
+        const connectors = ctx.get('connectors')
+        if (connectors === undefined) {
+          return err(request, {
+            code: 'connectors-unavailable',
+            message: 'host.connectConnector needs the connectors service, which this deployment does not compose',
+            details: {},
+          })
+        }
+        // The approval happens in a browser on THIS computer, because the
+        // redirect the flow listens on is a loopback address only this
+        // computer can reach. A host with no desktop to open says so now
+        // rather than waiting on a redirect that can never arrive.
+        if (!canOpenPaths()) {
+          return err(request, {
+            code: 'connector-refused',
+            message: 'connecting needs a browser on the computer running Rabi, and this host has no desktop to open one on',
+            details: {},
+          })
+        }
+        const open = defaults.openUrl ?? ((url: string, openSignal: AbortSignal) => openNativeUrl(url, openSignal))
+        // The redirect listener would otherwise wait for an approval nobody
+        // was ever shown, so a browser that will not open ends the attempt.
+        const attempt = new AbortController()
+        const relay = (): void => { attempt.abort(signal.reason) }
+        signal.addEventListener('abort', relay)
+        let openFailure = ''
+        const stop = ctx.on('connectors/authorize', (provider: string, url: string) => {
+          if (provider !== request.payload.connector) return
+          void open(url, attempt.signal).catch((error: unknown) => {
+            openFailure = error instanceof Error ? error.message : String(error)
+            attempt.abort(new Error(openFailure))
+          })
+        })
+        try {
+          return ok(request, connectorView(await connectors.connect(request.payload.connector, attempt.signal)))
+        } catch (error) {
+          // The seam's own words: "no OAuth client id is configured for x" is
+          // what tells a person to register an application, and a provider's
+          // refusal is what tells them the approval did not happen. A browser
+          // that never opened is reported as itself, not as the abort it caused.
+          return err(request, {
+            code: 'connector-refused',
+            message: openFailure !== '' ? openFailure : error instanceof Error ? error.message : String(error),
+            details: {},
+          })
+        } finally {
+          stop()
+          signal.removeEventListener('abort', relay)
+        }
+      },
+
+      async disconnectConnector(request, signal) {
+        void signal
+        const connectors = ctx.get('connectors')
+        if (connectors === undefined) return ok(request, { connectors: [] })
+        await connectors.disconnect(request.payload.connector)
+        return ok(request, { connectors: (await connectors.list()).map(connectorView) })
       },
 
       async listMachines(request, signal) {

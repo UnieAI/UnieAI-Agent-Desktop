@@ -122,4 +122,20 @@ export interface ConnectorStatus {
    * at `expiresAt` and the person will have to approve again.
    */
   readonly renewable: boolean
+  /**
+   * Whether connecting needs an OAuth client id this deployment has not been
+   * given.
+   *
+   * True is a refusal a surface can show BEFORE someone presses the button:
+   * the provider states its endpoints as URLs, offers no registration
+   * endpoint, and `connectors.clientIds` names no id for it. A person then
+   * reads that an application has to be registered instead of watching an
+   * approval fail.
+   *
+   * A provider named by ISSUER answers false without discovering: whether that
+   * server still offers registration is a network fact, and listing connectors
+   * must not depend on reaching every one of them. Such a provider that turns
+   * out to offer no registration refuses at connect time with the same words.
+   */
+  readonly requiresClientId: boolean
 }

@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="A polished AI workspace for research, documents, code, and agent-driven tasks." />
     <!-- Matches the web product: the shell paints before the app boots, so the
-         browser chrome must already be the right colour in both schemes. -->
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
+         browser chrome must already be the right colour in both schemes.
+         `data-boot-theme-color` marks them as the PRE-BOOT answer only: they
+         follow the OS scheme, and a person who picked the other one would keep
+         seeing the OS's colour in the browser chrome, because a media-matching
+         meta earlier in the document beats the presenter's later unscoped one.
+         ThemePresenter removes exactly these on its first apply and restores
+         them when it is torn down. -->
+    <meta name="theme-color" data-boot-theme-color media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" data-boot-theme-color media="(prefers-color-scheme: dark)" content="#0a0a0a" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <!-- One icon declaration, the same one the web product makes: its .ico
          carries the 32 and 48px UnieAI marks. No SVG icon — an svg+xml link

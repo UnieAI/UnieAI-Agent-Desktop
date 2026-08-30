@@ -106,6 +106,45 @@ async function compositionProblem(path: string): Promise<string | undefined> {
 }
 
 /**
+ * Every plugin package one composition names, groups included.
+ *
+ * Read WITHOUT mounting: a preset's standing composition is built on the first
+ * agent that joins it, which is after a browser has already composed its boot
+ * graph, so a package whose browser half only this file names would never be
+ * served. The names let the client module registry declare them up front.
+ *
+ * Builtins (`cordis:group`, `cordis:include`) are returned like any other name;
+ * the registry resolves each against the package graph and caches the ones that
+ * are not packages as a negative verdict.
+ * @param path - absolute path of the composition file.
+ * @returns the package names it names, in file order, without duplicates.
+ */
+export async function compositionPluginNames(path: string): Promise<string[]> {
+  let rows: unknown
+  try {
+    rows = load(await readFile(path, 'utf8'), { schema: entryListSchema })
+  } catch {
+    // A composition this cannot read or parse is one `compositionProblem`
+    // already reports as broken; naming nothing is the honest answer here.
+    return []
+  }
+  const names: string[] = []
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item)
+      return
+    }
+    if (typeof value !== 'object' || value === null) return
+    const row = value as { name?: unknown; config?: unknown }
+    if (typeof row.name === 'string' && !names.includes(row.name)) names.push(row.name)
+    // A group carries its members under `config`; every other config is data.
+    if (Array.isArray(row.config)) walk(row.config)
+  }
+  walk(rows)
+  return names
+}
+
+/**
  * Whether `path` names an existing regular file.
  * @param path - absolute path to test.
  * @returns true when the path resolves to a file.

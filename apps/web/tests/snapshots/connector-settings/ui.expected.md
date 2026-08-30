@@ -1,0 +1,54 @@
+- dialog "设置":
+  - heading "设置" [level=1]
+  - paragraph: 管理你的账号，以及这个应用的行为
+  - button "打开配置文件"
+  - button "关闭":
+    - img
+    - text: 关闭
+  - navigation:
+    - text: 个人
+    - button "账户":
+      - img
+      - text: 账户
+    - button "剩余用量":
+      - img
+      - text: 剩余用量
+    - button "邀请好友":
+      - img
+      - text: 邀请好友
+    - button "通用设置":
+      - img
+      - text: 通用设置
+    - text: 对话
+    - button "模型":
+      - img
+      - text: 模型
+    - button "Agent 预设":
+      - img
+      - text: Agent 预设
+    - button "通知":
+      - img
+      - text: 通知
+    - button "连接":
+      - img
+      - text: 连接
+  - heading "连接" [level=2]
+  - paragraph: 让 Rabi 代你使用其他服务 — 读取你的文件、查看你的日历、整理你的笔记。你随时可以收回。
+  - list:
+    - listitem:
+      - text: N Notion 尚未连接
+      - button "连接"
+    - listitem:
+      - text: L Linear 尚未连接
+      - button "连接"
+    - listitem:
+      - text: S Sanity 尚未连接
+      - button "连接"
+    - listitem:
+      - text: Google 需要先在该服务注册一个应用程序
+      - group: 为什么需要先注册？
+      - button "连接" [disabled]
+    - listitem:
+      - text: Microsoft 需要先在该服务注册一个应用程序
+      - group: 为什么需要先注册？
+      - button "连接" [disabled]

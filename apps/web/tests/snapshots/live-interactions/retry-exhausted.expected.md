@@ -3,12 +3,9 @@
     - button "Reply with a one-sentence description" [disabled]
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
-  - tablist:
-    - tab "Chat" [selected]
-    - tab "Trajectory"
+  - button "MEM DISK"
+  - button "Trajectory"
+  - button "Open the details panel"
 - text: Reply with a one-sentence description of event sourcing, then stop. {{clock}}
 - button "Copy":
   - img
@@ -16,17 +13,27 @@
   - img
   - img
   - text: Context injection @unieai/uad-system-prompt
+- button "Context injection skill-catalog":
+  - img
+  - img
+  - text: Context injection skill-catalog
 - group:
   - status: Retried model request (2/2) · {{duration}}
 - status:
   - text: This turn failedupstream 503
   - code: SERVER
-- textbox "Message the agent"
-- button "Commands":
+- textbox "Ask anything…"
+- button "Commands"
+- 'button "What it may do, currently: Change files in this folder"': Change files in this folder
+- button "Standard mode":
   - img
-- 'button "Access mode, current: Workspace Write"': Workspace Write
+  - text: Standard mode
+  - img
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
+- 'button "Machine: This computer"':
+  - img
+- button "Voice input"
 - button "Send message" [disabled]
-- text: 1 turns · 1 steps
+- paragraph: AI can make mistakes. Verify important information.

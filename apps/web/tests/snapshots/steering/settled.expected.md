@@ -3,12 +3,9 @@
     - button "Use the ask_user_question tool to" [disabled]
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
-  - tablist:
-    - tab "Chat" [selected]
-    - tab "Trajectory"
+  - button "MEM DISK"
+  - button "Trajectory"
+  - button "Open the details panel"
 - text: Use the ask_user_question tool to ask me exactly one question with id "checkpoint", question "Ready to continue?", header "Checkpoint", and options labeled "Yes" and "No". After I answer, reply with one short sentence acknowledging my answer and stop. {{clock}}
 - button "Copy":
   - img
@@ -16,6 +13,10 @@
   - img
   - img
   - text: Context injection @unieai/uad-system-prompt
+- button "Context injection skill-catalog":
+  - img
+  - img
+  - text: Context injection skill-catalog
 - button "Think The user wants me to use the ask_user_question tool to ask them a specific question with the given parameters. Let me do exactly that.":
   - img
   - img
@@ -41,13 +42,19 @@
 - button "Branch into a new conversation":
   - img
 - text: {{clock}} Ran for {{duration}} TTFT {{duration}} {{throughput}} tok/s
-- textbox "Message the agent"
-- button "Commands":
+- textbox "Ask anything…"
+- button "Commands"
+- 'button "What it may do, currently: Change files in this folder"': Change files in this folder
+- button "Standard mode":
   - img
-- 'button "Access mode, current: Workspace Write"': Workspace Write
+  - text: Standard mode
+  - img
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
 - button "6% of context used"
+- 'button "Machine: This computer"':
+  - img
+- button "Voice input"
 - button "Send message" [disabled]
-- text: 1 turns · 2 steps LLM {{duration}} · Tool call {{duration}} TTFT avg {{duration}} · {{throughput}} tok/s Cache hit 98% Input 15.8K tok · Output 156 tok
+- paragraph: AI can make mistakes. Verify important information.

@@ -119,3 +119,19 @@
   color: var(--dsw-alias-label-caption);
   white-space: normal;
 }
+
+/* Collapse to icon-only on a narrow composer card.
+ *
+ * This chip renders among the input bar's left items
+ * (`conversation.hero.agentPreset`), and that row is a size container whose
+ * other chip — the permission select — already collapses the same way at the
+ * same breakpoint. Without the matching rule the left group outgrew the row at
+ * an 800px viewport and painted over the model selector: two clickable
+ * controls on top of each other. The button keeps its `aria-label`, so the
+ * name survives the collapse.
+ */
+@container (max-width: 560px) {
+  .seat .seatLabel {
+    display: none;
+  }
+}

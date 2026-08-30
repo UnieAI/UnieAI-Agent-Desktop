@@ -290,6 +290,18 @@ export class ClientModuleRegistry extends Service {
   private readonly rebuildListeners = new Set<(id: string, rev: string) => void>()
   private readonly graphListeners = new Set<() => void>()
   private readonly dirty = new Set<string>()
+  /**
+   * Package names to serve even though no loader entry names them.
+   *
+   * The browser graph is composed once, when the page asks for it. A package
+   * mounted only by an AGENT PRESET has no entry then — a preset's standing
+   * composition is built lazily, on the first agent that joins it, which is
+   * after the page has already booted. Its host half arriving later is fine;
+   * its BROWSER half arriving later is not, because nothing re-fetches the
+   * boot graph. Whoever knows a package will be mounted that way declares it
+   * here instead.
+   */
+  private readonly declared = new Set<string>()
   private readonly resolvePkgJson: (spec: string) => string
   private flushQueued = false
   private composed: WebBootGraph
@@ -478,9 +490,40 @@ export class ClientModuleRegistry extends Service {
     }
   }
 
+  /**
+   * Serve a package's browser half even though no loader entry names it.
+   *
+   * For packages an agent preset mounts: the preset's standing composition is
+   * built on the first agent that joins it, long after the page composed its
+   * boot graph, so the entry-driven scan below cannot see them in time.
+   * Declaring one is an effect — the disposer withdraws it again.
+   * @param names - package names whose `dsh.client` halves must be served.
+   * @returns the disposer withdrawing them.
+   */
+  declare(names: readonly string[]): () => void {
+    const added = names.filter(name => !this.declared.has(name))
+    for (const name of added) {
+      this.declared.add(name)
+      this.dirty.add(name)
+    }
+    if (added.length > 0) {
+      this.composed = this.compose()
+      const failures: Error[] = []
+      this.flush(err => failures.push(err))
+      if (failures.length > 0) throw new ClientPackageCompositionError(failures)
+    }
+    return () => {
+      for (const name of added) {
+        this.declared.delete(name)
+        this.dirty.add(name)
+      }
+      this.flush((err) => { this.ctx.logger.warn(err) })
+    }
+  }
+
   /** Reconcile one entry name against the live loader entries. @returns whether the table changed. */
   private processOne(entryName: string): boolean {
-    let qualifies = false
+    let qualifies = this.declared.has(entryName)
     for (const entry of this.ctx.loader.entries()) {
       if (entry.options.name === entryName && entry.fiber !== undefined && !entry.disabled) {
         qualifies = true

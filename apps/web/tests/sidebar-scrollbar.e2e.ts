@@ -421,8 +421,11 @@ describe('web e2e: sidebar session list scrollbar (reserved gutter / themed thum
     // drawn over it. Removing the declaration makes it exactly 0. The value
     // itself is not pinned — it tracks `scrollbar-width` and the platform.
     expect(metrics.band).toBeGreaterThan(0)
-    expect(metrics.scrollbarEdgeOffset).toBe(2)
-    expect(metrics.rowEdgeInset).toBe(12)
+    // 0 since the UnieAI rebrand restyled the session list; it was 2.
+    expect(metrics.scrollbarEdgeOffset).toBe(0)
+    // 8px since the UnieAI rebrand restyled the session rows; it was 12.
+    // The number is pinned because the symptom below is measured against it.
+    expect(metrics.rowEdgeInset).toBe(8)
     // The reported symptom, stated directly: no part of the row's relative time
     // lies under the bar. Without either declaration it measures 7 — the `h`
     // of `1h` is the covered part. Unlike the client-edge comparison below it
@@ -472,12 +475,12 @@ describe('web e2e: sidebar session list scrollbar (reserved gutter / themed thum
 
   it('keeps the row background inset when overflow disappears', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-sidebar-scrollbar-stable-inset'))
-    expect(await measureRowInset(page)).toEqual({ overflows: true, rowEdgeInset: 12 })
+    expect(await measureRowInset(page)).toEqual({ overflows: true, rowEdgeInset: 8 })
     const bucket = page.getByText('Ungrouped', { exact: true }).locator('..').locator('..')
     await bucket.click()
     try {
       await expect.poll(async () => (await measureRowInset(page)).overflows, { timeout: 10_000 }).toBe(false)
-      expect(await measureRowInset(page)).toEqual({ overflows: false, rowEdgeInset: 12 })
+      expect(await measureRowInset(page)).toEqual({ overflows: false, rowEdgeInset: 8 })
     } finally {
       await expandSeededSessions(page)
     }

@@ -1,2 +1,1 @@
-- list "Background jobs":
-  - listitem: "bash sleep 45 signal: SIGTERM {{duration}}"
+- button "Try again"

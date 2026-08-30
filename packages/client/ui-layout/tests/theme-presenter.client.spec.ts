@@ -6,7 +6,9 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { ThemeSnapshot } from '@unieai/uad-client-ui-theme/client'
-import { DARK_ATTRIBUTE, ThemePresenter } from '@unieai/uad-client-ui-layout/src/client/theme-presenter.ts'
+import {
+  BOOT_THEME_COLOR_ATTRIBUTE, DARK_ATTRIBUTE, ThemePresenter,
+} from '@unieai/uad-client-ui-layout/src/client/theme-presenter.ts'
 
 const LIGHT_THEME_COLOR = 'rgb(255, 255, 255)'
 const DARK_THEME_COLOR = 'rgb(21, 21, 23)'
@@ -74,6 +76,48 @@ describe('ThemePresenter', () => {
     expect(document.body.style.getPropertyValue('--dsw-alias-bg')).toBe('#fff')
     // The old theme's extra variable is gone, not merged.
     expect(document.body.style.getPropertyValue('--dsw-alias-fg')).toBe('')
+  })
+
+  it('takes the page’s pre-boot metadata out, so the chosen theme is what the browser chrome follows', () => {
+    // Scheme-scoped and earlier in the document: while these stand, a person
+    // on a light OS who picked dark keeps seeing white browser chrome.
+    const boot = ['light', 'dark'].map((scheme) => {
+      const meta = document.createElement('meta')
+      meta.name = 'theme-color'
+      meta.setAttribute(BOOT_THEME_COLOR_ATTRIBUTE, '')
+      meta.media = `(prefers-color-scheme: ${scheme})`
+      meta.content = scheme === 'light' ? '#ffffff' : '#0a0a0a'
+      document.head.append(meta)
+      return meta
+    })
+
+    const presenter = new ThemePresenter()
+    presenter.apply(snapshot('dark'))
+
+    const metas = document.head.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+    expect(metas).toHaveLength(1)
+    expect(metas[0]?.content).toBe(DARK_THEME_COLOR)
+    expect(metas[0]?.hasAttribute(BOOT_THEME_COLOR_ATTRIBUTE)).toBe(false)
+
+    // Torn down, the page is as it was found: the pre-boot answer is the only
+    // one there is again.
+    presenter.dispose()
+    const restored = [...document.head.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')]
+    expect(restored).toEqual(boot)
+  })
+
+  it('leaves a theme-color the page did not mark as pre-boot alone', () => {
+    const foreign = document.createElement('meta')
+    foreign.name = 'theme-color'
+    foreign.content = '#123456'
+    document.head.append(foreign)
+
+    const presenter = new ThemePresenter()
+    presenter.apply(snapshot('light'))
+
+    expect(foreign.isConnected).toBe(true)
+    presenter.dispose()
+    expect(foreign.isConnected).toBe(true)
   })
 
   it('dispose removes color-scheme, the attribute, and every applied variable, sparing foreign inline styles', () => {

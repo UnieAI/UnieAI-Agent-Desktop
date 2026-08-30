@@ -158,6 +158,11 @@ export class FakeApiClient implements IApiClient {
     removeMachine: () => Promise.resolve(ok({ machines: [{ id: 'local', label: 'This computer', kind: 'local' as const }], current: 'local' })),
     probeMachine: () => Promise.resolve(ok({ reachable: true, message: '' })),
     machineMetrics: () => Promise.resolve(ok({ machine: 'local', at: '2026-08-27T00:00:00.000Z', gpus: [], npus: [] })),
+    listConnectors: () => Promise.resolve(ok({ connectors: [] })),
+    connectConnector: (payload: { connector: string }) => Promise.resolve(ok({
+      id: payload.connector, label: payload.connector, connected: true, scopes: [], renewable: false, requiresClientId: false,
+    })),
+    disconnectConnector: () => Promise.resolve(ok({ connectors: [] })),
   }
 
   readonly browser: IApiClient['browser'] = {

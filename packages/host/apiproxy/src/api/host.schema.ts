@@ -66,6 +66,34 @@ const machineEntrySchema = z.object({
   source: z.string().optional(),
 })
 
+/** One connector as the browser half reads it: names and state, never a token. */
+export const connectorViewSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  connected: z.boolean(),
+  account: z.string().optional(),
+  scopes: z.array(z.string()),
+  expiresAt: z.string().optional(),
+  renewable: z.boolean(),
+  requiresClientId: z.boolean(),
+})
+
+/** host.listConnectors request payload: the list takes no arguments. */
+export const hostListConnectorsRequestSchema = z.object({}) satisfies z.ZodType<Wire<RequestPayload<'host.listConnectors'>>>
+
+/** host.listConnectors response value, shared with host.disconnectConnector. */
+export const hostConnectorListValueSchema = z.object({
+  connectors: z.array(connectorViewSchema),
+}) satisfies z.ZodType<Wire<ResponseValue<'host.listConnectors'>>>
+
+/** host.connectConnector and host.disconnectConnector both name one connector. */
+export const hostConnectorRequestSchema = z.object({
+  connector: z.string(),
+}) satisfies z.ZodType<Wire<RequestPayload<'host.connectConnector'>>>
+
+/** host.connectConnector response value: the connector as it now stands. */
+export const hostConnectorValueSchema = connectorViewSchema satisfies z.ZodType<Wire<ResponseValue<'host.connectConnector'>>>
+
 /** host.listMachines request payload: the list takes no arguments. */
 export const hostListMachinesRequestSchema = z.object({}) satisfies z.ZodType<Wire<RequestPayload<'host.listMachines'>>>
 

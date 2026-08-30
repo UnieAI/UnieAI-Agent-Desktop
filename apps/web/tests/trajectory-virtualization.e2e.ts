@@ -74,14 +74,20 @@ async function openSeed(page: Page): Promise<void> {
   const result = page.getByRole('tree', { name: 'Search results' }).getByRole('treeitem')
   await expect.poll(() => result.count(), { timeout: 60_000 }).toBe(1)
   await result.click()
-  await page.getByRole('tab', { name: 'Trajectory', exact: true }).waitFor({ timeout: 30_000 })
+  // The Chat/Trajectory tablist became ONE toggle button carrying the
+  // alternate view's name: the header offers a single alternate rather than a
+  // strip of peers.
+  await page.getByRole('button', { name: 'Trajectory', exact: true }).waitFor({ timeout: 30_000 })
   await page.getByText(FIXTURE.markers.assistant(FIXTURE.turns), { exact: false })
     .last()
     .waitFor({ timeout: 30_000 })
 }
 
 async function openTrajectory(page: Page): Promise<void> {
-  await page.getByRole('tab', { name: 'Trajectory', exact: true }).click()
+  // The toggle flips back to the transcript when pressed again, so this only
+  // presses it while the transcript is showing.
+  const toggle = page.getByRole('button', { name: 'Trajectory', exact: true })
+  if (await toggle.getAttribute('aria-pressed') !== 'true') await toggle.click()
   const pane = page.locator('[data-trajectory-scroll]')
   await pane.waitFor({ timeout: 30_000 })
   await page.locator('[data-trajectory-scroll] table[data-scroll-ready="true"]')
@@ -310,6 +316,10 @@ describe('web e2e: Trajectory virtualization over tail-paged history', () => {
       expect(await mountedRows(page)).toBeLessThanOrEqual(MAX_MOUNTED_ROWS)
 
       const trajectoryScroll = page.locator('[data-trajectory-scroll]')
+      // Rows before the turn, so the bound below states the contract rather
+      // than a constant that tracks how many events this fixture happens to
+      // log.
+      const rowsBeforeTurn = await logicalRows(page)
       await trajectoryScroll.evaluate((host) => {
         const measuredWindow = window as Window & { __trajectoryScrollCalls?: number }
         measuredWindow.__trajectoryScrollCalls = 0
@@ -331,7 +341,17 @@ describe('web e2e: Trajectory virtualization over tail-paged history', () => {
         return (window as Window & { __trajectoryScrollCalls?: number })
           .__trajectoryScrollCalls ?? 0
       })
-      expect(streamingScrollCalls).toBeLessThanOrEqual(5)
+      // Bottom-follow scrolls once per appended row, plus once when the turn
+      // settles — every call is the virtualizer's own `scrollToEnd`, and it
+      // never repeats for a row it already followed. Measured: the ledger went
+      // 247 -> 252 rows and scrolled at 248, 249, 250, 251, 252, 252.
+      //
+      // Stated against the rows the turn actually appended because a constant
+      // here measures the FIXTURE, not the behaviour: it read 5, and one more
+      // logged row later it read 6 with nothing about bottom-follow changed.
+      const appendedRows = await logicalRows(page) - rowsBeforeTurn
+      expect(appendedRows).toBeGreaterThan(0)
+      expect(streamingScrollCalls).toBeLessThanOrEqual(appendedRows + 1)
       expect(await mountedRows(page)).toBeLessThanOrEqual(MAX_MOUNTED_ROWS)
       expect({
         pageErrors: tripwire.pageErrors,

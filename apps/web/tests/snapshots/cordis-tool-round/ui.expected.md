@@ -3,12 +3,9 @@
     - button "Use only Cordis tools. First" [disabled]
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
-  - tablist:
-    - tab "Chat" [selected]
-    - tab "Trajectory"
+  - button "MEM DISK"
+  - button "Trajectory"
+  - button "Open the details panel"
 - text: "Use only Cordis tools. First call cordis_inspect_self with no arguments. Then call cordis_define with plugin kind \"new\", idPrefix \"snap\", name \"snapshot noop\", purpose \"does nothing, for the snapshot\", code.host exactly \"return { name: \\\"snapshot-noop\\\", apply(ctx) {} }\" and code.client exactly \"return { inject: [\\\"slots\\\"], apply(ctx) { ctx.slots.register({ name: \\\"shell.overlay\\\", id: \\\"snapshot-probe\\\" }, () => React.createElement(\\\"div\\\", { \\\"data-snapshot-probe\\\": \\\"loaded\\\" })) } }\". Read its returned pluginId and packageId, then call cordis_run with those exact IDs and mode \"run\". After the run request returns, reply exactly CORDIS_UI_READY and stop. {{clock}}"
 - button "Copy":
   - img
@@ -16,6 +13,10 @@
   - img
   - img
   - text: Context injection @unieai/uad-system-prompt
+- button "Context injection skill-catalog":
+  - img
+  - img
+  - text: Context injection skill-catalog
 - button "Think I will inspect the current Session's dynamic Cordis Plugins before defining the snapshot Package.":
   - img
   - img
@@ -92,13 +93,19 @@
 - button "Branch into a new conversation":
   - img
 - text: {{clock}} Ran for {{duration}}
-- textbox "Message the agent"
-- button "Commands":
+- textbox "Ask anything…"
+- button "Commands"
+- 'button "What it may do, currently: Change files in this folder"': Change files in this folder
+- button "Standard mode":
   - img
-- 'button "Access mode, current: Workspace Write"': Workspace Write
+  - text: Standard mode
+  - img
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
 - button "0% of context used"
+- 'button "Machine: This computer"':
+  - img
+- button "Voice input"
 - button "Send message" [disabled]
-- text: 3 turns · 7 steps LLM {{duration}} · Tool call {{duration}} Cache hit 77% Input 66.5K tok · Output 321 tok
+- paragraph: AI can make mistakes. Verify important information.

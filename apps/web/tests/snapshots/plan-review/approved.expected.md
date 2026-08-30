@@ -3,12 +3,9 @@
     - 'button "Plan a small change: add" [disabled]'
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
-  - tablist:
-    - tab "Chat" [selected]
-    - tab "Trajectory"
+  - button "MEM DISK"
+  - button "Trajectory"
+  - button "Open the details panel"
 - img
 - text: "plan Plan mode on. Use /plan off to leave. Plan a small change: add a --greeting flag to a CLI. Do not read or write any files. Call exit_plan_mode with a short plan of at most five bullet points. Once the plan is approved, reply with the single word DONE and stop. {{clock}}"
 - button "Copy":
@@ -17,6 +14,10 @@
   - img
   - img
   - text: Context injection @unieai/uad-system-prompt
+- button "Context injection skill-catalog":
+  - img
+  - img
+  - text: Context injection skill-catalog
 - 'button "Think The user wants me to plan a small change to add a `--greeting` flag to a CLI. They explicitly told me not to read or write any files, and to call exit_plan_mode with a short plan. Let me do that directly."':
   - img
   - img
@@ -43,13 +44,20 @@
 - button "Branch into a new conversation":
   - img
 - text: {{clock}} Ran for {{duration}} TTFT {{duration}} {{throughput}} tok/s
-- textbox "Message the agent"
-- button "Commands":
+- textbox "Ask anything…"
+- button "Commands"
+- 'button "What it may do, currently: Change files in this folder"': Change files in this folder
+- button "Standard mode":
   - img
-- 'button "Access mode, current: Workspace Write"': Workspace Write
+  - text: Standard mode
+  - img
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
 - button "4% of context used"
+- 'button "Machine: This computer"':
+  - img
+- button "Voice input"
+- tooltip "Voice input"
 - button "Send message" [disabled]
-- text: 1 turns · 2 steps LLM {{duration}} · Tool call {{duration}} TTFT avg {{duration}} · {{throughput}} tok/s Cache hit 51% Input 10.2K tok · Output 346 tok
+- paragraph: AI can make mistakes. Verify important information.

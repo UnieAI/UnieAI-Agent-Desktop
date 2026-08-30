@@ -120,6 +120,18 @@ onRebuilt(listener: (id: string, rev: string) => void): () => void
  * @returns the unsubscriber.
  */
 onGraphChanged(listener: () => void): () => void
+
+/**
+ * Serve a package's browser half even though no loader entry names it.
+ *
+ * For packages an agent preset mounts: the preset's standing composition is
+ * built on the first agent that joins it, long after the page composed its
+ * boot graph, so the entry-driven scan below cannot see them in time.
+ * Declaring one is an effect — the disposer withdraws it again.
+ * @param names - package names whose `dsh.client` halves must be served.
+ * @returns the disposer withdrawing them.
+ */
+declare(names: readonly string[]): () => void
 ```
 
 Source: [`packages/client/modules/src/index.ts`](../../packages/client/modules/src/index.ts)

@@ -47,10 +47,13 @@ describe('web e2e: Full access confirmation', () => {
 
   it('requires acknowledgement before the composer picker can enable Full access', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-full-access-confirmation'))
-    const access = page.locator('button[aria-label^="访问模式"]').first()
+    // The chip's aria-label is `input.accessMode` ("它可以做到哪里，目前：{name}"),
+    // and the mode NAME inside it is not localized: the shipped labels are
+    // English sentences saying what the mode lets the agent do.
+    const access = page.locator('button[aria-label^="它可以做到哪里"]').first()
     await access.waitFor({ timeout: 10_000 })
 
-    expect(await access.getAttribute('aria-label')).toBe('访问模式，当前：Workspace Write')
+    expect(await access.getAttribute('aria-label')).toBe('它可以做到哪里，目前：Change files in this folder')
 
     await access.click()
     await page.getByRole('menuitem', { name: 'Full access' }).click()
@@ -69,7 +72,7 @@ describe('web e2e: Full access confirmation', () => {
     expect(await enable.isEnabled()).toBe(true)
     await enable.click()
     await expect.poll(() => access.getAttribute('aria-label'), { timeout: 10_000 })
-      .toBe('访问模式，当前：Full access')
+      .toBe('它可以做到哪里，目前：Full access')
     expect(await dialog.count()).toBe(0)
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)

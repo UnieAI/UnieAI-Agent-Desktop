@@ -41,9 +41,19 @@ export class FsSandboxController {
   private readonly policy: SandboxPolicyService | undefined
 
   constructor(private readonly ctx: Context) {
+    // The POLICY is a composition service, so it is read whenever one is
+    // mounted — never gated on the provider fact below. Under the routed
+    // execution world `ctx.fs` at apply time is not the per-machine provider,
+    // so that fact reads `undefined` even where the filesystem confines; the
+    // policy would then be dropped, every mutation would run with none, and a
+    // real denial would reach `mapError` with `policy === undefined` and throw
+    // `Cannot read properties of undefined (reading 'mode')` at the model
+    // instead of the `[sandbox: …]` marker and its escalation hint.
+    this.policy = ctx.get('sandboxPolicy')
+    // The advertised escalation targets still follow the mounted provider: a
+    // composition whose filesystem cannot confine has nothing to escalate to.
     const defaultMode = ctx.fs.sandboxMode
     this.escalationModes = defaultMode === undefined ? [] : ESCALATION_TARGETS
-    this.policy = defaultMode === undefined ? undefined : ctx.get('sandboxPolicy')
     if (defaultMode !== undefined && this.policy === undefined) {
       throw new Error('tool-fs: the mounted filesystem confines but ctx.sandboxPolicy is missing')
     }

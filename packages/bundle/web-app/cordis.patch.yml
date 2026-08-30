@@ -88,13 +88,6 @@
     - id: operator-browser
       name: '@unieai/uad-browser-operator'
 
-    # `page_screenshot`: the MODEL asks what a page looks like. Deliberately not
-    # the operator browser above — that one is a person's, is loopback-pinned,
-    # and outlives the panel showing it; this launches a browser for one call
-    # and throws it away, so one page's cookies never reach another's picture.
-    - id: tool-page-capture
-      name: '@unieai/uad-tool-page-capture'
-
     # `image_inspect`: the turn keeps its own model and hands ONE question about
     # ONE picture to a vision route. Dormant until a route is named here, so a
     # deployment with no vision model offers no such tool rather than one that
@@ -241,6 +234,13 @@
     - id: ui-settings-notifications
       name: '@unieai/uad-client-ui-settings-notifications'
 
+    # Connections: the outside accounts this app has been let into, and the
+    # two buttons that grant or withdraw one. Reads the connector book above
+    # over the host API; a build without that row lists nothing rather than
+    # showing a broken page.
+    - id: ui-settings-connectors
+      name: '@unieai/uad-client-ui-settings-connectors'
+
     # Startup initialization: reads the sign-in gate's /auth/bootstrap answer
     # once — account, providers, models, MCP servers, all gathered host-side —
     # and provides it as `unieaiBootstrap`. It MUST stay ahead of every row
@@ -317,6 +317,21 @@
 
     - id: machines
       name: '@unieai/uad-machines'
+
+    # The connector book: the outside services this app can be let into. It
+    # files every grant through `credentials`, which the base layer mounts.
+    #
+    # `clientIds` is a deployment fact, not a constant: a client id names the
+    # application on the provider's consent screen, and this fork is not the
+    # same application as anybody else's build. A provider with no id here is
+    # still listed, and says what is missing instead of failing at the
+    # provider; the connectors that register themselves need none at all.
+    - id: connectors
+      name: '@unieai/uad-connector'
+      config:
+        clientIds:
+          google: !!js process.env.RABI_CONNECTOR_GOOGLE_CLIENT_ID
+          microsoft: !!js process.env.RABI_CONNECTOR_MICROSOFT_CLIENT_ID
 
     - id: fs-routed
       name: '@unieai/uad-execution-router/fs'
@@ -633,11 +648,6 @@
 # legacy name too, and the browser's module table resolves one to the product
 # package. Shipping it is therefore also the standing proof that a plugin
 # written for the upstream ecosystem runs unmodified on this fork.
-- insert:
-    - id: genui
-      name: '@unieai/genui'
-    - id: univer
-      name: '@unieai/univer-office'
 
 # The execution world is routed now: these two rows are what it routes to,
 # built privately per machine rather than mounted once here.

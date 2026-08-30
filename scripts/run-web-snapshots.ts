@@ -17,6 +17,18 @@ for (const file of serialFiles) {
   serialStatus = await run(invocation.command, [...invocation.args, file])
   if (serialStatus !== 0) break
 }
+// `hmr-live` deliberately perturbs the client build: it edits a plugin source,
+// lets `dev:web` rebuild the bundles, and restores them afterwards. A root
+// build is not byte-reproducible, and `dev:web` rewrites the build record for
+// what it rebuilt, so the restore cannot be relied on to leave the record
+// describing the tree — and the pool below holds `built-boot`, which refuses to
+// run against a record that disagrees with the artifacts. Rebuilding here is
+// what makes the pool's starting state the same whether or not the serial
+// files ran.
+if (serialStatus === 0) {
+  const rebuild = pnpmInvocation(['run', 'build'])
+  serialStatus = await run(rebuild.command, rebuild.args)
+}
 if (serialStatus === 0) {
   process.exitCode = await run(invocation.command, [
     ...invocation.args,

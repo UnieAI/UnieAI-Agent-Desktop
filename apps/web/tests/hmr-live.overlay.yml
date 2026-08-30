@@ -1,0 +1,18 @@
+# This scenario boots the SHIPPED `rabi web` binary rather than the e2e
+# scaffold, so the scaffold's own gate lift does not reach it. The UnieAI
+# sign-in gate redirects an unauthenticated browser to `/auth/login` before any
+# client bundle loads, and this scenario has no account and is about hot module
+# replacement rather than the fence.
+#
+# The two rows below inject `unieaiGate` and would sit pending forever without
+# it, which the boot reports as a failed plugin tree. They are the account's
+# inference relay and its MCP servers — neither is reachable without a session
+# anyway.
+- id: unieai-web-gate
+  disabled: true
+
+- id: unieai-mcp-supervisor
+  disabled: true
+
+- id: llm-unieai-cloud
+  disabled: true

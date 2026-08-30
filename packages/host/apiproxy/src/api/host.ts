@@ -52,6 +52,34 @@ export interface WorkspaceFile {
   reason?: 'too-large' | 'binary'
 }
 
+/** One connector as a surface lists it. */
+export interface ConnectorView {
+  /** Stable id; also what `connectConnector` and `disconnectConnector` name. */
+  id: string
+  /** How a person sees it named. */
+  label: string
+  /** Whether a grant is stored for it. */
+  connected: boolean
+  /** The account that approved it, when the provider named one. */
+  account?: string
+  /** What the provider actually granted; empty while disconnected. */
+  scopes: string[]
+  /** When the stored access token expires; absent while disconnected. */
+  expiresAt?: string
+  /** Whether the connection can outlive its access token — false means it ends at `expiresAt`. */
+  renewable: boolean
+  /**
+   * Whether connecting needs an OAuth client id this deployment has not been
+   * given.
+   *
+   * A provider that needs an application registered with the vendor is listed
+   * anyway and carries this: hiding it would look like a connector that does
+   * not exist. A surface says so in its own words rather than letting someone
+   * press a button that can only fail.
+   */
+  requiresClientId: boolean
+}
+
 /** One machine a person can work on. */
 export interface MachineEntry {
   /** `local` for this computer, otherwise the OpenSSH alias. */
@@ -229,6 +257,43 @@ export interface HostApi {
     request: RpcRequest<{}>,
     signal: AbortSignal,
   ): Promise<RpcResponse<MachineList>>
+
+  /**
+   * Every connector this deployment offers, connected or not.
+   *
+   * Names and state only: no token, no client id, and no refresh token ever
+   * crosses this boundary. A page that carried them would be publishing the
+   * access itself to anything that can read the page.
+   */
+  listConnectors(
+    request: RpcRequest<{}>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<{ connectors: ConnectorView[] }>>
+
+  /**
+   * Connect one, running the provider's approval.
+   *
+   * Loopback-only, because the flow binds a listener on this computer and the
+   * person has to be at the browser that opens. The URL is emitted on
+   * `connectors/authorize` for whichever surface shows it; this call settles
+   * when the grant is stored or the attempt fails.
+   */
+  connectConnector(
+    request: RpcRequest<{ connector: string }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<ConnectorView>>
+
+  /**
+   * Forget one connector's grant.
+   *
+   * Local only: the approval still stands with the provider until the person
+   * withdraws it there, and saying otherwise would be a claim this program
+   * cannot keep.
+   */
+  disconnectConnector(
+    request: RpcRequest<{ connector: string }>,
+    signal: AbortSignal,
+  ): Promise<RpcResponse<{ connectors: ConnectorView[] }>>
 
   /**
    * Write one machine into the person's own OpenSSH configuration.

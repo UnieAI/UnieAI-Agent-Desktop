@@ -33,6 +33,16 @@ const FILE_REFERENCE_PROMPT = fileURLToPath(new URL(
  * `mcp_*` servers spawn outside `ctx.shell`. The composition Agent Note owns the
  * rationale and its sources.
  */
+/**
+ * The `standard` preset's catalog.
+ *
+ * `page_screenshot`, GenUI's two and Univer Office's fourteen joined it when
+ * they moved out of the HOST composition: a host row registers a model-facing
+ * tool into the process-global catalog, where every agent inherits it —
+ * including `minimal`, whose definition is two tools. They are the same tools
+ * a `standard` session always had; what changed is that a session on another
+ * preset no longer carries them.
+ */
 const EXPECTED_TOOLS = [
   'ask_user_question',
   'bash',
@@ -45,15 +55,31 @@ const EXPECTED_TOOLS = [
   'job_list',
   'job_output',
   'list_agents',
+  'page_screenshot',
   'ralph',
   'read',
   'read_image',
+  'render_ui',
   'send_message',
   'skill',
   'subagent',
   'subagent_fork',
   'todo_write',
+  'univer_api',
+  'univer_compile_svg',
+  'univer_execute',
+  'univer_export',
+  'univer_import',
+  'univer_inspect',
+  'univer_lint',
+  'univer_new',
+  'univer_resources',
+  'univer_screenshot',
+  'univer_status',
+  'univer_unit',
+  'univer_worktree',
   'update_goal',
+  'validate_dsh_ui',
   'web_search',
   'workflow',
   'write',

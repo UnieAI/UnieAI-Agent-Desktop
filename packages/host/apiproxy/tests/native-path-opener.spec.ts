@@ -16,7 +16,7 @@ vi.mock('node:child_process', () => ({ execFile: execFileMock }))
 
 import { release as osRelease } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
-import { canOpenNativePath, openNativePath, openNativeTextFile, type PathOpenerRunner } from '../src/native-path-opener.ts'
+import { canOpenNativePath, openNativePath, openNativeTextFile, openNativeUrl, type PathOpenerRunner } from '../src/native-path-opener.ts'
 
 const signal = () => new AbortController().signal
 
@@ -317,5 +317,65 @@ describe('canOpenNativePath', () => {
       || marked(env.DISPLAY) || marked(env.WAYLAND_DISPLAY)
 
     expect(canOpenNativePath({ platform: 'linux', osRelease: '6.8.0-generic' })).toBe(expected)
+  })
+})
+
+describe('native url opener', () => {
+  it('opens with macOS open(1)', async () => {
+    const run = vi.fn<PathOpenerRunner>(async () => ({ stdout: '', stderr: '' }))
+    await openNativeUrl('https://accounts.google.com/o/oauth2/v2/auth?x=1', signal(), { platform: 'darwin', run })
+    expect(run).toHaveBeenCalledWith(
+      'open', ['https://accounts.google.com/o/oauth2/v2/auth?x=1'], expect.any(AbortSignal))
+  })
+
+  it('starts a process on Windows, because Invoke-Item opens files rather than addresses', async () => {
+    const run = vi.fn<PathOpenerRunner>(async () => ({ stdout: '', stderr: '' }))
+    await openNativeUrl('https://example.com/a', signal(), { platform: 'win32', run })
+    expect(run).toHaveBeenCalledWith(
+      'powershell.exe',
+      ['-NoProfile', '-Command', "Start-Process 'https://example.com/a'"],
+      expect.any(AbortSignal),
+    )
+  })
+
+  it('reaches the Windows desktop from WSL without translating the address', async () => {
+    const run = vi.fn<PathOpenerRunner>(async () => ({ stdout: '', stderr: '' }))
+    await openNativeUrl('https://example.com/a', signal(), {
+      platform: 'linux', osRelease: '5.15.0-microsoft-standard', env: {}, run,
+    })
+    expect(run.mock.calls[0]?.[0]).toBe('powershell.exe')
+    expect(run).not.toHaveBeenCalledWith('wslpath', expect.anything(), expect.anything())
+  })
+
+  it('prefers $BROWSER on desktop Linux and falls back to xdg-open', async () => {
+    const run = vi.fn<PathOpenerRunner>(async () => ({ stdout: '', stderr: '' }))
+    const linux = { platform: 'linux' as NodeJS.Platform, osRelease: '6.8.0-generic', run }
+    await openNativeUrl('https://example.com/a', signal(), { ...linux, env: { BROWSER: 'firefox' } })
+    expect(run).toHaveBeenCalledWith('firefox', ['https://example.com/a'], expect.any(AbortSignal))
+
+    await openNativeUrl('https://example.com/b', signal(), { ...linux, env: { BROWSER: '' } })
+    expect(run).toHaveBeenCalledWith('xdg-open', ['https://example.com/b'], expect.any(AbortSignal))
+
+    await openNativeUrl('https://example.com/c', signal(), { ...linux, env: {} })
+    expect(run).toHaveBeenCalledWith('xdg-open', ['https://example.com/c'], expect.any(AbortSignal))
+  })
+
+  it('opens nothing but http and https, so a handler cannot be aimed at a local file', async () => {
+    const run = vi.fn<PathOpenerRunner>(async () => ({ stdout: '', stderr: '' }))
+    for (const refused of ['file:///etc/passwd', 'javascript:alert(1)', 'not a url', '-flag']) {
+      await expect(openNativeUrl(refused, signal(), { platform: 'darwin', run })).rejects.toThrow(/refused/u)
+    }
+    expect(run).not.toHaveBeenCalled()
+  })
+
+  it('rejects unsupported platforms', async () => {
+    await expect(openNativeUrl('https://example.com', signal(), { platform: 'freebsd' as NodeJS.Platform }))
+      .rejects.toThrow('unsupported on freebsd')
+  })
+
+  it('uses the current process platform and environment when nothing is overridden', async () => {
+    const run = vi.fn<PathOpenerRunner>(async () => ({ stdout: '', stderr: '' }))
+    await openNativeUrl('https://example.com/default', signal(), { run })
+    expect(run).toHaveBeenCalledOnce()
   })
 })

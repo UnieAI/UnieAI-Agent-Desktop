@@ -1,24 +1,39 @@
 - dialog "Settings":
-  - navigation:
-    - text: Settings
-    - button "General":
-      - img
-      - text: General
-    - button "Models":
-      - img
-      - text: Models
-    - button "Plugins":
-      - img
-      - text: Plugins
-    - button "Agent presets":
-      - img
-      - text: Agent presets
+  - heading "Settings" [level=1]
+  - paragraph: Manage your account and how this app behaves
   - button "Open configuration file"
   - button "Close":
     - img
     - text: Close
+  - navigation:
+    - text: Personal
+    - button "Account":
+      - img
+      - text: Account
+    - button "Usage":
+      - img
+      - text: Usage
+    - button "Invite friends":
+      - img
+      - text: Invite friends
+    - button "General":
+      - img
+      - text: General
+    - text: Chat
+    - button "Models":
+      - img
+      - text: Models
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+    - button "Notifications":
+      - img
+      - text: Notifications
+    - button "Connections":
+      - img
+      - text: Connections
   - text: Agent preset Applies to sessions you start from now on. Running sessions keep the preset they began with.
-  - button "Standard mode":
+  - button "Standard mode" [disabled]:
     - text: Standard mode
     - img
   - text: Permission Choose the default permission mode for new sessions

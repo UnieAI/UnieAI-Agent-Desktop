@@ -3,7 +3,7 @@
 ## At the start of the draft
 
 - draft overflows the capped box: true
-- visible lines: 14
+- visible lines: 9
 - the textarea holds no scroll offset of its own: true
 - all three layers wrap at one width: true
 - scroll offset: 0px
@@ -17,7 +17,7 @@
 - caret sits on its own glyphs: true
 - caret and glyphs stay level when the offset changes: true
 - first draft line has scrolled out above: true
-- last draft line is on screen: true
+- last draft line is on screen: false
 
 ## Draft ending in a newline, scrolled to the end
 

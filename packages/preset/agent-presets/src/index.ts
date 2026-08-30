@@ -29,7 +29,9 @@ import { bindScopeParent, createScope, scopeOf, type Scope, type ScopeKey, type 
 import type {} from '@unieai/uad-agent'
 import { settingsNamespace, type SettingsScope, type default as SettingsService } from '@unieai/uad-settings'
 import { dshHomePath } from '@unieai/uad-home-paths'
-import { discoverPresets, USER_PRESET_DIR } from './discovery.ts'
+// Type-only: pulls the client-module registry's Context merge (ctx.clientModules).
+import type {} from '@unieai/uad-client-modules'
+import { compositionPluginNames, discoverPresets, USER_PRESET_DIR } from './discovery.ts'
 import { copyComposition, deleteComposition, readComposition } from './authoring.ts'
 import { livePresetMounts, mountPreset, serviceForAgent, serviceWithinMount, standingMountFor } from './mount.ts'
 import { PresetExistsError } from './authoring.ts'
@@ -150,6 +152,29 @@ export class AgentPresets extends Service {
         this.settings = undefined
         this.settingsService = undefined
       }, 'agentPresets.settings()')
+    })
+
+    // The browser halves of packages only a preset mounts.
+    //
+    // A preset's standing composition is built on the first agent that joins
+    // it, and a page composes its boot graph before any session exists — so a
+    // package named only by a preset would have no client bundle served, and
+    // nothing re-fetches that graph. Declaring the names up front is what lets
+    // a preset carry a dual-face plugin at all; without it such a plugin has to
+    // sit in the HOST composition, where its TOOLS then reach every agent
+    // including the ones whose preset excludes them.
+    //
+    // Optional: a composition with no browser surface mounts no registry, and
+    // a roster that finds no preset declares nothing.
+    ctx.inject(['clientModules'], (clientCtx) => {
+      clientCtx.effect(() => {
+        let dispose: (() => void) | undefined
+        void this.list()
+          .then(async presets => (await Promise.all(presets.map(preset => compositionPluginNames(preset.path)))).flat())
+          .then((names) => { dispose = clientCtx.clientModules.declare([...new Set(names)]) })
+          .catch((error: unknown) => { clientCtx.logger.warn(error) })
+        return () => { dispose?.() }
+      }, 'agentPresets: preset client bundles')
     })
 
     // Advisory, not fatal: a synchronous `agent/created` listener that throws

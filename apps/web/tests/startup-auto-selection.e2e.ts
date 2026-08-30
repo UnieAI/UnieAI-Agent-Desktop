@@ -45,6 +45,9 @@ function recordedPhases(page: Page): Promise<string[]> {
   return page.evaluate(() => (window as unknown as { __conversationPhases: string[] }).__conversationPhases)
 }
 
+/** The hero's question, as `ui-conversation`'s `hero.headline` ships it. */
+const HERO_HEADLINE = 'What do you want to do in your workspace?'
+
 describe('web e2e: startup auto-selection', () => {
   let scaffold: WebScaffold
   let browser: Browser
@@ -68,17 +71,18 @@ describe('web e2e: startup auto-selection', () => {
   it('keeps the resident Hero and composer nodes when the first Workspace session appears', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-first-workspace-stable-tree'))
     await page.locator(`${ROOT_PHASE}[data-phase="hero"]`).waitFor({ timeout: 15_000 })
-    const headline = page.getByText('Into the Unknown', { exact: true })
-    const fishHitbox = headline.locator('xpath=preceding-sibling::span[1]')
-    const fish = fishHitbox.locator('svg')
-    expect(await fish.evaluate(node => getComputedStyle(node).color))
-      .toBe(await headline.evaluate(node => getComputedStyle(node).color))
-    await fishHitbox.hover()
-    expect(await fish.evaluate(node => getComputedStyle(node).animationName)).not.toBe('none')
+    // The hero is the question alone now — no mark beside it — so there is no
+    // fish glyph to check the colour and hover animation of. Node identity
+    // across the no-workspace -> workspace transition is what this scenario is
+    // for, and that is asserted below.
+    await page.getByText(HERO_HEADLINE, { exact: true }).waitFor({ timeout: 15_000 })
     await page.evaluate(() => {
       const refs = {
         root: document.querySelector('div[data-phase="hero"]'),
-        workspaceChip: document.querySelector('[aria-label="Choose workspace"]'),
+        // Scoped to the hero row: another surface carries a chip with the
+        // same label while no workspace is connected, and it comes first in
+        // document order — recording that one compares two different chips.
+        workspaceChip: document.querySelector('[class*="heroWorkspaceRow"] [aria-label="Choose workspace"]'),
         scrollBody: document.querySelector('[data-conversation-scroll]'),
         composerSeat: document.querySelector('[data-composer-seat]'),
         textarea: document.querySelector('textarea'),
@@ -96,7 +100,8 @@ describe('web e2e: startup auto-selection', () => {
       return {
         phase: document.querySelector('div[data-phase]')?.getAttribute('data-phase'),
         root: document.querySelector('div[data-phase="hero"]') === before.root,
-        workspaceChip: document.querySelector('[aria-label="Choose workspace"]') === before.workspaceChip,
+        workspaceChip: document.querySelector('[class*="heroWorkspaceRow"] [aria-label="Choose workspace"]')
+          === before.workspaceChip,
         scrollBody: document.querySelector('[data-conversation-scroll]') === before.scrollBody,
         composerSeat: document.querySelector('[data-composer-seat]') === before.composerSeat,
         textarea: document.querySelector('textarea') === before.textarea,
@@ -152,11 +157,11 @@ describe('web e2e: startup auto-selection', () => {
     // seat with `visibility:hidden`, which Playwright reports as not visible).
     await page.waitForSelector(ROOT_PHASE, { timeout: 15_000 })
     expect(await page.locator(ROOT_PHASE).first().getAttribute('data-phase')).toBe('hero')
-    expect(await page.getByText('Into the Unknown').isVisible()).toBe(true)
+    expect(await page.getByText(HERO_HEADLINE).isVisible()).toBe(true)
     expect(await page.locator('textarea').first().isVisible()).toBe(true)
 
     releaseHistory()
-    await page.locator('textarea:enabled[placeholder="Describe what you want to build"]')
+    await page.locator('textarea:enabled[placeholder="Ask anything…"]')
       .waitFor({ timeout: 15_000 })
     acknowledgeReloadConnectionLoss(tripwire, warningsBefore)
 

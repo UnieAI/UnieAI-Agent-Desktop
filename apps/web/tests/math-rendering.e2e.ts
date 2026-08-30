@@ -119,10 +119,10 @@ describe('web e2e: settled Markdown math rendering', () => {
     await expect.poll(() => page.locator('.katex').count(), { timeout: 10_000 }).toBe(6)
     await expect.poll(() => page.locator('.katex-display').count(), { timeout: 10_000 }).toBe(2)
     expect(await page.locator('.katex-error').count()).toBe(0)
-    await expect.poll(
-      () => page.getByText('1 turns · 1 steps', { exact: false }).count(),
-      { timeout: 10_000 },
-    ).toBe(1)
+    // No stats assertion: the strip that reported turns/steps is built and
+    // deliberately not mounted (ui-conversation's apply.ts calls it
+    // instrumentation and permanent noise for whoever is using the product),
+    // and this scenario's subject is KaTeX rendering either way.
 
     const snapshot = (await captureStableAria(page, '[class*="centerCol"]', scaffold.workspaceCwd))
       .split(SEED_ID).join('{{seededId}}')

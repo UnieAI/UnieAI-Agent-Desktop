@@ -200,3 +200,68 @@ export function openNativeTextFile(
 ): Promise<void> {
   return openNativePathWithIntent(path, signal, 'text-editor', internals)
 }
+
+/**
+ * Open one `http`/`https` address in the person's own browser.
+ *
+ * NOT {@link openNativePath} with a URL. The path opener translates WSL paths
+ * for the Windows desktop, which mangles an address, and reaches Windows
+ * through `Invoke-Item`, which opens files rather than addresses. The
+ * platform commands below are the ones that take a URL.
+ *
+ * Only `http` and `https` are accepted. The address arrives from an OAuth
+ * provider's own metadata, so it is not this process's own string, and every
+ * command here hands its argument to a registered handler: a `file:` URL would
+ * open a local document and an argument starting with `-` would be read as a
+ * flag.
+ * @param url - the address to open.
+ * @param signal - caller lifetime; abort terminates the native command.
+ * @param internals - Platform, environment, and runner hooks for deterministic tests.
+ * @throws when the address is not http(s), or the platform has no opener.
+ */
+export async function openNativeUrl(
+  url: string,
+  signal: AbortSignal,
+  internals: PathOpenerInternals = {},
+): Promise<void> {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    throw new Error(`native url opener refused a value that is not a URL: ${url}`)
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error(`native url opener refused ${parsed.protocol} — only http and https are opened`)
+  }
+  const address = parsed.toString()
+
+  const platform = internals.platform ?? process.platform
+  const run = internals.run ?? runNativeCommand
+  const env = internals.env ?? process.env
+
+  if (platform === 'darwin') {
+    await run('open', [address], signal)
+    return
+  }
+  // WSL included: `powershell.exe` reaches the Windows desktop from a WSL
+  // distribution, and an address needs no path translation to get there.
+  if (platform === 'win32' || (platform === 'linux' && isWsl(internals))) {
+    await run('powershell.exe', [
+      '-NoProfile',
+      '-Command',
+      `Start-Process ${powershellLiteral(address)}`,
+    ], signal)
+    return
+  }
+  if (platform === 'linux') {
+    const browser = env.BROWSER
+    if (browser !== undefined && browser !== '') {
+      await run(browser, [address], signal)
+      return
+    }
+    await run('xdg-open', [address], signal)
+    return
+  }
+
+  throw new Error(`native url opener is unsupported on ${platform}`)
+}

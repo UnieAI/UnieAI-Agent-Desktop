@@ -59,4 +59,7 @@ apps/desktop/release/
 # A browser profile directory literally named `[object Object]`: what a
 # launcher writes when an options OBJECT reaches an argument builder that
 # expects a path string. It has been committed once by a sweeping `git add`.
-'[object Object]'/
+# The brackets are ESCAPED: gitignore reads a bare `[...]` as a character
+# class, so the unescaped pattern matched one character out of `objectO ` and
+# never the directory — which is why it kept reappearing in `git status`.
+\[object Object\]/

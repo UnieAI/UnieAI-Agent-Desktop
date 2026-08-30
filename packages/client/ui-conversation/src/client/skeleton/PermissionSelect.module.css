@@ -74,7 +74,16 @@
    The 460px cut is the point where the row (attach + modes + model + send)
    starts squeezing labels; the container is the composer row (InputBar .row —
    anonymous query because CSS modules hash container-names per module). */
-@container (max-width: 460px) {
+/* 560px, not 460px.
+ *
+ * The container is the composer control row, whose inline size is the CARD's,
+ * not the viewport's — about 515px at an 800px viewport. The old 460px never
+ * fired there, so both chips kept their labels, the left group outgrew the row
+ * and painted over the model selector: two clickable controls on top of each
+ * other. The breakpoint has to sit above the narrow card's own width for the
+ * collapse it describes to happen at all.
+ */
+@container (max-width: 560px) {
   .trigger:has(.triggerIcon) .triggerLabel {
     display: none;
   }

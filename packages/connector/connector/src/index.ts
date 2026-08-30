@@ -236,8 +236,9 @@ export class Connectors extends Service {
   async status(id: string): Promise<ConnectorStatus> {
     const provider = this.providerOr(id)
     const grant = grantOf(await this.ctx.credentials.readRecord(connectorKey(id)), id)
+    const requiresClientId = this.requiresClientId(provider)
     if (grant === undefined) {
-      return { id, label: provider.label, connected: false, scopes: [], renewable: false }
+      return { id, label: provider.label, connected: false, scopes: [], renewable: false, requiresClientId }
     }
     return {
       id,
@@ -247,7 +248,24 @@ export class Connectors extends Service {
       scopes: grant.scopes,
       expiresAt: grant.expiresAt,
       renewable: grant.refreshToken !== undefined,
+      requiresClientId,
     }
+  }
+
+  /**
+   * Whether this provider would refuse for want of a client id, decided
+   * without reaching the network.
+   *
+   * Only a provider whose endpoints are written down can be judged here: an
+   * issuer's registration endpoint is in metadata this must not fetch to list
+   * a connector.
+   * @param provider - the offered connector.
+   * @returns true when connecting it needs an id the deployment has not set.
+   */
+  private requiresClientId(provider: ConnectorProvider): boolean {
+    if (provider.auth.kind !== 'oauth2' || provider.auth.registrationUrl !== undefined) return false
+    const clientId = this.config.clientIds?.[provider.id]
+    return clientId === undefined || clientId === ''
   }
 
   /**

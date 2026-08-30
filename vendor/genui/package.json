@@ -68,5 +68,25 @@
   "engines": {
     "node": "^22.19.0 || >=24.0.0",
     "pnpm": ">=11.7.0 <12"
+  },
+  "peerDependenciesMeta": {
+    "@unieai/uad-client-runtime": {
+      "optional": true
+    },
+    "@unieai/uad-client-ui-conversation": {
+      "optional": true
+    },
+    "@unieai/uad-client-ui-input-trigger": {
+      "optional": true
+    },
+    "@unieai/uad-client-ui-primitives": {
+      "optional": true
+    },
+    "@unieai/uad-client-ui-slots": {
+      "optional": true
+    },
+    "@unieai/uad-client-ui-tool": {
+      "optional": true
+    }
   }
 }

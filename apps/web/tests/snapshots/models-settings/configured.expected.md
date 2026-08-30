@@ -1,25 +1,49 @@
 - dialog "设置":
-  - navigation:
-    - text: 设置
-    - button "通用设置":
-      - img
-      - text: 通用设置
-    - button "模型":
-      - img
-      - text: 模型
-    - button "插件":
-      - img
-      - text: 插件
-    - button "Agent 预设":
-      - img
-      - text: Agent 预设
+  - heading "设置" [level=1]
+  - paragraph: 管理你的账号，以及这个应用的行为
   - button "打开配置文件"
   - button "关闭":
     - img
     - text: 关闭
+  - navigation:
+    - text: 个人
+    - button "账户":
+      - img
+      - text: 账户
+    - button "剩余用量":
+      - img
+      - text: 剩余用量
+    - button "邀请好友":
+      - img
+      - text: 邀请好友
+    - button "通用设置":
+      - img
+      - text: 通用设置
+    - text: 对话
+    - button "模型":
+      - img
+      - text: 模型
+    - button "Agent 预设":
+      - img
+      - text: Agent 预设
+    - button "通知":
+      - img
+      - text: 通知
+    - button "连接":
+      - img
+      - text: 连接
   - heading "模型" [level=2]
-  - paragraph: 填入各提供方的 API 密钥即可使用其模型。
+  - paragraph: 连接一个 AI 服务。每一个都需要来自它的供应商的密钥。
   - status: 已保存 minimax-cn。
+  - text: 视觉模型
+  - paragraph: 替看不见图片的模型去看图的那一个。当你的模型没有图像输入时，贴上的图片会以一个引用交给它，它可以用 image_inspect 工具就此提问。
+  - paragraph: 已配置的提供方中没有接受图片的模型。
+  - heading "API Provider 设置" [level=3]
+  - paragraph: 管理您的 OpenAI 兼容 Provider，并选择要开放给聊天使用的模型。
+  - paragraph: 无法读取 UnieAI Provider。
+  - button "重试"
+  - heading "本机" [level=3]
+  - paragraph: 在这里配置的提供方，密钥留在这台电脑上并直接调用，因此不计入账号用量，也不会同步到你的其他设备。要用你自己跑的模型，把地址指向 http://localhost:… 即可。
   - list:
     - listitem:
       - text: minimax-cn

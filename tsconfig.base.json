@@ -258,6 +258,7 @@
       "@unieai/uad-client-ui-settings-models": ["./packages/client/ui-settings-models/src"],
       "@unieai/uad-client-ui-settings-plugin-inventory": ["./packages/client/ui-settings-plugin-inventory/src"],
       "@unieai/uad-client-ui-settings-notifications": ["./packages/client/ui-settings-notifications/src"],
+      "@unieai/uad-client-ui-settings-connectors": ["./packages/client/ui-settings-connectors/src"],
       "@unieai/uad-client-ui-unieai-account": ["./packages/client/ui-unieai-account/src"],
       "@unieai/uad-client-ui-unieai-providers": ["./packages/client/ui-unieai-providers/src"],
       "@unieai/uad-client-unieai-account-gateway": ["./packages/client/unieai-account-gateway/src"],

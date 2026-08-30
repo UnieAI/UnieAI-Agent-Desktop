@@ -219,6 +219,12 @@ describe('createFixtureApi', () => {
       ns: 'llm-deepseek',
       value: { apiKeyEnv: 'DEEPSEEK_API_KEY' },
       secrets: [{ path: ['apiKey'], set: false }],
+    }, {
+      // A fixture journey is not somebody's first launch: without this the
+      // first-run tour resolves "never shown" and opens over every surface
+      // these fixtures render.
+      ns: 'first-run',
+      value: { seen: true },
     }])
 
     const initial = await api.credentials.describe(req({ refs: ['DEEPSEEK_API_KEY', 'TEST_API_KEY'] }))

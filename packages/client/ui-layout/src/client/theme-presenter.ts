@@ -12,12 +12,26 @@ import type { ThemeSnapshot } from '@unieai/uad-client-ui-theme/client'
 /** Body attribute selecting the dark base palette in the token stylesheets. */
 export const DARK_ATTRIBUTE = 'data-ds-dark-theme'
 
+/**
+ * Marks the `theme-color` metadata the page ships for the paint before this
+ * app boots.
+ *
+ * Those are scheme-scoped and follow the OS, and a media-matching meta EARLIER
+ * in the document beats a later unscoped one — so while they stand, a person
+ * who chose the theme their OS is not set to keeps seeing the OS's colour in
+ * the browser chrome. They are the pre-boot answer, and this presenter is the
+ * answer afterwards.
+ */
+export const BOOT_THEME_COLOR_ATTRIBUTE = 'data-boot-theme-color'
+
 /** Applies theme snapshots to the document; one instance per plugin fiber. */
 export class ThemePresenter {
   /** Token names this presenter wrote in the last apply (its retraction set). */
   private appliedTokens: string[] = []
   /** The single metadata node this presenter inserts and removes. */
   private readonly themeColorMeta: HTMLMetaElement
+  /** The page's pre-boot metadata, held out of the document until teardown. */
+  private bootMetas: HTMLMetaElement[] = []
 
   /** Create the presenter-owned metadata node before the first snapshot arrives. */
   constructor() {
@@ -47,7 +61,16 @@ export class ThemePresenter {
       this.appliedTokens.push(name)
     }
     this.themeColorMeta.content = getComputedStyle(body).backgroundColor
-    if (!this.themeColorMeta.isConnected) document.head.append(this.themeColorMeta)
+    if (!this.themeColorMeta.isConnected) {
+      // The handover: the page's own pre-boot metadata comes out as this one
+      // goes in, so exactly one `theme-color` stands and it is the one that
+      // follows the theme the person actually chose.
+      this.bootMetas = [...document.head.querySelectorAll<HTMLMetaElement>(
+        `meta[name="theme-color"][${BOOT_THEME_COLOR_ATTRIBUTE}]`,
+      )]
+      for (const meta of this.bootMetas) meta.remove()
+      document.head.append(this.themeColorMeta)
+    }
   }
 
   /** Retract root color-scheme, the palette attribute, token variables, and the owned metadata node. */
@@ -58,5 +81,9 @@ export class ThemePresenter {
     for (const name of this.appliedTokens) body.style.removeProperty(name)
     this.appliedTokens = []
     this.themeColorMeta.remove()
+    // Put the page back the way it was found: with no presenter, the pre-boot
+    // metadata is again the only answer there is.
+    for (const meta of this.bootMetas) document.head.append(meta)
+    this.bootMetas = []
   }
 }

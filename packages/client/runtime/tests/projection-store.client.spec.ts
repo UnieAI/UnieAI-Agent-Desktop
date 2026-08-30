@@ -125,6 +125,36 @@ describe('Session tail-page seeding', () => {
     expect(session.projections.get('test/marks')).toEqual({ marks: ['pushed-9'] })
   })
 
+  it('loading an older page leaves the whole-session value alone', async () => {
+    // The regression this pins: before the projection existed, the counter was
+    // a fold over the LOADED window, so paging older recounted and the number
+    // grew. The value is whole-session and an older page is not news about it.
+    //
+    // Guarded here rather than in a browser: the stats strip this used to be
+    // read from is built and deliberately not mounted (`ui-conversation`'s
+    // apply.ts), so no rendered surface can observe it any more.
+    const api = new FakeApiClient()
+    const session = new Session(SID, api, fakeRemote())
+    api.onHistory = payload => Promise.resolve(ok((payload.beforeSeq === undefined
+      ? {
+        events: entries(plainTurn(4, 1, '新问', '新答')),
+        hasMore: true,
+        projections: { asOfSeq: 9, values: { 'test/marks': { marks: ['whole-session'] } } },
+      }
+      // The older page carries no block of its own, exactly as the host serves
+      // it: the projection is not per-window.
+      : { events: entries(plainTurn(0, 0, '旧问', '旧答')), hasMore: false }) as never))
+    await session.open()
+    expect(session.projections.get('test/marks')).toEqual({ marks: ['whole-session'] })
+
+    await session.loadOlder()
+
+    // Not vacuous: the older page really was fetched.
+    expect(api.callsOf('session.history')).toMatchObject([{}, { beforeSeq: 4 }]
+      .map(payload => ({ sessionId: SID, ...payload })))
+    expect(session.projections.get('test/marks')).toEqual({ marks: ['whole-session'] })
+  })
+
   it('treats a blockless response as no reset: pushed values survive', async () => {
     const api = new FakeApiClient()
     const session = new Session(SID, api, fakeRemote())

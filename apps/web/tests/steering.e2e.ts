@@ -258,6 +258,10 @@ describe('web e2e: composer shortcut follows the swapped busy behavior', () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-composer-swapped-shortcut'))
     await page.getByRole('button', { name: 'Settings', exact: true }).click()
     const dialog = page.getByRole('dialog', { name: 'Settings' })
+    await dialog.waitFor({ timeout: 10_000 })
+    // The dialog lands on Account (`ui-unieai-account` registers at order -10,
+    // ahead of General's 0); the busy-Enter preference is General's.
+    await dialog.getByRole('button', { name: 'General' }).click()
     await dialog.getByRole('button', { name: 'Queue' }).click()
     await page.getByRole('menuitem', { name: 'Steer' }).click()
     await dialog.getByRole('button', { name: 'Steer' }).waitFor({ timeout: 10_000 })

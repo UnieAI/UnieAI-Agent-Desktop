@@ -2737,6 +2737,32 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
           }],
           npus: [],
         }),
+        // A fixture connector list that shows both kinds: one that works on a
+        // fresh install, and one waiting for an application to be registered.
+        listConnectors: request => ok(request, {
+          connectors: [
+            { id: 'notion', label: 'Notion', connected: false, scopes: [], renewable: false, requiresClientId: false },
+            {
+              id: 'google',
+              label: 'Google',
+              connected: true,
+              account: 'someone@example.com',
+              scopes: ['openid', 'https://www.googleapis.com/auth/drive.file'],
+              expiresAt: '2099-01-01T00:00:00.000Z',
+              renewable: true,
+              requiresClientId: false,
+            },
+          ],
+        }),
+        connectConnector: request => ok(request, {
+          id: request.payload.connector,
+          label: request.payload.connector,
+          connected: true,
+          scopes: [],
+          renewable: true,
+          requiresClientId: false,
+        }),
+        disconnectConnector: request => ok(request, { connectors: [] }),
       }
     })(),
 
@@ -3326,6 +3352,16 @@ function createFixtureWorld(options: FixtureOptions): FixtureWorld {
           applies: 'live',
           secrets: [{ path: ['apiKey'], set: false }],
           revision: 0,
+        }, {
+          // A fixture journey is not somebody's first launch. Without this the
+          // first-run tour resolves "never shown" and opens its modal over
+          // every fixture surface, and the mask takes the first click.
+          ns: 'first-run',
+          schema: {},
+          value: { seen: true },
+          applies: 'live',
+          secrets: [],
+          revision: 0,
         }],
       }),
       // Native opens are deterministic no-op successes in this fixture, as is host.openPath.
@@ -3540,6 +3576,9 @@ export class FixtureApiClient extends AbstractApiClient {
       case 'host.listDirectory': return this.api.host.listDirectory(request, new AbortController().signal)
       case 'host.createDirectory': return this.api.host.createDirectory(request)
       case 'host.openPath': return this.api.host.openPath(request, new AbortController().signal)
+      case 'host.listConnectors': return this.api.host.listConnectors(request, signal)
+      case 'host.connectConnector': return this.api.host.connectConnector(request, signal)
+      case 'host.disconnectConnector': return this.api.host.disconnectConnector(request, signal)
       case 'host.listMachines': return this.api.host.listMachines(request, signal)
       case 'host.selectMachine': return this.api.host.selectMachine(request, signal)
       case 'host.addMachine': return this.api.host.addMachine(request, signal)

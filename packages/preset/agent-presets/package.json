@@ -37,37 +37,39 @@
   ],
   "license": "MIT",
   "peerDependencies": {
+    "@unieai/cordis": "workspace:^",
     "@unieai/cordis-plugin-include": "workspace:^",
     "@unieai/cordis-plugin-loader": "workspace:^",
     "@unieai/uad-agent": "workspace:^",
     "@unieai/uad-atomic-write": "workspace:^",
-    "@unieai/uad-invariants": "workspace:^",
+    "@unieai/uad-client-modules": "workspace:^",
     "@unieai/uad-home-paths": "workspace:^",
+    "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-scope": "workspace:^",
     "@unieai/uad-session": "workspace:^",
     "@unieai/uad-settings": "workspace:^",
-    "@unieai/uad-system-prompt": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/uad-system-prompt": "workspace:^"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
     "@unieai/schemastery": "workspace:^"
   },
   "devDependencies": {
+    "@unieai/cordis": "workspace:^",
     "@unieai/cordis-plugin-include": "workspace:^",
     "@unieai/cordis-plugin-loader": "workspace:^",
     "@unieai/uad-agent": "workspace:^",
     "@unieai/uad-agent-loop": "workspace:^",
     "@unieai/uad-atomic-write": "workspace:^",
+    "@unieai/uad-client-modules": "workspace:^",
+    "@unieai/uad-home-paths": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "@unieai/uad-llm": "workspace:^",
-    "@unieai/uad-home-paths": "workspace:^",
     "@unieai/uad-scope": "workspace:^",
     "@unieai/uad-session": "workspace:^",
     "@unieai/uad-settings": "workspace:^",
     "@unieai/uad-settings-file": "workspace:^",
     "@unieai/uad-system-prompt": "workspace:^",
-    "@unieai/uad-tools": "workspace:^",
-    "@unieai/cordis": "workspace:^"
+    "@unieai/uad-tools": "workspace:^"
   }
 }

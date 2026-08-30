@@ -156,12 +156,16 @@ export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, 
           className={css.seat}
           aria-haspopup="menu"
           aria-expanded={open}
+          // Named explicitly, because the visible label collapses on a narrow
+          // card (AgentPresetSeat.module.css `@container`) and a chip whose
+          // name came only from that text would lose it exactly there.
+          aria-label={label}
           title={state.error ?? t('seatHint')}
           disabled={state.busy}
           onClick={() => { setOpen(value => !value) }}
         >
           <IconAgentPresetOutline16 className={introducing ? `${css.seatIcon} ${css.introIcon}` : css.seatIcon} />
-          {shownLabel}
+          <span className={css.seatLabel}>{shownLabel}</span>
           <IconChevronDownOutline14 className={css.chevron} />
         </button>
       )}

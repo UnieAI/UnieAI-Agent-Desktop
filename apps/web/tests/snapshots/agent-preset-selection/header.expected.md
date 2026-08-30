@@ -6,6 +6,6 @@
     - img
 - img
 - text: Minimal mode
-- button "Session log":
-  - text: Session log
-  - img
+- button "MEM DISK"
+- button "Trajectory"
+- button "Open the details panel"

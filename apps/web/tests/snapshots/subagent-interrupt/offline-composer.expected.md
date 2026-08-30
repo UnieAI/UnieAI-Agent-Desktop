@@ -5,12 +5,9 @@
     - 'button "Switch subagent: event-sourcing researcher"': event-sourcing researcher
   - img
   - text: Standard mode
-  - button "Session log":
-    - text: Session log
-    - img
-  - tablist:
-    - tab "Chat" [selected]
-    - tab "Trajectory"
+  - button "MEM DISK"
+  - button "Trajectory"
+  - button "Open the details panel"
 - text: Explain event sourcing in one sentence. {{clock}}
 - button "Copy":
   - img
@@ -18,11 +15,22 @@
   - img
   - img
   - text: Context injection @unieai/uad-system-prompt
+- button "Context injection skill-catalog":
+  - img
+  - img
+  - text: Context injection skill-catalog
 - paragraph: partial
 - status: Deep diving...
 - textbox "Parent session offline; sending is unavailable but you can still stop the run" [disabled]
-- button "Commands" [disabled]:
+- button "Commands" [disabled]
+- 'button "What it may do, currently: Custom" [disabled]': Custom
+- button "Standard mode":
   - img
-- 'button "Access mode, current: Custom" [disabled]': Custom
+  - text: Standard mode
+  - img
 - button "Stop generating"
+- 'button "Machine: This computer"':
+  - img
+- button "Voice input" [disabled]
 - button "Send message" [disabled]
+- paragraph: AI can make mistakes. Verify important information.

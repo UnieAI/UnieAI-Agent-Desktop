@@ -165,6 +165,18 @@ async function menuOptions(page: Page): Promise<string[]> {
   return await menu.getByRole('option').allTextContents()
 }
 
+/**
+ * The chip's menu.
+ * @param page - the page under test.
+ * @returns the menu holding the preset rows.
+ */
+function presetMenu(page: Page) {
+  // `hasText`, not `has`: a `has:` locator built from `page` is matched
+  // page-rooted rather than relative to each candidate, so it holds for BOTH
+  // menus and `.first()` then returns the permission panel.
+  return page.getByRole('menu').filter({ hasText: 'Standard mode' })
+}
+
 describe('web e2e: agent-preset selection', () => {
   let scaffold: WebScaffold
   let browser: Browser
@@ -193,11 +205,15 @@ describe('web e2e: agent-preset selection', () => {
     await scaffold?.close()
   })
 
-  it('offers the chip on the new-session screen, beside the workspace picker', async () => {
+  it('offers the chip in the composer tool row on the new-session screen', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-agent-preset-hero'))
     await connectFreshWorkspace(page, scaffold.workspaceCwd)
 
-    const snapshot = await captureStableAria(page, '[class*="heroWorkspaceRow"]', scaffold.workspaceCwd)
+    // The chip sits in the composer's tool row, not beside the hero workspace
+    // picker: `conversation.hero.agentPreset` is rendered among the input
+    // bar's left items, so it stays put once a session exists instead of
+    // disappearing with the new-session screen.
+    const snapshot = await captureStableAria(page, '[class*="tools"]', scaffold.workspaceCwd)
 
     await compareOrRefreshGolden(HERO_EXPECTED, snapshot, MODE)
     // The chip opens on the deployment default, by the name that preset
@@ -208,10 +224,12 @@ describe('web e2e: agent-preset selection', () => {
   it('names every preset and what it is for', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-agent-preset-menu'))
     await page.getByRole('button', { name: 'Standard mode' }).click()
-    const menu = page.getByRole('menu')
+    // The composer row now carries a second menu (the permission panel), so
+    // the preset menu is named by what only it contains.
+    const menu = presetMenu(page)
     await menu.waitFor({ timeout: 10_000 })
 
-    const snapshot = await captureStableAria(page, '[role="menu"]', scaffold.workspaceCwd)
+    const snapshot = await captureStableAria(page, menu, scaffold.workspaceCwd)
 
     await compareOrRefreshGolden(MENU_EXPECTED, snapshot, MODE)
     // Every shipped preset, each with the sentence saying what it composes —
@@ -224,7 +242,7 @@ describe('web e2e: agent-preset selection', () => {
   it('applies the staged pick to the blank session, and the host honors it', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-agent-preset-stage'))
     await page.getByRole('button', { name: 'Standard mode' }).click()
-    await page.getByRole('menuitem', { name: /Minimal mode/ }).click()
+    await presetMenu(page).getByRole('menuitem', { name: /Minimal mode/ }).click()
 
     // The chip stages; the blank session the workspace connect produced is
     // what the stage lands on. The host's own answer is what comes back.
@@ -283,7 +301,11 @@ describe('web e2e: agent-preset selection', () => {
     expect(snapshot).toContain('Minimal mode')
     expect(snapshot).toContain('button "1 subagent"')
     expect(snapshot.indexOf('button "1 subagent"')).toBeLessThan(snapshot.indexOf('Minimal mode'))
-    expect(snapshot.indexOf('Minimal mode')).toBeLessThan(snapshot.indexOf('button "Session log"'))
+    // The header's utilities used to start with a Session log button; they are
+    // the machine gauges, the view toggle and the details opener now. The rule
+    // under test is unchanged: the preset label sits between the breadcrumbs
+    // and the utilities.
+    expect(snapshot.indexOf('Minimal mode')).toBeLessThan(snapshot.indexOf('button "Trajectory"'))
     // Static chrome, not a control: the header can only report a composition
     // the host would refuse to change.
     expect(snapshot).not.toContain('button "Minimal mode"')

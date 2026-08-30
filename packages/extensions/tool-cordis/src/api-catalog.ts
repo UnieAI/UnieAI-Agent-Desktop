@@ -552,6 +552,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [{ name: 'listener', description: 'notified with no payload.' }],
         returns: 'the unsubscriber.',
       },
+      {
+        signature: 'declare(names: readonly string[]): () => void',
+        description: 'Serve a package\'s browser half even though no loader entry names it.\n\nFor packages an agent preset mounts: the preset\'s standing composition is built on the first agent that joins it, long after the page composed its boot graph, so the entry-driven scan below cannot see them in time. Declaring one is an effect — the disposer withdraws it again.',
+        parameters: [{ name: 'names', description: 'package names whose `dsh.client` halves must be served.' }],
+        returns: 'the disposer withdrawing them.',
+      },
     ],
   },
   {
@@ -3551,7 +3557,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ConnectorStatus',
-    declaration: 'export interface ConnectorStatus {\n    readonly id: string;\n    readonly label: string;\n    readonly connected: boolean;\n    readonly account?: string;\n    readonly scopes: readonly string[];\n    readonly expiresAt?: string;\n    readonly renewable: boolean;\n}',
+    declaration: 'export interface ConnectorStatus {\n    readonly id: string;\n    readonly label: string;\n    readonly connected: boolean;\n    readonly account?: string;\n    readonly scopes: readonly string[];\n    readonly expiresAt?: string;\n    readonly renewable: boolean;\n    readonly requiresClientId: boolean;\n}',
   },
   {
     name: 'ContentBlockMap',
@@ -4487,7 +4493,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'RpcErrorDetailsMap',
-    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'machine-edit-refused\': {};\n    \'metrics-unavailable\': {};\n    \'metrics-unreadable\': {};\n    \'skill-source-unavailable\': {};\n    \'skill-not-on-account\': {\n        slug: string;\n    };\n    \'skill-unreadable\': {\n        slug: string;\n    };\n    \'workspace-file-stale\': {\n        path:  /* …truncated — full shape in source */',
+    declaration: 'export interface RpcErrorDetailsMap {\n    \'bad-request\': {\n        issues: ZodIssue[];\n    };\n    \'cancelled\': {};\n    \'session-not-found\': {\n        sessionId: SessionId;\n    };\n    \'model-unavailable\': {\n        provider: string;\n        model: string;\n    };\n    \'session-conflict\': {\n        sessionId: SessionId;\n        requestedCwd: string;\n        existingCwd?: string;\n    };\n    \'invalid-time-zone\': {\n        value: string;\n    };\n    \'workspace-attach-failed\': {\n        sessionId: SessionId;\n        workspaceId: string;\n    };\n    \'workspace-not-found\': {\n        workspaceId: string;\n    };\n    \'workspace-invalid-path\': {\n        path: string;\n    };\n    \'workspace-name-conflict\': {\n        name: string;\n    };\n    \'workspace-move-invalid\': {\n        workspaceId: string;\n        sessionId: SessionId;\n        beforeSessionId?: SessionId;\n    };\n    \'directory-unreadable\': {\n        path: string;\n    };\n    \'directory-exists\': {\n        path: string;\n    };\n    \'directory-create-failed\': {\n        path: string;\n    };\n    \'directory-picker-unavailable\': {\n        capability: string;\n    };\n    \'workspace-listing-unavailable\': {};\n    \'connectors-unavailable\': {};\n    \'connector-refused\': {};\n    \'machines-unavailable\': {};\n    \'machine-unknown\': {};\n    \'machine-edit-refused\': {};\n    \'metrics-unavailable\': {};\n    \'metrics-unreadable\': {};\n    \'skill-source-unavailable\': {};\n    \'skill-not-on-account\': {\n        slug: string;\n    };\n    \'skill-unreadable\': {\n        sl /* …truncated — full shape in source */',
   },
   {
     name: 'RpcId',

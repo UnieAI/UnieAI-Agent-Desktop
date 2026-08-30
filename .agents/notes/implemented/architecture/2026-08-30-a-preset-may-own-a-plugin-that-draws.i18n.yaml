@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-30-a-preset-may-own-a-plugin-that-draws.md
+2026-08-30-a-preset-may-own-a-plugin-that-draws.md: d445caf500686524cd59cddd1e294e854abecd6c
+2026-08-30-a-preset-may-own-a-plugin-that-draws.zh.md: ea18ffcee19768916e3cb8ec762f97d700cb90aa

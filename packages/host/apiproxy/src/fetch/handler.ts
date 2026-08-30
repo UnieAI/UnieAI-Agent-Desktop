@@ -43,6 +43,8 @@ import {
 import {
   hostCreateDirectoryRequestSchema,
   hostAddMachineRequestSchema,
+  hostConnectorRequestSchema,
+  hostListConnectorsRequestSchema,
   hostListMachinesRequestSchema,
   hostProbeMachineRequestSchema,
   hostRemoveMachineRequestSchema,
@@ -130,6 +132,9 @@ const UNARY_ROUTES: UnaryRoutes = {
   'host.listDirectory': { schema: hostListDirectoryRequestSchema, invoke: (api, r, signal) => api.host.listDirectory(r, signal) },
   'host.createDirectory': { schema: hostCreateDirectoryRequestSchema, invoke: (api, r) => api.host.createDirectory(r) },
   'host.listWorkspaceEntries': { schema: hostListWorkspaceEntriesRequestSchema, invoke: (api, r, signal) => api.host.listWorkspaceEntries(r, signal) },
+  'host.listConnectors': { schema: hostListConnectorsRequestSchema, invoke: (api, r, signal) => api.host.listConnectors(r, signal) },
+  'host.connectConnector': { schema: hostConnectorRequestSchema, invoke: (api, r, signal) => api.host.connectConnector(r, signal) },
+  'host.disconnectConnector': { schema: hostConnectorRequestSchema, invoke: (api, r, signal) => api.host.disconnectConnector(r, signal) },
   'host.listMachines': { schema: hostListMachinesRequestSchema, invoke: (api, r, signal) => api.host.listMachines(r, signal) },
   'host.selectMachine': { schema: hostSelectMachineRequestSchema, invoke: (api, r, signal) => api.host.selectMachine(r, signal) },
   'host.machineMetrics': { schema: hostMachineMetricsRequestSchema, invoke: (api, r, signal) => api.host.machineMetrics(r, signal) },

@@ -694,7 +694,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/machines/execution-router/src/index.ts:48`](../packages/machines/execution-router/src/index.ts)
+Source: [`packages/machines/execution-router/src/index.ts:49`](../packages/machines/execution-router/src/index.ts)
 
 <a id="unieaiuad-experimental-agent-team"></a>
 
@@ -3699,6 +3699,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@unieai/uad-client-ui-reference` ([`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts))
 - `@unieai/uad-client-ui-renderer` ([`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts))
 - `@unieai/uad-client-ui-settings` ([`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts))
+- `@unieai/uad-client-ui-settings-connectors` ([`packages/client/ui-settings-connectors/src/index.ts`](../packages/client/ui-settings-connectors/src/index.ts))
 - `@unieai/uad-client-ui-settings-general` ([`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts))
 - `@unieai/uad-client-ui-settings-models` ([`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts))
 - `@unieai/uad-client-ui-settings-notifications` ([`packages/client/ui-settings-notifications/src/index.ts`](../packages/client/ui-settings-notifications/src/index.ts))

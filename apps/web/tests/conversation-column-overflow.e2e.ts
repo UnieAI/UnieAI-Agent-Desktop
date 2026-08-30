@@ -87,10 +87,10 @@ function measureColumn(page: Page, width: number): Promise<ColumnMetrics> {
   return page.evaluate((viewportWidth) => {
     const scroller = document.querySelector<HTMLElement>('[data-conversation-scroll]')
     if (scroller === null) throw new Error('conversation scroll container not in the DOM')
-    const glow = scroller.querySelector<SVGElement>('[class*="heroGlow"]')
-    if (glow === null) throw new Error('hero glow not in the DOM — the boot state is not the hero')
+    const bleeder = document.querySelector<HTMLElement>('[data-bleed-probe]')
+    if (bleeder === null) throw new Error('bleed probe not installed')
     const box = scroller.getBoundingClientRect()
-    const glowBox = glow.getBoundingClientRect()
+    const bleedBox = bleeder.getBoundingClientRect()
     return {
       width: viewportWidth,
       columnWidth: scroller.clientWidth,
@@ -98,11 +98,38 @@ function measureColumn(page: Page, width: number): Promise<ColumnMetrics> {
       // `clientWidth` is the content edge, which is what the scrollable
       // overflow region is measured against; either side counts as a bleed,
       // though only the right one can produce a bar in this writing mode.
-      glowBleeds: glowBox.right > box.left + scroller.clientWidth + 0.5 || glowBox.left < box.left - 0.5,
+      glowBleeds: bleedBox.right > box.left + scroller.clientWidth + 0.5 || bleedBox.left < box.left - 0.5,
       bleedRange: scroller.scrollWidth - scroller.clientWidth,
       scrollsVertically: getComputedStyle(scroller).overflowY === 'auto',
     }
   }, width)
+}
+
+/**
+ * Install the over-wide element these stops measure against.
+ *
+ * It used to be `.heroGlow`, the hero's backdrop ellipse. That element is
+ * `display: none` now — "the reference hero is flat" — so it has no box and
+ * cannot bleed, and without a bleeder every stop would assert "does not scroll
+ * horizontally" about a column with nothing to scroll, which this file's own
+ * header calls vacuous.
+ *
+ * The probe takes the glow's place exactly: same parent (so `100%` resolves
+ * against the same containing block, which is why the widest stop still does
+ * NOT bleed), same 1051/776 proportion, same positioning.
+ * @param page - the page under test.
+ */
+async function installBleedProbe(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const glow = document.querySelector<SVGElement>('[class*="heroGlow"]')
+    if (glow?.parentElement == null) throw new Error('hero glow not in the DOM — the boot state is not the hero')
+    document.querySelector('[data-bleed-probe]')?.remove()
+    const probe = document.createElement('div')
+    probe.dataset.bleedProbe = ''
+    probe.style.cssText = 'position:absolute;left:50%;bottom:92px;z-index:-1;height:8px;'
+      + 'pointer-events:none;width:calc(100% * 1051 / 776);transform:translateX(-50%);'
+    glow.parentElement.append(probe)
+  })
 }
 
 /**
@@ -209,7 +236,10 @@ describe('web e2e: the conversation column scrolls on one axis', () => {
     page = await newEnglishPage(browser, 900)
     tripwire = watchConsole(page)
     await page.goto(scaffold.baseUrl, { waitUntil: 'load' })
-    await page.waitForSelector('[data-conversation-scroll] [class*="heroGlow"]', { timeout: 30_000 })
+    // The hero glow is mounted but never painted, so it is not a readiness
+    // signal any more; the composer is what says the hero has rendered.
+    await page.waitForSelector('[data-conversation-scroll] textarea', { timeout: 30_000 })
+    await installBleedProbe(page)
   }, 180_000)
 
   afterAll(async () => {

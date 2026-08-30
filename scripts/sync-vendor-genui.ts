@@ -26,9 +26,9 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
 const target = join(root, 'vendor', 'genui')
@@ -51,6 +51,17 @@ const REWRITTEN = ['.ts', '.tsx', '.yml', '.md']
  * moves or renames one fails this script instead of shipping a half-working
  * renderer.
  */
+/**
+ * What this fork's `patch/` overlay must have put in place, asserted after it
+ * is applied so a silent revert fails the sync instead of shipping.
+ */
+const PATCHED_BEHAVIOUR = [
+  {
+    file: 'src/client/panel-command.ts',
+    text: 'candidates: async (_session, req) =>',
+  },
+] as const
+
 const LOAD_BEARING = [
   { file: 'src/plugin/index.ts', text: `const ASSET_ROUTE_PATH = '/plugins/${SCOPED}/assets'` },
   { file: 'src/client/asset-loader.ts', text: `const PLUGIN_ID = '${SCOPED}'` },
@@ -127,6 +138,37 @@ function main(): void {
       rewritten += 1
     }
 
+    // This fork's own source changes, overlaid after the rescope so the diff
+    // in `patch/` reads against upstream's text rather than against renamed
+    // imports. Without this step a re-sync silently reverts them — which is
+    // how the `/panel` candidate went back to ignoring the query.
+    const patch = join(target, 'patch')
+    let patched = 0
+    if (existsSync(patch)) {
+      for (const file of walk(patch)) {
+        const destination = join(target, relative(patch, file))
+        if (!existsSync(destination)) {
+          throw new Error(
+            `sync-vendor-genui: patch/${relative(patch, file)} has no upstream counterpart. `
+            + 'A patch file that overlays nothing is a divergence against a file upstream moved or '
+            + 'deleted; re-read the upstream source and rewrite or drop the patch.',
+          )
+        }
+        cpSync(file, destination)
+        patched += 1
+      }
+    }
+
+    for (const { file, text } of PATCHED_BEHAVIOUR) {
+      const contents = readFileSync(join(target, file), 'utf8')
+      if (!contents.includes(text)) {
+        throw new Error(
+          `sync-vendor-genui: ${file} does not carry this fork's change after the overlay: `
+          + `${JSON.stringify(text)}. See vendor/genui/patch/.`,
+        )
+      }
+    }
+
     for (const { file, text } of LOAD_BEARING) {
       const contents = readFileSync(join(target, file), 'utf8')
       if (!contents.includes(text)) {
@@ -150,7 +192,8 @@ function main(): void {
       + readme,
     )
 
-    console.log(`sync-vendor-genui: vendored ${UPSTREAM}@${version}; ${String(rewritten)} file(s) rescoped.`)
+    console.log(`sync-vendor-genui: vendored ${UPSTREAM}@${version}; ${String(rewritten)} file(s) rescoped, `
+      + `${String(patched)} overlaid from patch/.`)
     console.log('sync-vendor-genui: next — rebuild, then update the manifest row and version in vendor/README.md.')
   } finally {
     rmSync(staging, { recursive: true, force: true })

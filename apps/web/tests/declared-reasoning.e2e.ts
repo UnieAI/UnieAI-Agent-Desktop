@@ -66,12 +66,11 @@ describe.skipIf(MODE === 'record')('web e2e: declared reasoning efforts reach th
     const trigger = page.getByRole('button', { name: /^选择模型/ })
     await trigger.waitFor({ timeout: 15_000 })
     await trigger.click()
-    await page.getByRole('menuitem', { name: /推理等级/ }).click()
-
-    // Declared levels, nothing else: the provider-default entry (the route
-    // configures no `reasoning`), then Off/High/Max — minimal, low, medium,
-    // and xhigh were not declared and must not be offered.
-    const levels = page.getByRole('menuitemradio')
+    // ONE flat menu now: the models as a checkable list, then a rule, then the
+    // levels — it used to be a two-level menu whose root drilled into each.
+    // The levels are the radios after that rule; the models are inside their
+    // provider `group` sections above it.
+    const levels = page.locator('[role="menu"] [role="separator"] ~ [role="menuitemradio"]')
     await expect.poll(async () => levels.allTextContents(), { timeout: 10_000 })
       .toEqual(['Default', 'Off', 'High', 'Max'])
     const snapshot = await captureStableAria(page, '[role="menu"]', scaffold.workspaceCwd)

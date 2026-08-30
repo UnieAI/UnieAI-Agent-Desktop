@@ -44,6 +44,7 @@ const NO_MODEL_EXPERIENCE_SECTION: Readonly<Record<string, string>> = {
 const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/client/ui-first-run': { kind: 'none', reason: 'A browser surface shown once; its node half owns only the durable section holding whether it has been shown.' },
   'packages/connector/connector': { kind: 'none', reason: 'The seam holds access to external services; whatever spends that access registers its own tools, and nothing here reaches a model request.' },
+  'packages/client/ui-settings-connectors': { kind: 'none', reason: 'A settings surface over the connector seam: it lists which external services are connected and runs the approval. It registers no tool, prompt, schema, or context, and the model is never told what is connected.' },
   'packages/test-support/ssh-server': { kind: 'none', reason: 'A test fixture that starts a real sshd; it is not composed into any product runtime.' },
   'packages/attachment/attachment': { kind: 'indirect', reason: 'The storage seam delegates model request rendering to provider adapters.' },
   'packages/attachment/attachment-local': { kind: 'indirect', reason: 'The local backend delegates model request rendering to provider adapters.' },

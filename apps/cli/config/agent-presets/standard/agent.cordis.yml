@@ -250,3 +250,41 @@
   config:
     fetch: false
     searchTimeoutMs: 60000
+
+# `page_screenshot`: the MODEL asks what a page looks like. Deliberately not
+# the operator browser, which is a person's, is loopback-pinned, and outlives
+# the panel showing it; this launches a browser for one call and throws it
+# away, so one page's cookies never reach another's picture.
+#
+# Here rather than in the host composition for the reason the header states:
+# it is a model-facing tool, and a host row puts it in every agent's catalog
+# regardless of preset.
+- id: tool-page-capture
+  name: '@unieai/uad-tool-page-capture'
+
+# ── community plugins ───────────────────────────────────────────────────────
+
+# GenUI and Univer Office live HERE, not in the host composition, because their
+# TOOLS are model-facing: a host row registers them into the process-global
+# catalog, where every agent inherits them — including `minimal`, whose whole
+# definition is two tools. Sixteen extra schemas rode every request on every
+# preset, and a `minimal` session could call Office tools it was defined to
+# exclude.
+#
+# Both are dual-face packages, so their browser halves have to reach the page
+# too. The roster declares every package its presets name to the client module
+# registry at boot (`agentPresets: preset client bundles`), which is what lets
+# a preset own a plugin that also draws something.
+- id: genui
+  name: '@unieai/genui'
+
+# `univer-office` provides one service, so it sits in a group with its own
+# realm — the rule this file's header states.
+- id: univer
+  name: cordis:group
+  group: true
+  isolate:
+    univer: true
+  config:
+    - id: univer-office
+      name: '@unieai/univer-office'

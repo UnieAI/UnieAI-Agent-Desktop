@@ -101,6 +101,7 @@
     { "path": "./packages/client/ui-settings-models" },
     { "path": "./packages/client/ui-settings-plugin-inventory" },
     { "path": "./packages/client/ui-settings-notifications" },
+    { "path": "./packages/client/ui-settings-connectors" },
     { "path": "./packages/client/ui-unieai-account" },
     { "path": "./packages/client/ui-unieai-providers" },
     { "path": "./packages/client/unieai-account-gateway" },

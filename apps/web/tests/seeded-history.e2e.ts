@@ -375,10 +375,15 @@ describe('web e2e: seeded history renders through cold resume', () => {
         scrolls: element.scrollHeight > element.clientHeight,
       }
     })
+    // The two colours are the UnieAI palette's, through
+    // `--dsw-alias-markdown-code-block` and `--dsw-alias-label-tertiary`
+    // (neutral-bluish 50 and 600). They were the upstream greys until the
+    // rebrand; a future palette change is meant to land here, because this
+    // case pins the drawn result rather than the token names.
     expect(style).toEqual({
-      backgroundColor: 'rgb(249, 250, 251)',
+      backgroundColor: 'rgb(249, 249, 249)',
       borderRadius: '8px',
-      color: 'rgb(129, 133, 140)',
+      color: 'rgb(103, 103, 103)',
       fontSize: '11px',
       lineHeight: '16px',
       padding: ['10px', '16px', '12px', '12px'],
@@ -473,9 +478,14 @@ describe('web e2e: seeded history renders through cold resume', () => {
     // where neither half repeats the other (the dispatched `/` and its
     // argument stay out of the title, and the settlement text never restates
     // the command's own name).
-    await page.getByRole('button', { name: 'Access mode, current: Workspace Write' }).click()
-    await page.getByRole('menuitem', { name: 'Read Only' }).click()
-    await page.getByRole('button', { name: 'Access mode, current: Read Only' }).waitFor({ timeout: 10_000 })
+    // The composer chip says what a mode LETS THE AGENT DO rather than what the
+    // permission is called: read-only reads "Look, don't touch" and
+    // workspace-write "Change files in this folder". The settings Permission
+    // row still shows the machine-derived names.
+    await page.getByRole('button', { name: 'What it may do, currently: Change files in this folder' }).click()
+    await page.getByRole('menuitem', { name: 'Look, don\'t touch' }).click()
+    await page.getByRole('button', { name: 'What it may do, currently: Look, don\'t touch' })
+      .waitFor({ timeout: 10_000 })
     // Scoped to the row itself, so unrelated page text that happens to read
     // `permission` (a future resident slash menu) cannot satisfy or break it.
     const row = page.locator('[data-variant="others"]').filter({ hasText: 'preset read-only' })

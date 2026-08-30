@@ -20,7 +20,7 @@ import {
   webSnapshotMode,
   type WebScaffold,
 } from './scaffold.ts'
-import { newEnglishPage, saveFailureShot } from './support.ts'
+import { newEnglishPage, saveFailureShot, showChat, showTrajectory, viewToggle } from './support.ts'
 
 const MODE = webSnapshotMode()
 const HISTORY_SESSION_ID = 'chat-scroll-history-e2e'
@@ -275,7 +275,7 @@ async function openSeed(page: Page, fixture: ChatScrollFixture, tailMarker?: str
   const results = page.getByRole('tree', { name: 'Search results' }).getByRole('treeitem')
   await expect.poll(() => results.count(), { timeout: 60_000 }).toBe(1)
   await results.click()
-  await page.getByRole('tab', { name: 'Chat', exact: true }).waitFor({ timeout: 30_000 })
+  await viewToggle(page).waitFor({ timeout: 30_000 })
   if (tailMarker !== undefined) {
     await page.getByText(tailMarker, { exact: false }).last().waitFor({ timeout: 30_000 })
   }
@@ -652,15 +652,23 @@ describe('web e2e: long Chat scroll contract', () => {
       await loadEarlierWithAnchor(world.page)
       await wheelToHistoryStart(world.page)
       await wheelTranscript(world.page, 1_300)
-      const sessionAnchor = await visibleFlowAnchor(world.page)
 
-      await world.page.getByRole('tab', { name: 'Trajectory', exact: true }).click()
-      await world.page.getByLabel('Trajectory timeline').waitFor({ timeout: 30_000 })
+      // The narrow viewport is SETUP, not part of what is measured: reflowing
+      // the transcript to 700px changes the anchor row's own height (172 ->
+      // 284px here), so an anchor recorded before it cannot be restored to
+      // within a couple of pixels by any scroll position. Resize first, then
+      // record — what this case is about is that switching view and session
+      // puts the reader back, on the narrow scroll owner.
       await world.page.setViewportSize({ width: 700, height: 900 })
       // The narrow breakpoint auto-collapses the sidebar. Re-open it because
       // this scenario switches sessions while pinning the narrow Chat scroll owner.
       await world.page.getByRole('button', { name: 'Open sidebar', exact: true }).click()
-      await world.page.getByRole('tab', { name: 'Chat', exact: true }).click()
+      await nextPaint(world.page)
+      const sessionAnchor = await visibleFlowAnchor(world.page)
+
+      await showTrajectory(world.page)
+      await world.page.getByLabel('Trajectory timeline').waitFor({ timeout: 30_000 })
+      await showChat(world.page)
       await nextPaint(world.page)
       await expectSameFlowTop(world.page, sessionAnchor)
 
@@ -679,15 +687,16 @@ describe('web e2e: long Chat scroll contract', () => {
       await backToBottom.evaluate((button) => {
         if (!(button instanceof HTMLElement)) throw new Error('Back-to-bottom control is not an HTML element')
         button.click()
-        const trajectory = [...document.querySelectorAll<HTMLElement>('[role="tab"]')]
-          .find(tab => tab.textContent?.trim() === 'Trajectory')
+        // One toggle button, not a tablist.
+        const trajectory = [...document.querySelectorAll<HTMLElement>('button')]
+          .find(candidate => candidate.textContent?.trim() === 'Trajectory')
         if (!(trajectory instanceof HTMLElement)) {
-          throw new Error('Trajectory tab is unavailable during pinned remount')
+          throw new Error('Trajectory toggle is unavailable during pinned remount')
         }
         trajectory.click()
       })
       await world.page.getByLabel('Trajectory timeline').waitFor({ timeout: 30_000 })
-      await world.page.getByRole('tab', { name: 'Chat', exact: true }).click()
+      await showChat(world.page)
       await expectBottom(world.page)
       await openSeed(
         world.page,

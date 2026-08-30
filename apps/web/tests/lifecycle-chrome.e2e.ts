@@ -84,10 +84,13 @@ describe('web e2e: lifecycle & chrome (workspace flow / reload / dark mode)', ()
     const typedBox = await menu.boundingBox()
     expect(launchedBox).not.toBeNull()
     expect(typedBox).not.toBeNull()
+    // Both paths anchor the menu in the same place. Compared at the TOP-LEFT,
+    // not the bottom edge: the launcher shows Commands alone while typing `/`
+    // also carries the skill groups and GenUI's `/panel`, so the two menus
+    // legitimately differ in height (322 vs 330 here) and a bottom-edge
+    // equality would be asserting equal CONTENT rather than equal placement.
     expect(Math.abs(launchedBox!.x - typedBox!.x)).toBeLessThan(1)
-    expect(Math.abs(
-      launchedBox!.y + launchedBox!.height - typedBox!.y - typedBox!.height,
-    )).toBeLessThan(1)
+    expect(Math.abs(launchedBox!.y - typedBox!.y)).toBeLessThan(1)
     await input.fill('/cpt')
     await expect.poll(() => menu.getByRole('option').allTextContents()).toEqual([
       'compactCompact older conversation history',
@@ -163,7 +166,7 @@ describe('web e2e: lifecycle & chrome (workspace flow / reload / dark mode)', ()
     }
     // The blank frame renders the hero, not the resident composer: the
     // headline plus the guidance placeholder are the empty state's anchors.
-    await expect.poll(() => page.getByText('Into the Unknown', { exact: false }).count(), { timeout: 15_000 }).toBe(1)
+    await expect.poll(() => page.getByText('What do you want to do in your workspace?', { exact: false }).count(), { timeout: 15_000 }).toBe(1)
     const input = page.locator('textarea').first()
     await input.waitFor({ timeout: 10_000 })
     if (MODE !== 'record') {
@@ -209,7 +212,9 @@ describe('web e2e: lifecycle & chrome (workspace flow / reload / dark mode)', ()
     ).toBeGreaterThanOrEqual(1)
     await expect.poll(() => page.locator('[role="treeitem"][aria-selected="true"]').count(), { timeout: 10_000 }).toBe(1)
     await expect.poll(() => page.getByText('LIGHTHOUSE', { exact: true }).count(), { timeout: 15_000 }).toBeGreaterThanOrEqual(1)
-    await expect.poll(() => page.getByText('Cache hit 99.5%', { exact: true }).count(), { timeout: 15_000 }).toBe(1)
+    // No stats assertion: the strip that reported cache hit is built and
+    // deliberately not mounted (ui-conversation's apply.ts). The reply text
+    // above is what proves the turn reached this browser.
     // Host: the session's durable header cwd is the folder the workspace
     // flow created and adopted (<workspaceCwd>/workspace) — the proof the
     // send went through workspace materialization rather than a bare

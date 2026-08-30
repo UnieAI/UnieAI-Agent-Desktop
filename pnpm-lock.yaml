@@ -1638,6 +1638,9 @@ importers:
       '@unieai/uad-client-ui-settings':
         specifier: workspace:^
         version: link:../../client/ui-settings
+      '@unieai/uad-client-ui-settings-connectors':
+        specifier: workspace:^
+        version: link:../../client/ui-settings-connectors
       '@unieai/uad-client-ui-settings-general':
         specifier: workspace:^
         version: link:../../client/ui-settings-general
@@ -1701,6 +1704,9 @@ importers:
       '@unieai/uad-code-runtime-worker-thread':
         specifier: workspace:^
         version: link:../../code-runtime/code-runtime-worker-thread
+      '@unieai/uad-connector':
+        specifier: workspace:^
+        version: link:../../connector/connector
       '@unieai/uad-cordis-client-runner':
         specifier: workspace:^
         version: link:../../extensions/cordis-client-runner
@@ -2503,9 +2509,6 @@ importers:
       '@unieai/uad-client-runtime':
         specifier: workspace:^
         version: link:../runtime
-      '@unieai/uad-client-test-runtime':
-        specifier: workspace:^
-        version: link:../../test-support/client-runtime
       '@unieai/uad-client-ui-layout':
         specifier: workspace:^
         version: link:../ui-layout
@@ -3227,6 +3230,43 @@ importers:
       '@unieai/uad-settings':
         specifier: workspace:^
         version: link:../../settings/settings
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+
+  packages/client/ui-settings-connectors:
+    dependencies:
+      clsx:
+        specifier: ^2.0.0
+        version: 2.1.1
+    devDependencies:
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      '@unieai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@unieai/uad-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@unieai/uad-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@unieai/uad-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@unieai/uad-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@unieai/uad-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
+      '@unieai/uad-client-ui-slots':
+        specifier: workspace:^
+        version: link:../ui-slots
+      '@unieai/uad-invariants':
+        specifier: workspace:^
+        version: link:../../runtime-diagnostics/invariants
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -5946,6 +5986,9 @@ importers:
       '@unieai/uad-browser-operator':
         specifier: workspace:^
         version: link:../../browser/browser-operator
+      '@unieai/uad-connector':
+        specifier: workspace:^
+        version: link:../../connector/connector
       '@unieai/uad-cordis-host-runner':
         specifier: workspace:^
         version: link:../../extensions/cordis-host-runner
@@ -6956,6 +6999,9 @@ importers:
       '@unieai/uad-atomic-write':
         specifier: workspace:^
         version: link:../../util/atomic-write
+      '@unieai/uad-client-modules':
+        specifier: workspace:^
+        version: link:../../client/modules
       '@unieai/uad-home-paths':
         specifier: workspace:^
         version: link:../../util/home-paths
@@ -9963,6 +10009,9 @@ importers:
       '@unieai/cosmokit':
         specifier: link:../../vendor/cosmokit
         version: link:../../vendor/cosmokit
+      '@unieai/genui':
+        specifier: workspace:^
+        version: link:../../vendor/genui
       '@unieai/schemastery':
         specifier: link:../../vendor/schemastery
         version: link:../../vendor/schemastery
@@ -10005,6 +10054,9 @@ importers:
       '@unieai/uad-brand':
         specifier: workspace:^
         version: link:../../packages/util/brand
+      '@unieai/uad-browser-operator':
+        specifier: workspace:^
+        version: link:../../packages/browser/browser-operator
       '@unieai/uad-code-runtime':
         specifier: workspace:^
         version: link:../../packages/code-runtime/code-runtime
@@ -10242,6 +10294,9 @@ importers:
       '@unieai/uad-tool-jobs':
         specifier: workspace:^
         version: link:../../packages/jobs/tool-jobs
+      '@unieai/uad-tool-page-capture':
+        specifier: workspace:^
+        version: link:../../packages/browser/tool-page-capture
       '@unieai/uad-tool-ralph':
         specifier: workspace:^
         version: link:../../packages/workflow/tool-ralph
@@ -10299,6 +10354,9 @@ importers:
       '@unieai/uad-workflow-worker-thread':
         specifier: workspace:^
         version: link:../../packages/workflow/workflow-worker-thread
+      '@unieai/univer-office':
+        specifier: workspace:^
+        version: link:../../vendor/univer-office
 
   vendor/cordis:
     dependencies:
