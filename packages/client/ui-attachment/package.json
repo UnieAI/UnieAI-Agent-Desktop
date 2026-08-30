@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-client-ui-attachment",
   "description": "Dynamic attachment presentation plugin for conversation input and message-image slots",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "publishConfig": {
     "access": "public"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-session-log-export",
   "description": "Web Session-log export command and shared download dialog",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",

@@ -1,7 +1,7 @@
 {
   "name": "@unieai/uad-time-context",
   "description": "Opt-in durable per-step context with the current time and elapsed time",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "publishConfig": {
     "access": "public"
   },
