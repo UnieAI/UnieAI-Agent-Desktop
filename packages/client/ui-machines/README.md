@@ -20,6 +20,14 @@ A change of machine is a fact about the whole client, not about this control: it
 
 The [gauges strip](../ui-machine-gauges/README.md) is the listener that matters today. Its reading describes the machine it was taken on, so after a move that reading is not stale — it is about somewhere else.
 
+## Each machine's own workspace
+
+A workspace is a path, and a path belongs to the machine it is on. The folder someone picked on a build host is not on their laptop, so carrying one across a switch aims the next command at a directory that is not there — which is what a person sees as *I picked a folder and it bounced straight back to "Choose folder"*.
+
+So a switch records the workspace of the machine being left and restores the one the machine being entered was last in. The record is a field on the host's own machine section (`workspaceByMachine`), keyed by machine id, so it survives a restart the way the current machine does. The browser half spells that section's names itself rather than importing the host package into a client bundle; a test imports both and asserts they still agree.
+
+Arriving at a machine nobody has worked on yet keeps whatever is already open. There is nothing to restore, and "no workspace" is a state a person chooses rather than one a switch should impose on them. A remembered workspace that no longer exists is skipped for the same reason.
+
 ## What it reads, and when
 
 The list is fetched when the menu opens, not cached and not watched. Machines come from a file the person edits outside Rabi — a cached list is stale exactly when someone has just added the machine they are looking for.
@@ -52,7 +60,7 @@ None. Nothing here contributes a prompt fragment, a tool definition, or a contex
 
 ## Known Limitations and Deferred Work
 
-- **Switching applies to everything at once.** The current machine is one value for the whole app, so a conversation already open sends its next command to the newly chosen machine. Per-conversation machines need a record the harness does not have yet.
+- **Switching applies to everything at once.** The current machine is one value for the whole app, so a conversation already open sends its next command to the newly chosen machine. Per-conversation machines need a record the harness does not have yet. The workspace is the one thing that does follow the machine (above); the open conversation does not.
 - **The folder picker still browses this computer.** Choosing a remote machine changes where commands and files go, but the workspace browse dialog reads the host's own filesystem, so it shows local folders. A remote workspace can be created from a path, not yet chosen from that dialog.
 - **A machine is listed because it is configured, not because it answers.** Nothing is probed when the menu opens; a machine that is off looks exactly like one that is on until someone presses Test or a command runs.
 - **An existing machine cannot be edited here.** Adding and removing are whole-block operations, which is what makes them safe; changing one field means opening the file.

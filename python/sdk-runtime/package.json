@@ -10,7 +10,6 @@
     "@unieai/cordis-plugin-loader": "workspace:^",
     "@unieai/cordis-plugin-timer": "workspace:^",
     "@unieai/cosmokit": "workspace:^",
-    "@unieai/genui": "workspace:^",
     "@unieai/univer-office": "workspace:^",
     "@unieai/uad-acp": "workspace:^",
     "@unieai/uad-agent": "workspace:^",

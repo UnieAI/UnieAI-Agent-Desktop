@@ -14,7 +14,7 @@ export type ConversationRootProps = ConversationSlotProps
 
 export function ConversationRoot({
   sessionId, useSession, useSessions, useWorkspaces, useInput, useComposerBlock,
-  renderSlot, renderSlotChain, selectWorkspace, hostIsLocal, t,
+  renderSlot, renderSlotChain, selectWorkspace, t,
 }: ConversationRootProps) {
   const openState = useSession(s => s.openState)
   const composerPhase = useSession(s => s.composerPhase)
@@ -119,19 +119,13 @@ export function ConversationRoot({
         },
         onClose: () => { setPickerOpen(false) },
       })}
-      {/* Where the agent's tools will run. Icon only: the fact is worth one
-          glyph on the bar, and spelling it out made the strip read as a status
-          line. The label carries it for anyone who cannot see the glyph. */}
-      <span
-        className={css.heroMachine}
-        title={t(hostIsLocal ? 'hero.machineLocal' : 'hero.machineRemote')}
-        aria-label={t(hostIsLocal ? 'hero.machineLocal' : 'hero.machineRemote')}
-      >
-        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden>
-          <rect x="2.25" y="3.25" width="11.5" height="7.5" rx="1.4" fill="none" stroke="currentColor" strokeWidth="1.2" />
-          <path d="M1.25 12.75h13.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-        </svg>
-      </span>
+      {/* Where the agent's tools will run, as the control itself rather than a
+          picture of one. On the hero this row IS the composer's resident
+          chrome, so the seat renders here and not in the card; a passive glyph
+          beside a live trigger for the same fact read as two machine buttons,
+          and the glyph could not say which machine because it described the
+          page's own authority rather than the execution target. */}
+      <div className={css.heroMachine}>{renderSlot('conversation.input.chrome.end', {})}</div>
     </div>
   )
 
@@ -175,7 +169,9 @@ export function ConversationRoot({
       </>
     ),
     rightItems: zone === undefined ? null : renderSlot('conversation.input.right', zone),
-    endItems: renderSlot('conversation.input.chrome.end', {}),
+    // Hero draws this seat in the row below the card instead; rendering it in
+    // both places is what put two machine controls on the same screen.
+    endItems: hero ? null : renderSlot('conversation.input.chrome.end', {}),
     // Stats band under the card, inside the bar's width column so both
     // share one constraint (composer.dock = stats-line family).
     footer: !hero && zone !== undefined ? renderSlot('conversation.composer.dock', zone) : null,

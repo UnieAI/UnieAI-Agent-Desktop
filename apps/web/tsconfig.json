@@ -100,7 +100,9 @@
     "tests/composer-tab-geometry.e2e.ts",
     "tests/complex-history.perf.ts",
     "tests/pwsh-terminal.e2e.ts",
-    "tests/workflow-run.e2e.ts"
+    "tests/workflow-run.e2e.ts",
+    "tests/machine-control.e2e.ts",
+    "tests/plugin-asset-routes.e2e.ts"
   ],
   "references": [
     {

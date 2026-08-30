@@ -52,6 +52,7 @@
     "@unieai/uad-client-locale": "workspace:^",
     "@unieai/uad-client-runtime": "workspace:^",
     "@unieai/uad-client-ui-conversation": "workspace:^",
+    "@unieai/uad-client-ui-settings": "workspace:^",
     "@unieai/uad-invariants": "workspace:^"
   },
   "devDependencies": {
@@ -65,6 +66,7 @@
     "@unieai/uad-client-test-runtime": "workspace:^",
     "@unieai/uad-client-ui-conversation": "workspace:^",
     "@unieai/uad-client-ui-primitives": "workspace:^",
+    "@unieai/uad-client-ui-settings": "workspace:^",
     "@unieai/uad-client-ui-slots": "workspace:^",
     "@unieai/uad-invariants": "workspace:^",
     "react": "^18.2.0",

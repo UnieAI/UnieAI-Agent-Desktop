@@ -160,12 +160,21 @@ it('assembles the shipped Web catalog, file-reference guidance, retry policy, an
       "mode": "always",
     }
   `)
-  // The catalog belongs to an AGENT, not to the process: every model-facing row
-  // now lives in a preset mounted under one session's scope, so the global
-  // layer holds nothing and a caller must name the agent to see anything. This
-  // composes from the deployment default — what a session that names no preset
-  // gets — which is the shape this test has always been about.
-  expect(ctx.tools.schemas().map(schema => schema.name)).toEqual([])
+  // The catalog belongs to an AGENT, not to the process: model-facing rows live
+  // in a preset mounted under one session's scope, so a caller must name the
+  // agent to see them. This composes from the deployment default — what a
+  // session that names no preset gets — which is the shape this test has always
+  // been about.
+  //
+  // Two rows are the stated exception. `genui` is mounted by the WEB BUNDLE
+  // rather than by a preset because its `apply` registers the webServer route
+  // serving its lazily fetched mermaid/three/echarts bundles, and a preset's
+  // standing composition is built when the first agent joins — after a page has
+  // already asked for those assets. A host row registers into the process-wide
+  // catalog, so its two tools reach every agent. That is the price of the route
+  // and it is asserted here so the exception cannot quietly grow a third member.
+  expect(ctx.tools.schemas().map(schema => schema.name).sort())
+    .toEqual(['render_ui', 'validate_dsh_ui'])
   const handle = await ctx.agents.create({
     sessionId: SessionId('shipped-composition'),
     setup: agentCtx => ctx.agentPresets.mount(agentCtx).then(() => undefined),

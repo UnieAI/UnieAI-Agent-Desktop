@@ -1563,7 +1563,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/machines/machines/src/index.ts:50`](../packages/machines/machines/src/index.ts)
+Source: [`packages/machines/machines/src/index.ts:66`](../packages/machines/machines/src/index.ts)
 
 <a id="unieaiuad-mcp-client"></a>
 

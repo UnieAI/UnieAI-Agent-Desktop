@@ -396,6 +396,8 @@
 .heroMachine {
   display: grid;
   place-items: center;
+  /* Pushed to the row's far end: the folder is what you act on here, the
+     machine is the standing fact you configure past. */
   margin-left: auto;
   color: var(--dsw-alias-label-tertiary);
 }

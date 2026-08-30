@@ -5,7 +5,7 @@
 // own polling cannot tell an old reading from a reading of somewhere else.
 
 import { describe, expect, it } from 'vitest'
-import { SlotTestRuntime } from '@unieai/uad-client-test-runtime'
+import { SlotTestRuntime, stubSettingsScope } from '@unieai/uad-client-test-runtime'
 import { LocaleRuntime } from '@unieai/uad-client-locale/client'
 import { apply, inject } from '@unieai/uad-client-ui-machines/client'
 
@@ -40,6 +40,10 @@ function connectionFake(): { api: { host: Record<string, unknown> }; isLoopback:
 async function bench() {
   const runtime = await SlotTestRuntime.create()
   runtime.provide('connection', connectionFake())
+  // Each machine's workspace is kept in the host's machine section; these
+  // cases are about the announcement, so the section is a stub that records.
+  const settings = stubSettingsScope<{ workspaceByMachine?: Record<string, string> }>()
+  runtime.provide('settingsScope', { bind: () => settings.scope as never })
   const locale = new LocaleRuntime(runtime.ctx)
   runtime.provide('locale', locale)
   runtime.slots.installLocale(locale)
@@ -49,7 +53,7 @@ async function bench() {
   const injected = (entry.inject as unknown as () => Injected)()
   const announced: string[] = []
   runtime.ctx.on('machines/changed', (machine) => { announced.push(machine) })
-  return { runtime, injected, announced }
+  return { runtime, injected, announced, settings }
 }
 
 describe('announcing a machine change', () => {

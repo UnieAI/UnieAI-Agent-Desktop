@@ -648,6 +648,17 @@
 # legacy name too, and the browser's module table resolves one to the product
 # package. Shipping it is therefore also the standing proof that a plugin
 # written for the upstream ecosystem runs unmodified on this fork.
+#
+# It is mounted HERE and not in the standard preset, unlike `univer-office`,
+# because its `apply` registers a webServer prefix route serving the lazily
+# fetched mermaid/three/echarts bundles. A preset's standing composition is
+# built when the first agent joins, which is after a page has loaded and asked
+# for those assets, so a preset-owned genui answers them with 404. The cost is
+# that its two tools sit in the process-wide catalog every agent inherits; the
+# route is load-bearing for a page and the tools are only noise on it.
+- insert:
+    - id: genui
+      name: '@unieai/genui'
 
 # The execution world is routed now: these two rows are what it routes to,
 # built privately per machine rather than mounted once here.

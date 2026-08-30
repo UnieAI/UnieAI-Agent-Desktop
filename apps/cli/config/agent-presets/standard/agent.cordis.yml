@@ -264,19 +264,21 @@
 
 # ── community plugins ───────────────────────────────────────────────────────
 
-# GenUI and Univer Office live HERE, not in the host composition, because their
-# TOOLS are model-facing: a host row registers them into the process-global
-# catalog, where every agent inherits them — including `minimal`, whose whole
-# definition is two tools. Sixteen extra schemas rode every request on every
-# preset, and a `minimal` session could call Office tools it was defined to
-# exclude.
+# Univer Office lives HERE, not in the host composition, because its TOOLS are
+# model-facing: a host row registers them into the process-global catalog,
+# where every agent inherits them — including `minimal`, whose whole definition
+# is two tools. Fourteen extra schemas rode every request on every preset, and
+# a `minimal` session could call Office tools it was defined to exclude.
 #
-# Both are dual-face packages, so their browser halves have to reach the page
-# too. The roster declares every package its presets name to the client module
+# It is a dual-face package, so its browser half has to reach the page too.
+# The roster declares every package its presets name to the client module
 # registry at boot (`agentPresets: preset client bundles`), which is what lets
 # a preset own a plugin that also draws something.
-- id: genui
-  name: '@unieai/genui'
+#
+# `genui` is deliberately NOT here, for the reason the web bundle's own row
+# states: it serves its lazily fetched engine bundles from a webServer route,
+# and a preset mounts too late to answer a page that is already asking. Its
+# two tools stay global as the price of that route.
 
 # `univer-office` provides one service, so it sits in a group with its own
 # realm — the rule this file's header states.

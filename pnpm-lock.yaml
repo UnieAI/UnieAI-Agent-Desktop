@@ -2759,6 +2759,9 @@ importers:
       '@unieai/uad-client-ui-primitives':
         specifier: workspace:^
         version: link:../ui-primitives
+      '@unieai/uad-client-ui-settings':
+        specifier: workspace:^
+        version: link:../ui-settings
       '@unieai/uad-client-ui-slots':
         specifier: workspace:^
         version: link:../ui-slots
@@ -10009,9 +10012,6 @@ importers:
       '@unieai/cosmokit':
         specifier: link:../../vendor/cosmokit
         version: link:../../vendor/cosmokit
-      '@unieai/genui':
-        specifier: workspace:^
-        version: link:../../vendor/genui
       '@unieai/schemastery':
         specifier: link:../../vendor/schemastery
         version: link:../../vendor/schemastery

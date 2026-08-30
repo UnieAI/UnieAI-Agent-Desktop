@@ -254,7 +254,6 @@ function mount(
       : (opts?.fallback ?? null)
   )) as ConversationRootProps['renderSlotChain']
   const props: ConversationRootProps = {
-    hostIsLocal: true,
     sessionId: SID,
     SessionProvider: ({ children }) => children(SID),
     useSession,

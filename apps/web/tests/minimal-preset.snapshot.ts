@@ -97,6 +97,14 @@ describe('minimal agent preset', () => {
       .replaceAll(scaffold.workspaceCwd, '{{cwd}}')
       .trimEnd()
 
+    // `minimal` is defined as two tools, and four arrive. `render_ui` and
+    // `validate_dsh_ui` come from `genui`, which the WEB BUNDLE mounts as a
+    // host row rather than a preset row: its `apply` registers the webServer
+    // route serving its lazily fetched engine bundles, and a preset mounts
+    // after a loaded page has already asked for them. A host row registers
+    // into the process-wide catalog every agent inherits, so the two ride
+    // here. They are pinned rather than filtered out: this is the one place
+    // the cost of that route is visible, and it should stay visible.
     expect({
       prompt: requestHeader.system,
       tools: requestHeader.tools?.map(tool => tool.name),
@@ -111,7 +119,9 @@ describe('minimal agent preset', () => {
         "prompt": "You are a helpful software engineer assistant.",
         "tools": [
           "bash",
+          "render_ui",
           "str_replace_editor",
+          "validate_dsh_ui",
         ],
       }
     `)

@@ -228,9 +228,6 @@ export function apply(ctx: Context): void {
     },
     inject: (sessionId: SessionId | undefined): ConversationInjected => ({
       hooks: { composerBlock: sessionId === undefined ? ABSENT_BLOCK : composerBlocks.storeFor(sessionId) },
-      // The client Context carries no `connection` type merge, so the declared
-      // injection is read by name, as ui-settings-* already do.
-      hostIsLocal: (ctx.get('connection') as { isLoopback?: boolean } | undefined)?.isLoopback === true,
       selectWorkspace: async (workspaceId) => {
         const nextId = await workspaces.connectWorkspace(workspaceId)
         if (sessionId !== undefined && nextId !== sessionId) {

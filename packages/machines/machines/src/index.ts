@@ -39,11 +39,27 @@ export const MACHINES_SETTINGS_NAMESPACE = 'machines'
 export interface MachineSettings {
   /** Current target id: `local`, or an alias from the OpenSSH configuration. */
   current: string
+  /**
+   * The workspace each machine was last working in, keyed by machine id.
+   *
+   * A workspace is a path, and a path belongs to the machine it is on: the
+   * folder someone picked on a GPU host does not exist on their laptop, and
+   * carrying it across a switch points the next command at a directory that is
+   * not there. Recorded when a switch leaves a machine and restored when one
+   * returns to it, so each machine keeps its own place.
+   *
+   * Absent for a machine nobody has worked on yet, which is different from
+   * "no workspace": arriving somewhere new keeps whatever is open rather than
+   * emptying the screen on a person who has not chosen anything there.
+   */
+  workspaceByMachine?: Record<string, string>
 }
 
 /** Schema for the durable section. */
 export const MachineSettingsSchema: z<MachineSettings> = z.object({
   current: z.string().default(LOCAL_MACHINE),
+  workspaceByMachine: z.dict(z.string())
+    .description('Workspace id last used on each machine, keyed by machine id.'),
 })
 
 /** Configuration for the machine list. */

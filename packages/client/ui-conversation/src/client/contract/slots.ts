@@ -533,12 +533,6 @@ export interface ConversationInjected {
    */
   selectWorkspace: (workspaceId: WorkspaceId) => Promise<void>
   /**
-   * Whether the Host serving this page answers on a loopback authority, i.e.
-   * whether the agent's tools run on the machine the reader is sitting at.
-   * Stated as one glyph on the hero bar, never as running commentary.
-   */
-  hostIsLocal: boolean
-  /**
    * Framework-bound sources. `composerBlock` is this session's block when a
    * plugin raised one; the reason is the blocker's own localized copy, which
    * the root renders as the inert composer's placeholder.
