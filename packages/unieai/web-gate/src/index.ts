@@ -40,7 +40,9 @@ import { fetchAccountProfile, updateAccountProfile, type ProfilePatch } from './
 import {
   createProvider, deleteProvider, fetchProviders, readProviderDraft, readProviderPatch, updateProvider,
 } from './providers.ts'
-import { fetchAccountSkill, fetchAccountSkills, isPlainSegment } from './skills.ts'
+import {
+  accountSkillsFailureMessage, fetchAccountSkill, fetchAccountSkills, isPlainSegment,
+} from './skills.ts'
 import type { AccountSkillDocument, SkillDocumentFailure } from './skills.ts'
 import { fetchDesktopStats } from './stats.ts'
 
@@ -985,11 +987,13 @@ export function apply(ctx: Context, config: Config): void {
         json(res, 200, { status: 'signed-out' })
         return
       }
-      const skills = await fetchAccountSkills(productUrl, session.apiKey)
-      // An account that has written none is an answer; a failed read is not.
-      json(res, 200, skills === undefined
-        ? { status: 'failed', message: SKILLS_UNREADABLE }
-        : { status: 'signed-in', skills })
+      const answer = await fetchAccountSkills(productUrl, session.apiKey)
+      // An account that has written none is an answer; a failed read is not —
+      // and the failure says WHICH failure, because "could not be read" sends
+      // a person to check four unrelated things.
+      json(res, 200, answer.ok
+        ? { status: 'signed-in', skills: answer.skills }
+        : { status: 'failed', message: accountSkillsFailureMessage(answer.failure, productUrl) })
     },
   }), 'unieai-web-gate: account skills')
 

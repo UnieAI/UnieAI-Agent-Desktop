@@ -3448,7 +3448,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/unieai/web-gate/src/index.ts:163`](../packages/unieai/web-gate/src/index.ts)
+Source: [`packages/unieai/web-gate/src/index.ts:165`](../packages/unieai/web-gate/src/index.ts)
 
 <a id="unieaiuad-user-approval"></a>
 

@@ -104,6 +104,27 @@ describe('GET /auth/skills', () => {
     expect((res.json() as { status: string }).status).toBe('failed')
   })
 
+  it('says WHICH failure, because four unrelated ones land on the same screen', async () => {
+    // "The skills on your UnieAI account could not be read." covered an
+    // unreachable product, a refused key, a build with no such route and an
+    // answer that did not parse — one sentence a person cannot act on, and a
+    // bug report that names nothing. Each says which it was.
+    const refused = await withProduct(skills({ status: 401, body: {} }))
+    const unauthorized = await call(
+      bench.server.handler('/auth/skills'), request({ cookie: refused.cookie }))
+    expect((unauthorized.json() as { message: string }).message).toContain('refused')
+
+    const absent = await withProduct(skills({ status: 404, body: {} }))
+    const missing = await call(
+      bench.server.handler('/auth/skills'), request({ cookie: absent.cookie }))
+    expect((missing.json() as { message: string }).message).toContain('does not serve a skills list')
+
+    const nonsense = await withProduct(skills({ body: { unexpected: true } }))
+    const malformed = await call(
+      bench.server.handler('/auth/skills'), request({ cookie: nonsense.cookie }))
+    expect((malformed.json() as { message: string }).message).toContain('does not understand')
+  })
+
   it('drops a row whose slug is not a directory name', async () => {
     // The slug is joined onto a skills directory on this machine; a product
     // build that published a path would otherwise write outside it.

@@ -98,26 +98,48 @@ export function isPlainSegment(slug: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(slug) && !/^\.+$/.test(slug)
 }
 
+/** Why the account's skill list could not be read, in the words a person gets. */
+export type AccountSkillsFailure =
+  /** The product could not be reached at all: offline, DNS, TLS, wrong origin. */
+  | { kind: 'unreachable' }
+  /** The product answered, and said no or said something broken. */
+  | { kind: 'status'; status: number }
+  /** The product answered 200 with a body this cannot read. */
+  | { kind: 'malformed' }
+
+/** Either the account's skills, or why they could not be read. */
+export type AccountSkillsAnswer =
+  | { ok: true; skills: AccountSkill[] }
+  | { ok: false; failure: AccountSkillsFailure }
+
 /**
  * Read the skills this account keeps in the product.
+ *
+ * The failure is REPORTED, not flattened. Four different things send a person
+ * to the same screen — the product is unreachable, the key was refused, the
+ * route is not there, the answer did not parse — and one sentence covering all
+ * four ("could not be read") tells them nothing they can act on and tells a
+ * bug report nothing either. Each says which it was.
  * @param baseUrl - the web product's origin, without a trailing slash.
  * @param apiKey - the desktop API key from the gate's session.
  * @param signal - cancels the request.
- * @returns the skills, or undefined when the list could not be read — which
- * the caller reports as a failure rather than as an account with no skills.
+ * @returns the skills, or the reason they could not be read.
  */
 export async function fetchAccountSkills(
   baseUrl: string,
   apiKey: string,
   signal?: AbortSignal,
-): Promise<AccountSkill[] | undefined> {
+): Promise<AccountSkillsAnswer> {
   const response = await fetch(`${baseUrl}/api/desktop/skills`, {
     headers: { authorization: `Bearer ${apiKey}` },
     signal: signal ?? null,
   }).catch(() => undefined)
-  if (response === undefined || !response.ok) return undefined
+  if (response === undefined) return { ok: false, failure: { kind: 'unreachable' } }
+  if (!response.ok) return { ok: false, failure: { kind: 'status', status: response.status } }
   const body = await response.json().catch(() => undefined) as unknown
-  if (!isRecord(body) || !Array.isArray(body['skills'])) return undefined
+  if (!isRecord(body) || !Array.isArray(body['skills'])) {
+    return { ok: false, failure: { kind: 'malformed' } }
+  }
   const skills: AccountSkill[] = []
   const seen = new Set<string>()
   for (const entry of body['skills']) {
@@ -129,7 +151,29 @@ export async function fetchAccountSkills(
     seen.add(skill.slug)
     skills.push(skill)
   }
-  return skills
+  return { ok: true, skills }
+}
+
+/**
+ * The sentence a failed read gets.
+ * @param failure - what went wrong.
+ * @param baseUrl - the origin that was asked, named so a wrong one is visible.
+ * @returns one sentence naming the cause.
+ */
+export function accountSkillsFailureMessage(failure: AccountSkillsFailure, baseUrl: string): string {
+  if (failure.kind === 'unreachable') {
+    return `The skills on your UnieAI account could not be read: ${baseUrl} could not be reached.`
+  }
+  if (failure.kind === 'malformed') {
+    return `The skills on your UnieAI account could not be read: ${baseUrl} answered with something this build does not understand.`
+  }
+  if (failure.status === 401 || failure.status === 403) {
+    return 'The skills on your UnieAI account could not be read: this machine\'s access was refused. Sign in again.'
+  }
+  if (failure.status === 404) {
+    return `The skills on your UnieAI account could not be read: ${baseUrl} does not serve a skills list.`
+  }
+  return `The skills on your UnieAI account could not be read: ${baseUrl} answered ${String(failure.status)}.`
 }
 
 /** Why a document could not be read: absent from the account, or unreadable. */

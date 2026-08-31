@@ -23,10 +23,13 @@
   position: absolute;
   top: 8px;
   right: 12px;
-  z-index: 1;
-  background-color: transparent;
+  z-index: 2;
+  /* Opaque, and above the body: a diff line scrolled under a transparent
+     control reads as text written through the word "copy". */
+  padding: 2px 4px;
+  border-radius: 6px;
+  background-color: var(--dsw-alias-markdown-code-block);
   border: none;
-  padding: 0;
   margin: 0;
   color: var(--dsw-alias-label-secondary);
   cursor: pointer;
@@ -108,14 +111,26 @@
   --dsl-diff-gutter: 4ch;
 }
 
-/* A file header: the path in the primary tone, set apart by weight. The copy
-   button floats over this first row's top-right corner, so reserve space at the
-   line's end for it — a long path scrolls under the button otherwise, and the
-   button's hit area would eat clicks on the path's tail. */
+/* A file header: the path in the primary tone, set apart by weight.
+ *
+ * PINNED, not scrolled. The copy button floats over this row's top-right
+ * corner and is anchored to the card, which does not scroll — so a path longer
+ * than the card ran straight under the button and out the side, and reserving
+ * space at the line's end could not help because the end was never where the
+ * collision happened. Sticky at the left keeps the path in place while the
+ * diff scrolls beneath it, and the ellipsis ends it before the button rather
+ * than behind it. The file's name is on the card header above, so the tail is
+ * the part that can be given up. */
 .path {
+  position: sticky;
+  left: 0;
+  max-width: 100%;
+  padding-right: 56px;
+  overflow: hidden;
   color: var(--dsw-alias-label-primary);
   font-weight: 600;
-  padding-right: 56px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* The `@@ -a,b +c,d @@` line between discontiguous regions of one file: dim,
